@@ -1,25 +1,38 @@
-<template>
-    <div>
-        <h1>Daftar Kabupaten/Kota</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Kode Provinsi</th>
-                    <th>Kode</th>
-                    <th>Nama</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="item in kabupatenKota" :key="item.kode_provinsi + '-' + item.kode">
-                    <td>{{ item.kode_provinsi }}</td>
-                    <td>{{ item.kode }}</td>
-                    <td>{{ item.nama }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</template>
+<script setup lang="ts">
+import AppLayout from '@/layouts/AppLayout.vue';
+import { Head } from '@inertiajs/vue3';
+import type { BreadcrumbItem } from '@/types';
 
-<script setup>
-defineProps({ kabupatenKota: Array });
+defineProps<{ kabupatenKota: Array<any> }>();
+
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Kabupaten/Kota', href: '/kabupaten-kota' },
+];
 </script>
+
+<template>
+    <Head title="Kabupaten/Kota" />
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <div class="flex flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
+            <h1 class="text-2xl font-bold mb-4">Daftar Kabupaten/Kota</h1>
+            <div class="overflow-x-auto rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Kode Provinsi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Kode</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nama</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                        <tr v-for="item in kabupatenKota" :key="item.kode_provinsi + '-' + item.kode">
+                            <td class="px-6 py-4 whitespace-nowrap">{{ item.kode_provinsi }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ item.kode }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ item.nama }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </AppLayout>
+</template>
