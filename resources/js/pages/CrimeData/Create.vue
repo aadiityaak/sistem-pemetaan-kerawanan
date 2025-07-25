@@ -5,6 +5,15 @@ import { Head, useForm } from '@inertiajs/vue3';
 import type { BreadcrumbItem } from '@/types';
 import { LMap, LTileLayer, LMarker } from '@vue-leaflet/vue-leaflet';
 import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix for default markers in Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
 
 interface LocationData {
     id: string;
@@ -29,6 +38,7 @@ const form = useForm({
 });
 
 const zoom = ref(13);
+const map = ref(null);
 const provinsiList = ref<LocationData[]>([]);
 const kabupatenKotaList = ref<LocationData[]>([]);
 const kecamatanList = ref<LocationData[]>([]);
@@ -96,8 +106,14 @@ watch(() => form.kode_kabupaten_kota, (newKabupatenKotaKode) => {
     }
 });
 
-onMounted(() => {
-    fetchProvinsi();
+onMounted(async () => {
+    await fetchProvinsi();
+    // Force map to refresh after mounting
+    setTimeout(() => {
+        if (map.value) {
+            (map.value as any).leafletObject?.invalidateSize();
+        }
+    }, 100);
 });
 
 function onMapClick(event: any) {
@@ -163,16 +179,25 @@ function submit() {
                     <!-- Map -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Lokasi</label>
-                        <div style="height: 400px" class="mt-1">
-                            <l-map ref="map" v-model:zoom="zoom" :center="[form.latitude, form.longitude]" @click="onMapClick">
+                        <div class="mt-1 border border-gray-300 rounded-md overflow-hidden" style="height: 400px;">
+                            <l-map 
+                                ref="map" 
+                                v-model:zoom="zoom" 
+                                :center="[form.latitude, form.longitude]" 
+                                @click="onMapClick"
+                                style="height: 100%; width: 100%;"
+                                :use-global-leaflet="false"
+                            >
                                 <l-tile-layer
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                     layer-type="base"
                                     name="OpenStreetMap"
+                                    attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
                                 ></l-tile-layer>
                                 <l-marker :lat-lng="[form.latitude, form.longitude]"></l-marker>
                             </l-map>
                         </div>
+                        <p class="mt-2 text-sm text-gray-500">Klik pada peta untuk memilih lokasi kejadian</p>
                     </div>
 
                     <!-- Latitude/Longitude -->
@@ -198,3 +223,24 @@ function submit() {
         </div>
     </AppLayout>
 </template>
+
+<style scoped>
+/* Ensure Leaflet map displays correctly */
+.leaflet-container {
+    height: 100% !important;
+    width: 100% !important;
+    background: #f8f9fa;
+}
+
+/* Fix for Leaflet marker icons */
+.leaflet-marker-icon {
+    margin-left: -12px !important;
+    margin-top: -41px !important;
+}
+
+/* Ensure map controls are visible */
+.leaflet-control-zoom,
+.leaflet-control-attribution {
+    z-index: 1000;
+}
+</style>
