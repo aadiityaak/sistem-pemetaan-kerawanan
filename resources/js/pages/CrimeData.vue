@@ -44,13 +44,17 @@ function deleteCrime(id: number) {
                     </thead>
                     <tbody class="bg-white dark:bg-zinc-900 divide-y divide-zinc-200 dark:divide-zinc-700">
                         <tr v-for="item in crimeData.data" :key="item.id">
-                            <td class="px-6 py-4 whitespace-nowrap">{{ item.kode_provinsi }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ item.kode_kabupaten_kota }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ item.kode_kecamatan }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ item.jenis_kriminal }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ item.deskripsi }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ item.latitude }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ item.longitude }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ item.provinsi?.nama || '-' }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ item.kabupaten_kota?.nama || '-' }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ item.kecamatan?.nama || '-' }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                    {{ item.jenis_kriminal }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 max-w-xs truncate">{{ item.deskripsi || '-' }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ parseFloat(item.latitude).toFixed(6) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ parseFloat(item.longitude).toFixed(6) }}</td>
                             <td class="px-6 py-4 whitespace-nowrap flex gap-2">
                                 <a :href="`/crime-data/${item.id}/edit`" class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">Edit</a>
                                 <form :action="`/crime-data/${item.id}`" method="POST" @submit.prevent="deleteCrime(item.id)">
@@ -61,6 +65,30 @@ function deleteCrime(id: number) {
                         </tr>
                     </tbody>
                 </table>
+                
+                <!-- Pesan jika tidak ada data -->
+                <div v-if="!crimeData.data || crimeData.data.length === 0" class="text-center py-8">
+                    <p class="text-gray-500 dark:text-gray-400">Belum ada data kriminal yang tersimpan.</p>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div v-if="crimeData.data && crimeData.data.length > 0" class="flex justify-between items-center mt-4">
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                    Menampilkan {{ crimeData.from || 0 }} - {{ crimeData.to || 0 }} dari {{ crimeData.total || 0 }} data
+                </div>
+                <div class="flex gap-2">
+                    <a v-if="crimeData.prev_page_url" 
+                       :href="crimeData.prev_page_url" 
+                       class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600">
+                        Sebelumnya
+                    </a>
+                    <a v-if="crimeData.next_page_url" 
+                       :href="crimeData.next_page_url" 
+                       class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600">
+                        Selanjutnya
+                    </a>
+                </div>
             </div>
         </div>
     </AppLayout>

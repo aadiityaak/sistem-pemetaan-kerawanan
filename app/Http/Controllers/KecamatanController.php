@@ -10,12 +10,14 @@ class KecamatanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Kecamatan::query();
-        if ($request->has('kode_provinsi')) {
-            $query->where('kode_provinsi', $request->kode_provinsi);
+        $query = Kecamatan::with(['kabupatenKota.provinsi']);
+        if ($request->has('provinsi_id')) {
+            $query->whereHas('kabupatenKota.provinsi', function ($q) use ($request) {
+                $q->where('id', $request->provinsi_id);
+            });
         }
-        if ($request->has('kode_kabupaten_kota')) {
-            $query->where('kode_kabupaten_kota', $request->kode_kabupaten_kota);
+        if ($request->has('kabupaten_kota_id')) {
+            $query->where('kabupaten_kota_id', $request->kabupaten_kota_id);
         }
         if ($request->has('q')) {
             $query->where('nama', 'like', '%' . $request->q . '%');
@@ -82,4 +84,4 @@ class KecamatanController extends Controller
             'message' => 'Kecamatan berhasil dihapus',
         ], 204);
     }
-} 
+}

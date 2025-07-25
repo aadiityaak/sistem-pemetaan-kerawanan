@@ -34,7 +34,7 @@ class KecamatanSeeder extends Seeder
                 if (!$provinsi) continue;
 
                 // Load kabupaten data untuk mencari nama kabupaten
-                $kabupatenFile = database_path("data/kabupaten_kota/{$kode_provinsi}.json");
+                $kabupatenFile = database_path("data/kabupaten_kota/kab-{$kode_provinsi}.json");
                 if (!file_exists($kabupatenFile)) continue;
 
                 $kabupatenJson = file_get_contents($kabupatenFile);

@@ -19,15 +19,15 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
                     <thead class="bg-zinc-50 dark:bg-zinc-800">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Kode Provinsi</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Kode</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID Provinsi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nama</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-zinc-900 divide-y divide-zinc-200 dark:divide-zinc-700">
-                        <tr v-for="item in kabupatenKota" :key="item.kode_provinsi + '-' + item.kode">
-                            <td class="px-6 py-4 whitespace-nowrap">{{ item.kode_provinsi }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">{{ item.kode }}</td>
+                        <tr v-for="item in kabupatenKota" :key="item.provinsi_id + '-' + item.id">
+                            <td class="px-6 py-4 whitespace-nowrap">{{ item.provinsi_id }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ item.id }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">{{ item.nama }}</td>
                         </tr>
                     </tbody>

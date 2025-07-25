@@ -10,20 +10,23 @@ class CrimeDataController extends Controller
 {
     public function index(Request $request)
     {
-        $query = CrimeData::query();
-        if ($request->has('kode_provinsi')) {
-            $query->where('kode_provinsi', $request->kode_provinsi);
+        $query = CrimeData::with(['provinsi', 'kabupatenKota', 'kecamatan']);
+
+        if ($request->has('provinsi_id')) {
+            $query->where('provinsi_id', $request->provinsi_id);
         }
-        if ($request->has('kode_kabupaten_kota')) {
-            $query->where('kode_kabupaten_kota', $request->kode_kabupaten_kota);
+        if ($request->has('kabupaten_kota_id')) {
+            $query->where('kabupaten_kota_id', $request->kabupaten_kota_id);
         }
-        if ($request->has('kode_kecamatan')) {
-            $query->where('kode_kecamatan', $request->kode_kecamatan);
+        if ($request->has('kecamatan_id')) {
+            $query->where('kecamatan_id', $request->kecamatan_id);
         }
         if ($request->has('jenis_kriminal')) {
-            $query->where('jenis_kriminal', $request->jenis_kriminal);
+            $query->where('jenis_kriminal', 'like', '%' . $request->jenis_kriminal . '%');
         }
+
         $data = $query->paginate(50)->withQueryString();
+
         return Inertia::render('CrimeData', [
             'crimeData' => $data,
         ]);
@@ -41,14 +44,13 @@ class CrimeDataController extends Controller
 
     public function create()
     {
-        return Inertia::render('CrimeData/Create');
+        return Inertia::render('CrimeDataForm');
     }
 
     public function edit($id)
     {
-        $crime = CrimeData::findOrFail($id);
+        $crime = CrimeData::with(['provinsi', 'kabupatenKota', 'kecamatan'])->findOrFail($id);
         return Inertia::render('CrimeDataForm', [
-            'mode' => 'edit',
             'crime' => $crime,
         ]);
     }
@@ -72,9 +74,9 @@ class CrimeDataController extends Controller
     {
         $crime = CrimeData::findOrFail($id);
         $data = $request->validate([
-            'kode_provinsi' => 'sometimes|required|string|size:2|exists:provinsi,kode',
-            'kode_kabupaten_kota' => 'sometimes|required|string|size:2',
-            'kode_kecamatan' => 'sometimes|required|string|size:3',
+            'provinsi_id' => 'sometimes|required|integer|exists:provinsi,id',
+            'kabupaten_kota_id' => 'sometimes|required|integer|exists:kabupaten_kota,id',
+            'kecamatan_id' => 'sometimes|required|integer|exists:kecamatan,id',
             'latitude' => 'sometimes|required|numeric',
             'longitude' => 'sometimes|required|numeric',
             'jenis_kriminal' => 'sometimes|required|string',
