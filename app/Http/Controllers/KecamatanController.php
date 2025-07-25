@@ -20,7 +20,7 @@ class KecamatanController extends Controller
         if ($request->has('q')) {
             $query->where('nama', 'like', '%' . $request->q . '%');
         }
-        $data = $query->get();
+        $data = $query->paginate(50)->withQueryString();
         return Inertia::render('Kecamatan', [
             'kecamatan' => $data,
         ]);
