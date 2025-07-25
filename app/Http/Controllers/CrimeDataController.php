@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CrimeData;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class CrimeDataController extends Controller
 {
@@ -23,10 +24,8 @@ class CrimeDataController extends Controller
             $query->where('jenis_kriminal', $request->jenis_kriminal);
         }
         $data = $query->paginate(50)->withQueryString();
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Daftar data kriminal',
-            'data' => $data,
+        return Inertia::render('CrimeData', [
+            'crimeData' => $data,
         ]);
     }
 
@@ -88,4 +87,4 @@ class CrimeDataController extends Controller
             'message' => 'Data kriminal berhasil dihapus',
         ], 204);
     }
-} 
+}

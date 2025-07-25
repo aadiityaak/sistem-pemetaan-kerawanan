@@ -23,7 +23,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/kecamatan', [KecamatanController::class, 'index'])->name('kecamatan.index');
     Route::get('/kecamatan/{kode_provinsi}/{kode_kabupaten_kota}/{kode}', [KecamatanController::class, 'show'])->name('kecamatan.show');
+
+    Route::get('/crime-data', [\App\Http\Controllers\CrimeDataController::class, 'index'])->name('crime_data.index');
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
