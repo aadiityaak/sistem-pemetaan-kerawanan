@@ -39,6 +39,7 @@ const form = useForm({
 
 const zoom = ref(13);
 const map = ref(null);
+const mapCenter = ref<[number, number]>([-6.2088, 106.8456]); // Default Jakarta
 const provinsiList = ref<LocationData[]>([]);
 const kabupatenKotaList = ref<LocationData[]>([]);
 const kecamatanList = ref<LocationData[]>([]);
@@ -64,6 +65,48 @@ const jenisKriminalOptions = [
     { value: 'terorisme', label: 'Terorisme' },
     { value: 'lainnya', label: 'Lainnya' },
 ];
+
+// Koordinat center untuk setiap provinsi (berdasarkan ibukota provinsi)
+const provinsiCoordinates: Record<string, { lat: number; lng: number; zoom: number }> = {
+  '11': { lat: 5.5483, lng: 95.3238, zoom: 9 }, // Banda Aceh
+  '12': { lat: 3.5952, lng: 98.6722, zoom: 9 }, // Medan
+  '13': { lat: -0.9471, lng: 100.4172, zoom: 9 }, // Padang
+  '14': { lat: 0.5071, lng: 101.4478, zoom: 9 }, // Pekanbaru
+  '15': { lat: -1.6100, lng: 103.6131, zoom: 9 }, // Jambi
+  '16': { lat: -2.9761, lng: 104.7754, zoom: 9 }, // Palembang
+  '17': { lat: -3.8004, lng: 102.2655, zoom: 9 }, // Bengkulu
+  '18': { lat: -5.4297, lng: 105.2628, zoom: 9 }, // Bandar Lampung
+  '19': { lat: -2.1194, lng: 106.1167, zoom: 9 }, // Pangkal Pinang
+  '21': { lat: 1.1030, lng: 104.0444, zoom: 9 }, // Tanjungpinang
+  '31': { lat: -6.2088, lng: 106.8456, zoom: 11 }, // Jakarta
+  '32': { lat: -6.9175, lng: 107.6191, zoom: 9 }, // Bandung
+  '33': { lat: -7.0051, lng: 110.4381, zoom: 9 }, // Semarang
+  '34': { lat: -7.8014, lng: 110.3649, zoom: 10 }, // Yogyakarta
+  '35': { lat: -7.2575, lng: 112.7521, zoom: 9 }, // Surabaya
+  '36': { lat: -6.1200, lng: 106.1500, zoom: 9 }, // Serang
+  '51': { lat: -8.6705, lng: 115.2126, zoom: 10 }, // Denpasar
+  '52': { lat: -8.5769, lng: 116.1004, zoom: 9 }, // Mataram
+  '53': { lat: -10.1772, lng: 123.6070, zoom: 8 }, // Kupang
+  '61': { lat: -0.0263, lng: 109.3425, zoom: 8 }, // Pontianak
+  '62': { lat: -2.2090, lng: 113.9213, zoom: 8 }, // Palangka Raya
+  '63': { lat: -3.3194, lng: 114.5908, zoom: 8 }, // Banjarmasin
+  '64': { lat: 0.5022, lng: 117.1537, zoom: 8 }, // Samarinda
+  '65': { lat: 2.7251, lng: 116.9110, zoom: 8 }, // Tanjung Selor
+  '71': { lat: 1.4748, lng: 124.8421, zoom: 8 }, // Manado
+  '72': { lat: -0.8990, lng: 119.8770, zoom: 8 }, // Palu
+  '73': { lat: -5.1477, lng: 119.4327, zoom: 8 }, // Makassar
+  '74': { lat: -3.9723, lng: 122.5120, zoom: 8 }, // Kendari
+  '75': { lat: 0.5435, lng: 123.0595, zoom: 8 }, // Gorontalo
+  '76': { lat: -2.6788, lng: 118.8660, zoom: 8 }, // Mamuju
+  '81': { lat: -3.6942, lng: 128.1814, zoom: 8 }, // Ambon
+  '82': { lat: 0.6889, lng: 127.3902, zoom: 8 }, // Sofifi
+  '91': { lat: -0.8629, lng: 134.0775, zoom: 7 }, // Manokwari
+  '92': { lat: -1.3361, lng: 132.3000, zoom: 7 }, // Sorong
+  '94': { lat: -2.5337, lng: 140.7181, zoom: 7 }, // Jayapura
+  '95': { lat: -5.8500, lng: 140.5167, zoom: 7 }, // Merauke
+  '96': { lat: -4.0500, lng: 136.1000, zoom: 7 }, // Nabire
+  '97': { lat: -4.0775, lng: 138.9597, zoom: 7 }, // Wamena
+};
 
 async function fetchProvinsi() {
     try {
@@ -107,13 +150,39 @@ async function fetchKecamatan(provinsiKode: string, kabupatenKotaKode: string) {
     }
 }
 
+// Fungsi untuk mengupdate center peta berdasarkan provinsi yang dipilih
+function updateMapCenter(provinsiKode: string) {
+    if (provinsiKode && provinsiCoordinates[provinsiKode]) {
+        const coords = provinsiCoordinates[provinsiKode];
+        mapCenter.value = [coords.lat, coords.lng];
+        zoom.value = coords.zoom;
+        
+        // Update form coordinates jika belum dipilih manual
+        if (form.latitude === -6.2088 && form.longitude === 106.8456) {
+            form.latitude = coords.lat;
+            form.longitude = coords.lng;
+        }
+        
+        // Force map to update
+        setTimeout(() => {
+            if (map.value) {
+                (map.value as any).leafletObject?.setView([coords.lat, coords.lng], coords.zoom);
+            }
+        }, 100);
+    }
+}
+
 watch(() => form.kode_provinsi, (newProvinsiKode) => {
     if (newProvinsiKode) {
         selectedProvinsi.value = provinsiList.value.find(p => p.id === newProvinsiKode) || null;
         fetchKabupatenKota(newProvinsiKode);
+        updateMapCenter(newProvinsiKode); // Update center peta
     } else {
         kabupatenKotaList.value = [];
         kecamatanList.value = [];
+        // Reset ke center default
+        mapCenter.value = [-6.2088, 106.8456];
+        zoom.value = 13;
     }
 });
 
@@ -121,8 +190,16 @@ watch(() => form.kode_kabupaten_kota, (newKabupatenKotaKode) => {
     if (newKabupatenKotaKode && form.kode_provinsi) {
         selectedKabupatenKota.value = kabupatenKotaList.value.find(k => k.id === newKabupatenKotaKode) || null;
         fetchKecamatan(form.kode_provinsi, newKabupatenKotaKode);
+        // Tidak menggeser peta, hanya fetch data kecamatan
     } else {
         kecamatanList.value = [];
+    }
+});
+
+watch(() => form.kode_kecamatan, (newKecamatanKode) => {
+    // Hanya untuk tracking, tidak menggeser peta
+    if (newKecamatanKode) {
+        // Data kecamatan sudah dipilih, siap untuk submit
     }
 });
 
@@ -298,7 +375,7 @@ function goBack() {
                             <l-map 
                                 ref="map" 
                                 v-model:zoom="zoom" 
-                                :center="[form.latitude, form.longitude]" 
+                                :center="mapCenter" 
                                 @click="onMapClick"
                                 style="height: 100%; width: 100%;"
                                 :use-global-leaflet="false"
@@ -321,9 +398,12 @@ function goBack() {
                                 </svg>
                                 <div class="text-sm">
                                     <p class="font-medium text-blue-800 dark:text-blue-200">Cara menentukan lokasi:</p>
-                                    <p class="text-blue-700 dark:text-blue-300 mt-1">
-                                        Klik pada peta untuk memilih lokasi kejadian. Marker akan bergerak ke posisi yang Anda klik.
-                                    </p>
+                                    <ul class="text-blue-700 dark:text-blue-300 mt-1 space-y-1">
+                                        <li>• Pilih <strong>provinsi</strong> untuk mempersempit area (peta akan otomatis bergeser)</li>
+                                        <li>• Pilih kabupaten/kota dan kecamatan untuk data administratif</li>
+                                        <li>• Klik pada peta untuk memilih lokasi kejadian yang tepat</li>
+                                        <li>• Marker akan bergerak ke posisi yang Anda klik</li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
