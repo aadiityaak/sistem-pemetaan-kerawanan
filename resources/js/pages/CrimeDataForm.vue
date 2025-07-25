@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { Head } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -225,32 +225,92 @@ onMounted(async () => {
         }
     }
     
-    // Setup map - tunggu sejenak untuk memastikan DOM sudah ready
-    setTimeout(() => {
+    // Setup map - tunggu sampai Leaflet benar-benar ready
+    const initMap = () => {
         const L = (window as any).L;
         if (L && mapContainer.value) {
-            const defaultLat = typeof form.latitude === 'number' ? form.latitude : parseFloat(form.latitude || '-6.2088');
-            const defaultLng = typeof form.longitude === 'number' ? form.longitude : parseFloat(form.longitude || '106.8456');
-            
-            map = L.map(mapContainer.value).setView([defaultLat, defaultLng], 10);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-            marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
-            
-            marker.on('dragend', function () {
-                const latlng = marker.getLatLng();
-                form.latitude = latlng.lat;
-                form.longitude = latlng.lng;
-            });
-            
-            map.on('click', function (e: any) {
-                marker.setLatLng(e.latlng);
-                form.latitude = e.latlng.lat;
-                form.longitude = e.latlng.lng;
-            });
+            try {
+                const defaultLat = typeof form.latitude === 'number' ? form.latitude : parseFloat(form.latitude?.toString() || '-6.2088');
+                const defaultLng = typeof form.longitude === 'number' ? form.longitude : parseFloat(form.longitude?.toString() || '106.8456');
+                
+                // Pastikan container ready
+                if (mapContainer.value.offsetWidth === 0 || mapContainer.value.offsetHeight === 0) {
+                    setTimeout(initMap, 100);
+                    return;
+                }
+                
+                map = L.map(mapContainer.value).setView([defaultLat, defaultLng], 10);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(map);
+                
+                marker = L.marker([defaultLat, defaultLng], { 
+                    draggable: true,
+                    title: 'Drag untuk memindahkan lokasi'
+                }).addTo(map);
+                
+                // Event listener untuk drag marker
+                marker.on('dragend', function () {
+                    const latlng = marker.getLatLng();
+                    form.latitude = parseFloat(latlng.lat.toFixed(6));
+                    form.longitude = parseFloat(latlng.lng.toFixed(6));
+                });
+                
+                // Event listener untuk click pada map
+                map.on('click', function (e: any) {
+                    marker.setLatLng(e.latlng);
+                    form.latitude = parseFloat(e.latlng.lat.toFixed(6));
+                    form.longitude = parseFloat(e.latlng.lng.toFixed(6));
+                });
+                
+                // Refresh map size setelah semua setup selesai
+                setTimeout(() => {
+                    if (map) {
+                        map.invalidateSize();
+                    }
+                }, 100);
+                
+                // Add window resize listener
+                const handleResize = () => {
+                    if (map) {
+                        setTimeout(() => {
+                            map.invalidateSize();
+                        }, 100);
+                    }
+                };
+                window.addEventListener('resize', handleResize);
+                
+                // Cleanup on unmount
+                const cleanup = () => {
+                    window.removeEventListener('resize', handleResize);
+                    if (map) {
+                        map.remove();
+                    }
+                };
+                
+                // Store cleanup function for later use
+                (window as any).mapCleanup = cleanup;
+                
+            } catch (error) {
+                console.error('Error initializing map:', error);
+                setTimeout(initMap, 500);
+            }
+        } else {
+            setTimeout(initMap, 100);
         }
-    }, 500);
+    };
+    
+    // Start map initialization
+    setTimeout(initMap, 100);
+});
+
+// Cleanup on component unmount
+onUnmounted(() => {
+    if ((window as any).mapCleanup) {
+        (window as any).mapCleanup();
+    }
 });
 
 // Watchers untuk cascading dropdown
@@ -279,9 +339,13 @@ watch(() => form.kabupaten_kota_id, (newKabupatenKotaId) => {
 });
 
 watch(() => [form.latitude, form.longitude], ([lat, lng]) => {
-    if (marker && lat && lng) {
-        marker.setLatLng([lat, lng]);
-        map.setView([lat, lng], map.getZoom());
+    if (marker && lat && lng && !isNaN(parseFloat(lat.toString())) && !isNaN(parseFloat(lng.toString()))) {
+        const latNum = parseFloat(lat.toString());
+        const lngNum = parseFloat(lng.toString());
+        marker.setLatLng([latNum, lngNum]);
+        if (map) {
+            map.setView([latNum, lngNum], map.getZoom());
+        }
     }
 });
 </script>
@@ -289,66 +353,214 @@ watch(() => [form.latitude, form.longitude], ([lat, lng]) => {
 <template>
     <Head :title="mode === 'create' ? 'Tambah Data Kriminal' : 'Edit Data Kriminal'" />
     <AppLayout :breadcrumbs="breadcrumbs">
-      <div class="w-full mx-2">
-        <form @submit.prevent="submit" class="space-y-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Provinsi</label>
-            <select v-model="form.provinsi_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-              <option value="">Pilih Provinsi</option>
-              <option v-for="provinsi in provinsiList" :key="provinsi.id" :value="provinsi.id">
-                {{ provinsi.nama }}
-              </option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Kabupaten/Kota</label>
-            <select v-model="form.kabupaten_kota_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" :disabled="!form.provinsi_id || kabupatenKotaList.length === 0" required>
-              <option value="">Pilih Kabupaten/Kota</option>
-              <option v-for="kabupatenKota in kabupatenKotaList" :key="kabupatenKota.id" :value="kabupatenKota.id">
-                {{ kabupatenKota.nama }}
-              </option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Kecamatan</label>
-            <select v-model="form.kecamatan_id" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" :disabled="!form.kabupaten_kota_id || kecamatanList.length === 0" required>
-              <option value="">Pilih Kecamatan</option>
-              <option v-for="kecamatan in kecamatanList" :key="kecamatan.id" :value="kecamatan.id">
-                {{ kecamatan.nama }}
-              </option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Jenis Kriminal</label>
-            <select v-model="form.jenis_kriminal" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-              <option value="">Pilih Jenis Kriminal</option>
-              <option v-for="jenis in jenisKriminalOptions" :key="jenis.value" :value="jenis.value">
-                {{ jenis.label }}
-              </option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Deskripsi</label>
-            <textarea v-model="form.deskripsi" rows="4" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Pilih Lokasi (Latitude, Longitude)</label>
-            <div ref="mapContainer" class="w-full h-72 border border-gray-300 dark:border-gray-700 rounded-md mb-4"></div>
-            <div class="flex gap-4">
-              <input v-model="form.latitude" placeholder="Latitude" class="w-1/2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
-              <input v-model="form.longitude" placeholder="Longitude" class="w-1/2 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+        <div class="max-w-4xl mx-auto p-6">
+            <!-- Header -->
+            <div class="mb-8">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                        <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                    </div>
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                        {{ mode === 'create' ? 'Tambah Data Kriminal' : 'Edit Data Kriminal' }}
+                    </h1>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400">
+                    {{ mode === 'create' 
+                        ? 'Lengkapi formulir di bawah untuk menambahkan data kriminal baru ke sistem.' 
+                        : 'Perbarui informasi data kriminal yang sudah ada.' 
+                    }}
+                </p>
             </div>
-          </div>
-          <div class="flex gap-3 pt-4">
-            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition duration-200">
-              {{ mode === 'create' ? 'Tambah' : 'Update' }}
-            </button>
-            <a href="/crime-data" class="px-6 py-2 bg-gray-400 text-white rounded-md shadow hover:bg-gray-500 transition duration-200">
-              Batal
-            </a>
-          </div>
-        </form>
-      </div>
+
+            <!-- Form -->
+            <form @submit.prevent="submit" class="space-y-8">
+                <!-- Location Information Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Informasi Lokasi
+                        </h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Pilih lokasi administratif dimana kejadian terjadi</p>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Provinsi -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Provinsi <span class="text-red-500">*</span>
+                            </label>
+                            <select v-model="form.provinsi_id" 
+                                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors" 
+                                    required>
+                                <option value="">Pilih Provinsi</option>
+                                <option v-for="provinsi in provinsiList" :key="provinsi.id" :value="provinsi.id">
+                                    {{ provinsi.nama }}
+                                </option>
+                            </select>
+                            <div v-if="form.errors.provinsi_id" class="text-red-500 text-sm">{{ form.errors.provinsi_id }}</div>
+                        </div>
+
+                        <!-- Kabupaten/Kota -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Kabupaten/Kota <span class="text-red-500">*</span>
+                            </label>
+                            <select v-model="form.kabupaten_kota_id" 
+                                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed" 
+                                    :disabled="!form.provinsi_id || kabupatenKotaList.length === 0" 
+                                    required>
+                                <option value="">
+                                    {{ !form.provinsi_id ? 'Pilih provinsi terlebih dahulu' : 'Pilih Kabupaten/Kota' }}
+                                </option>
+                                <option v-for="kabupatenKota in kabupatenKotaList" :key="kabupatenKota.id" :value="kabupatenKota.id">
+                                    {{ kabupatenKota.nama }}
+                                </option>
+                            </select>
+                            <div v-if="form.errors.kabupaten_kota_id" class="text-red-500 text-sm">{{ form.errors.kabupaten_kota_id }}</div>
+                        </div>
+
+                        <!-- Kecamatan -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Kecamatan <span class="text-red-500">*</span>
+                            </label>
+                            <select v-model="form.kecamatan_id" 
+                                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed" 
+                                    :disabled="!form.kabupaten_kota_id || kecamatanList.length === 0" 
+                                    required>
+                                <option value="">
+                                    {{ !form.kabupaten_kota_id ? 'Pilih kabupaten/kota terlebih dahulu' : 'Pilih Kecamatan' }}
+                                </option>
+                                <option v-for="kecamatan in kecamatanList" :key="kecamatan.id" :value="kecamatan.id">
+                                    {{ kecamatan.nama }}
+                                </option>
+                            </select>
+                            <div v-if="form.errors.kecamatan_id" class="text-red-500 text-sm">{{ form.errors.kecamatan_id }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Crime Details Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                            </svg>
+                            Detail Kejahatan
+                        </h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Informasi tentang jenis dan detail kejahatan</p>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <!-- Jenis Kriminal -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Jenis Kriminal <span class="text-red-500">*</span>
+                            </label>
+                            <select v-model="form.jenis_kriminal" 
+                                    class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors" 
+                                    required>
+                                <option value="">Pilih Jenis Kriminal</option>
+                                <option v-for="jenis in jenisKriminalOptions" :key="jenis.value" :value="jenis.value">
+                                    {{ jenis.label }}
+                                </option>
+                            </select>
+                            <div v-if="form.errors.jenis_kriminal" class="text-red-500 text-sm">{{ form.errors.jenis_kriminal }}</div>
+                        </div>
+
+                        <!-- Deskripsi -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Deskripsi Kejadian
+                            </label>
+                            <textarea v-model="form.deskripsi" 
+                                      rows="4" 
+                                      placeholder="Jelaskan detail kejadian kriminal yang terjadi..."
+                                      class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors resize-none"></textarea>
+                            <div v-if="form.errors.deskripsi" class="text-red-500 text-sm">{{ form.errors.deskripsi }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Map Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                            </svg>
+                            Koordinat Lokasi
+                        </h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Klik pada peta atau seret marker untuk menentukan lokasi kejadian</p>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <!-- Map -->
+                        <div class="relative">
+                            <div ref="mapContainer" class="w-full h-80 border border-gray-300 dark:border-gray-600 rounded-lg shadow-inner"></div>
+                            <div class="absolute top-3 left-3 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-md">
+                                <p class="text-xs text-gray-600 dark:text-gray-400">Klik peta atau drag marker untuk memilih lokasi</p>
+                            </div>
+                        </div>
+
+                        <!-- Coordinate Inputs -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Latitude <span class="text-red-500">*</span>
+                                </label>
+                                <input v-model="form.latitude" 
+                                       type="number" 
+                                       step="any" 
+                                       placeholder="Contoh: -6.2088" 
+                                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors" 
+                                       required />
+                                <div v-if="form.errors.latitude" class="text-red-500 text-sm">{{ form.errors.latitude }}</div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Longitude <span class="text-red-500">*</span>
+                                </label>
+                                <input v-model="form.longitude" 
+                                       type="number" 
+                                       step="any" 
+                                       placeholder="Contoh: 106.8456" 
+                                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors" 
+                                       required />
+                                <div v-if="form.errors.longitude" class="text-red-500 text-sm">{{ form.errors.longitude }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 pt-6">
+                    <button type="submit" 
+                            :disabled="form.processing"
+                            class="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        <svg v-if="form.processing" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <svg v-else class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        {{ form.processing ? 'Menyimpan...' : (mode === 'create' ? 'Tambah Data' : 'Update Data') }}
+                    </button>
+                    <a href="/crime-data" 
+                       class="inline-flex items-center justify-center px-6 py-3 bg-gray-500 text-white text-sm font-medium rounded-lg shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Batal
+                    </a>
+                </div>
+            </form>
+        </div>
     </AppLayout>
-  </template>
+</template>
   

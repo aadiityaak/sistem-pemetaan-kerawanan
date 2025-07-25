@@ -15,29 +15,29 @@ class ProvinsiController extends Controller
     public function index(Request $request)
     {
         $query = Provinsi::query();
-        
+
         if ($request->has('q')) {
             $query->where('nama', 'like', '%' . $request->q . '%');
         }
-        
+
         // Pagination dengan 50 data per halaman
         $provinsiPaginated = $query->paginate(50)->withQueryString();
-        
+
         // Menambahkan statistik untuk setiap provinsi
         $provinsiPaginated->getCollection()->transform(function ($provinsi) {
             $crimeCount = CrimeData::where('provinsi_id', $provinsi->id)->count();
             $kabupatenKotaCount = KabupatenKota::where('provinsi_id', $provinsi->id)->count();
-            $kecamatanCount = Kecamatan::whereHas('kabupatenKota', function($query) use ($provinsi) {
+            $kecamatanCount = Kecamatan::whereHas('kabupatenKota', function ($query) use ($provinsi) {
                 $query->where('provinsi_id', $provinsi->id);
             })->count();
-            
+
             $provinsi->jumlah_tindakan = $crimeCount;
             $provinsi->jumlah_kabupaten_kota = $kabupatenKotaCount;
             $provinsi->jumlah_kecamatan = $kecamatanCount;
-            
+
             return $provinsi;
         });
-        
+
         return Inertia::render('Provinsi', [
             'provinsi' => $provinsiPaginated,
         ]);
@@ -46,18 +46,18 @@ class ProvinsiController extends Controller
     public function show($id)
     {
         $provinsi = Provinsi::findOrFail($id);
-        
+
         // Hitung statistik
         $crimeCount = CrimeData::where('provinsi_id', $provinsi->id)->count();
         $kabupatenKotaCount = KabupatenKota::where('provinsi_id', $provinsi->id)->count();
-        $kecamatanCount = Kecamatan::whereHas('kabupatenKota', function($query) use ($provinsi) {
+        $kecamatanCount = Kecamatan::whereHas('kabupatenKota', function ($query) use ($provinsi) {
             $query->where('provinsi_id', $provinsi->id);
         })->count();
-        
+
         $provinsi->jumlah_tindakan = $crimeCount;
         $provinsi->jumlah_kabupaten_kota = $kabupatenKotaCount;
         $provinsi->jumlah_kecamatan = $kecamatanCount;
-        
+
         return response()->json([
             'status' => 'success',
             'message' => 'Detail provinsi',
@@ -101,4 +101,4 @@ class ProvinsiController extends Controller
             'message' => 'Provinsi berhasil dihapus',
         ], 204);
     }
-} 
+}

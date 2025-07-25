@@ -12,24 +12,24 @@ class KabupatenKotaController extends Controller
     public function index(Request $request)
     {
         $query = KabupatenKota::with(['provinsi']);
-        
+
         if ($request->has('provinsi_id')) {
             $query->where('provinsi_id', $request->provinsi_id);
         }
         if ($request->has('q')) {
             $query->where('nama', 'like', '%' . $request->q . '%');
         }
-        
+
         // Pagination dengan 50 data per halaman
         $kabupatenKotaPaginated = $query->paginate(50)->withQueryString();
-        
+
         // Menambahkan jumlah tindakan kriminal untuk setiap kabupaten/kota
         $kabupatenKotaPaginated->getCollection()->transform(function ($kabupatenKota) {
             $crimeCount = CrimeData::where('kabupaten_kota_id', $kabupatenKota->id)->count();
             $kabupatenKota->jumlah_tindakan = $crimeCount;
             return $kabupatenKota;
         });
-        
+
         return Inertia::render('KabupatenKota', [
             'kabupatenKota' => $kabupatenKotaPaginated,
         ]);
@@ -40,7 +40,7 @@ class KabupatenKotaController extends Controller
         $kabupatenKota = KabupatenKota::with(['provinsi'])->findOrFail($id);
         $crimeCount = CrimeData::where('kabupaten_kota_id', $kabupatenKota->id)->count();
         $kabupatenKota->jumlah_tindakan = $crimeCount;
-        
+
         return response()->json([
             'status' => 'success',
             'message' => 'Detail kabupaten/kota',
@@ -86,4 +86,4 @@ class KabupatenKotaController extends Controller
             'message' => 'Kabupaten/kota berhasil dihapus',
         ], 204);
     }
-} 
+}

@@ -4,7 +4,13 @@ import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { Folder, LayoutGrid } from 'lucide-vue-next';
+import { 
+    LayoutGrid, 
+    ShieldAlert, 
+    Map, 
+    Building2, 
+    MapPin 
+} from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -16,22 +22,22 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Data Kriminal',
         href: '/crime-data',
-        icon: Folder,
+        icon: ShieldAlert,
     },
     {
         title: 'Provinsi',
         href: '/provinsi',
-        icon: Folder,
+        icon: Map,
     },
     {
         title: 'Kabupaten/Kota',
         href: '/kabupaten-kota',
-        icon: Folder,
+        icon: Building2,
     },
     {
         title: 'Kecamatan',
         href: '/kecamatan',
-        icon: Folder,
+        icon: MapPin,
     },
 ];
 </script>

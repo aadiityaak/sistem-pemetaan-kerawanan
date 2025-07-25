@@ -24,11 +24,40 @@ class CrimeDataController extends Controller
         if ($request->has('jenis_kriminal')) {
             $query->where('jenis_kriminal', 'like', '%' . $request->jenis_kriminal . '%');
         }
+        if ($request->has('q')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('jenis_kriminal', 'like', '%' . $request->q . '%')
+                    ->orWhere('deskripsi', 'like', '%' . $request->q . '%')
+                    ->orWhereHas('provinsi', function ($subQ) use ($request) {
+                        $subQ->where('nama', 'like', '%' . $request->q . '%');
+                    })
+                    ->orWhereHas('kabupatenKota', function ($subQ) use ($request) {
+                        $subQ->where('nama', 'like', '%' . $request->q . '%');
+                    })
+                    ->orWhereHas('kecamatan', function ($subQ) use ($request) {
+                        $subQ->where('nama', 'like', '%' . $request->q . '%');
+                    });
+            });
+        }
 
-        $data = $query->paginate(50)->withQueryString();
+        $data = $query->latest()->paginate(50)->withQueryString();
+
+        // Calculate statistics
+        $totalCrimes = CrimeData::count();
+        $totalProvinsi = \App\Models\Provinsi::has('crimeData')->count();
+        $totalKabupatenKota = \App\Models\KabupatenKota::has('crimeData')->count();
+        $totalKecamatan = \App\Models\Kecamatan::has('crimeData')->count();
+        $crimeTypes = CrimeData::distinct('jenis_kriminal')->count();
 
         return Inertia::render('CrimeData', [
             'crimeData' => $data,
+            'statistics' => [
+                'total_crimes' => $totalCrimes,
+                'affected_provinsi' => $totalProvinsi,
+                'affected_kabupaten_kota' => $totalKabupatenKota,
+                'affected_kecamatan' => $totalKecamatan,
+                'crime_types' => $crimeTypes,
+            ],
         ]);
     }
 
