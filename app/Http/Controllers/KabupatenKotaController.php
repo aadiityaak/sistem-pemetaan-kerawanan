@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KabupatenKota;
+use App\Models\CrimeData;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -10,34 +11,47 @@ class KabupatenKotaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = KabupatenKota::query();
-        if ($request->has('kode_provinsi')) {
-            $query->where('kode_provinsi', $request->kode_provinsi);
+        $query = KabupatenKota::with(['provinsi']);
+        
+        if ($request->has('provinsi_id')) {
+            $query->where('provinsi_id', $request->provinsi_id);
         }
         if ($request->has('q')) {
             $query->where('nama', 'like', '%' . $request->q . '%');
         }
-        $data = $query->get();
+        
+        // Pagination dengan 50 data per halaman
+        $kabupatenKotaPaginated = $query->paginate(50)->withQueryString();
+        
+        // Menambahkan jumlah tindakan kriminal untuk setiap kabupaten/kota
+        $kabupatenKotaPaginated->getCollection()->transform(function ($kabupatenKota) {
+            $crimeCount = CrimeData::where('kabupaten_kota_id', $kabupatenKota->id)->count();
+            $kabupatenKota->jumlah_tindakan = $crimeCount;
+            return $kabupatenKota;
+        });
+        
         return Inertia::render('KabupatenKota', [
-            'kabupatenKota' => $data,
+            'kabupatenKota' => $kabupatenKotaPaginated,
         ]);
     }
 
-    public function show($kode_provinsi, $kode)
+    public function show($id)
     {
-        $kabupatenKota = KabupatenKota::where('kode_provinsi', $kode_provinsi)
-            ->where('kode', $kode)
-            ->firstOrFail();
-        return Inertia::render('KabupatenKota', [
-            'kabupatenKota' => $kabupatenKota,
+        $kabupatenKota = KabupatenKota::with(['provinsi'])->findOrFail($id);
+        $crimeCount = CrimeData::where('kabupaten_kota_id', $kabupatenKota->id)->count();
+        $kabupatenKota->jumlah_tindakan = $crimeCount;
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Detail kabupaten/kota',
+            'data' => $kabupatenKota,
         ]);
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'kode_provinsi' => 'required|string|size:2|exists:provinsi,kode',
-            'kode' => 'required|string|size:2',
+            'provinsi_id' => 'required|integer|exists:provinsi,id',
             'nama' => 'required|string',
         ]);
         $kabupatenKota = KabupatenKota::create($data);
@@ -48,13 +62,12 @@ class KabupatenKotaController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, $kode_provinsi, $kode)
+    public function update(Request $request, $id)
     {
-        $kabupatenKota = KabupatenKota::where('kode_provinsi', $kode_provinsi)
-            ->where('kode', $kode)
-            ->firstOrFail();
+        $kabupatenKota = KabupatenKota::findOrFail($id);
         $data = $request->validate([
             'nama' => 'required|string',
+            'provinsi_id' => 'sometimes|required|integer|exists:provinsi,id',
         ]);
         $kabupatenKota->update($data);
         return response()->json([
@@ -64,11 +77,9 @@ class KabupatenKotaController extends Controller
         ]);
     }
 
-    public function destroy($kode_provinsi, $kode)
+    public function destroy($id)
     {
-        $kabupatenKota = KabupatenKota::where('kode_provinsi', $kode_provinsi)
-            ->where('kode', $kode)
-            ->firstOrFail();
+        $kabupatenKota = KabupatenKota::findOrFail($id);
         $kabupatenKota->delete();
         return response()->json([
             'status' => 'success',

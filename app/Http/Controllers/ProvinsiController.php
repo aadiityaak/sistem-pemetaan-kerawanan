@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Provinsi;
+use App\Models\CrimeData;
+use App\Models\KabupatenKota;
+use App\Models\Kecamatan;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Inertia\Inertia;
@@ -12,27 +15,59 @@ class ProvinsiController extends Controller
     public function index(Request $request)
     {
         $query = Provinsi::query();
+        
         if ($request->has('q')) {
             $query->where('nama', 'like', '%' . $request->q . '%');
         }
-        $data = $query->get();
+        
+        // Pagination dengan 50 data per halaman
+        $provinsiPaginated = $query->paginate(50)->withQueryString();
+        
+        // Menambahkan statistik untuk setiap provinsi
+        $provinsiPaginated->getCollection()->transform(function ($provinsi) {
+            $crimeCount = CrimeData::where('provinsi_id', $provinsi->id)->count();
+            $kabupatenKotaCount = KabupatenKota::where('provinsi_id', $provinsi->id)->count();
+            $kecamatanCount = Kecamatan::whereHas('kabupatenKota', function($query) use ($provinsi) {
+                $query->where('provinsi_id', $provinsi->id);
+            })->count();
+            
+            $provinsi->jumlah_tindakan = $crimeCount;
+            $provinsi->jumlah_kabupaten_kota = $kabupatenKotaCount;
+            $provinsi->jumlah_kecamatan = $kecamatanCount;
+            
+            return $provinsi;
+        });
+        
         return Inertia::render('Provinsi', [
-            'provinsi' => $data,
+            'provinsi' => $provinsiPaginated,
         ]);
     }
 
-    public function show($kode)
+    public function show($id)
     {
-        $provinsi = Provinsi::findOrFail($kode);
-        return Inertia::render('Provinsi', [
-            'provinsi' => $provinsi,
+        $provinsi = Provinsi::findOrFail($id);
+        
+        // Hitung statistik
+        $crimeCount = CrimeData::where('provinsi_id', $provinsi->id)->count();
+        $kabupatenKotaCount = KabupatenKota::where('provinsi_id', $provinsi->id)->count();
+        $kecamatanCount = Kecamatan::whereHas('kabupatenKota', function($query) use ($provinsi) {
+            $query->where('provinsi_id', $provinsi->id);
+        })->count();
+        
+        $provinsi->jumlah_tindakan = $crimeCount;
+        $provinsi->jumlah_kabupaten_kota = $kabupatenKotaCount;
+        $provinsi->jumlah_kecamatan = $kecamatanCount;
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Detail provinsi',
+            'data' => $provinsi,
         ]);
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'kode' => 'required|string|size:2|unique:provinsi,kode',
             'nama' => 'required|string',
         ]);
         $provinsi = Provinsi::create($data);
@@ -43,9 +78,9 @@ class ProvinsiController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, $kode)
+    public function update(Request $request, $id)
     {
-        $provinsi = Provinsi::findOrFail($kode);
+        $provinsi = Provinsi::findOrFail($id);
         $data = $request->validate([
             'nama' => 'required|string',
         ]);
@@ -57,9 +92,9 @@ class ProvinsiController extends Controller
         ]);
     }
 
-    public function destroy($kode)
+    public function destroy($id)
     {
-        $provinsi = Provinsi::findOrFail($kode);
+        $provinsi = Provinsi::findOrFail($id);
         $provinsi->delete();
         return response()->json([
             'status' => 'success',

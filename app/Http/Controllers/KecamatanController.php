@@ -10,7 +10,8 @@ class KecamatanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Kecamatan::with(['kabupatenKota.provinsi']);
+        $query = Kecamatan::with(['kabupatenKota.provinsi', 'crimeData']);
+        
         if ($request->has('provinsi_id')) {
             $query->whereHas('kabupatenKota.provinsi', function ($q) use ($request) {
                 $q->where('id', $request->provinsi_id);
@@ -22,9 +23,23 @@ class KecamatanController extends Controller
         if ($request->has('q')) {
             $query->where('nama', 'like', '%' . $request->q . '%');
         }
+        
         $data = $query->paginate(50)->withQueryString();
+        
+        // Calculate statistics
+        $totalKecamatan = Kecamatan::count();
+        $totalCrimes = \App\Models\CrimeData::count();
+        $affectedKecamatan = Kecamatan::has('crimeData')->count();
+        $avgCrimesPerKecamatan = $totalKecamatan > 0 ? round($totalCrimes / $totalKecamatan, 2) : 0;
+        
         return Inertia::render('Kecamatan', [
             'kecamatan' => $data,
+            'statistics' => [
+                'total_kecamatan' => $totalKecamatan,
+                'total_crimes' => $totalCrimes,
+                'affected_kecamatan' => $affectedKecamatan,
+                'avg_crimes_per_kecamatan' => $avgCrimesPerKecamatan,
+            ],
         ]);
     }
 
