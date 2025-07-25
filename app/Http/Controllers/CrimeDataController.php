@@ -41,9 +41,7 @@ class CrimeDataController extends Controller
 
     public function create()
     {
-        return Inertia::render('CrimeDataForm', [
-            'mode' => 'create',
-        ]);
+        return Inertia::render('CrimeData/Create');
     }
 
     public function edit($id)

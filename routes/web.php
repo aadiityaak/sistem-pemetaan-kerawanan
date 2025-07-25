@@ -8,7 +8,24 @@ use App\Http\Controllers\KecamatanController;
 use App\Http\Controllers\CrimeDataController;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome');
+    return view('welcome');
+});
+
+Route::get('/api/provinsi', function () {
+    return \App\Models\Provinsi::select('kode as id', 'nama')->get();
+});
+
+Route::get('/api/kabupaten-kota/{provinsi_kode}', function ($provinsi_kode) {
+    return \App\Models\KabupatenKota::where('kode_provinsi', $provinsi_kode)
+        ->select('kode as id', 'nama', 'kode_provinsi')
+        ->get();
+});
+
+Route::get('/api/kecamatan/{provinsi_kode}/{kabupaten_kota_kode}', function ($provinsi_kode, $kabupaten_kota_kode) {
+    return \App\Models\Kecamatan::where('kode_provinsi', $provinsi_kode)
+        ->where('kode_kabupaten_kota', $kabupaten_kota_kode)
+        ->select('kode as id', 'nama', 'kode_provinsi', 'kode_kabupaten_kota')
+        ->get();
 })->name('home');
 
 Route::get('dashboard', function () {
