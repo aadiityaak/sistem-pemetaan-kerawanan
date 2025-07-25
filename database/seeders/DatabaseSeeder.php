@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             KabupatenKotaSeeder::class,
             KecamatanSeeder::class,
             UserSeeder::class,
+            CrimeDataSeeder::class,
         ]);
     }
 }
