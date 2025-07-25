@@ -14,7 +14,6 @@ class ProvinsiSeeder extends Seeder
         $provinsi = [];
         foreach ($data as $kode => $nama) {
             $provinsi[] = [
-                'kode' => $kode,
                 'nama' => $nama,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -22,4 +21,4 @@ class ProvinsiSeeder extends Seeder
         }
         DB::table('provinsi')->insert($provinsi);
     }
-} 
+}

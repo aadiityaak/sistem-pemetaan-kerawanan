@@ -16,10 +16,11 @@ L.Icon.Default.mergeOptions({
 });
 
 interface LocationData {
-    id: string;
+    id: number;
+    kode: string;
     nama: string;
-    kode_provinsi?: string;
-    kode_kabupaten_kota?: string;
+    provinsi_id?: number;
+    kabupaten_kota_id?: number;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -28,9 +29,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const form = useForm({
-    kode_provinsi: '',
-    kode_kabupaten_kota: '',
-    kode_kecamatan: '',
+    provinsi_id: '',
+    kabupaten_kota_id: '',
+    kecamatan_id: '',
     jenis_kriminal: '',
     deskripsi: '',
     latitude: -6.2088,
@@ -118,15 +119,15 @@ async function fetchProvinsi() {
     }
 }
 
-async function fetchKabupatenKota(provinsiKode: string) {
+async function fetchKabupatenKota(provinsiId: number) {
     kabupatenKotaList.value = [];
     kecamatanList.value = [];
-    form.kode_kabupaten_kota = '';
-    form.kode_kecamatan = '';
+    form.kabupaten_kota_id = '';
+    form.kecamatan_id = '';
     
-    if (provinsiKode) {
+    if (provinsiId) {
         try {
-            const response = await fetch(`/api/kabupaten-kota/${provinsiKode}`);
+            const response = await fetch(`/api/kabupaten-kota/${provinsiId}`);
             if (!response.ok) throw new Error('Gagal mengambil data kabupaten/kota');
             kabupatenKotaList.value = await response.json();
         } catch (error) {
@@ -135,13 +136,13 @@ async function fetchKabupatenKota(provinsiKode: string) {
     }
 }
 
-async function fetchKecamatan(provinsiKode: string, kabupatenKotaKode: string) {
+async function fetchKecamatan(kabupatenKotaId: number) {
     kecamatanList.value = [];
-    form.kode_kecamatan = '';
+    form.kecamatan_id = '';
     
-    if (provinsiKode && kabupatenKotaKode) {
+    if (kabupatenKotaId) {
         try {
-            const response = await fetch(`/api/kecamatan/${provinsiKode}/${kabupatenKotaKode}`);
+            const response = await fetch(`/api/kecamatan/${kabupatenKotaId}`);
             if (!response.ok) throw new Error('Gagal mengambil data kecamatan');
             kecamatanList.value = await response.json();
         } catch (error) {
@@ -172,11 +173,14 @@ function updateMapCenter(provinsiKode: string) {
     }
 }
 
-watch(() => form.kode_provinsi, (newProvinsiKode) => {
-    if (newProvinsiKode) {
-        selectedProvinsi.value = provinsiList.value.find(p => p.id === newProvinsiKode) || null;
-        fetchKabupatenKota(newProvinsiKode);
-        updateMapCenter(newProvinsiKode); // Update center peta
+watch(() => form.provinsi_id, (newProvinsiId) => {
+    if (newProvinsiId) {
+        selectedProvinsi.value = provinsiList.value.find(p => p.id === parseInt(newProvinsiId)) || null;
+        const provinsiKode = selectedProvinsi.value?.kode;
+        fetchKabupatenKota(parseInt(newProvinsiId));
+        if (provinsiKode) {
+            updateMapCenter(provinsiKode); // Update center peta
+        }
     } else {
         kabupatenKotaList.value = [];
         kecamatanList.value = [];
@@ -186,19 +190,19 @@ watch(() => form.kode_provinsi, (newProvinsiKode) => {
     }
 });
 
-watch(() => form.kode_kabupaten_kota, (newKabupatenKotaKode) => {
-    if (newKabupatenKotaKode && form.kode_provinsi) {
-        selectedKabupatenKota.value = kabupatenKotaList.value.find(k => k.id === newKabupatenKotaKode) || null;
-        fetchKecamatan(form.kode_provinsi, newKabupatenKotaKode);
+watch(() => form.kabupaten_kota_id, (newKabupatenKotaId) => {
+    if (newKabupatenKotaId) {
+        selectedKabupatenKota.value = kabupatenKotaList.value.find(k => k.id === parseInt(newKabupatenKotaId)) || null;
+        fetchKecamatan(parseInt(newKabupatenKotaId));
         // Tidak menggeser peta, hanya fetch data kecamatan
     } else {
         kecamatanList.value = [];
     }
 });
 
-watch(() => form.kode_kecamatan, (newKecamatanKode) => {
+watch(() => form.kecamatan_id, (newKecamatanId) => {
     // Hanya untuk tracking, tidak menggeser peta
-    if (newKecamatanKode) {
+    if (newKecamatanId) {
         // Data kecamatan sudah dipilih, siap untuk submit
     }
 });
@@ -259,7 +263,7 @@ function goBack() {
                             </label>
                             <select 
                                 id="provinsi" 
-                                v-model="form.kode_provinsi" 
+                                v-model="form.provinsi_id" 
                                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200"
                                 required
                             >
@@ -277,9 +281,9 @@ function goBack() {
                             </label>
                             <select 
                                 id="kabupaten_kota" 
-                                v-model="form.kode_kabupaten_kota" 
+                                v-model="form.kabupaten_kota_id" 
                                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200 disabled:bg-gray-100 disabled:text-gray-400 dark:disabled:bg-gray-600"
-                                :disabled="!form.kode_provinsi || kabupatenKotaList.length === 0"
+                                :disabled="!form.provinsi_id || kabupatenKotaList.length === 0"
                                 required
                             >
                                 <option value="">Pilih Kabupaten/Kota</option>
@@ -287,7 +291,7 @@ function goBack() {
                                     {{ kabupatenKota.nama }}
                                 </option>
                             </select>
-                            <p v-if="!form.kode_provinsi" class="text-xs text-gray-500 dark:text-gray-400">
+                            <p v-if="!form.provinsi_id" class="text-xs text-gray-500 dark:text-gray-400">
                                 Pilih provinsi terlebih dahulu
                             </p>
                         </div>
@@ -299,9 +303,9 @@ function goBack() {
                             </label>
                             <select 
                                 id="kecamatan" 
-                                v-model="form.kode_kecamatan" 
+                                v-model="form.kecamatan_id" 
                                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-colors duration-200 disabled:bg-gray-100 disabled:text-gray-400 dark:disabled:bg-gray-600"
-                                :disabled="!form.kode_kabupaten_kota || kecamatanList.length === 0"
+                                :disabled="!form.kabupaten_kota_id || kecamatanList.length === 0"
                                 required
                             >
                                 <option value="">Pilih Kecamatan</option>
@@ -309,7 +313,7 @@ function goBack() {
                                     {{ kecamatan.nama }}
                                 </option>
                             </select>
-                            <p v-if="!form.kode_kabupaten_kota" class="text-xs text-gray-500 dark:text-gray-400">
+                            <p v-if="!form.kabupaten_kota_id" class="text-xs text-gray-500 dark:text-gray-400">
                                 Pilih kabupaten/kota terlebih dahulu
                             </p>
                         </div>

@@ -9,9 +9,9 @@ class CrimeData extends Model
 {
     protected $table = 'crime_data';
     protected $fillable = [
-        'kode_provinsi',
-        'kode_kabupaten_kota',
-        'kode_kecamatan',
+        'provinsi_id',
+        'kabupaten_kota_id',
+        'kecamatan_id',
         'latitude',
         'longitude',
         'jenis_kriminal',
@@ -20,16 +20,16 @@ class CrimeData extends Model
 
     public function provinsi(): BelongsTo
     {
-        return $this->belongsTo(Provinsi::class, 'kode_provinsi', 'kode');
+        return $this->belongsTo(Provinsi::class);
     }
 
     public function kabupatenKota(): BelongsTo
     {
-        return $this->belongsTo(KabupatenKota::class, ['kode_provinsi', 'kode_kabupaten_kota'], ['kode_provinsi', 'kode']);
+        return $this->belongsTo(KabupatenKota::class);
     }
 
     public function kecamatan(): BelongsTo
     {
-        return $this->belongsTo(Kecamatan::class, ['kode_provinsi', 'kode_kabupaten_kota', 'kode_kecamatan'], ['kode_provinsi', 'kode_kabupaten_kota', 'kode']);
+        return $this->belongsTo(Kecamatan::class);
     }
-} 
+}

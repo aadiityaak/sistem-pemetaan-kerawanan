@@ -9,18 +9,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class KabupatenKota extends Model
 {
     protected $table = 'kabupaten_kota';
-    public $incrementing = false;
-    protected $primaryKey = null;
-    public $timestamps = true;
-    protected $fillable = ['kode_provinsi', 'kode', 'nama'];
+    protected $fillable = ['provinsi_id', 'nama'];
 
     public function provinsi(): BelongsTo
     {
-        return $this->belongsTo(Provinsi::class, 'kode_provinsi', 'kode');
+        return $this->belongsTo(Provinsi::class);
     }
 
     public function kecamatan(): HasMany
     {
-        return $this->hasMany(Kecamatan::class, ['kode_provinsi', 'kode_kabupaten_kota'], ['kode_provinsi', 'kode']);
+        return $this->hasMany(Kecamatan::class);
     }
-} 
+
+    public function crimeData(): HasMany
+    {
+        return $this->hasMany(CrimeData::class);
+    }
+}

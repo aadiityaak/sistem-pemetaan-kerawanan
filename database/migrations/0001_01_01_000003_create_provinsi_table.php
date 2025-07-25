@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('provinsi', function (Blueprint $table) {
-            $table->char('kode', 2)->primary();
+            $table->id();
             $table->string('nama');
             $table->timestamps();
         });
@@ -25,4 +25,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('provinsi');
     }
-}; 
+};

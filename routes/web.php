@@ -8,23 +8,22 @@ use App\Http\Controllers\KecamatanController;
 use App\Http\Controllers\CrimeDataController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return Inertia::render('Welcome');
 });
 
 Route::get('/api/provinsi', function () {
-    return \App\Models\Provinsi::select('kode as id', 'nama')->get();
+    return \App\Models\Provinsi::select('id', 'nama')->get();
 });
 
-Route::get('/api/kabupaten-kota/{provinsi_kode}', function ($provinsi_kode) {
-    return \App\Models\KabupatenKota::where('kode_provinsi', $provinsi_kode)
-        ->select('kode as id', 'nama', 'kode_provinsi')
+Route::get('/api/kabupaten-kota/{provinsi_id}', function ($provinsi_id) {
+    return \App\Models\KabupatenKota::where('provinsi_id', $provinsi_id)
+        ->select('id', 'nama', 'provinsi_id')
         ->get();
 });
 
-Route::get('/api/kecamatan/{provinsi_kode}/{kabupaten_kota_kode}', function ($provinsi_kode, $kabupaten_kota_kode) {
-    return \App\Models\Kecamatan::where('kode_provinsi', $provinsi_kode)
-        ->where('kode_kabupaten_kota', $kabupaten_kota_kode)
-        ->select('kode as id', 'nama', 'kode_provinsi', 'kode_kabupaten_kota')
+Route::get('/api/kecamatan/{kabupaten_kota_id}', function ($kabupaten_kota_id) {
+    return \App\Models\Kecamatan::where('kabupaten_kota_id', $kabupaten_kota_id)
+        ->select('id', 'nama', 'kabupaten_kota_id')
         ->get();
 })->name('home');
 

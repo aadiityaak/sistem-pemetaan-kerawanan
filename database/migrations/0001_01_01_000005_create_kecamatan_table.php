@@ -12,17 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('kecamatan', function (Blueprint $table) {
-            $table->char('kode_provinsi', 2);
-            $table->char('kode_kabupaten_kota', 2);
-            $table->char('kode', 3);
+            $table->id();
+            $table->foreignId('kabupaten_kota_id')->constrained('kabupaten_kota')->onDelete('cascade');
             $table->string('nama');
             $table->timestamps();
-
-            $table->primary(['kode_provinsi', 'kode_kabupaten_kota', 'kode']);
-            $table->foreign(['kode_provinsi', 'kode_kabupaten_kota'])
-                ->references(['kode_provinsi', 'kode'])
-                ->on('kabupaten_kota')
-                ->onDelete('cascade');
         });
     }
 
@@ -33,4 +26,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('kecamatan');
     }
-}; 
+};

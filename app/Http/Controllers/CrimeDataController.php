@@ -56,9 +56,9 @@ class CrimeDataController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'kode_provinsi' => 'required|string|size:2|exists:provinsi,kode',
-            'kode_kabupaten_kota' => 'required|string|size:2',
-            'kode_kecamatan' => 'required|string|size:3',
+            'provinsi_id' => 'required|integer|exists:provinsi,id',
+            'kabupaten_kota_id' => 'required|integer|exists:kabupaten_kota,id',
+            'kecamatan_id' => 'required|integer|exists:kecamatan,id',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'jenis_kriminal' => 'required|string',
