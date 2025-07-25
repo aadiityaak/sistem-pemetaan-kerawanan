@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\ProvinsiController;
 use App\Http\Controllers\KabupatenKotaController;
 use App\Http\Controllers\KecamatanController;
+use App\Http\Controllers\CrimeDataController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -24,7 +25,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/kecamatan', [KecamatanController::class, 'index'])->name('kecamatan.index');
     Route::get('/kecamatan/{kode_provinsi}/{kode_kabupaten_kota}/{kode}', [KecamatanController::class, 'show'])->name('kecamatan.show');
 
-    Route::get('/crime-data', [\App\Http\Controllers\CrimeDataController::class, 'index'])->name('crime_data.index');
+    Route::get('/crime-data', [CrimeDataController::class, 'index'])->name('crime_data.index');
+    Route::get('/crime-data/create', [CrimeDataController::class, 'create'])->name('crime_data.create');
+    Route::post('/crime-data', [CrimeDataController::class, 'store'])->name('crime_data.store');
+    Route::get('/crime-data/{id}/edit', [CrimeDataController::class, 'edit'])->name('crime_data.edit');
+    Route::put('/crime-data/{id}', [CrimeDataController::class, 'update'])->name('crime_data.update');
+    Route::delete('/crime-data/{id}', [CrimeDataController::class, 'destroy'])->name('crime_data.destroy');
 });
 
 require __DIR__ . '/settings.php';

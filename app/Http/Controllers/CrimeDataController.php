@@ -39,6 +39,22 @@ class CrimeDataController extends Controller
         ]);
     }
 
+    public function create()
+    {
+        return Inertia::render('CrimeDataForm', [
+            'mode' => 'create',
+        ]);
+    }
+
+    public function edit($id)
+    {
+        $crime = CrimeData::findOrFail($id);
+        return Inertia::render('CrimeDataForm', [
+            'mode' => 'edit',
+            'crime' => $crime,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -51,11 +67,7 @@ class CrimeDataController extends Controller
             'deskripsi' => 'nullable|string',
         ]);
         $crime = CrimeData::create($data);
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data kriminal berhasil ditambah',
-            'data' => $crime,
-        ], 201);
+        return redirect()->route('crime_data.index')->with('success', 'Data kriminal berhasil ditambah');
     }
 
     public function update(Request $request, $id)
@@ -71,20 +83,13 @@ class CrimeDataController extends Controller
             'deskripsi' => 'nullable|string',
         ]);
         $crime->update($data);
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data kriminal berhasil diupdate',
-            'data' => $crime,
-        ]);
+        return redirect()->route('crime_data.index')->with('success', 'Data kriminal berhasil diupdate');
     }
 
     public function destroy($id)
     {
         $crime = CrimeData::findOrFail($id);
         $crime->delete();
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Data kriminal berhasil dihapus',
-        ], 204);
+        return redirect()->route('crime_data.index')->with('success', 'Data kriminal berhasil dihapus');
     }
 }

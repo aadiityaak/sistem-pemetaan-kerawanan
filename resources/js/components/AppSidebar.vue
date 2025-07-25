@@ -14,6 +14,11 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
+        title: 'Data Kriminal',
+        href: '/crime-data',
+        icon: Folder,
+    },
+    {
         title: 'Provinsi',
         href: '/provinsi',
         icon: Folder,
