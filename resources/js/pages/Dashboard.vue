@@ -24,7 +24,7 @@ interface MonitoringData {
     kabupaten_kota: { id: number; nama: string; provinsi_id: number; };
     kecamatan: { id: number; nama: string; kabupaten_kota_id: number; };
     category: { id: number; name: string; slug: string; color: string; };
-    sub_category: { id: number; name: string; slug: string; };
+    sub_category: { id: number; name: string; slug: string; icon?: string; };
 }
 
 interface Category {
@@ -40,7 +40,7 @@ interface Statistics {
     totalKabupatenKota: number;
     totalKecamatan: number;
     totalSubCategories: number;
-    dataBySubCategory: Record<string, number>;
+    dataBySubCategory: Record<string, { name: string; icon: string; count: number }>;
     dataByProvinsi: Record<string, number>;
     dataBySeverity: Record<string, number>;
     dataByStatus: Record<string, number>;
@@ -69,7 +69,6 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
 // Map related refs
 let map: any;
 const mapContainer = ref();
-const selectedData = ref<MonitoringData | null>(null);
 
 // Category color mapping for theming
 const categoryThemes: Record<string, { color: string; icon: string; bgColor: string }> = {
@@ -96,18 +95,10 @@ const severityIcons: Record<string, { color: string; icon: string }> = {
     critical: { color: '#DC2626', icon: '🔴' }, 
 };
 
-// Status icons
-const statusIcons: Record<string, { color: string; icon: string }> = {
-    active: { color: '#EF4444', icon: '🔴' },
-    resolved: { color: '#10B981', icon: '✅' },
-    monitoring: { color: '#F59E0B', icon: '👁️' },
-    archived: { color: '#6B7280', icon: '📁' },
-};
-
 // Computed untuk menghitung top data 
 const topDataBySubCategory = computed(() => {
     return Object.entries(props.statistics.dataBySubCategory)
-        .sort(([,a], [,b]) => (b as number) - (a as number))
+        .sort(([,a], [,b]) => (b.count as number) - (a.count as number))
         .slice(0, 5);
 });
 
@@ -116,10 +107,6 @@ const topDataByProvinsi = computed(() => {
         .sort(([,a], [,b]) => (b as number) - (a as number))
         .slice(0, 5);
 });
-
-const closeModal = () => {
-    selectedData.value = null;
-};
 
 // Helper functions
 const getSeverityLabel = (severity: string): string => {
@@ -130,16 +117,6 @@ const getSeverityLabel = (severity: string): string => {
         critical: 'Kritis'
     };
     return labels[severity] || severity;
-};
-
-const getStatusLabel = (status: string): string => {
-    const labels: Record<string, string> = {
-        active: 'Aktif',
-        resolved: 'Selesai',
-        monitoring: 'Dipantau',
-        archived: 'Arsip'
-    };
-    return labels[status] || status;
 };
 
 // Function to change category filter
@@ -173,6 +150,15 @@ onMounted(async () => {
                 // Create custom HTML marker with theme color if category specific
                 const markerColor = props.selectedCategory ? currentTheme.value.color : severityConfig.color;
                 
+                // Determine marker icon: sub category icon > category theme icon > severity icon
+                let markerIcon = severityConfig.icon; // Default to severity icon
+                if (props.selectedCategory) {
+                    markerIcon = currentTheme.value.icon; // Use category theme icon if filtered
+                }
+                if (data.sub_category.icon) {
+                    markerIcon = data.sub_category.icon; // Use sub category icon if available (priority)
+                }
+                
                 const customIcon = L.divIcon({
                     html: `<div style="
                         background-color: ${markerColor}; 
@@ -185,7 +171,7 @@ onMounted(async () => {
                         justify-content: center;
                         font-size: 12px;
                         box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                    ">${props.selectedCategory ? currentTheme.value.icon : severityConfig.icon}</div>`,
+                    ">${markerIcon}</div>`,
                     className: 'custom-marker',
                     iconSize: [24, 24],
                     iconAnchor: [12, 12]
@@ -195,10 +181,14 @@ onMounted(async () => {
                     icon: customIcon 
                 }).addTo(map);
 
-                // Add popup
+                // Add popup with sub category icon if available
+                const popupIcon = data.sub_category.icon || '📊';
                 marker.bindPopup(`
                     <div class="p-3">
-                        <div class="font-semibold text-sm" style="color: ${markerColor}">${data.title}</div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-lg">${popupIcon}</span>
+                            <div class="font-semibold text-sm" style="color: ${markerColor}">${data.title}</div>
+                        </div>
                         <div class="text-xs text-gray-600 mt-1">
                             <strong>Kategori:</strong> ${data.category.name} - ${data.sub_category.name}
                         </div>
@@ -212,11 +202,6 @@ onMounted(async () => {
                         </div>
                     </div>
                 `);
-
-                // Add click event
-                marker.on('click', () => {
-                    selectedData.value = data;
-                });
             });
         }
     }
@@ -380,16 +365,16 @@ onMounted(async () => {
                             🎯 {{ selectedCategory ? `Sub Kategori ${selectedCategory.name}` : 'Top Kategori' }}
                         </h3>
                         <div class="space-y-3">
-                            <div v-for="[subCategory, count] in topDataBySubCategory" :key="subCategory" class="flex justify-between items-center">
+                            <div v-for="[subCategoryId, subCategoryData] in topDataBySubCategory" :key="subCategoryId" class="flex justify-between items-center">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-lg">{{ selectedCategory ? currentTheme.icon : '📊' }}</span>
-                                    <span class="text-sm font-medium text-gray-900 dark:text-white">{{ subCategory }}</span>
+                                    <span class="text-lg">{{ subCategoryData.icon }}</span>
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">{{ subCategoryData.name }}</span>
                                 </div>
                                 <span 
                                     class="px-2 py-1 rounded text-xs font-medium text-white"
                                     :style="{ backgroundColor: selectedCategory ? currentTheme.color : '#6B7280' }"
                                 >
-                                    {{ count }} data
+                                    {{ subCategoryData.count }} data
                                 </span>
                             </div>
                         </div>
@@ -432,70 +417,6 @@ onMounted(async () => {
                                 </span>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Detail Modal -->
-        <div v-if="selectedData" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeModal">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6" @click.stop>
-                <div class="flex justify-between items-start mb-4">
-                    <div class="flex items-center gap-2">
-                        <span class="text-lg">{{ selectedCategory ? currentTheme.icon : '📊' }}</span>
-                        <span 
-                            class="font-semibold"
-                            :style="{ color: selectedCategory ? currentTheme.color : '#6B7280' }"
-                        >
-                            {{ selectedData.title }}
-                        </span>
-                    </div>
-                    <button @click="closeModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
-                
-                <div class="space-y-3">
-                    <div>
-                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Kategori:</span>
-                        <span class="ml-2 text-sm text-gray-900 dark:text-white">{{ selectedData.category.name }} - {{ selectedData.sub_category.name }}</span>
-                    </div>
-                    
-                    <div>
-                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Lokasi:</span>
-                        <span class="ml-2 text-sm text-gray-900 dark:text-white">{{ selectedData.provinsi.nama }}, {{ selectedData.kabupaten_kota.nama }}, {{ selectedData.kecamatan.nama }}</span>
-                    </div>
-                    
-                    <div>
-                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Tingkat Keparahan:</span>
-                        <span 
-                            class="ml-2 px-2 py-1 text-xs rounded text-white"
-                            :style="{ backgroundColor: severityIcons[selectedData.severity_level]?.color || '#6B7280' }"
-                        >
-                            {{ getSeverityLabel(selectedData.severity_level) }}
-                        </span>
-                    </div>
-                    
-                    <div>
-                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Status:</span>
-                        <span 
-                            class="ml-2 px-2 py-1 text-xs rounded text-white"
-                            :style="{ backgroundColor: statusIcons[selectedData.status]?.color || '#6B7280' }"
-                        >
-                            {{ getStatusLabel(selectedData.status) }}
-                        </span>
-                    </div>
-                    
-                    <div v-if="selectedData.description">
-                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Deskripsi:</span>
-                        <p class="text-sm text-gray-900 dark:text-white mt-1">{{ selectedData.description }}</p>
-                    </div>
-                    
-                    <div>
-                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Koordinat:</span>
-                        <span class="ml-2 text-sm text-gray-900 dark:text-white font-mono">{{ selectedData.latitude }}, {{ selectedData.longitude }}</span>
                     </div>
                 </div>
             </div>

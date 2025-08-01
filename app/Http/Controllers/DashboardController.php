@@ -44,15 +44,21 @@ class DashboardController extends Controller
 
     // Hitung berdasarkan sub kategori (jika ada filter kategori) atau kategori (jika tidak ada filter)
     $dataBySubCategory = $selectedCategory
-      ? $monitoringData->groupBy(function ($data) {
-        return $data->subCategory->name ?? 'Unknown';
-      })->map(function ($data) {
-        return $data->count();
+      ? $monitoringData->groupBy('sub_category_id')->map(function ($data) {
+        $subCategory = $data->first()->subCategory ?? null;
+        return [
+          'name' => $subCategory->name ?? 'Unknown',
+          'icon' => $subCategory->icon ?? '📊',
+          'count' => $data->count()
+        ];
       })
-      : $monitoringData->groupBy(function ($data) {
-        return $data->category->name ?? 'Unknown';
-      })->map(function ($data) {
-        return $data->count();
+      : $monitoringData->groupBy('category_id')->map(function ($data) {
+        $category = $data->first()->category ?? null;
+        return [
+          'name' => $category->name ?? 'Unknown',
+          'icon' => '📊', // Default icon for categories
+          'count' => $data->count()
+        ];
       });
 
     // Hitung berdasarkan provinsi
