@@ -34,6 +34,15 @@ Route::get('/', function () {
 
 Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
+// Dashboard sub-menus
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard/ideologi', [DashboardController::class, 'ideologi'])->name('dashboard.ideologi');
+    Route::get('/dashboard/politik', [DashboardController::class, 'politik'])->name('dashboard.politik');
+    Route::get('/dashboard/ekonomi', [DashboardController::class, 'ekonomi'])->name('dashboard.ekonomi');
+    Route::get('/dashboard/sosial-budaya', [DashboardController::class, 'sosialBudaya'])->name('dashboard.sosial-budaya');
+    Route::get('/dashboard/keamanan', [DashboardController::class, 'keamanan'])->name('dashboard.keamanan');
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/provinsi', [ProvinsiController::class, 'index'])->name('provinsi.index');
     Route::get('/provinsi/{id}', [ProvinsiController::class, 'show'])->name('provinsi.show');

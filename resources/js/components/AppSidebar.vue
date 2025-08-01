@@ -9,7 +9,12 @@ import {
     ShieldAlert, 
     Map, 
     Building2, 
-    MapPin 
+    MapPin,
+    Users,
+    Landmark,
+    DollarSign,
+    Heart,
+    Shield
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
@@ -18,6 +23,33 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
+        items: [
+            {
+                title: 'Ideologi',
+                href: '/dashboard/ideologi',
+                icon: Users,
+            },
+            {
+                title: 'Politik',
+                href: '/dashboard/politik',
+                icon: Landmark,
+            },
+            {
+                title: 'Ekonomi',
+                href: '/dashboard/ekonomi',
+                icon: DollarSign,
+            },
+            {
+                title: 'Sosial Budaya',
+                href: '/dashboard/sosial-budaya',
+                icon: Heart,
+            },
+            {
+                title: 'Keamanan',
+                href: '/dashboard/keamanan',
+                icon: Shield,
+            },
+        ]
     },
     {
         title: 'Data Kriminal',

@@ -8,7 +8,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)
 ![PHP](https://img.shields.io/badge/PHP-8.3-purple?style=for-the-badge&logo=php)
 
-*Sistem informasi pemetaan dan monitoring kejahatan berbasis web dengan visualisasi interaktif untuk seluruh Indonesia*
+_Sistem informasi pemetaan dan monitoring kejahatan berbasis web dengan visualisasi interaktif untuk seluruh Indonesia_
 
 [Demo](#-demo) • [Fitur](#-fitur) • [Instalasi](#-instalasi) • [Dokumentasi](#-dokumentasi) • [Contributing](#-contributing)
 
@@ -21,6 +21,7 @@
 **Crime Map** adalah aplikasi web modern untuk pemetaan dan monitoring data kejahatan di Indonesia. Aplikasi ini menyediakan visualisasi interaktif menggunakan peta Leaflet, dashboard statistik komprehensif, dan sistem manajemen data yang user-friendly.
 
 ### 🎯 Tujuan Aplikasi
+
 - **Visualisasi Data Kejahatan**: Menampilkan data kejahatan secara visual pada peta interaktif
 - **Monitoring Real-time**: Dashboard statistik untuk monitoring tren kejahatan
 - **Manajemen Data**: Interface admin untuk mengelola data wilayah dan kejahatan
@@ -31,6 +32,7 @@
 ## ✨ Fitur Unggulan
 
 ### 🗺️ **Interactive Crime Mapping**
+
 - Peta Indonesia interaktif dengan Leaflet.js
 - 16+ ikon kejahatan berbeda per jenis crime
 - Click & drag untuk lokasi coordinates
@@ -38,26 +40,30 @@
 - Responsive design untuk mobile & desktop
 
 ### 📊 **Advanced Dashboard**
+
 - Statistik real-time dengan cards modern
 - Grafik dan visualisasi data
 - Filter berdasarkan wilayah
 - Export data capabilities
 
 ### 🔍 **Smart Search & Filtering**
+
 - Real-time search dengan debouncing
 - Pagination 50 items per halaman
 - Advanced filtering berdasarkan:
-  - Provinsi, Kabupaten/Kota, Kecamatan
-  - Jenis kejahatan
-  - Koordinat geografis
+    - Provinsi, Kabupaten/Kota, Kecamatan
+    - Jenis kejahatan
+    - Koordinat geografis
 
 ### 🏛️ **Comprehensive Data Management**
+
 - **Provinsi**: 38 provinsi Indonesia lengkap
 - **Kabupaten/Kota**: 514+ kabupaten/kota
 - **Kecamatan**: 7,288+ kecamatan
 - **Data Kejahatan**: CRUD lengkap dengan coordinate mapping
 
 ### 🎨 **Modern UI/UX**
+
 - Dark mode support
 - Responsive design
 - Loading states & animations
@@ -69,12 +75,14 @@
 ## 🛠️ Tech Stack
 
 ### **Backend**
+
 - **Laravel 11.x** - PHP Framework
 - **PHP 8.3+** - Server-side language
 - **MySQL** - Database
 - **Inertia.js** - Modern SPA experience
 
 ### **Frontend**
+
 - **Vue.js 3** - Progressive JavaScript framework
 - **TypeScript** - Type-safe JavaScript
 - **Tailwind CSS** - Utility-first CSS framework
@@ -82,6 +90,7 @@
 - **Leaflet.js** - Interactive maps
 
 ### **UI Components**
+
 - **Radix Vue** - Headless UI components
 - **Lucide Icons** - Beautiful icon library
 - **Class Variance Authority** - Component variants
@@ -91,6 +100,7 @@
 ## 🚀 Demo
 
 ### Dashboard Preview
+
 ```
 🎯 Total Kejahatan: 18 kasus
 🗺️ Provinsi Terdampak: 6 provinsi
@@ -100,8 +110,9 @@
 ```
 
 ### Crime Types Supported
+
 - 🔴 Pencurian
-- 🟠 Perampokan  
+- 🟠 Perampokan
 - 🟣 Pembunuhan
 - 🩷 Pemerkosaan
 - 🟡 Penipuan
@@ -114,6 +125,7 @@
 ## 📦 Instalasi
 
 ### Prerequisites
+
 - PHP 8.3+
 - Composer
 - Node.js 18+
@@ -123,57 +135,65 @@
 ### Quick Start
 
 1. **Clone Repository**
-   ```bash
-   git clone https://github.com/aadiityaak/crime-map.git
-   cd crime-map
-   ```
+
+    ```bash
+    git clone https://github.com/aadiityaak/crime-map.git
+    cd crime-map
+    ```
 
 2. **Install Dependencies**
-   ```bash
-   # Backend dependencies
-   composer install
-   
-   # Frontend dependencies
-   npm install
-   ```
+
+    ```bash
+    # Backend dependencies
+    composer install
+
+    # Frontend dependencies
+    npm install
+    ```
 
 3. **Environment Setup**
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
+
+    ```bash
+    cp .env.example .env
+    php artisan key:generate
+    ```
 
 4. **Database Configuration**
-   ```env
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=crime_map
-   DB_USERNAME=your_username
-   DB_PASSWORD=your_password
-   ```
+
+    ```env
+    DB_CONNECTION=mysql
+    DB_HOST=127.0.0.1
+    DB_PORT=3306
+    DB_DATABASE=crime_map
+    DB_USERNAME=your_username
+    DB_PASSWORD=your_password
+    ```
 
 5. **Database Migration & Seeding**
-   ```bash
-   php artisan migrate
-   php artisan db:seed
-   ```
+
+    ```bash
+    php artisan migrate
+    php artisan db:seed
+    ```
 
 6. **Build Assets**
-   ```bash
-   npm run build
-   # atau untuk development
-   npm run dev
-   ```
+
+    ```bash
+    npm run build
+    # atau untuk development
+    npm run dev
+    ```
 
 7. **Run Application**
-   ```bash
-   php artisan serve
-   ```
 
-   Akses aplikasi di: `http://localhost:8000`
+    ```bash
+    php artisan serve
+    ```
+
+    Akses aplikasi di: `http://localhost:8000`
 
 ### Default Login
+
 ```
 Email: admin@example.com
 Password: password
@@ -248,6 +268,7 @@ php artisan db:seed --class=CrimeDataSeeder
 ## 🌐 API Endpoints
 
 ### Public APIs
+
 ```
 GET /api/provinsi              # Get all provinces
 GET /api/kabupaten-kota/{id}   # Get regencies by province
@@ -255,6 +276,7 @@ GET /api/kecamatan/{id}        # Get districts by regency
 ```
 
 ### Web Routes
+
 ```
 GET /dashboard                 # Main dashboard
 GET /crime-data               # Crime data management
@@ -274,6 +296,7 @@ GET /kecamatan                # District management
 Ikuti panduan lengkap di [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 ### Quick Deployment Checklist
+
 - [ ] Build assets: `npm run build`
 - [ ] Cache configs: `php artisan optimize`
 - [ ] Upload files sesuai struktur
@@ -287,13 +310,15 @@ Ikuti panduan lengkap di [DEPLOYMENT.md](./DEPLOYMENT.md)
 ## 📊 Database Schema
 
 ### Main Tables
+
 - **provinces** - 38 provinsi Indonesia
 - **regencies** - 514+ kabupaten/kota
-- **districts** - 7,288+ kecamatan  
+- **districts** - 7,288+ kecamatan
 - **crime_data** - Data kejahatan dengan koordinat
 - **users** - User management
 
 ### Relationships
+
 ```
 provinces (1) → (n) regencies (1) → (n) districts (1) → (n) crime_data
 ```
@@ -311,6 +336,7 @@ Kontribusi sangat diterima! Silakan:
 5. Open Pull Request
 
 ### Development Guidelines
+
 - Follow PSR-12 coding standards
 - Use TypeScript untuk type safety
 - Write meaningful commit messages
@@ -327,7 +353,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 👥 Authors & Contributors
 
-- **Aditya AK** - *Initial work* - [@aadiityaak](https://github.com/aadiityaak)
+- **Aditya AK** - _Initial work_ - [@aadiityaak](https://github.com/aadiityaak)
 
 ---
 

@@ -46,4 +46,39 @@ class DashboardController extends Controller
       ]
     ]);
   }
+
+  public function ideologi()
+  {
+    return Inertia::render('Dashboard/Ideologi', [
+      'title' => 'Dashboard Ideologi'
+    ]);
+  }
+
+  public function politik()
+  {
+    return Inertia::render('Dashboard/Politik', [
+      'title' => 'Dashboard Politik'
+    ]);
+  }
+
+  public function ekonomi()
+  {
+    return Inertia::render('Dashboard/Ekonomi', [
+      'title' => 'Dashboard Ekonomi'
+    ]);
+  }
+
+  public function sosialBudaya()
+  {
+    return Inertia::render('Dashboard/SosialBudaya', [
+      'title' => 'Dashboard Sosial Budaya'
+    ]);
+  }
+
+  public function keamanan()
+  {
+    return Inertia::render('Dashboard/Keamanan', [
+      'title' => 'Dashboard Keamanan'
+    ]);
+  }
 }
