@@ -15,8 +15,8 @@ class Provinsi extends Model
         return $this->hasMany(KabupatenKota::class);
     }
 
-    public function crimeData(): HasMany
+    public function monitoringData(): HasMany
     {
-        return $this->hasMany(CrimeData::class);
+        return $this->hasMany(MonitoringData::class);
     }
 }

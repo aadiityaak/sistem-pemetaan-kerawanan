@@ -21,8 +21,8 @@ class KabupatenKota extends Model
         return $this->hasMany(Kecamatan::class);
     }
 
-    public function crimeData(): HasMany
+    public function monitoringData(): HasMany
     {
-        return $this->hasMany(CrimeData::class);
+        return $this->hasMany(MonitoringData::class);
     }
 }

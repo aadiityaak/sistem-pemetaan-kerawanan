@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CrimeData;
+use App\Models\MonitoringData;
+use App\Models\Category;
 use App\Models\Provinsi;
 use App\Models\KabupatenKota;
 use App\Models\Kecamatan;
@@ -13,36 +14,44 @@ class DashboardController extends Controller
 {
   public function index()
   {
-    // Ambil semua data kriminal dengan relasi
-    $crimeData = CrimeData::with(['provinsi', 'kabupatenKota', 'kecamatan'])->get();
+    // Ambil semua data monitoring dengan relasi
+    $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])->get();
 
     // Hitung statistik
-    $totalCrimes = $crimeData->count();
+    $totalData = $monitoringData->count();
     $totalProvinsi = Provinsi::count();
     $totalKabupatenKota = KabupatenKota::count();
     $totalKecamatan = Kecamatan::count();
+    $totalCategories = Category::count();
 
-    // Hitung berdasarkan jenis kriminal
-    $crimesByType = $crimeData->groupBy('jenis_kriminal')->map(function ($crimes) {
-      return $crimes->count();
+    // Hitung berdasarkan kategori
+    $dataByCategory = $monitoringData->groupBy('category.name')->map(function ($data) {
+      return $data->count();
     });
 
     // Hitung berdasarkan provinsi
-    $crimesByProvinsi = $crimeData->groupBy(function ($crime) {
-      return $crime->provinsi->nama ?? 'Unknown';
-    })->map(function ($crimes) {
-      return $crimes->count();
+    $dataByProvinsi = $monitoringData->groupBy(function ($data) {
+      return $data->provinsi->nama ?? 'Unknown';
+    })->map(function ($data) {
+      return $data->count();
+    });
+
+    // Hitung berdasarkan severity level
+    $dataBySeverity = $monitoringData->groupBy('severity_level')->map(function ($data) {
+      return $data->count();
     });
 
     return Inertia::render('Dashboard', [
-      'crimeData' => $crimeData,
+      'monitoringData' => $monitoringData,
       'statistics' => [
-        'totalCrimes' => $totalCrimes,
+        'totalData' => $totalData,
         'totalProvinsi' => $totalProvinsi,
         'totalKabupatenKota' => $totalKabupatenKota,
         'totalKecamatan' => $totalKecamatan,
-        'crimesByType' => $crimesByType,
-        'crimesByProvinsi' => $crimesByProvinsi,
+        'totalCategories' => $totalCategories,
+        'dataByCategory' => $dataByCategory,
+        'dataByProvinsi' => $dataByProvinsi,
+        'dataBySeverity' => $dataBySeverity,
       ]
     ]);
   }

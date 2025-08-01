@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Provinsi;
-use App\Models\CrimeData;
+use App\Models\MonitoringData;
 use App\Models\KabupatenKota;
 use App\Models\Kecamatan;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ class ProvinsiController extends Controller
 
         // Menambahkan statistik untuk setiap provinsi
         $provinsiPaginated->getCollection()->transform(function ($provinsi) {
-            $crimeCount = CrimeData::where('provinsi_id', $provinsi->id)->count();
+            $crimeCount = MonitoringData::where('provinsi_id', $provinsi->id)->count();
             $kabupatenKotaCount = KabupatenKota::where('provinsi_id', $provinsi->id)->count();
             $kecamatanCount = Kecamatan::whereHas('kabupatenKota', function ($query) use ($provinsi) {
                 $query->where('provinsi_id', $provinsi->id);
@@ -48,7 +48,7 @@ class ProvinsiController extends Controller
         $provinsi = Provinsi::findOrFail($id);
 
         // Hitung statistik
-        $crimeCount = CrimeData::where('provinsi_id', $provinsi->id)->count();
+        $crimeCount = MonitoringData::where('provinsi_id', $provinsi->id)->count();
         $kabupatenKotaCount = KabupatenKota::where('provinsi_id', $provinsi->id)->count();
         $kecamatanCount = Kecamatan::whereHas('kabupatenKota', function ($query) use ($provinsi) {
             $query->where('provinsi_id', $provinsi->id);

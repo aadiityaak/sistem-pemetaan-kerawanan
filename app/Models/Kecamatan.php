@@ -21,8 +21,8 @@ class Kecamatan extends Model
         return $this->belongsTo(Provinsi::class, 'provinsi_id');
     }
 
-    public function crimeData(): HasMany
+    public function monitoringData(): HasMany
     {
-        return $this->hasMany(CrimeData::class);
+        return $this->hasMany(MonitoringData::class);
     }
 }

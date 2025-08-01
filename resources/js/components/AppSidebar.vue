@@ -52,8 +52,8 @@ const mainNavItems: NavItem[] = [
         ]
     },
     {
-        title: 'Data Kriminal',
-        href: '/crime-data',
+        title: 'Data Monitoring',
+        href: '/monitoring-data',
         icon: ShieldAlert,
     },
     {

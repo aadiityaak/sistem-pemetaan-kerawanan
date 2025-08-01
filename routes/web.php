@@ -5,8 +5,9 @@ use Inertia\Inertia;
 use App\Http\Controllers\ProvinsiController;
 use App\Http\Controllers\KabupatenKotaController;
 use App\Http\Controllers\KecamatanController;
-use App\Http\Controllers\CrimeDataController;
+use App\Http\Controllers\MonitoringDataController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\KeamananDashboardController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -25,6 +26,18 @@ Route::get('/api/kabupaten-kota/{provinsi_id}', function ($provinsi_id) {
 Route::get('/api/kecamatan/{kabupaten_kota_id}', function ($kabupaten_kota_id) {
     return \App\Models\Kecamatan::where('kabupaten_kota_id', $kabupaten_kota_id)
         ->select('id', 'nama', 'kabupaten_kota_id')
+        ->get();
+});
+
+Route::get('/api/categories', function () {
+    return \App\Models\Category::active()->ordered()->select('id', 'name', 'slug')->get();
+});
+
+Route::get('/api/sub-categories/{category_id}', function ($category_id) {
+    return \App\Models\SubCategory::where('category_id', $category_id)
+        ->active()
+        ->ordered()
+        ->select('id', 'name', 'slug', 'category_id')
         ->get();
 });
 
@@ -53,12 +66,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/kecamatan', [KecamatanController::class, 'index'])->name('kecamatan.index');
     Route::get('/kecamatan/{id}', [KecamatanController::class, 'show'])->name('kecamatan.show');
 
-    Route::get('/crime-data', [CrimeDataController::class, 'index'])->name('crime_data.index');
-    Route::get('/crime-data/create', [CrimeDataController::class, 'create'])->name('crime_data.create');
-    Route::post('/crime-data', [CrimeDataController::class, 'store'])->name('crime_data.store');
-    Route::get('/crime-data/{id}/edit', [CrimeDataController::class, 'edit'])->name('crime_data.edit');
-    Route::put('/crime-data/{id}', [CrimeDataController::class, 'update'])->name('crime_data.update');
-    Route::delete('/crime-data/{id}', [CrimeDataController::class, 'destroy'])->name('crime_data.destroy');
+    Route::get('/monitoring-data', [MonitoringDataController::class, 'index'])->name('monitoring_data.index');
+    Route::get('/monitoring-data/create', [MonitoringDataController::class, 'create'])->name('monitoring_data.create');
+    Route::post('/monitoring-data', [MonitoringDataController::class, 'store'])->name('monitoring_data.store');
+    Route::get('/monitoring-data/{id}/edit', [MonitoringDataController::class, 'edit'])->name('monitoring_data.edit');
+    Route::put('/monitoring-data/{id}', [MonitoringDataController::class, 'update'])->name('monitoring_data.update');
+    Route::delete('/monitoring-data/{id}', [MonitoringDataController::class, 'destroy'])->name('monitoring_data.destroy');
+
+    // Keamanan Dashboard Routes
+    Route::get('/keamanan', [KeamananDashboardController::class, 'index'])->name('keamanan.dashboard');
+    Route::get('/keamanan/{subCategorySlug}', [KeamananDashboardController::class, 'subCategory'])->name('keamanan.subcategory');
 });
 
 require __DIR__ . '/settings.php';

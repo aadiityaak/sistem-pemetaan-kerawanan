@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KabupatenKota;
-use App\Models\CrimeData;
+use App\Models\MonitoringData;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -25,7 +25,7 @@ class KabupatenKotaController extends Controller
 
         // Menambahkan jumlah tindakan kriminal untuk setiap kabupaten/kota
         $kabupatenKotaPaginated->getCollection()->transform(function ($kabupatenKota) {
-            $crimeCount = CrimeData::where('kabupaten_kota_id', $kabupatenKota->id)->count();
+            $crimeCount = MonitoringData::where('kabupaten_kota_id', $kabupatenKota->id)->count();
             $kabupatenKota->jumlah_tindakan = $crimeCount;
             return $kabupatenKota;
         });
@@ -38,7 +38,7 @@ class KabupatenKotaController extends Controller
     public function show($id)
     {
         $kabupatenKota = KabupatenKota::with(['provinsi'])->findOrFail($id);
-        $crimeCount = CrimeData::where('kabupaten_kota_id', $kabupatenKota->id)->count();
+        $crimeCount = MonitoringData::where('kabupaten_kota_id', $kabupatenKota->id)->count();
         $kabupatenKota->jumlah_tindakan = $crimeCount;
 
         return response()->json([
