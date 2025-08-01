@@ -12,22 +12,48 @@ use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-  public function index()
+  public function index(Request $request)
   {
-    // Ambil semua data monitoring dengan relasi
-    $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])->get();
+    // Ambil parameter category jika ada
+    $categorySlug = $request->query('category');
+    $selectedCategory = null;
+
+    // Query monitoring data
+    $query = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory']);
+
+    // Filter berdasarkan category jika ada
+    if ($categorySlug) {
+      $selectedCategory = Category::where('slug', $categorySlug)->first();
+      if ($selectedCategory) {
+        $query->where('category_id', $selectedCategory->id);
+      }
+    }
+
+    $monitoringData = $query->get();
 
     // Hitung statistik
     $totalData = $monitoringData->count();
-    $totalProvinsi = Provinsi::count();
-    $totalKabupatenKota = KabupatenKota::count();
-    $totalKecamatan = Kecamatan::count();
-    $totalCategories = Category::count();
+    $totalProvinsi = $monitoringData->groupBy('provinsi_id')->count();
+    $totalKabupatenKota = $monitoringData->groupBy('kabupaten_kota_id')->count();
+    $totalKecamatan = $monitoringData->groupBy('kecamatan_id')->count();
 
-    // Hitung berdasarkan kategori
-    $dataByCategory = $monitoringData->groupBy('category.name')->map(function ($data) {
-      return $data->count();
-    });
+    // Jika ada filter kategori, hitung sub categories, jika tidak hitung total categories
+    $totalSubCategories = $selectedCategory
+      ? $monitoringData->groupBy('sub_category_id')->count()
+      : Category::count();
+
+    // Hitung berdasarkan sub kategori (jika ada filter kategori) atau kategori (jika tidak ada filter)
+    $dataBySubCategory = $selectedCategory
+      ? $monitoringData->groupBy(function ($data) {
+        return $data->subCategory->name ?? 'Unknown';
+      })->map(function ($data) {
+        return $data->count();
+      })
+      : $monitoringData->groupBy(function ($data) {
+        return $data->category->name ?? 'Unknown';
+      })->map(function ($data) {
+        return $data->count();
+      });
 
     // Hitung berdasarkan provinsi
     $dataByProvinsi = $monitoringData->groupBy(function ($data) {
@@ -41,53 +67,33 @@ class DashboardController extends Controller
       return $data->count();
     });
 
+    // Hitung berdasarkan status
+    $dataByStatus = $monitoringData->groupBy('status')->map(function ($data) {
+      return $data->count();
+    });
+
+    // Ambil recent activities (5 terbaru)
+    $recentActivities = $monitoringData->sortByDesc('created_at')->take(5)->values();
+
+    // Ambil semua kategori untuk menu
+    $categories = Category::all();
+
     return Inertia::render('Dashboard', [
       'monitoringData' => $monitoringData,
+      'selectedCategory' => $selectedCategory,
+      'categories' => $categories,
       'statistics' => [
         'totalData' => $totalData,
         'totalProvinsi' => $totalProvinsi,
         'totalKabupatenKota' => $totalKabupatenKota,
         'totalKecamatan' => $totalKecamatan,
-        'totalCategories' => $totalCategories,
-        'dataByCategory' => $dataByCategory,
+        'totalSubCategories' => $totalSubCategories,
+        'dataBySubCategory' => $dataBySubCategory,
         'dataByProvinsi' => $dataByProvinsi,
         'dataBySeverity' => $dataBySeverity,
-      ]
-    ]);
-  }
-
-  public function ideologi()
-  {
-    return Inertia::render('Dashboard/Ideologi', [
-      'title' => 'Dashboard Ideologi'
-    ]);
-  }
-
-  public function politik()
-  {
-    return Inertia::render('Dashboard/Politik', [
-      'title' => 'Dashboard Politik'
-    ]);
-  }
-
-  public function ekonomi()
-  {
-    return Inertia::render('Dashboard/Ekonomi', [
-      'title' => 'Dashboard Ekonomi'
-    ]);
-  }
-
-  public function sosialBudaya()
-  {
-    return Inertia::render('Dashboard/SosialBudaya', [
-      'title' => 'Dashboard Sosial Budaya'
-    ]);
-  }
-
-  public function keamanan()
-  {
-    return Inertia::render('Dashboard/Keamanan', [
-      'title' => 'Dashboard Keamanan'
+        'dataByStatus' => $dataByStatus,
+      ],
+      'recentActivities' => $recentActivities,
     ]);
   }
 }

@@ -7,7 +7,6 @@ use App\Http\Controllers\KabupatenKotaController;
 use App\Http\Controllers\KecamatanController;
 use App\Http\Controllers\MonitoringDataController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\KeamananDashboardController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -47,13 +46,24 @@ Route::get('/', function () {
 
 Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
-// Dashboard sub-menus
+// Dashboard dengan parameter category (contoh: /dashboard?category=keamanan)
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard/ideologi', [DashboardController::class, 'ideologi'])->name('dashboard.ideologi');
-    Route::get('/dashboard/politik', [DashboardController::class, 'politik'])->name('dashboard.politik');
-    Route::get('/dashboard/ekonomi', [DashboardController::class, 'ekonomi'])->name('dashboard.ekonomi');
-    Route::get('/dashboard/sosial-budaya', [DashboardController::class, 'sosialBudaya'])->name('dashboard.sosial-budaya');
-    Route::get('/dashboard/keamanan', [DashboardController::class, 'keamanan'])->name('dashboard.keamanan');
+    // Route untuk backward compatibility - redirect ke dashboard dengan parameter
+    Route::get('/dashboard/ideologi', function () {
+        return redirect('/dashboard?category=ideologi');
+    });
+    Route::get('/dashboard/politik', function () {
+        return redirect('/dashboard?category=politik');
+    });
+    Route::get('/dashboard/ekonomi', function () {
+        return redirect('/dashboard?category=ekonomi');
+    });
+    Route::get('/dashboard/sosial-budaya', function () {
+        return redirect('/dashboard?category=sosial-budaya');
+    });
+    Route::get('/dashboard/keamanan', function () {
+        return redirect('/dashboard?category=keamanan');
+    });
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -72,10 +82,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/monitoring-data/{id}/edit', [MonitoringDataController::class, 'edit'])->name('monitoring_data.edit');
     Route::put('/monitoring-data/{id}', [MonitoringDataController::class, 'update'])->name('monitoring_data.update');
     Route::delete('/monitoring-data/{id}', [MonitoringDataController::class, 'destroy'])->name('monitoring_data.destroy');
-
-    // Keamanan Dashboard Routes
-    Route::get('/keamanan', [KeamananDashboardController::class, 'index'])->name('keamanan.dashboard');
-    Route::get('/keamanan/{subCategorySlug}', [KeamananDashboardController::class, 'subCategory'])->name('keamanan.subcategory');
 });
 
 require __DIR__ . '/settings.php';

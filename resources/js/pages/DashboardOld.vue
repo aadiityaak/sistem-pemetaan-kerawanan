@@ -157,6 +157,12 @@ onMounted(async () => {
         // Dynamic import Leaflet
         const L = await import('leaflet');
         
+// Initialize map
+onMounted(async () => {
+    if (typeof window !== 'undefined') {
+        // Dynamic import Leaflet
+        const L = await import('leaflet');
+        
         // Initialize map
         if (mapContainer.value) {
             map = L.map(mapContainer.value).setView([-2.5489, 118.0149], 5); // Indonesia center
@@ -282,7 +288,12 @@ onMounted(async () => {
                             </svg>
                         </div>
                         <div>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.totalData }}</p>
+                            <p 
+                                class="text-2xl font-bold"
+                                :class="selectedCategory ? 'text-gray-900 dark:text-white' : 'text-gray-900 dark:text-white'"
+                            >
+                                {{ statistics.totalData }}
+                            </p>
                             <p class="text-sm text-gray-600 dark:text-gray-400">Total Data</p>
                         </div>
                     </div>
@@ -496,6 +507,66 @@ onMounted(async () => {
                     <div>
                         <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Koordinat:</span>
                         <span class="ml-2 text-sm text-gray-900 dark:text-white font-mono">{{ selectedData.latitude }}, {{ selectedData.longitude }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </AppLayout>
+</template>
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Level Severity</h3>
+                        <div class="space-y-2">
+                            <div v-for="(config, severity) in severityIcons" :key="severity" class="flex items-center gap-2">
+                                <span class="text-lg">{{ config.icon }}</span>
+                                <span class="text-xs text-gray-600 dark:text-gray-400">{{ getSeverityLabel(severity) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for selected data -->
+        <div v-if="selectedData" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeModal">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6" @click.stop>
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">{{ severityIcons[selectedData.severity_level]?.icon || '📊' }}</span>
+                        <span class="text-gray-900 dark:text-white font-semibold">{{ selectedData.title }}</span>
+                    </div>
+                    <button @click="closeModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="space-y-3">
+                    <div>
+                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Kategori:</span>
+                        <span class="ml-2 text-sm text-gray-900 dark:text-white">{{ selectedData.category.name }} - {{ selectedData.sub_category.name }}</span>
+                    </div>
+                    
+                    <div>
+                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Lokasi:</span>
+                        <span class="ml-2 text-sm text-gray-900 dark:text-white">{{ selectedData.provinsi.nama }}, {{ selectedData.kabupaten_kota.nama }}, {{ selectedData.kecamatan.nama }}</span>
+                    </div>
+                    
+                    <div>
+                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Level:</span>
+                        <span class="ml-2 px-2 py-1 text-xs rounded" :style="{ backgroundColor: severityIcons[selectedData.severity_level]?.color || '#6B7280', color: 'white' }">
+                            {{ getSeverityLabel(selectedData.severity_level) }}
+                        </span>
+                    </div>
+                    
+                    <div v-if="selectedData.description">
+                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Deskripsi:</span>
+                        <p class="text-sm text-gray-900 dark:text-white mt-1">{{ selectedData.description }}</p>
+                    </div>
+                    
+                    <div>
+                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Koordinat:</span>
+                        <span class="ml-2 text-sm text-gray-900 dark:text-white">{{ selectedData.latitude }}, {{ selectedData.longitude }}</span>
                     </div>
                 </div>
             </div>
