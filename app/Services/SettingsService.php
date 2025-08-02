@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AppSetting;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class SettingsService
 {
@@ -35,42 +36,78 @@ class SettingsService
    */
   public function createOrUpdateSetting(array $data, ?UploadedFile $file = null, ?AppSetting $setting = null): AppSetting
   {
+    Log::info('SettingsService createOrUpdateSetting called', [
+      'data' => $data,
+      'has_file' => $file !== null,
+      'setting_exists' => $setting !== null,
+      'setting_id' => $setting?->id
+    ]);
+
     // Handle file upload for image/file types
     if ($file && in_array($data['type'], ['image', 'file'])) {
+      Log::info('Processing file upload', [
+        'file_name' => $file->getClientOriginalName(),
+        'file_size' => $file->getSize(),
+        'data_type' => $data['type']
+      ]);
+
       // Delete old file if updating
       if ($setting) {
+        Log::info('Deleting old file', ['old_value' => $setting->value]);
         $this->deleteOldFile($setting->value);
       }
 
       $data['value'] = $this->handleFileUpload($file, $data['type']);
+      Log::info('File uploaded', ['new_path' => $data['value']]);
     }
 
     if ($setting) {
+      Log::info('Updating existing setting', [
+        'setting_id' => $setting->id,
+        'old_value' => $setting->value,
+        'new_data' => $data
+      ]);
+
       $setting->update($data);
+
+      // Clear cache when updating settings that affect views
+      if (in_array($setting->key, ['app_favicon', 'app_name', 'app_logo'])) {
+        Log::info('Clearing cache for important setting', ['key' => $setting->key]);
+        AppSetting::clearCache();
+      }
+
+      Log::info('Setting updated successfully', [
+        'setting_id' => $setting->id,
+        'final_value' => $setting->fresh()->value
+      ]);
+
       return $setting;
     } else {
-      return AppSetting::create($data);
+      Log::info('Creating new setting', ['data' => $data]);
+
+      $createdSetting = AppSetting::create($data);
+
+      // Clear cache when creating settings that affect views
+      if (in_array($createdSetting->key, ['app_favicon', 'app_name', 'app_logo'])) {
+        Log::info('Clearing cache for new important setting', ['key' => $createdSetting->key]);
+        AppSetting::clearCache();
+      }
+
+      Log::info('Setting created successfully', [
+        'setting_id' => $createdSetting->id,
+        'final_value' => $createdSetting->value
+      ]);
+
+      return $createdSetting;
     }
   }
 
   /**
-   * Get all settings grouped by group
+   * Get setting value with default fallback
    */
-  public function getAllSettingsGrouped()
+  public function getSetting(string $key, string $default = ''): string
   {
-    return AppSetting::orderBy('group')->orderBy('key')->get()->groupBy('group');
-  }
-
-  /**
-   * Update multiple settings at once
-   */
-  public function updateBatch(array $settings): void
-  {
-    foreach ($settings as $key => $value) {
-      AppSetting::where('key', $key)->update(['value' => $value]);
-    }
-
-    // Clear all cache after batch update
-    AppSetting::clearCache();
+    $value = AppSetting::get($key, $default);
+    return $value ?? $default;
   }
 }

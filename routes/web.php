@@ -96,9 +96,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Settings Routes (Fixed settings - only allow viewing and updating values)
     Route::get('/settings', [AppSettingController::class, 'index'])->name('settings.index');
-    Route::get('/settings/{setting}', [AppSettingController::class, 'show'])->name('settings.show');
-    Route::put('/settings/{setting}', [AppSettingController::class, 'update'])->name('settings.update');
-    Route::post('/settings/update-batch', [AppSettingController::class, 'updateBatch'])->name('settings.update-batch');
+    Route::match(['POST', 'PUT'], '/settings/{key}', [AppSettingController::class, 'update'])->name('settings.update');
 });
 
 require __DIR__ . '/settings.php';

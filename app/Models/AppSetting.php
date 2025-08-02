@@ -26,7 +26,9 @@ class AppSetting extends Model
   {
     return Cache::remember("app_setting_{$key}", now()->addHours(24), function () use ($key, $default) {
       $setting = static::where('key', $key)->first();
-      return $setting ? $setting->value : $default;
+      $value = $setting ? $setting->value : $default;
+      // Ensure we return the default if value is null
+      return $value ?? $default;
     });
   }
   /**
