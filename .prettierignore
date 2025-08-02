@@ -1,3 +1,37 @@
+# Ignore UI component library
 resources/js/components/ui/*
+
+# Ignore generated files
 resources/js/ziggy.js
+bootstrap/ssr/
+public/build/
+public/hot
+public/storage
+
+# Ignore directories
+node_modules/
+vendor/
+bootstrap/cache/
+storage/
+.git/
+
+# Ignore compiled assets
+public/js/
+public/css/
+public/mix-manifest.json
+
+# Ignore IDE and system files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Ignore environment and logs
+.env*
+*.log
+*.lock
+
+# Ignore mail templates (if using blade syntax)
 resources/views/mail/*

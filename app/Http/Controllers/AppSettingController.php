@@ -27,22 +27,22 @@ class AppSettingController extends Controller
                     'label' => 'Nama Aplikasi',
                     'description' => 'Nama aplikasi yang akan ditampilkan di header dan title',
                     'type' => 'text',
-                    'value' => $this->settingsService->getSetting('app_name', 'Peta Kriminal Indonesia')
+                    'value' => $this->settingsService->getSetting('app_name', 'Peta Kriminal Indonesia'),
                 ],
                 [
                     'key' => 'app_description',
                     'label' => 'Deskripsi Aplikasi',
                     'description' => 'Deskripsi singkat tentang aplikasi',
                     'type' => 'text',
-                    'value' => $this->settingsService->getSetting('app_description', 'Sistem Informasi Pemetaan Data Kriminal Indonesia')
+                    'value' => $this->settingsService->getSetting('app_description', 'Sistem Informasi Pemetaan Data Kriminal Indonesia'),
                 ],
                 [
                     'key' => 'footer_text',
                     'label' => 'Teks Footer',
                     'description' => 'Teks yang ditampilkan di footer aplikasi',
                     'type' => 'text',
-                    'value' => $this->settingsService->getSetting('footer_text', 'Peta Kriminal Indonesia © 2024')
-                ]
+                    'value' => $this->settingsService->getSetting('footer_text', 'Peta Kriminal Indonesia © 2024'),
+                ],
             ],
             'appearance' => [
                 [
@@ -50,20 +50,20 @@ class AppSettingController extends Controller
                     'label' => 'Favicon',
                     'description' => 'Icon yang ditampilkan di tab browser',
                     'type' => 'image',
-                    'value' => $this->settingsService->getSetting('app_favicon', '/favicon.ico')
+                    'value' => $this->settingsService->getSetting('app_favicon', '/favicon.ico'),
                 ],
                 [
                     'key' => 'app_logo',
                     'label' => 'Logo Aplikasi',
                     'description' => 'Logo yang ditampilkan di header aplikasi',
                     'type' => 'image',
-                    'value' => $this->settingsService->getSetting('app_logo', '')
-                ]
-            ]
+                    'value' => $this->settingsService->getSetting('app_logo', ''),
+                ],
+            ],
         ];
 
         return Inertia::render('Settings/Index', [
-            'settings' => $fixedSettings
+            'settings' => $fixedSettings,
         ]);
     }
 
@@ -79,15 +79,16 @@ class AppSettingController extends Controller
             'file_info' => $request->hasFile('file') ? [
                 'name' => $request->file('file')->getClientOriginalName(),
                 'size' => $request->file('file')->getSize(),
-                'mime' => $request->file('file')->getMimeType()
-            ] : null
+                'mime' => $request->file('file')->getMimeType(),
+            ] : null,
         ]);
 
         // Validate input based on setting type
         $allowedKeys = ['app_name', 'app_description', 'footer_text', 'app_favicon', 'app_logo'];
 
-        if (!in_array($key, $allowedKeys)) {
+        if (! in_array($key, $allowedKeys)) {
             Log::warning('Invalid setting key attempted', ['key' => $key]);
+
             return redirect()->route('settings.index')->with('error', 'Setting tidak valid');
         }
 
@@ -105,7 +106,7 @@ class AppSettingController extends Controller
 
         Log::info('Prepared data for update', [
             'data' => $data,
-            'file_present' => $file !== null
+            'file_present' => $file !== null,
         ]);
 
         // Find existing setting or create new
@@ -116,7 +117,7 @@ class AppSettingController extends Controller
         Log::info('Setting updated', [
             'key' => $key,
             'old_value' => $setting ? $setting->value : null,
-            'new_value' => $updatedSetting->value
+            'new_value' => $updatedSetting->value,
         ]);
 
         return redirect()->route('settings.index')->with('success', 'Setting berhasil diperbarui');

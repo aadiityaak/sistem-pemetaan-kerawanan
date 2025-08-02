@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Provinsi;
-use App\Models\MonitoringData;
 use App\Models\KabupatenKota;
 use App\Models\Kecamatan;
+use App\Models\MonitoringData;
+use App\Models\Provinsi;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Inertia\Inertia;
 
 class ProvinsiController extends Controller
@@ -17,7 +16,7 @@ class ProvinsiController extends Controller
         $query = Provinsi::query();
 
         if ($request->has('search')) {
-            $query->where('nama', 'like', '%' . $request->search . '%');
+            $query->where('nama', 'like', '%'.$request->search.'%');
         }
 
         // Pagination dengan 50 data per halaman
@@ -89,6 +88,7 @@ class ProvinsiController extends Controller
             'nama' => 'required|string',
         ]);
         $provinsi = Provinsi::create($data);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Provinsi berhasil ditambah',
@@ -103,6 +103,7 @@ class ProvinsiController extends Controller
             'nama' => 'required|string',
         ]);
         $provinsi->update($data);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Provinsi berhasil diupdate',
@@ -114,6 +115,7 @@ class ProvinsiController extends Controller
     {
         $provinsi = Provinsi::findOrFail($id);
         $provinsi->delete();
+
         return response()->json([
             'status' => 'success',
             'message' => 'Provinsi berhasil dihapus',

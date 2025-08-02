@@ -2,7 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { ref, onMounted, computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 interface MonitoringData {
     id: number;
@@ -21,11 +21,11 @@ interface MonitoringData {
     incident_date: string;
     created_at: string;
     updated_at: string;
-    provinsi: { id: number; nama: string; };
-    kabupaten_kota: { id: number; nama: string; provinsi_id: number; };
-    kecamatan: { id: number; nama: string; kabupaten_kota_id: number; };
-    category: { id: number; name: string; slug: string; color: string; };
-    sub_category: { id: number; name: string; slug: string; icon?: string; };
+    provinsi: { id: number; nama: string };
+    kabupaten_kota: { id: number; nama: string; provinsi_id: number };
+    kecamatan: { id: number; nama: string; kabupaten_kota_id: number };
+    category: { id: number; name: string; slug: string; color: string };
+    sub_category: { id: number; name: string; slug: string; icon?: string };
 }
 
 interface Category {
@@ -60,9 +60,9 @@ const props = defineProps<{
 const breadcrumbs = computed<BreadcrumbItem[]>(() => {
     const base = [{ title: 'Dashboard', href: '/dashboard' }];
     if (props.selectedCategory) {
-        base.push({ 
-            title: props.selectedCategory.name, 
-            href: `/dashboard?category=${props.selectedCategory.slug}` 
+        base.push({
+            title: props.selectedCategory.name,
+            href: `/dashboard?category=${props.selectedCategory.slug}`,
         });
     }
     return base;
@@ -74,10 +74,10 @@ const mapContainer = ref();
 
 // Category color mapping for theming
 const categoryThemes: Record<string, { color: string; icon: string; bgColor: string }> = {
-    'keamanan': { color: '#DC2626', icon: '🛡️', bgColor: 'bg-red-100 dark:bg-red-900' },
-    'ideologi': { color: '#7C3AED', icon: '🏛️', bgColor: 'bg-purple-100 dark:bg-purple-900' },
-    'politik': { color: '#059669', icon: '🗳️', bgColor: 'bg-green-100 dark:bg-green-900' },
-    'ekonomi': { color: '#D97706', icon: '💰', bgColor: 'bg-orange-100 dark:bg-orange-900' },
+    keamanan: { color: '#DC2626', icon: '🛡️', bgColor: 'bg-red-100 dark:bg-red-900' },
+    ideologi: { color: '#7C3AED', icon: '🏛️', bgColor: 'bg-purple-100 dark:bg-purple-900' },
+    politik: { color: '#059669', icon: '🗳️', bgColor: 'bg-green-100 dark:bg-green-900' },
+    ekonomi: { color: '#D97706', icon: '💰', bgColor: 'bg-orange-100 dark:bg-orange-900' },
     'sosial-budaya': { color: '#0EA5E9', icon: '🤝', bgColor: 'bg-blue-100 dark:bg-blue-900' },
 };
 
@@ -89,24 +89,24 @@ const currentTheme = computed(() => {
     return { color: '#6B7280', icon: '📊', bgColor: 'bg-gray-100 dark:bg-gray-900' };
 });
 
-// Icon mapping untuk setiap severity level  
+// Icon mapping untuk setiap severity level
 const severityIcons: Record<string, { color: string; icon: string }> = {
-    low: { color: '#10B981', icon: '🟢' },      
-    medium: { color: '#F59E0B', icon: '🟡' },   
-    high: { color: '#EF4444', icon: '🟠' },     
-    critical: { color: '#DC2626', icon: '🔴' }, 
+    low: { color: '#10B981', icon: '🟢' },
+    medium: { color: '#F59E0B', icon: '🟡' },
+    high: { color: '#EF4444', icon: '🟠' },
+    critical: { color: '#DC2626', icon: '🔴' },
 };
 
-// Computed untuk menghitung top data 
+// Computed untuk menghitung top data
 const topDataBySubCategory = computed(() => {
     return Object.entries(props.statistics.dataBySubCategory)
-        .sort(([,a], [,b]) => (b.count as number) - (a.count as number))
+        .sort(([, a], [, b]) => (b.count as number) - (a.count as number))
         .slice(0, 5);
 });
 
 const topDataByProvinsi = computed(() => {
     return Object.entries(props.statistics.dataByProvinsi)
-        .sort(([,a], [,b]) => (b as number) - (a as number))
+        .sort(([, a], [, b]) => (b as number) - (a as number))
         .slice(0, 5);
 });
 
@@ -114,9 +114,9 @@ const topDataByProvinsi = computed(() => {
 const getSeverityLabel = (severity: string): string => {
     const labels: Record<string, string> = {
         low: 'Rendah',
-        medium: 'Sedang', 
+        medium: 'Sedang',
         high: 'Tinggi',
-        critical: 'Kritis'
+        critical: 'Kritis',
     };
     return labels[severity] || severity;
 };
@@ -135,23 +135,23 @@ onMounted(async () => {
     if (typeof window !== 'undefined') {
         // Dynamic import Leaflet
         const L = await import('leaflet');
-        
+
         // Initialize map
         if (mapContainer.value) {
             map = L.map(mapContainer.value).setView([-2.5489, 118.0149], 5); // Indonesia center
 
             // Add tile layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
+                attribution: '© OpenStreetMap contributors',
             }).addTo(map);
 
             // Add markers for monitoring data
             props.monitoringData.forEach((data: MonitoringData) => {
                 const severityConfig = severityIcons[data.severity_level] || severityIcons['medium'];
-                
+
                 // Create custom HTML marker with theme color if category specific
                 const markerColor = props.selectedCategory ? currentTheme.value.color : severityConfig.color;
-                
+
                 // Determine marker icon: sub category icon > category theme icon > severity icon
                 let markerIcon = severityConfig.icon; // Default to severity icon
                 if (props.selectedCategory) {
@@ -160,7 +160,7 @@ onMounted(async () => {
                 if (data.sub_category.icon) {
                     markerIcon = data.sub_category.icon; // Use sub category icon if available (priority)
                 }
-                
+
                 const customIcon = L.divIcon({
                     html: `<div style="
                         background-color: ${markerColor}; 
@@ -176,11 +176,11 @@ onMounted(async () => {
                     ">${markerIcon}</div>`,
                     className: 'custom-marker',
                     iconSize: [24, 24],
-                    iconAnchor: [12, 12]
+                    iconAnchor: [12, 12],
                 });
 
-                const marker = L.marker([data.latitude, data.longitude], { 
-                    icon: customIcon 
+                const marker = L.marker([data.latitude, data.longitude], {
+                    icon: customIcon,
                 }).addTo(map);
 
                 // Add popup with sub category icon if available
@@ -197,11 +197,15 @@ onMounted(async () => {
                         <div class="text-xs text-gray-500 mt-1">
                             <strong>Lokasi:</strong> ${data.provinsi.nama}, ${data.kabupaten_kota.nama}
                         </div>
-                        ${data.jumlah_terdampak ? `
+                        ${
+                            data.jumlah_terdampak
+                                ? `
                         <div class="text-xs text-gray-600 mt-1">
                             <strong>Terdampak:</strong> ${data.jumlah_terdampak.toLocaleString()} orang
                         </div>
-                        ` : ''}
+                        `
+                                : ''
+                        }
                         <div class="text-xs mt-2">
                             <span class="px-2 py-1 bg-gray-100 rounded text-gray-700 text-xs">
                                 Level: ${getSeverityLabel(data.severity_level)}
@@ -217,15 +221,15 @@ onMounted(async () => {
 
 <template>
     <Head :title="selectedCategory ? `Dashboard ${selectedCategory.name}` : 'Dashboard'" />
-    
+
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-1 flex-col gap-6 rounded-xl p-6">
             <!-- Header with Category Filter -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
-                        <div 
-                            class="flex items-center justify-center w-12 h-12 rounded-lg mr-4"
+                        <div
+                            class="mr-4 flex h-12 w-12 items-center justify-center rounded-lg"
                             :class="selectedCategory ? currentTheme.bgColor : 'bg-gray-100 dark:bg-gray-900'"
                         >
                             <span class="text-2xl">{{ selectedCategory ? currentTheme.icon : '📊' }}</span>
@@ -235,17 +239,21 @@ onMounted(async () => {
                                 {{ selectedCategory ? `Dashboard ${selectedCategory.name}` : 'Dashboard Monitoring' }}
                             </h1>
                             <p class="text-gray-600 dark:text-gray-400">
-                                {{ selectedCategory ? `Monitoring khusus kategori ${selectedCategory.name}` : 'Monitoring data komprehensif semua kategori' }}
+                                {{
+                                    selectedCategory
+                                        ? `Monitoring khusus kategori ${selectedCategory.name}`
+                                        : 'Monitoring data komprehensif semua kategori'
+                                }}
                             </p>
                         </div>
                     </div>
-                    
+
                     <!-- Category Filter Dropdown -->
                     <div class="relative">
-                        <select 
+                        <select
                             @change="selectCategory(($event.target as HTMLSelectElement).value || null)"
                             :value="selectedCategory?.slug || ''"
-                            class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                            class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         >
                             <option value="">Semua Kategori</option>
                             <option v-for="category in categories" :key="category.id" :value="category.slug">
@@ -257,20 +265,27 @@ onMounted(async () => {
             </div>
 
             <!-- Statistics Cards -->
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+            <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
                 <!-- Total Data -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                     <div class="flex flex-col items-center text-center">
-                        <div 
-                            class="flex items-center justify-center w-10 h-10 rounded-lg mb-2"
+                        <div
+                            class="mb-2 flex h-10 w-10 items-center justify-center rounded-lg"
                             :class="selectedCategory ? currentTheme.bgColor : 'bg-blue-100 dark:bg-blue-900'"
                         >
-                            <svg 
-                                class="w-5 h-5" 
+                            <svg
+                                class="h-5 w-5"
                                 :class="selectedCategory ? 'text-white' : 'text-blue-600 dark:text-blue-400'"
-                                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
                             >
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                />
                             </svg>
                         </div>
                         <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalData }}</p>
@@ -279,11 +294,16 @@ onMounted(async () => {
                 </div>
 
                 <!-- Total Terdampak -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                     <div class="flex flex-col items-center text-center">
-                        <div class="flex items-center justify-center w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg mb-2">
-                            <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900">
+                            <svg class="h-5 w-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                                />
                             </svg>
                         </div>
                         <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalTerdampak.toLocaleString() }}</p>
@@ -292,11 +312,16 @@ onMounted(async () => {
                 </div>
 
                 <!-- Total Sub Kategori / Kategori -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                     <div class="flex flex-col items-center text-center">
-                        <div class="flex items-center justify-center w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg mb-2">
-                            <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900">
+                            <svg class="h-5 w-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                                />
                             </svg>
                         </div>
                         <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalSubCategories }}</p>
@@ -305,12 +330,17 @@ onMounted(async () => {
                 </div>
 
                 <!-- Total Provinsi -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                     <div class="flex flex-col items-center text-center">
-                        <div class="flex items-center justify-center w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg mb-2">
-                            <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900">
+                            <svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </div>
                         <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalProvinsi }}</p>
@@ -319,11 +349,16 @@ onMounted(async () => {
                 </div>
 
                 <!-- Total Kabupaten/Kota -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                     <div class="flex flex-col items-center text-center">
-                        <div class="flex items-center justify-center w-10 h-10 bg-yellow-100 dark:bg-yellow-900 rounded-lg mb-2">
-                            <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-100 dark:bg-yellow-900">
+                            <svg class="h-5 w-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                                />
                             </svg>
                         </div>
                         <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalKabupatenKota }}</p>
@@ -332,12 +367,17 @@ onMounted(async () => {
                 </div>
 
                 <!-- Total Kecamatan -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                     <div class="flex flex-col items-center text-center">
-                        <div class="flex items-center justify-center w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg mb-2">
-                            <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900">
+                            <svg class="h-5 w-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </div>
                         <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalKecamatan }}</p>
@@ -347,17 +387,17 @@ onMounted(async () => {
             </div>
 
             <!-- Main Content Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <!-- Map -->
                 <div class="lg:col-span-2">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <div class="flex items-center justify-between mb-4">
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <div class="mb-4 flex items-center justify-between">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                                 🗺️ {{ selectedCategory ? `Peta ${selectedCategory.name}` : 'Peta Monitoring Data' }}
                             </h3>
                             <div class="flex items-center gap-2 text-sm text-gray-500">
-                                <span 
-                                    class="w-3 h-3 rounded-full"
+                                <span
+                                    class="h-3 w-3 rounded-full"
                                     :style="{ backgroundColor: selectedCategory ? currentTheme.color : '#6B7280' }"
                                 ></span>
                                 <span>{{ selectedCategory ? selectedCategory.name : 'Semua Data' }}</span>
@@ -370,18 +410,22 @@ onMounted(async () => {
                 <!-- Analytics -->
                 <div class="space-y-6">
                     <!-- Top Sub Categories / Categories -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
                             🎯 {{ selectedCategory ? `Sub Kategori ${selectedCategory.name}` : 'Top Kategori' }}
                         </h3>
                         <div class="space-y-3">
-                            <div v-for="[subCategoryId, subCategoryData] in topDataBySubCategory" :key="subCategoryId" class="flex justify-between items-center">
+                            <div
+                                v-for="[subCategoryId, subCategoryData] in topDataBySubCategory"
+                                :key="subCategoryId"
+                                class="flex items-center justify-between"
+                            >
                                 <div class="flex items-center gap-2">
                                     <span class="text-lg">{{ subCategoryData.icon }}</span>
                                     <span class="text-sm font-medium text-gray-900 dark:text-white">{{ subCategoryData.name }}</span>
                                 </div>
-                                <span 
-                                    class="px-2 py-1 rounded text-xs font-medium text-white"
+                                <span
+                                    class="rounded px-2 py-1 text-xs font-medium text-white"
                                     :style="{ backgroundColor: selectedCategory ? currentTheme.color : '#6B7280' }"
                                 >
                                     {{ subCategoryData.count }} data
@@ -391,19 +435,19 @@ onMounted(async () => {
                     </div>
 
                     <!-- Severity Level Distribution -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">📊 Tingkat Keparahan</h3>
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">📊 Tingkat Keparahan</h3>
                         <div class="space-y-3">
                             <div v-for="(config, severity) in severityIcons" :key="severity" class="flex items-center gap-3">
                                 <span class="text-lg">{{ config.icon }}</span>
                                 <div class="flex-1">
                                     <span class="text-sm font-medium text-gray-900 dark:text-white">{{ getSeverityLabel(severity) }}</span>
-                                    <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
-                                        <div 
-                                            class="h-2 rounded-full" 
-                                            :style="{ 
-                                                backgroundColor: config.color, 
-                                                width: `${(statistics.dataBySeverity[severity] || 0) / Math.max(...Object.values(statistics.dataBySeverity)) * 100}%` 
+                                    <div class="mt-1 h-2 w-full rounded-full bg-gray-200">
+                                        <div
+                                            class="h-2 rounded-full"
+                                            :style="{
+                                                backgroundColor: config.color,
+                                                width: `${((statistics.dataBySeverity[severity] || 0) / Math.max(...Object.values(statistics.dataBySeverity))) * 100}%`,
                                             }"
                                         ></div>
                                     </div>
@@ -414,13 +458,13 @@ onMounted(async () => {
                     </div>
 
                     <!-- Top Provinces -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">🏛️ Top Provinsi</h3>
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">🏛️ Top Provinsi</h3>
                         <div class="space-y-2">
-                            <div v-for="[provinsi, count] in topDataByProvinsi" :key="provinsi" class="flex justify-between items-center text-sm">
+                            <div v-for="[provinsi, count] in topDataByProvinsi" :key="provinsi" class="flex items-center justify-between text-sm">
                                 <span class="text-gray-900 dark:text-white">{{ provinsi }}</span>
-                                <span 
-                                    class="px-2 py-1 rounded text-xs text-white"
+                                <span
+                                    class="rounded px-2 py-1 text-xs text-white"
                                     :style="{ backgroundColor: selectedCategory ? currentTheme.color : '#6B7280' }"
                                 >
                                     {{ count }}

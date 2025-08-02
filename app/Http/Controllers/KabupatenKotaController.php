@@ -17,7 +17,7 @@ class KabupatenKotaController extends Controller
             $query->where('provinsi_id', $request->provinsi_id);
         }
         if ($request->has('search')) {
-            $query->where('nama', 'like', '%' . $request->search . '%');
+            $query->where('nama', 'like', '%'.$request->search.'%');
         }
 
         // Pagination dengan 50 data per halaman
@@ -77,6 +77,7 @@ class KabupatenKotaController extends Controller
             'nama' => 'required|string',
         ]);
         $kabupatenKota = KabupatenKota::create($data);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Kabupaten/kota berhasil ditambah',
@@ -92,6 +93,7 @@ class KabupatenKotaController extends Controller
             'provinsi_id' => 'sometimes|required|integer|exists:provinsi,id',
         ]);
         $kabupatenKota->update($data);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Kabupaten/kota berhasil diupdate',
@@ -103,6 +105,7 @@ class KabupatenKotaController extends Controller
     {
         $kabupatenKota = KabupatenKota::findOrFail($id);
         $kabupatenKota->delete();
+
         return response()->json([
             'status' => 'success',
             'message' => 'Kabupaten/kota berhasil dihapus',

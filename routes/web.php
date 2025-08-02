@@ -1,13 +1,13 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use App\Http\Controllers\ProvinsiController;
+use App\Http\Controllers\AppSettingController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KabupatenKotaController;
 use App\Http\Controllers\KecamatanController;
 use App\Http\Controllers\MonitoringDataController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\AppSettingController;
+use App\Http\Controllers\ProvinsiController;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -90,7 +90,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('categories', \App\Http\Controllers\CategoryController::class);
     Route::post('/categories/{category}/toggle-status', [\App\Http\Controllers\CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
 
-    // Sub Categories Routes  
+    // Sub Categories Routes
     Route::resource('sub-categories', \App\Http\Controllers\SubCategoryController::class);
     Route::post('/sub-categories/{subCategory}/toggle-status', [\App\Http\Controllers\SubCategoryController::class, 'toggleStatus'])->name('sub-categories.toggle-status');
 
@@ -99,5 +99,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::match(['POST', 'PUT'], '/settings/{key}', [AppSettingController::class, 'update'])->name('settings.update');
 });
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';

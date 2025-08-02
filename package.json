@@ -9,7 +9,16 @@
         "dev": "vite",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
-        "lint": "eslint . --fix"
+        "lint": "eslint . --fix",
+        "lint:check": "eslint .",
+        "lint:php": "php ./vendor/bin/pint",
+        "lint:php:check": "php ./vendor/bin/pint --test",
+        "type-check": "vue-tsc --noEmit",
+        "test": "npm run lint:check && npm run type-check && npm run format:check",
+        "test:php": "php artisan test",
+        "test:coverage": "php artisan test --coverage",
+        "test:all": "npm run test && npm run lint:php:check && npm run test:php",
+        "ci": "npm run test:all && npm run build"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",

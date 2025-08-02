@@ -1,27 +1,27 @@
 <script setup lang="ts">
+import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { 
-    LayoutGrid, 
-    ShieldAlert, 
-    Map, 
-    Building2, 
-    MapPin,
-    Users,
-    Landmark,
-    DollarSign,
-    Heart,
-    Shield,
+import {
+    Building2,
     Database,
-    Tags,
+    DollarSign,
     FileText,
     Globe,
+    Heart,
+    Landmark,
+    LayoutGrid,
+    Map,
+    MapPin,
     Settings,
+    Shield,
+    ShieldAlert,
+    Tags,
+    Users,
 } from 'lucide-vue-next';
-import AppLogo from '@/components/AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
     {
@@ -54,7 +54,7 @@ const mainNavItems: NavItem[] = [
                 href: '/dashboard/keamanan',
                 icon: Shield,
             },
-        ]
+        ],
     },
     {
         title: 'Data Monitoring',
@@ -76,7 +76,7 @@ const mainNavItems: NavItem[] = [
                 href: '/sub-categories',
                 icon: FileText,
             },
-        ]
+        ],
     },
     {
         title: 'Wilayah',
@@ -98,7 +98,7 @@ const mainNavItems: NavItem[] = [
                 href: '/kecamatan',
                 icon: MapPin,
             },
-        ]
+        ],
     },
     {
         title: 'Pengaturan',

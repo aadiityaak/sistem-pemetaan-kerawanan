@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Provinsi extends Model
 {
     protected $table = 'provinsi';
+
     protected $fillable = ['nama'];
 
     public function kabupatenKota(): HasMany

@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { 
-    SidebarGroup, 
-    SidebarGroupLabel, 
-    SidebarMenu, 
-    SidebarMenuButton, 
+import {
+    SidebarGroup,
+    SidebarGroupLabel,
+    SidebarMenu,
+    SidebarMenuButton,
     SidebarMenuItem,
     SidebarMenuSub,
     SidebarMenuSubButton,
-    SidebarMenuSubItem
+    SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { ChevronRight } from 'lucide-vue-next';
-import { ref, onMounted, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
     items: NavItem[];
@@ -42,22 +42,22 @@ const loadOpenState = () => {
 // Check if current URL matches any sub-item and auto-open parent
 const autoOpenBasedOnUrl = () => {
     const currentUrl = page.url;
-    
-    props.items.forEach(item => {
+
+    props.items.forEach((item) => {
         if (item.items && item.items.length > 0) {
             // Check if current URL matches any sub-item
-            const hasActiveSubItem = item.items.some(subItem => {
+            const hasActiveSubItem = item.items.some((subItem) => {
                 // Check exact match first
                 if (subItem.href === currentUrl) return true;
-                
+
                 // Check if current URL starts with sub-item href (for nested routes)
                 if (currentUrl.startsWith(subItem.href) && subItem.href !== '/') {
                     return true;
                 }
-                
+
                 return false;
             });
-            
+
             if (hasActiveSubItem) {
                 openItems.value.add(item.title);
             }
@@ -84,10 +84,13 @@ onMounted(() => {
 });
 
 // Watch for URL changes and auto-open relevant menus
-watch(() => page.url, () => {
-    autoOpenBasedOnUrl();
-    saveOpenState();
-});
+watch(
+    () => page.url,
+    () => {
+        autoOpenBasedOnUrl();
+        saveOpenState();
+    },
+);
 </script>
 
 <template>
@@ -97,20 +100,13 @@ watch(() => page.url, () => {
             <template v-for="item in items" :key="item.title">
                 <!-- Item with sub-items -->
                 <SidebarMenuItem v-if="item.items && item.items.length > 0">
-                    <SidebarMenuButton 
-                        @click="toggleItem(item.title)"
-                        :tooltip="item.title"
-                        class="cursor-pointer"
-                    >
+                    <SidebarMenuButton @click="toggleItem(item.title)" :tooltip="item.title" class="cursor-pointer">
                         <component :is="item.icon" />
                         <span>{{ item.title }}</span>
-                        <ChevronRight 
-                            class="ml-auto transition-transform" 
-                            :class="{ 'rotate-90': isOpen(item.title) }"
-                        />
+                        <ChevronRight class="ml-auto transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
                     </SidebarMenuButton>
-                    
-                    <div v-show="isOpen(item.title)" class="ml-4 mt-1">
+
+                    <div v-show="isOpen(item.title)" class="mt-1 ml-4">
                         <SidebarMenuSub>
                             <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
                                 <SidebarMenuSubButton as-child :is-active="subItem.href === page.url">
@@ -123,7 +119,7 @@ watch(() => page.url, () => {
                         </SidebarMenuSub>
                     </div>
                 </SidebarMenuItem>
-                
+
                 <!-- Regular item without sub-items -->
                 <SidebarMenuItem v-else>
                     <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title">

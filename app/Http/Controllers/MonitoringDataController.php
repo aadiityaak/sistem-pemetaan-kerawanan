@@ -2,197 +2,196 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MonitoringData;
 use App\Models\Category;
-use App\Models\SubCategory;
-use App\Models\Provinsi;
 use App\Models\KabupatenKota;
 use App\Models\Kecamatan;
+use App\Models\MonitoringData;
+use App\Models\Provinsi;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class MonitoringDataController extends Controller
 {
-  public function index(Request $request)
-  {
-    $query = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory']);
+    public function index(Request $request)
+    {
+        $query = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory']);
 
-    // Search
-    if ($request->has('search') && $request->search != '') {
-      $query->where(function ($q) use ($request) {
-        $q->where('title', 'like', '%' . $request->search . '%')
-          ->orWhere('description', 'like', '%' . $request->search . '%')
-          ->orWhereHas('kecamatan', function ($q) use ($request) {
-            $q->where('nama', 'like', '%' . $request->search . '%');
-          })
-          ->orWhereHas('kecamatan.kabupatenKota', function ($q) use ($request) {
-            $q->where('nama', 'like', '%' . $request->search . '%');
-          })
-          ->orWhereHas('category', function ($q) use ($request) {
-            $q->where('name', 'like', '%' . $request->search . '%');
-          });
-      });
+        // Search
+        if ($request->has('search') && $request->search != '') {
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%'.$request->search.'%')
+                    ->orWhere('description', 'like', '%'.$request->search.'%')
+                    ->orWhereHas('kecamatan', function ($q) use ($request) {
+                        $q->where('nama', 'like', '%'.$request->search.'%');
+                    })
+                    ->orWhereHas('kecamatan.kabupatenKota', function ($q) use ($request) {
+                        $q->where('nama', 'like', '%'.$request->search.'%');
+                    })
+                    ->orWhereHas('category', function ($q) use ($request) {
+                        $q->where('name', 'like', '%'.$request->search.'%');
+                    });
+            });
+        }
+
+        // Filter by status - mapping dari Vue ke database
+        if ($request->has('status') && $request->status != '') {
+            $statusMapping = [
+                'aktif' => 'active',
+                'selesai' => 'resolved',
+                'dalam_proses' => 'monitoring',
+            ];
+            $dbStatus = $statusMapping[$request->status] ?? $request->status;
+            $query->where('status', $dbStatus);
+        }
+
+        // Filter by level - mapping dari Vue ke database
+        if ($request->has('level') && $request->level != '') {
+            $levelMapping = [
+                'rendah' => 'low',
+                'sedang' => 'medium',
+                'tinggi' => 'high',
+                'kritis' => 'critical',
+            ];
+            $dbLevel = $levelMapping[$request->level] ?? $request->level;
+            $query->where('severity_level', $dbLevel);
+        }
+
+        $monitoringData = $query->latest()->paginate(15);
+
+        // Transform data untuk Vue component
+        $monitoringData->getCollection()->transform(function ($item) {
+            // Mapping status dari database ke Vue
+            $statusMapping = [
+                'active' => 'aktif',
+                'resolved' => 'selesai',
+                'monitoring' => 'dalam_proses',
+                'archived' => 'arsip',
+            ];
+
+            // Mapping level dari database ke Vue
+            $levelMapping = [
+                'low' => 'rendah',
+                'medium' => 'sedang',
+                'high' => 'tinggi',
+                'critical' => 'kritis',
+            ];
+
+            $item->status = $statusMapping[$item->status] ?? $item->status;
+            $item->level_kejadian = $levelMapping[$item->severity_level] ?? $item->severity_level;
+            $item->tanggal_laporan = $item->incident_date;
+            $item->jumlah_korban = $item->jumlah_terdampak;
+
+            return $item;
+        });
+
+        // Statistik sesuai dengan yang diharapkan Vue component
+        $totalData = MonitoringData::count();
+        $activeData = MonitoringData::where('status', 'active')->count();
+        $completedData = MonitoringData::where('status', 'resolved')->count();
+        $criticalData = MonitoringData::where('severity_level', 'critical')->count();
+
+        return Inertia::render('MonitoringData/Index', [
+            'monitoringData' => $monitoringData,
+            'statistics' => [
+                'total' => $totalData,
+                'active' => $activeData,
+                'completed' => $completedData,
+                'critical' => $criticalData,
+            ],
+            'filters' => $request->only(['search', 'status', 'level']),
+        ]);
     }
 
-    // Filter by status - mapping dari Vue ke database
-    if ($request->has('status') && $request->status != '') {
-      $statusMapping = [
-        'aktif' => 'active',
-        'selesai' => 'resolved',
-        'dalam_proses' => 'monitoring'
-      ];
-      $dbStatus = $statusMapping[$request->status] ?? $request->status;
-      $query->where('status', $dbStatus);
+    public function create()
+    {
+        $categories = Category::active()->ordered()->with('subCategories')->get();
+        $provinsi = Provinsi::orderBy('nama')->get();
+
+        return Inertia::render('MonitoringData/Create', [
+            'categories' => $categories,
+            'provinsi' => $provinsi,
+        ]);
     }
 
-    // Filter by level - mapping dari Vue ke database
-    if ($request->has('level') && $request->level != '') {
-      $levelMapping = [
-        'rendah' => 'low',
-        'sedang' => 'medium',
-        'tinggi' => 'high',
-        'kritis' => 'critical'
-      ];
-      $dbLevel = $levelMapping[$request->level] ?? $request->level;
-      $query->where('severity_level', $dbLevel);
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'provinsi_id' => 'required|exists:provinsi,id',
+            'kabupaten_kota_id' => 'required|exists:kabupaten_kota,id',
+            'kecamatan_id' => 'required|exists:kecamatan,id',
+            'category_id' => 'required|exists:categories,id',
+            'sub_category_id' => 'required|exists:sub_categories,id',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'jumlah_terdampak' => 'nullable|integer|min:0',
+            'severity_level' => 'required|in:low,medium,high,critical',
+            'status' => 'required|in:active,resolved,monitoring,archived',
+            'incident_date' => 'nullable|date',
+            'source' => 'nullable|string|max:255',
+            'additional_data' => 'nullable|array',
+        ]);
+
+        MonitoringData::create($validated);
+
+        return redirect()->route('monitoring-data.index')
+            ->with('success', 'Data monitoring berhasil ditambahkan.');
     }
 
-    $monitoringData = $query->latest()->paginate(15);
+    public function edit($id)
+    {
+        $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])->findOrFail($id);
+        $categories = Category::active()->ordered()->with('subCategories')->get();
+        $provinsi = Provinsi::orderBy('nama')->get();
 
-    // Transform data untuk Vue component
-    $monitoringData->getCollection()->transform(function ($item) {
-      // Mapping status dari database ke Vue
-      $statusMapping = [
-        'active' => 'aktif',
-        'resolved' => 'selesai',
-        'monitoring' => 'dalam_proses',
-        'archived' => 'arsip'
-      ];
+        // Send all kabupaten/kota and kecamatan for dynamic filtering in frontend
+        $kabupatenKota = KabupatenKota::orderBy('nama')->get();
+        $kecamatan = Kecamatan::orderBy('nama')->get();
 
-      // Mapping level dari database ke Vue
-      $levelMapping = [
-        'low' => 'rendah',
-        'medium' => 'sedang',
-        'high' => 'tinggi',
-        'critical' => 'kritis'
-      ];
+        return Inertia::render('MonitoringData/Edit', [
+            'monitoringData' => $monitoringData,
+            'categories' => $categories,
+            'provinsi' => $provinsi,
+            'kabupatenKota' => $kabupatenKota,
+            'kecamatan' => $kecamatan,
+        ]);
+    }
 
-      $item->status = $statusMapping[$item->status] ?? $item->status;
-      $item->level_kejadian = $levelMapping[$item->severity_level] ?? $item->severity_level;
-      $item->tanggal_laporan = $item->incident_date;
-      $item->jumlah_korban = $item->jumlah_terdampak;
+    public function update(Request $request, $id)
+    {
+        $monitoringData = MonitoringData::findOrFail($id);
 
-      return $item;
-    });
+        $validated = $request->validate([
+            'provinsi_id' => 'required|exists:provinsi,id',
+            'kabupaten_kota_id' => 'required|exists:kabupaten_kota,id',
+            'kecamatan_id' => 'required|exists:kecamatan,id',
+            'category_id' => 'required|exists:categories,id',
+            'sub_category_id' => 'required|exists:sub_categories,id',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'jumlah_terdampak' => 'nullable|integer|min:0',
+            'severity_level' => 'required|in:low,medium,high,critical',
+            'status' => 'required|in:active,resolved,monitoring,archived',
+            'incident_date' => 'nullable|date',
+            'source' => 'nullable|string|max:255',
+            'additional_data' => 'nullable|array',
+        ]);
 
-    // Statistik sesuai dengan yang diharapkan Vue component
-    $totalData = MonitoringData::count();
-    $activeData = MonitoringData::where('status', 'active')->count();
-    $completedData = MonitoringData::where('status', 'resolved')->count();
-    $criticalData = MonitoringData::where('severity_level', 'critical')->count();
+        $monitoringData->update($validated);
 
-    return Inertia::render('MonitoringData/Index', [
-      'monitoringData' => $monitoringData,
-      'statistics' => [
-        'total' => $totalData,
-        'active' => $activeData,
-        'completed' => $completedData,
-        'critical' => $criticalData,
-      ],
-      'filters' => $request->only(['search', 'status', 'level']),
-    ]);
-  }
+        return redirect()->route('monitoring-data.index')
+            ->with('success', 'Data monitoring berhasil diperbarui.');
+    }
 
-  public function create()
-  {
-    $categories = Category::active()->ordered()->with('subCategories')->get();
-    $provinsi = Provinsi::orderBy('nama')->get();
+    public function destroy($id)
+    {
+        $monitoringData = MonitoringData::findOrFail($id);
+        $monitoringData->delete();
 
-    return Inertia::render('MonitoringData/Create', [
-      'categories' => $categories,
-      'provinsi' => $provinsi,
-    ]);
-  }
-
-  public function store(Request $request)
-  {
-    $validated = $request->validate([
-      'provinsi_id' => 'required|exists:provinsi,id',
-      'kabupaten_kota_id' => 'required|exists:kabupaten_kota,id',
-      'kecamatan_id' => 'required|exists:kecamatan,id',
-      'category_id' => 'required|exists:categories,id',
-      'sub_category_id' => 'required|exists:sub_categories,id',
-      'latitude' => 'required|numeric|between:-90,90',
-      'longitude' => 'required|numeric|between:-180,180',
-      'title' => 'required|string|max:255',
-      'description' => 'nullable|string',
-      'jumlah_terdampak' => 'nullable|integer|min:0',
-      'severity_level' => 'required|in:low,medium,high,critical',
-      'status' => 'required|in:active,resolved,monitoring,archived',
-      'incident_date' => 'nullable|date',
-      'source' => 'nullable|string|max:255',
-      'additional_data' => 'nullable|array',
-    ]);
-
-    MonitoringData::create($validated);
-
-    return redirect()->route('monitoring-data.index')
-      ->with('success', 'Data monitoring berhasil ditambahkan.');
-  }
-
-  public function edit($id)
-  {
-    $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])->findOrFail($id);
-    $categories = Category::active()->ordered()->with('subCategories')->get();
-    $provinsi = Provinsi::orderBy('nama')->get();
-
-    // Send all kabupaten/kota and kecamatan for dynamic filtering in frontend
-    $kabupatenKota = KabupatenKota::orderBy('nama')->get();
-    $kecamatan = Kecamatan::orderBy('nama')->get();
-
-    return Inertia::render('MonitoringData/Edit', [
-      'monitoringData' => $monitoringData,
-      'categories' => $categories,
-      'provinsi' => $provinsi,
-      'kabupatenKota' => $kabupatenKota,
-      'kecamatan' => $kecamatan,
-    ]);
-  }
-
-  public function update(Request $request, $id)
-  {
-    $monitoringData = MonitoringData::findOrFail($id);
-
-    $validated = $request->validate([
-      'provinsi_id' => 'required|exists:provinsi,id',
-      'kabupaten_kota_id' => 'required|exists:kabupaten_kota,id',
-      'kecamatan_id' => 'required|exists:kecamatan,id',
-      'category_id' => 'required|exists:categories,id',
-      'sub_category_id' => 'required|exists:sub_categories,id',
-      'latitude' => 'required|numeric|between:-90,90',
-      'longitude' => 'required|numeric|between:-180,180',
-      'title' => 'required|string|max:255',
-      'description' => 'nullable|string',
-      'jumlah_terdampak' => 'nullable|integer|min:0',
-      'severity_level' => 'required|in:low,medium,high,critical',
-      'status' => 'required|in:active,resolved,monitoring,archived',
-      'incident_date' => 'nullable|date',
-      'source' => 'nullable|string|max:255',
-      'additional_data' => 'nullable|array',
-    ]);
-
-    $monitoringData->update($validated);
-
-    return redirect()->route('monitoring-data.index')
-      ->with('success', 'Data monitoring berhasil diperbarui.');
-  }
-
-  public function destroy($id)
-  {
-    $monitoringData = MonitoringData::findOrFail($id);
-    $monitoringData->delete();
-
-    return redirect()->route('monitoring-data.index')
-      ->with('success', 'Data monitoring berhasil dihapus.');
-  }
+        return redirect()->route('monitoring-data.index')
+            ->with('success', 'Data monitoring berhasil dihapus.');
+    }
 }

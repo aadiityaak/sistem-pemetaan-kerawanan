@@ -2,16 +2,16 @@
 
 namespace Database\Seeders;
 
+use App\Models\Provinsi;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\Provinsi;
 
 class KabupatenKotaSeeder extends Seeder
 {
     public function run(): void
     {
         $dir = database_path('data/kabupaten_kota');
-        $files = glob($dir . '/*.json');
+        $files = glob($dir.'/*.json');
         $kabupatenKota = [];
 
         // Mapping kode provinsi ke nama provinsi (dari JSON)
@@ -23,11 +23,15 @@ class KabupatenKotaSeeder extends Seeder
 
             // Cari nama provinsi berdasarkan kode
             $namaProvinsi = $provinsiData[$kode_provinsi] ?? null;
-            if (!$namaProvinsi) continue;
+            if (! $namaProvinsi) {
+                continue;
+            }
 
             // Cari provinsi berdasarkan nama
             $provinsi = Provinsi::where('nama', $namaProvinsi)->first();
-            if (!$provinsi) continue;
+            if (! $provinsi) {
+                continue;
+            }
 
             $json = file_get_contents($file);
             $data = json_decode($json, true);

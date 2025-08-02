@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
-import { ref, watch, computed, onMounted } from 'vue';
-import { Button } from '@/components/ui/button';
+import { computed, onMounted, ref, watch } from 'vue';
 
 interface Provinsi {
     id: number;
@@ -55,11 +55,11 @@ interface MonitoringData {
     created_at: string;
     updated_at: string;
     additional_data: Record<string, any>;
-    provinsi: { id: number; nama: string; };
-    kabupaten_kota: { id: number; nama: string; provinsi_id: number; };
-    kecamatan: { id: number; nama: string; kabupaten_kota_id: number; };
-    category: { id: number; name: string; slug: string; color: string; };
-    sub_category: { id: number; name: string; slug: string; };
+    provinsi: { id: number; nama: string };
+    kabupaten_kota: { id: number; nama: string; provinsi_id: number };
+    kecamatan: { id: number; nama: string; kabupaten_kota_id: number };
+    category: { id: number; name: string; slug: string; color: string };
+    sub_category: { id: number; name: string; slug: string };
 }
 
 const props = defineProps<{
@@ -120,9 +120,9 @@ const form = useForm({
 let map: any;
 let marker: any;
 const mapContainer = ref();
-const selectedLocation = ref<{lat: number, lng: number}>({
+const selectedLocation = ref<{ lat: number; lng: number }>({
     lat: typeof props.monitoringData.latitude === 'number' ? props.monitoringData.latitude : 0,
-    lng: typeof props.monitoringData.longitude === 'number' ? props.monitoringData.longitude : 0
+    lng: typeof props.monitoringData.longitude === 'number' ? props.monitoringData.longitude : 0,
 });
 
 // Filtered lists based on selection
@@ -138,7 +138,7 @@ const filteredKecamatan = computed(() => {
 
 const filteredSubCategories = computed(() => {
     if (!form.category_id || !props.categories) return [];
-    const category = props.categories.find(cat => cat.id === parseInt(form.category_id));
+    const category = props.categories.find((cat) => cat.id === parseInt(form.category_id));
     return category?.sub_categories || [];
 });
 
@@ -173,24 +173,30 @@ watch([() => form.provinsi_id, () => form.kabupaten_kota_id], () => {
     }
 });
 
-watch(() => form.kabupaten_kota_id, () => {
-    if (form.kabupaten_kota_id !== props.monitoringData.kabupaten_kota_id.toString()) {
-        form.kecamatan_id = '';
-    }
-});
+watch(
+    () => form.kabupaten_kota_id,
+    () => {
+        if (form.kabupaten_kota_id !== props.monitoringData.kabupaten_kota_id.toString()) {
+            form.kecamatan_id = '';
+        }
+    },
+);
 
-watch(() => form.category_id, () => {
-    if (form.category_id !== props.monitoringData.category_id.toString()) {
-        form.sub_category_id = '';
-    }
-});
+watch(
+    () => form.category_id,
+    () => {
+        if (form.category_id !== props.monitoringData.category_id.toString()) {
+            form.sub_category_id = '';
+        }
+    },
+);
 
 // Update marker position when coordinates change
 const updateMarkerPosition = () => {
     if (map && marker) {
         const lat = parseFloat(form.latitude);
         const lng = parseFloat(form.longitude);
-        
+
         if (!isNaN(lat) && !isNaN(lng)) {
             marker.setLatLng([lat, lng]);
             map.setView([lat, lng], map.getZoom());
@@ -205,15 +211,15 @@ watch([() => form.latitude, () => form.longitude], updateMarkerPosition);
 const initializeMap = async () => {
     if (typeof window !== 'undefined') {
         const L = await import('leaflet');
-        
+
         if (mapContainer.value) {
             const initialLat = typeof props.monitoringData.latitude === 'number' ? props.monitoringData.latitude : -6.2;
             const initialLng = typeof props.monitoringData.longitude === 'number' ? props.monitoringData.longitude : 106.8;
-            
+
             map = L.map(mapContainer.value).setView([initialLat, initialLng], 15);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
+                attribution: '© OpenStreetMap contributors',
             }).addTo(map);
 
             // Add initial marker
@@ -251,232 +257,230 @@ onMounted(() => {
 
 <template>
     <Head :title="`Edit: ${monitoringData.title}`" />
-    
+
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-1 flex-col gap-6 rounded-xl p-6">
             <!-- Header -->
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Edit Data Monitoring</h1>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Edit data monitoring: {{ monitoringData.title }}
-                </p>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Edit data monitoring: {{ monitoringData.title }}</p>
             </div>
 
             <form @submit.prevent="submit">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     <!-- Form Fields -->
                     <div class="space-y-6">
                         <!-- Basic Information -->
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Informasi Dasar</h3>
-                            
+                        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Informasi Dasar</h3>
+
                             <div class="space-y-4">
                                 <!-- Title -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Judul <span class="text-red-500">*</span>
                                     </label>
                                     <input
                                         v-model="form.title"
                                         type="text"
                                         required
-                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                         placeholder="Masukkan judul data monitoring"
                                     />
-                                    <div v-if="form.errors.title" class="text-red-500 text-sm mt-1">{{ form.errors.title }}</div>
+                                    <div v-if="form.errors.title" class="mt-1 text-sm text-red-500">{{ form.errors.title }}</div>
                                 </div>
 
                                 <!-- Description -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Deskripsi
-                                    </label>
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Deskripsi </label>
                                     <textarea
                                         v-model="form.description"
                                         rows="4"
-                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                         placeholder="Masukkan deskripsi detail"
                                     ></textarea>
-                                    <div v-if="form.errors.description" class="text-red-500 text-sm mt-1">{{ form.errors.description }}</div>
+                                    <div v-if="form.errors.description" class="mt-1 text-sm text-red-500">{{ form.errors.description }}</div>
                                 </div>
 
                                 <!-- Jumlah Terdampak -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Jumlah Terdampak
-                                    </label>
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Jumlah Terdampak </label>
                                     <input
                                         v-model="form.jumlah_terdampak"
                                         type="number"
                                         min="0"
-                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                         placeholder="Masukkan jumlah orang yang terdampak"
                                     />
-                                    <div v-if="form.errors.jumlah_terdampak" class="text-red-500 text-sm mt-1">{{ form.errors.jumlah_terdampak }}</div>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    <div v-if="form.errors.jumlah_terdampak" class="mt-1 text-sm text-red-500">
+                                        {{ form.errors.jumlah_terdampak }}
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                         Jumlah orang yang terlibat atau terdampak dalam kejadian ini
                                     </p>
                                 </div>
 
                                 <!-- Incident Date -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Tanggal Kejadian <span class="text-red-500">*</span>
                                     </label>
                                     <input
                                         v-model="form.incident_date"
                                         type="date"
                                         required
-                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     />
-                                    <div v-if="form.errors.incident_date" class="text-red-500 text-sm mt-1">{{ form.errors.incident_date }}</div>
+                                    <div v-if="form.errors.incident_date" class="mt-1 text-sm text-red-500">{{ form.errors.incident_date }}</div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Category & Classification -->
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Kategori & Klasifikasi</h3>
-                            
+                        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Kategori & Klasifikasi</h3>
+
                             <div class="space-y-4">
                                 <!-- Category -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Kategori <span class="text-red-500">*</span>
                                     </label>
                                     <select
                                         v-model="form.category_id"
                                         required
-                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     >
                                         <option value="">Pilih Kategori</option>
                                         <option v-for="category in categories" :key="category.id" :value="category.id">
                                             {{ category.name }}
                                         </option>
                                     </select>
-                                    <div v-if="form.errors.category_id" class="text-red-500 text-sm mt-1">{{ form.errors.category_id }}</div>
+                                    <div v-if="form.errors.category_id" class="mt-1 text-sm text-red-500">{{ form.errors.category_id }}</div>
                                 </div>
 
                                 <!-- Sub Category -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Sub Kategori <span class="text-red-500">*</span>
                                     </label>
                                     <select
                                         v-model="form.sub_category_id"
                                         required
                                         :disabled="!form.category_id"
-                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-50"
+                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     >
                                         <option value="">Pilih Sub Kategori</option>
                                         <option v-for="subCategory in filteredSubCategories" :key="subCategory.id" :value="subCategory.id">
                                             {{ subCategory.name }}
                                         </option>
                                     </select>
-                                    <div v-if="form.errors.sub_category_id" class="text-red-500 text-sm mt-1">{{ form.errors.sub_category_id }}</div>
+                                    <div v-if="form.errors.sub_category_id" class="mt-1 text-sm text-red-500">{{ form.errors.sub_category_id }}</div>
                                 </div>
 
                                 <!-- Severity Level -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Level Severity <span class="text-red-500">*</span>
                                     </label>
                                     <select
                                         v-model="form.severity_level"
                                         required
-                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     >
                                         <option v-for="severity in severityOptions" :key="severity.value" :value="severity.value">
                                             {{ severity.label }}
                                         </option>
                                     </select>
-                                    <div v-if="form.errors.severity_level" class="text-red-500 text-sm mt-1">{{ form.errors.severity_level }}</div>
+                                    <div v-if="form.errors.severity_level" class="mt-1 text-sm text-red-500">{{ form.errors.severity_level }}</div>
                                 </div>
 
                                 <!-- Status -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Status <span class="text-red-500">*</span>
                                     </label>
                                     <select
                                         v-model="form.status"
                                         required
-                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     >
                                         <option v-for="status in statusOptions" :key="status.value" :value="status.value">
                                             {{ status.label }}
                                         </option>
                                     </select>
-                                    <div v-if="form.errors.status" class="text-red-500 text-sm mt-1">{{ form.errors.status }}</div>
+                                    <div v-if="form.errors.status" class="mt-1 text-sm text-red-500">{{ form.errors.status }}</div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Location Selection -->
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Lokasi</h3>
-                            
+                        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Lokasi</h3>
+
                             <div class="space-y-4">
                                 <!-- Provinsi -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Provinsi <span class="text-red-500">*</span>
                                     </label>
                                     <select
                                         v-model="form.provinsi_id"
                                         required
-                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     >
                                         <option value="">Pilih Provinsi</option>
                                         <option v-for="prov in provinsi" :key="prov.id" :value="prov.id">
                                             {{ prov.nama }}
                                         </option>
                                     </select>
-                                    <div v-if="form.errors.provinsi_id" class="text-red-500 text-sm mt-1">{{ form.errors.provinsi_id }}</div>
+                                    <div v-if="form.errors.provinsi_id" class="mt-1 text-sm text-red-500">{{ form.errors.provinsi_id }}</div>
                                 </div>
 
                                 <!-- Kabupaten/Kota -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Kabupaten/Kota <span class="text-red-500">*</span>
                                     </label>
                                     <select
                                         v-model="form.kabupaten_kota_id"
                                         required
                                         :disabled="!form.provinsi_id"
-                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-50"
+                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     >
                                         <option value="">Pilih Kabupaten/Kota</option>
                                         <option v-for="kabkota in filteredKabupatenKota" :key="kabkota.id" :value="kabkota.id">
                                             {{ kabkota.nama }}
                                         </option>
                                     </select>
-                                    <div v-if="form.errors.kabupaten_kota_id" class="text-red-500 text-sm mt-1">{{ form.errors.kabupaten_kota_id }}</div>
+                                    <div v-if="form.errors.kabupaten_kota_id" class="mt-1 text-sm text-red-500">
+                                        {{ form.errors.kabupaten_kota_id }}
+                                    </div>
                                 </div>
 
                                 <!-- Kecamatan -->
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Kecamatan <span class="text-red-500">*</span>
                                     </label>
                                     <select
                                         v-model="form.kecamatan_id"
                                         required
                                         :disabled="!form.kabupaten_kota_id"
-                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-50"
+                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     >
                                         <option value="">Pilih Kecamatan</option>
                                         <option v-for="kecamatan in filteredKecamatan" :key="kecamatan.id" :value="kecamatan.id">
                                             {{ kecamatan.nama }}
                                         </option>
                                     </select>
-                                    <div v-if="form.errors.kecamatan_id" class="text-red-500 text-sm mt-1">{{ form.errors.kecamatan_id }}</div>
+                                    <div v-if="form.errors.kecamatan_id" class="mt-1 text-sm text-red-500">{{ form.errors.kecamatan_id }}</div>
                                 </div>
 
                                 <!-- Koordinat Manual -->
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                             Latitude <span class="text-red-500">*</span>
                                         </label>
                                         <input
@@ -484,13 +488,13 @@ onMounted(() => {
                                             type="number"
                                             step="any"
                                             required
-                                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                            class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                             placeholder="-6.200000"
                                         />
-                                        <div v-if="form.errors.latitude" class="text-red-500 text-sm mt-1">{{ form.errors.latitude }}</div>
+                                        <div v-if="form.errors.latitude" class="mt-1 text-sm text-red-500">{{ form.errors.latitude }}</div>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                             Longitude <span class="text-red-500">*</span>
                                         </label>
                                         <input
@@ -498,10 +502,10 @@ onMounted(() => {
                                             type="number"
                                             step="any"
                                             required
-                                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                            class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                             placeholder="106.816666"
                                         />
-                                        <div v-if="form.errors.longitude" class="text-red-500 text-sm mt-1">{{ form.errors.longitude }}</div>
+                                        <div v-if="form.errors.longitude" class="mt-1 text-sm text-red-500">{{ form.errors.longitude }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -509,13 +513,15 @@ onMounted(() => {
 
                         <!-- Submit Buttons -->
                         <div class="flex justify-end gap-3">
-                            <Button type="button" variant="outline" @click="$inertia.visit(`/monitoring-data/${monitoringData.id}`)">
-                                Batal
-                            </Button>
+                            <Button type="button" variant="outline" @click="$inertia.visit(`/monitoring-data/${monitoringData.id}`)"> Batal </Button>
                             <Button type="submit" :disabled="form.processing">
-                                <svg v-if="form.processing" class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <svg v-if="form.processing" class="mr-3 -ml-1 h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    <path
+                                        class="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    ></path>
                                 </svg>
                                 {{ form.processing ? 'Memperbarui...' : 'Perbarui Data' }}
                             </Button>
@@ -523,15 +529,11 @@ onMounted(() => {
                     </div>
 
                     <!-- Map -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Edit Lokasi di Peta</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            Klik pada peta untuk mengubah koordinat lokasi kejadian
-                        </p>
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Edit Lokasi di Peta</h3>
+                        <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Klik pada peta untuk mengubah koordinat lokasi kejadian</p>
                         <div ref="mapContainer" class="h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                            Lokasi saat ini: {{ currentLocationText }}
-                        </p>
+                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Lokasi saat ini: {{ currentLocationText }}</p>
                     </div>
                 </div>
             </form>

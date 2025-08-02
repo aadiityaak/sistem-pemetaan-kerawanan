@@ -23,7 +23,7 @@ class InjectAppSettings
             'app_description' => 'Sistem Informasi Pemetaan Data Kriminal Indonesia',
             'footer_text' => 'Peta Kriminal Indonesia © 2024',
             'app_favicon' => '/favicon.ico',
-            'app_logo' => ''
+            'app_logo' => '',
         ];
 
         $settings = [];
@@ -32,7 +32,7 @@ class InjectAppSettings
         }
 
         Inertia::share([
-            'appSettings' => $settings
+            'appSettings' => $settings,
         ]);
 
         return $next($request);

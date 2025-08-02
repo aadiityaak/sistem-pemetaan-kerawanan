@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
             SubCategorySeeder::class,
             UserSeeder::class,
             MonitoringDataSeeder::class,
-            AppSettingSeeder::class
+            AppSettingSeeder::class,
         ]);
     }
 }

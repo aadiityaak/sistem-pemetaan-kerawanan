@@ -2,17 +2,17 @@
 
 namespace Database\Seeders;
 
+use App\Models\KabupatenKota;
+use App\Models\Provinsi;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\Provinsi;
-use App\Models\KabupatenKota;
 
 class KecamatanSeeder extends Seeder
 {
     public function run(): void
     {
         $dir = database_path('data/kecamatan');
-        $files = glob($dir . '/*.json');
+        $files = glob($dir.'/*.json');
         $kecamatan = [];
 
         // Load mapping data
@@ -27,26 +27,36 @@ class KecamatanSeeder extends Seeder
 
                 // Cari nama provinsi berdasarkan kode
                 $namaProvinsi = $provinsiData[$kode_provinsi] ?? null;
-                if (!$namaProvinsi) continue;
+                if (! $namaProvinsi) {
+                    continue;
+                }
 
                 // Cari provinsi berdasarkan nama
                 $provinsi = Provinsi::where('nama', $namaProvinsi)->first();
-                if (!$provinsi) continue;
+                if (! $provinsi) {
+                    continue;
+                }
 
                 // Load kabupaten data untuk mencari nama kabupaten
                 $kabupatenFile = database_path("data/kabupaten_kota/kab-{$kode_provinsi}.json");
-                if (!file_exists($kabupatenFile)) continue;
+                if (! file_exists($kabupatenFile)) {
+                    continue;
+                }
 
                 $kabupatenJson = file_get_contents($kabupatenFile);
                 $kabupatenData = json_decode($kabupatenJson, true);
                 $namaKabupaten = $kabupatenData[$kode_kabupaten_kota] ?? null;
-                if (!$namaKabupaten) continue;
+                if (! $namaKabupaten) {
+                    continue;
+                }
 
                 // Cari kabupaten berdasarkan nama dan provinsi_id
                 $kabupatenKota = KabupatenKota::where('provinsi_id', $provinsi->id)
                     ->where('nama', $namaKabupaten)->first();
 
-                if (!$kabupatenKota) continue;
+                if (! $kabupatenKota) {
+                    continue;
+                }
 
                 $json = file_get_contents($file);
                 $data = json_decode($json, true);

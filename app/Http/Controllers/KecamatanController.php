@@ -21,7 +21,7 @@ class KecamatanController extends Controller
             $query->where('kabupaten_kota_id', $request->kabupaten_kota_id);
         }
         if ($request->has('q')) {
-            $query->where('nama', 'like', '%' . $request->q . '%');
+            $query->where('nama', 'like', '%'.$request->q.'%');
         }
 
         $data = $query->paginate(50)->withQueryString();
@@ -49,6 +49,7 @@ class KecamatanController extends Controller
             ->where('kode_kabupaten_kota', $kode_kabupaten_kota)
             ->where('kode', $kode)
             ->firstOrFail();
+
         return Inertia::render('Kecamatan', [
             'kecamatan' => $kecamatan,
         ]);
@@ -63,6 +64,7 @@ class KecamatanController extends Controller
             'nama' => 'required|string',
         ]);
         $kecamatan = Kecamatan::create($data);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Kecamatan berhasil ditambah',
@@ -80,6 +82,7 @@ class KecamatanController extends Controller
             'nama' => 'required|string',
         ]);
         $kecamatan->update($data);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Kecamatan berhasil diupdate',
@@ -94,6 +97,7 @@ class KecamatanController extends Controller
             ->where('kode', $kode)
             ->firstOrFail();
         $kecamatan->delete();
+
         return response()->json([
             'status' => 'success',
             'message' => 'Kecamatan berhasil dihapus',
