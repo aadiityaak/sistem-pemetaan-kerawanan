@@ -85,6 +85,19 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+// Helper function to format date for input
+const formatDateForInput = (dateString: string): string => {
+    if (!dateString) return '';
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return '';
+        return date.toISOString().split('T')[0];
+    } catch (error) {
+        console.error('Error formatting date:', error);
+        return '';
+    }
+};
+
 const form = useForm({
     provinsi_id: props.monitoringData.provinsi_id.toString(),
     kabupaten_kota_id: props.monitoringData.kabupaten_kota_id.toString(),
@@ -98,7 +111,7 @@ const form = useForm({
     jumlah_terdampak: props.monitoringData.jumlah_terdampak?.toString() || '',
     severity_level: props.monitoringData.severity_level,
     status: props.monitoringData.status,
-    incident_date: props.monitoringData.incident_date,
+    incident_date: formatDateForInput(props.monitoringData.incident_date),
     additional_data: props.monitoringData.additional_data || {},
     _method: 'PUT',
 });
