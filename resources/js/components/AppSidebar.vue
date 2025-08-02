@@ -17,7 +17,8 @@ import {
     Shield,
     Database,
     Tags,
-    FileText
+    FileText,
+    Globe
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
@@ -82,19 +83,26 @@ const mainNavItems: NavItem[] = [
         ]
     },
     {
-        title: 'Provinsi',
+        title: 'Wilayah',
         href: '/provinsi',
-        icon: Map,
-    },
-    {
-        title: 'Kabupaten/Kota',
-        href: '/kabupaten-kota',
-        icon: Building2,
-    },
-    {
-        title: 'Kecamatan',
-        href: '/kecamatan',
-        icon: MapPin,
+        icon: Globe,
+        items: [
+            {
+                title: 'Provinsi',
+                href: '/provinsi',
+                icon: Map,
+            },
+            {
+                title: 'Kabupaten/Kota',
+                href: '/kabupaten-kota',
+                icon: Building2,
+            },
+            {
+                title: 'Kecamatan',
+                href: '/kecamatan',
+                icon: MapPin,
+            },
+        ]
     },
 ];
 </script>

@@ -16,8 +16,8 @@ class KabupatenKotaController extends Controller
         if ($request->has('provinsi_id')) {
             $query->where('provinsi_id', $request->provinsi_id);
         }
-        if ($request->has('q')) {
-            $query->where('nama', 'like', '%' . $request->q . '%');
+        if ($request->has('search')) {
+            $query->where('nama', 'like', '%' . $request->search . '%');
         }
 
         // Pagination dengan 50 data per halaman
@@ -26,12 +26,34 @@ class KabupatenKotaController extends Controller
         // Menambahkan jumlah tindakan kriminal untuk setiap kabupaten/kota
         $kabupatenKotaPaginated->getCollection()->transform(function ($kabupatenKota) {
             $crimeCount = MonitoringData::where('kabupaten_kota_id', $kabupatenKota->id)->count();
+            $kecamatanCount = \App\Models\Kecamatan::where('kabupaten_kota_id', $kabupatenKota->id)->count();
+
             $kabupatenKota->jumlah_tindakan = $crimeCount;
+            $kabupatenKota->jumlah_kecamatan = $kecamatanCount;
+            $kabupatenKota->crime_data = MonitoringData::where('kabupaten_kota_id', $kabupatenKota->id)->get();
+
             return $kabupatenKota;
         });
 
+        // Hitung statistik keseluruhan
+        $totalKabKota = KabupatenKota::count();
+        $totalCrimes = MonitoringData::count();
+        $affectedKabKota = KabupatenKota::whereHas('monitoringData')->count();
+        $avgCrimesPerKabKota = $totalKabKota > 0 ? number_format($totalCrimes / $totalKabKota, 1) : '0';
+
+        $statistics = [
+            'total_kabkota' => $totalKabKota,
+            'total_crimes' => $totalCrimes,
+            'affected_kabkota' => $affectedKabKota,
+            'avg_crimes_per_kabkota' => $avgCrimesPerKabKota,
+        ];
+
         return Inertia::render('KabupatenKota', [
             'kabupatenKota' => $kabupatenKotaPaginated,
+            'statistics' => $statistics,
+            'filters' => [
+                'search' => $request->search,
+            ],
         ]);
     }
 

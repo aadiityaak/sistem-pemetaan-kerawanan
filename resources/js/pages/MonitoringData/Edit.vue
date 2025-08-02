@@ -64,9 +64,9 @@ interface MonitoringData {
 
 const props = defineProps<{
     monitoringData: MonitoringData;
-    provinsiList: Provinsi[];
-    kabupatenKotaList: KabupatenKota[];
-    kecamatanList: Kecamatan[];
+    provinsi: Provinsi[];
+    kabupatenKota: KabupatenKota[];
+    kecamatan: Kecamatan[];
     categories: Category[];
 }>();
 
@@ -108,25 +108,32 @@ let map: any;
 let marker: any;
 const mapContainer = ref();
 const selectedLocation = ref<{lat: number, lng: number}>({
-    lat: props.monitoringData.latitude,
-    lng: props.monitoringData.longitude
+    lat: typeof props.monitoringData.latitude === 'number' ? props.monitoringData.latitude : 0,
+    lng: typeof props.monitoringData.longitude === 'number' ? props.monitoringData.longitude : 0
 });
 
 // Filtered lists based on selection
 const filteredKabupatenKota = computed(() => {
-    if (!form.provinsi_id) return [];
-    return props.kabupatenKotaList.filter(kab => kab.provinsi_id === parseInt(form.provinsi_id));
+    if (!form.provinsi_id || !props.kabupatenKota) return [];
+    return props.kabupatenKota.filter((kab: KabupatenKota) => kab.provinsi_id === parseInt(form.provinsi_id));
 });
 
 const filteredKecamatan = computed(() => {
-    if (!form.kabupaten_kota_id) return [];
-    return props.kecamatanList.filter(kec => kec.kabupaten_kota_id === parseInt(form.kabupaten_kota_id));
+    if (!form.kabupaten_kota_id || !props.kecamatan) return [];
+    return props.kecamatan.filter((kec: Kecamatan) => kec.kabupaten_kota_id === parseInt(form.kabupaten_kota_id));
 });
 
 const filteredSubCategories = computed(() => {
-    if (!form.category_id) return [];
+    if (!form.category_id || !props.categories) return [];
     const category = props.categories.find(cat => cat.id === parseInt(form.category_id));
     return category?.sub_categories || [];
+});
+
+// Computed for safe coordinate display
+const currentLocationText = computed(() => {
+    const lat = typeof selectedLocation.value?.lat === 'number' ? selectedLocation.value.lat : 0;
+    const lng = typeof selectedLocation.value?.lng === 'number' ? selectedLocation.value.lng : 0;
+    return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 });
 
 // Severity options
@@ -174,7 +181,7 @@ const updateMarkerPosition = () => {
         if (!isNaN(lat) && !isNaN(lng)) {
             marker.setLatLng([lat, lng]);
             map.setView([lat, lng], map.getZoom());
-            selectedLocation.value = { lat, lng };
+            selectedLocation.value = { lat: lat, lng: lng };
         }
     }
 };
@@ -187,19 +194,22 @@ const initializeMap = async () => {
         const L = await import('leaflet');
         
         if (mapContainer.value) {
-            map = L.map(mapContainer.value).setView([props.monitoringData.latitude, props.monitoringData.longitude], 15);
+            const initialLat = typeof props.monitoringData.latitude === 'number' ? props.monitoringData.latitude : -6.2;
+            const initialLng = typeof props.monitoringData.longitude === 'number' ? props.monitoringData.longitude : 106.8;
+            
+            map = L.map(mapContainer.value).setView([initialLat, initialLng], 15);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
             // Add initial marker
-            marker = L.marker([props.monitoringData.latitude, props.monitoringData.longitude]).addTo(map);
+            marker = L.marker([initialLat, initialLng]).addTo(map);
 
             // Add click event to map
             map.on('click', (e: any) => {
                 const { lat, lng } = e.latlng;
-                selectedLocation.value = { lat, lng };
+                selectedLocation.value = { lat: lat, lng: lng };
                 form.latitude = lat.toString();
                 form.longitude = lng.toString();
 
@@ -405,8 +415,8 @@ onMounted(() => {
                                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                                     >
                                         <option value="">Pilih Provinsi</option>
-                                        <option v-for="provinsi in provinsiList" :key="provinsi.id" :value="provinsi.id">
-                                            {{ provinsi.nama }}
+                                        <option v-for="prov in provinsi" :key="prov.id" :value="prov.id">
+                                            {{ prov.nama }}
                                         </option>
                                     </select>
                                     <div v-if="form.errors.provinsi_id" class="text-red-500 text-sm mt-1">{{ form.errors.provinsi_id }}</div>
@@ -507,7 +517,7 @@ onMounted(() => {
                         </p>
                         <div ref="mapContainer" class="h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                            Lokasi saat ini: {{ selectedLocation.lat.toFixed(6) }}, {{ selectedLocation.lng.toFixed(6) }}
+                            Lokasi saat ini: {{ currentLocationText }}
                         </p>
                     </div>
                 </div>

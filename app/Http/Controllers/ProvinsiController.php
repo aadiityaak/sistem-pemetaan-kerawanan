@@ -16,8 +16,8 @@ class ProvinsiController extends Controller
     {
         $query = Provinsi::query();
 
-        if ($request->has('q')) {
-            $query->where('nama', 'like', '%' . $request->q . '%');
+        if ($request->has('search')) {
+            $query->where('nama', 'like', '%' . $request->search . '%');
         }
 
         // Pagination dengan 50 data per halaman
@@ -34,12 +34,30 @@ class ProvinsiController extends Controller
             $provinsi->jumlah_tindakan = $crimeCount;
             $provinsi->jumlah_kabupaten_kota = $kabupatenKotaCount;
             $provinsi->jumlah_kecamatan = $kecamatanCount;
+            $provinsi->crime_data = MonitoringData::where('provinsi_id', $provinsi->id)->get();
 
             return $provinsi;
         });
 
+        // Hitung statistik keseluruhan
+        $totalProvinsi = Provinsi::count();
+        $totalCrimes = MonitoringData::count();
+        $affectedProvinsi = Provinsi::whereHas('monitoringData')->count();
+        $avgCrimesPerProvinsi = $totalProvinsi > 0 ? number_format($totalCrimes / $totalProvinsi, 1) : '0';
+
+        $statistics = [
+            'total_provinsi' => $totalProvinsi,
+            'total_crimes' => $totalCrimes,
+            'affected_provinsi' => $affectedProvinsi,
+            'avg_crimes_per_provinsi' => $avgCrimesPerProvinsi,
+        ];
+
         return Inertia::render('Provinsi', [
             'provinsi' => $provinsiPaginated,
+            'statistics' => $statistics,
+            'filters' => [
+                'search' => $request->search,
+            ],
         ]);
     }
 

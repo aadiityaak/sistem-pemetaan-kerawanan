@@ -17,70 +17,89 @@ class MonitoringDataController extends Controller
   {
     $query = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory']);
 
-    // Filter berdasarkan kategori
-    if ($request->has('category_id')) {
-      $query->where('category_id', $request->category_id);
-    }
-
-    // Filter berdasarkan sub kategori  
-    if ($request->has('sub_category_id')) {
-      $query->where('sub_category_id', $request->sub_category_id);
-    }
-
-    // Filter berdasarkan wilayah
-    if ($request->has('provinsi_id')) {
-      $query->where('provinsi_id', $request->provinsi_id);
-    }
-    if ($request->has('kabupaten_kota_id')) {
-      $query->where('kabupaten_kota_id', $request->kabupaten_kota_id);
-    }
-    if ($request->has('kecamatan_id')) {
-      $query->where('kecamatan_id', $request->kecamatan_id);
-    }
-
-    // Filter berdasarkan severity
-    if ($request->has('severity_level')) {
-      $query->where('severity_level', $request->severity_level);
-    }
-
-    // Filter berdasarkan status
-    if ($request->has('status')) {
-      $query->where('status', $request->status);
-    }
-
     // Search
-    if ($request->has('q')) {
+    if ($request->has('search') && $request->search != '') {
       $query->where(function ($q) use ($request) {
-        $q->where('title', 'like', '%' . $request->q . '%')
-          ->orWhere('description', 'like', '%' . $request->q . '%');
+        $q->where('title', 'like', '%' . $request->search . '%')
+          ->orWhere('description', 'like', '%' . $request->search . '%')
+          ->orWhereHas('kecamatan', function ($q) use ($request) {
+            $q->where('nama', 'like', '%' . $request->search . '%');
+          })
+          ->orWhereHas('kecamatan.kabupatenKota', function ($q) use ($request) {
+            $q->where('nama', 'like', '%' . $request->search . '%');
+          })
+          ->orWhereHas('category', function ($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->search . '%');
+          });
       });
     }
 
-    $monitoringData = $query->latest()->paginate(50);
+    // Filter by status - mapping dari Vue ke database
+    if ($request->has('status') && $request->status != '') {
+      $statusMapping = [
+        'aktif' => 'active',
+        'selesai' => 'resolved',
+        'dalam_proses' => 'monitoring'
+      ];
+      $dbStatus = $statusMapping[$request->status] ?? $request->status;
+      $query->where('status', $dbStatus);
+    }
 
-    // Statistik
+    // Filter by level - mapping dari Vue ke database
+    if ($request->has('level') && $request->level != '') {
+      $levelMapping = [
+        'rendah' => 'low',
+        'sedang' => 'medium',
+        'tinggi' => 'high',
+        'kritis' => 'critical'
+      ];
+      $dbLevel = $levelMapping[$request->level] ?? $request->level;
+      $query->where('severity_level', $dbLevel);
+    }
+
+    $monitoringData = $query->latest()->paginate(15);
+
+    // Transform data untuk Vue component
+    $monitoringData->getCollection()->transform(function ($item) {
+      // Mapping status dari database ke Vue
+      $statusMapping = [
+        'active' => 'aktif',
+        'resolved' => 'selesai',
+        'monitoring' => 'dalam_proses',
+        'archived' => 'arsip'
+      ];
+
+      // Mapping level dari database ke Vue
+      $levelMapping = [
+        'low' => 'rendah',
+        'medium' => 'sedang',
+        'high' => 'tinggi',
+        'critical' => 'kritis'
+      ];
+
+      $item->status = $statusMapping[$item->status] ?? $item->status;
+      $item->level_kejadian = $levelMapping[$item->severity_level] ?? $item->severity_level;
+      $item->tanggal_laporan = $item->incident_date;
+      $item->jumlah_korban = $item->jumlah_terdampak;
+
+      return $item;
+    });
+
+    // Statistik sesuai dengan yang diharapkan Vue component
     $totalData = MonitoringData::count();
-    $totalProvinsi = MonitoringData::distinct('provinsi_id')->count();
-    $totalKabupatenKota = MonitoringData::distinct('kabupaten_kota_id')->count();
-    $totalKecamatan = MonitoringData::distinct('kecamatan_id')->count();
-    $totalCategories = MonitoringData::distinct('category_id')->count();
-
-    // Data untuk dropdown filter
-    $categories = Category::active()->ordered()->get();
-    $provinsi = Provinsi::orderBy('nama')->get();
+    $activeData = MonitoringData::where('status', 'active')->count();
+    $completedData = MonitoringData::where('status', 'resolved')->count();
+    $criticalData = MonitoringData::where('severity_level', 'critical')->count();
 
     return Inertia::render('MonitoringData/Index', [
       'monitoringData' => $monitoringData,
       'statistics' => [
-        'totalData' => $totalData,
-        'totalProvinsi' => $totalProvinsi,
-        'totalKabupatenKota' => $totalKabupatenKota,
-        'totalKecamatan' => $totalKecamatan,
-        'totalCategories' => $totalCategories,
+        'total' => $totalData,
+        'active' => $activeData,
+        'completed' => $completedData,
+        'critical' => $criticalData,
       ],
-      'categories' => $categories,
-      'provinsi' => $provinsi,
-      'filters' => $request->only(['category_id', 'sub_category_id', 'provinsi_id', 'kabupaten_kota_id', 'kecamatan_id', 'severity_level', 'status', 'q']),
+      'filters' => $request->only(['search', 'status', 'level']),
     ]);
   }
 
@@ -117,7 +136,7 @@ class MonitoringDataController extends Controller
 
     MonitoringData::create($validated);
 
-    return redirect()->route('monitoring_data.index')
+    return redirect()->route('monitoring-data.index')
       ->with('success', 'Data monitoring berhasil ditambahkan.');
   }
 
@@ -126,8 +145,10 @@ class MonitoringDataController extends Controller
     $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])->findOrFail($id);
     $categories = Category::active()->ordered()->with('subCategories')->get();
     $provinsi = Provinsi::orderBy('nama')->get();
-    $kabupatenKota = KabupatenKota::where('provinsi_id', $monitoringData->provinsi_id)->orderBy('nama')->get();
-    $kecamatan = Kecamatan::where('kabupaten_kota_id', $monitoringData->kabupaten_kota_id)->orderBy('nama')->get();
+
+    // Send all kabupaten/kota and kecamatan for dynamic filtering in frontend
+    $kabupatenKota = KabupatenKota::orderBy('nama')->get();
+    $kecamatan = Kecamatan::orderBy('nama')->get();
 
     return Inertia::render('MonitoringData/Edit', [
       'monitoringData' => $monitoringData,
@@ -162,7 +183,7 @@ class MonitoringDataController extends Controller
 
     $monitoringData->update($validated);
 
-    return redirect()->route('monitoring_data.index')
+    return redirect()->route('monitoring-data.index')
       ->with('success', 'Data monitoring berhasil diperbarui.');
   }
 
@@ -171,7 +192,7 @@ class MonitoringDataController extends Controller
     $monitoringData = MonitoringData::findOrFail($id);
     $monitoringData->delete();
 
-    return redirect()->route('monitoring_data.index')
+    return redirect()->route('monitoring-data.index')
       ->with('success', 'Data monitoring berhasil dihapus.');
   }
 }

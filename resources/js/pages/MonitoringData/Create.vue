@@ -183,7 +183,7 @@ onMounted(() => {
     <Head title="Tambah Data Monitoring" />
     
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex flex-1 flex-col gap-6 rounded-xl p-6">
+        <div class="flex flex-1 flex-col gap-6 rounded-xl p-4">
             <!-- Header -->
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Tambah Data Monitoring</h1>

@@ -16,7 +16,7 @@ interface KecamatanData {
                 nama: string;
             };
         };
-        crime_data: Array<any>;
+        crime_data?: Array<any>;
     }>;
     current_page: number;
     last_page: number;
@@ -174,8 +174,8 @@ watch(search, (newValue) => {
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ item.kabupaten_kota.provinsi.nama }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
-                                      :class="item.crime_data.length > 0 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'">
-                                    {{ item.crime_data.length }}
+                                      :class="(item.crime_data?.length || 0) > 0 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'">
+                                    {{ item.crime_data?.length || 0 }}
                                 </span>
                             </td>
                         </tr>
