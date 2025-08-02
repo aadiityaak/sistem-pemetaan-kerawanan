@@ -24,10 +24,5 @@
             "on_multiline": "ensure_fully_multiline"
         }
     },
-    "exclude": [
-        "node_modules",
-        "storage",
-        "vendor",
-        "bootstrap/cache"
-    ]
+    "exclude": ["node_modules", "storage", "vendor", "bootstrap/cache"]
 }
