@@ -18,12 +18,22 @@ export interface NavItem {
     items?: NavItem[];
 }
 
+export interface AppSettings {
+    app_name?: string;
+    app_description?: string;
+    app_favicon?: string;
+    app_logo?: string;
+    dashboard_title?: string;
+    footer_text?: string;
+}
+
 export type AppPageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
+    appSettings: AppSettings;
 };
 
 export interface User {

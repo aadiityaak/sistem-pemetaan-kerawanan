@@ -7,6 +7,7 @@ use App\Http\Controllers\KabupatenKotaController;
 use App\Http\Controllers\KecamatanController;
 use App\Http\Controllers\MonitoringDataController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AppSettingController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -92,6 +93,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Sub Categories Routes  
     Route::resource('sub-categories', \App\Http\Controllers\SubCategoryController::class);
     Route::post('/sub-categories/{subCategory}/toggle-status', [\App\Http\Controllers\SubCategoryController::class, 'toggleStatus'])->name('sub-categories.toggle-status');
+
+    // Settings Routes
+    Route::resource('settings', AppSettingController::class);
+    Route::post('/settings/update-batch', [AppSettingController::class, 'updateBatch'])->name('settings.update-batch');
 });
 
 require __DIR__ . '/settings.php';

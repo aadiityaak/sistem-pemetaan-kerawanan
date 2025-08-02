@@ -1,4 +1,20 @@
-<script setup lang="ts">
+<script setup lang="ts"> 
+    LayoutGrid, 
+    ShieldAlert, 
+    Map, 
+    Building2, 
+    MapPin,
+    Users,
+    Landmark,
+    DollarSign,
+    Heart,
+    Shield,
+    Database,
+    Tags,
+    FileText,
+    Globe,
+    Settings,
+} from 'lucide-vue-next';">
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
@@ -18,10 +34,9 @@ import {
     Database,
     Tags,
     FileText,
-    Globe,
-    Settings,
+    Globe
 } from 'lucide-vue-next';
-import AppLogo from '@/components/AppLogo.vue';
+import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
     {
@@ -29,6 +44,11 @@ const mainNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
         items: [
+            {
+                title: 'Dashboard',
+                href: '/dashboard',
+                icon: LayoutGrid,
+            },
             {
                 title: 'Ideologi',
                 href: '/dashboard/ideologi',
