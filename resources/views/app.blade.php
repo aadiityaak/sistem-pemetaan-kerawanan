@@ -34,21 +34,33 @@
     <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
     @php
-    $faviconPath = cache()->remember('app_favicon', 3600, function() {
-    $setting = \App\Models\AppSetting::where('key', 'app_favicon')->first();
-    return $setting ? $setting->value : '/favicon.ico';
-    });
+    $faviconSetting = \App\Models\AppSetting::where('key', 'app_favicon')->first();
+    $faviconPath = $faviconSetting ? $faviconSetting->value : '/favicon.ico';
 
-    // Determine if it's SVG or ICO
+    // Use setting's updated_at timestamp for cache busting
+    $timestamp = $faviconSetting ? $faviconSetting->updated_at->timestamp : time();
+    $faviconWithTimestamp = $faviconPath . '?v=' . $timestamp;
+
+    // Determine file type
     $isSvg = str_ends_with($faviconPath, '.svg');
+    $isPng = str_ends_with($faviconPath, '.png');
+    $isJpg = str_ends_with($faviconPath, '.jpg') || str_ends_with($faviconPath, '.jpeg');
     @endphp
 
     @if($isSvg)
-    <link rel="icon" href="{{ $faviconPath }}" type="image/svg+xml">
-    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="{{ $faviconWithTimestamp }}" type="image/svg+xml" sizes="any">
+    @elseif($isPng)
+    <link rel="icon" href="{{ $faviconWithTimestamp }}" type="image/png" sizes="32x32">
+    <link rel="icon" href="{{ $faviconWithTimestamp }}" type="image/png" sizes="16x16">
+    <link rel="shortcut icon" href="{{ $faviconWithTimestamp }}" type="image/png">
+    @elseif($isJpg)
+    <link rel="icon" href="{{ $faviconWithTimestamp }}" type="image/jpeg" sizes="32x32">
+    <link rel="icon" href="{{ $faviconWithTimestamp }}" type="image/jpeg" sizes="16x16">
+    <link rel="shortcut icon" href="{{ $faviconWithTimestamp }}" type="image/jpeg">
     @else
-    <link rel="icon" href="{{ $faviconPath }}" sizes="any">
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="{{ $faviconWithTimestamp }}" type="image/x-icon" sizes="32x32">
+    <link rel="icon" href="{{ $faviconWithTimestamp }}" type="image/x-icon" sizes="16x16">
+    <link rel="shortcut icon" href="{{ $faviconWithTimestamp }}" type="image/x-icon">
     @endif
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 

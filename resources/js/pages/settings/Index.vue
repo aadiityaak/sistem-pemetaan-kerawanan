@@ -177,6 +177,16 @@ const saveAllSettings = async () => {
       const hasTextChange = form.value !== (setting.value || '')
       const hasFileChange = form.file !== null
       
+      // Debug: Log form data before submission
+      if (hasFileChange) {
+        console.log('Submitting file for:', setting.key, {
+          file: form.file,
+          fileName: form.file?.name,
+          fileSize: form.file?.size,
+          fileType: form.file?.type
+        })
+      }
+      
       if (hasTextChange || hasFileChange) {
         // Submit this setting update
         await new Promise<void>((resolve, reject) => {
@@ -184,6 +194,7 @@ const saveAllSettings = async () => {
             preserveScroll: true,
             forceFormData: true,
             onSuccess: () => {
+              console.log('Success updating:', setting.key)
               // Reset file input if it was a file upload
               if (form.file) {
                 form.file = null
@@ -196,7 +207,8 @@ const saveAllSettings = async () => {
               }
               resolve()
             },
-            onError: () => {
+            onError: (errors) => {
+              console.error('Error updating:', setting.key, errors)
               reject(new Error(`Failed to update ${setting.key}`))
             }
           })
