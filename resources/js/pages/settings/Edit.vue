@@ -2,10 +2,10 @@
   <AppLayout>
     <div class="py-12">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-          <div class="p-6 bg-white border-b border-gray-200">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-gray-700">
+          <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <div class="flex justify-between items-center mb-6">
-              <h2 class="text-2xl font-bold text-gray-900">Edit Setting</h2>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Edit Setting</h2>
               <div class="flex space-x-3">
                 <Link
                   :href="route('settings.show', setting.id)"
@@ -33,38 +33,38 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-6">
                   <div>
-                    <label for="key" class="block text-sm font-medium text-gray-700">Key *</label>
+                    <label for="key" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Key *</label>
                     <input
                       id="key"
                       v-model="form.key"
                       type="text"
                       required
-                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                       placeholder="app_name, app_logo, etc"
                     />
                     <div v-if="form.errors.key" class="mt-1 text-sm text-red-600">{{ form.errors.key }}</div>
                   </div>
 
                   <div>
-                    <label for="label" class="block text-sm font-medium text-gray-700">Label *</label>
+                    <label for="label" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Label *</label>
                     <input
                       id="label"
                       v-model="form.label"
                       type="text"
                       required
-                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3"
                       placeholder="Nama Aplikasi, Logo, etc"
                     />
                     <div v-if="form.errors.label" class="mt-1 text-sm text-red-600">{{ form.errors.label }}</div>
                   </div>
 
                   <div>
-                    <label for="type" class="block text-sm font-medium text-gray-700">Type *</label>
+                    <label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Type *</label>
                     <select
                       id="type"
                       v-model="form.type"
                       required
-                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3"
                     >
                       <option value="">Pilih Type</option>
                       <option value="text">Text</option>

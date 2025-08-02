@@ -72,10 +72,15 @@ class AppSettingController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(AppSettingRequest $settingRequest, Request $request, AppSetting $setting)
+    public function update(Request $request, AppSetting $setting)
     {
-        $data = $settingRequest->safe()->toArray();
+        // Validate only value and file
+        $request->validate([
+            'value' => 'nullable|string',
+            'file' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,gif,ico,svg'
+        ]);
 
+        $data = ['value' => $request->get('value')];
         $file = $request->hasFile('file') ? $request->file('file') : null;
 
         $updatedSetting = $this->settingsService->createOrUpdateSetting($data, $file, $setting);

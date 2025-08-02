@@ -2,10 +2,10 @@
   <AppLayout>
     <div class="py-12">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-          <div class="p-6 bg-white border-b border-gray-200">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 dark:border-gray-700">
+          <div class="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <div class="flex justify-between items-center mb-6">
-              <h2 class="text-2xl font-bold text-gray-900">Tambah Setting Baru</h2>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Tambah Setting Baru</h2>
               <Link
                 :href="route('settings.index')"
                 class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150"
@@ -21,38 +21,38 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-6">
                   <div>
-                    <label for="key" class="block text-sm font-medium text-gray-700">Key *</label>
+                    <label for="key" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Key *</label>
                     <input
                       id="key"
                       v-model="form.key"
                       type="text"
                       required
-                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3"
                       placeholder="app_name, app_logo, etc"
                     />
                     <div v-if="form.errors.key" class="mt-1 text-sm text-red-600">{{ form.errors.key }}</div>
                   </div>
 
                   <div>
-                    <label for="label" class="block text-sm font-medium text-gray-700">Label *</label>
+                    <label for="label" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Label *</label>
                     <input
                       id="label"
                       v-model="form.label"
                       type="text"
                       required
-                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3"
                       placeholder="Nama Aplikasi, Logo, etc"
                     />
                     <div v-if="form.errors.label" class="mt-1 text-sm text-red-600">{{ form.errors.label }}</div>
                   </div>
 
                   <div>
-                    <label for="type" class="block text-sm font-medium text-gray-700">Type *</label>
+                    <label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Type *</label>
                     <select
                       id="type"
                       v-model="form.type"
                       required
-                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3"
                     >
                       <option value="">Pilih Type</option>
                       <option value="text">Text</option>
@@ -65,12 +65,12 @@
                   </div>
 
                   <div>
-                    <label for="group" class="block text-sm font-medium text-gray-700">Group *</label>
+                    <label for="group" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Group *</label>
                     <select
                       id="group"
                       v-model="form.group"
                       required
-                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3"
                     >
                       <option value="">Pilih Group</option>
                       <option value="general">General</option>
@@ -84,7 +84,7 @@
 
                 <div class="space-y-6">
                   <div>
-                    <label for="value" class="block text-sm font-medium text-gray-700">Value</label>
+                    <label for="value" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Value</label>
                     <div v-if="form.type === 'boolean'">
                       <label class="inline-flex items-center mt-1">
                         <input
@@ -92,9 +92,9 @@
                           type="checkbox"
                           true-value="1"
                           false-value="0"
-                          class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                          class="rounded border-gray-300 dark:border-gray-600 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 bg-white dark:bg-gray-800"
                         />
-                        <span class="ml-2 text-sm text-gray-600">Aktif</span>
+                        <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">Aktif</span>
                       </label>
                     </div>
                     <div v-else-if="form.type === 'image' || form.type === 'file'">
@@ -103,10 +103,10 @@
                         ref="fileInput"
                         type="file"
                         :accept="form.type === 'image' ? 'image/*' : '*'"
-                        class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        class="mt-1 block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-800"
                         @change="handleFileChange"
                       />
-                      <p class="text-xs text-gray-500 mt-1">
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         <span v-if="form.type === 'image'">Format: JPG, PNG, GIF, ICO, SVG.</span>
                         Max: 2MB
                       </p>
@@ -116,7 +116,7 @@
                         id="value"
                         v-model.number="form.value"
                         type="number"
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3"
                         placeholder="0"
                       />
                     </div>
@@ -125,7 +125,7 @@
                         id="value"
                         v-model="form.value"
                         rows="3"
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3"
                         placeholder="Nilai setting"
                       ></textarea>
                     </div>
@@ -134,12 +134,12 @@
                   </div>
 
                   <div>
-                    <label for="description" class="block text-sm font-medium text-gray-700">Deskripsi</label>
+                    <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Deskripsi</label>
                     <textarea
                       id="description"
                       v-model="form.description"
                       rows="3"
-                      class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      class="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3"
                       placeholder="Deskripsi penggunaan setting ini"
                     ></textarea>
                     <div v-if="form.errors.description" class="mt-1 text-sm text-red-600">{{ form.errors.description }}</div>
@@ -147,7 +147,7 @@
                 </div>
               </div>
 
-              <div class="flex justify-end mt-6 pt-6 border-t border-gray-200">
+              <div class="flex justify-end mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
                 <button
                   type="submit"
                   :disabled="form.processing"

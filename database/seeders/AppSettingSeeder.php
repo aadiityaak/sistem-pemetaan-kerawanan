@@ -38,22 +38,6 @@ class AppSettingSeeder extends Seeder
         'description' => 'Icon yang ditampilkan di tab browser'
       ],
       [
-        'key' => 'app_logo',
-        'value' => null,
-        'type' => 'image',
-        'group' => 'appearance',
-        'label' => 'Logo Aplikasi',
-        'description' => 'Logo aplikasi yang ditampilkan di sidebar'
-      ],
-      [
-        'key' => 'dashboard_title',
-        'value' => 'Dashboard',
-        'type' => 'text',
-        'group' => 'general',
-        'label' => 'Judul Dashboard',
-        'description' => 'Judul yang ditampilkan di halaman dashboard'
-      ],
-      [
         'key' => 'footer_text',
         'value' => 'Peta Kriminal Indonesia © 2024',
         'type' => 'text',

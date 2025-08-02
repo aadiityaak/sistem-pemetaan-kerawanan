@@ -94,8 +94,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('sub-categories', \App\Http\Controllers\SubCategoryController::class);
     Route::post('/sub-categories/{subCategory}/toggle-status', [\App\Http\Controllers\SubCategoryController::class, 'toggleStatus'])->name('sub-categories.toggle-status');
 
-    // Settings Routes
-    Route::resource('settings', AppSettingController::class);
+    // Settings Routes (Fixed settings - only allow viewing and updating values)
+    Route::get('/settings', [AppSettingController::class, 'index'])->name('settings.index');
+    Route::get('/settings/{setting}', [AppSettingController::class, 'show'])->name('settings.show');
+    Route::put('/settings/{setting}', [AppSettingController::class, 'update'])->name('settings.update');
     Route::post('/settings/update-batch', [AppSettingController::class, 'updateBatch'])->name('settings.update-batch');
 });
 
