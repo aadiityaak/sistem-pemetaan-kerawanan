@@ -257,103 +257,91 @@ onMounted(async () => {
             </div>
 
             <!-- Statistics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
                 <!-- Total Data -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <div class="flex items-center">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                    <div class="flex flex-col items-center text-center">
                         <div 
-                            class="flex items-center justify-center w-12 h-12 rounded-lg mr-4"
+                            class="flex items-center justify-center w-10 h-10 rounded-lg mb-2"
                             :class="selectedCategory ? currentTheme.bgColor : 'bg-blue-100 dark:bg-blue-900'"
                         >
                             <svg 
-                                class="w-6 h-6" 
+                                class="w-5 h-5" 
                                 :class="selectedCategory ? 'text-white' : 'text-blue-600 dark:text-blue-400'"
                                 fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             >
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
                         </div>
-                        <div>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.totalData }}</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Total Data</p>
-                        </div>
+                        <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalData }}</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">Total Data</p>
                     </div>
                 </div>
 
                 <!-- Total Terdampak -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <div class="flex items-center">
-                        <div class="flex items-center justify-center w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg mr-4">
-                            <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="flex items-center justify-center w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-lg mb-2">
+                            <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                             </svg>
                         </div>
-                        <div>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.totalTerdampak.toLocaleString() }}</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Total Terdampak</p>
-                        </div>
+                        <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalTerdampak.toLocaleString() }}</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">Terdampak</p>
                     </div>
                 </div>
 
                 <!-- Total Sub Kategori / Kategori -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <div class="flex items-center">
-                        <div class="flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg mr-4">
-                            <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="flex items-center justify-center w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg mb-2">
+                            <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                             </svg>
                         </div>
-                        <div>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.totalSubCategories }}</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ selectedCategory ? 'Sub Kategori' : 'Kategori' }}</p>
-                        </div>
+                        <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalSubCategories }}</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">{{ selectedCategory ? 'Sub Kategori' : 'Kategori' }}</p>
                     </div>
                 </div>
 
                 <!-- Total Provinsi -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <div class="flex items-center">
-                        <div class="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg mr-4">
-                            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="flex items-center justify-center w-10 h-10 bg-green-100 dark:bg-green-900 rounded-lg mb-2">
+                            <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
                         </div>
-                        <div>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.totalProvinsi }}</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Provinsi</p>
-                        </div>
+                        <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalProvinsi }}</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">Provinsi</p>
                     </div>
                 </div>
 
                 <!-- Total Kabupaten/Kota -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <div class="flex items-center">
-                        <div class="flex items-center justify-center w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-lg mr-4">
-                            <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="flex items-center justify-center w-10 h-10 bg-yellow-100 dark:bg-yellow-900 rounded-lg mb-2">
+                            <svg class="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                             </svg>
                         </div>
-                        <div>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.totalKabupatenKota }}</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Kab/Kota</p>
-                        </div>
+                        <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalKabupatenKota }}</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">Kab/Kota</p>
                     </div>
                 </div>
 
                 <!-- Total Kecamatan -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <div class="flex items-center">
-                        <div class="flex items-center justify-center w-12 h-12 bg-red-100 dark:bg-red-900 rounded-lg mr-4">
-                            <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="flex items-center justify-center w-10 h-10 bg-red-100 dark:bg-red-900 rounded-lg mb-2">
+                            <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
                         </div>
-                        <div>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ statistics.totalKecamatan }}</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Kecamatan</p>
-                        </div>
+                        <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalKecamatan }}</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">Kecamatan</p>
                     </div>
                 </div>
             </div>

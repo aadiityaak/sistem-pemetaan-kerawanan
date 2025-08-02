@@ -4,6 +4,8 @@
     "scripts": {
         "build": "vite build",
         "build:ssr": "vite build && vite build --ssr",
+        "build:production": "bun run build && bun run build:zip",
+        "build:zip": "bun run scripts/build-deployment.js",
         "dev": "vite",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
@@ -33,6 +35,7 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "concurrently": "^9.0.1",
+        "jszip": "^3.10.1",
         "laravel-vite-plugin": "^2.0.0",
         "leaflet": "^1.9.4",
         "lucide-vue-next": "^0.468.0",

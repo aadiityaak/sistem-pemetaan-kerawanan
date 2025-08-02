@@ -14,7 +14,10 @@ import {
     Landmark,
     DollarSign,
     Heart,
-    Shield
+    Shield,
+    Database,
+    Tags,
+    FileText
 } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
@@ -24,6 +27,11 @@ const mainNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
         items: [
+            {
+                title: 'Dashboard',
+                href: '/dashboard',
+                icon: LayoutGrid,
+            },
             {
                 title: 'Ideologi',
                 href: '/dashboard/ideologi',
@@ -55,6 +63,23 @@ const mainNavItems: NavItem[] = [
         title: 'Data Monitoring',
         href: '/monitoring-data',
         icon: ShieldAlert,
+        items: [
+            {
+                title: 'Data Monitoring',
+                href: '/monitoring-data',
+                icon: Database,
+            },
+            {
+                title: 'Kategori',
+                href: '/categories',
+                icon: Tags,
+            },
+            {
+                title: 'Sub Kategori',
+                href: '/sub-categories',
+                icon: FileText,
+            },
+        ]
     },
     {
         title: 'Provinsi',

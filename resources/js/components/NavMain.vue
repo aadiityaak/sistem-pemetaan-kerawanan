@@ -12,14 +12,58 @@ import {
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { ChevronRight } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 
-defineProps<{
+const props = defineProps<{
     items: NavItem[];
 }>();
 
 const page = usePage();
 const openItems = ref<Set<string>>(new Set());
+
+// Save open state to localStorage
+const saveOpenState = () => {
+    localStorage.setItem('sidebar-open-items', JSON.stringify([...openItems.value]));
+};
+
+// Load open state from localStorage
+const loadOpenState = () => {
+    const saved = localStorage.getItem('sidebar-open-items');
+    if (saved) {
+        try {
+            const items = JSON.parse(saved);
+            openItems.value = new Set(items);
+        } catch {
+            console.warn('Failed to parse saved sidebar state');
+        }
+    }
+};
+
+// Check if current URL matches any sub-item and auto-open parent
+const autoOpenBasedOnUrl = () => {
+    const currentUrl = page.url;
+    
+    props.items.forEach(item => {
+        if (item.items && item.items.length > 0) {
+            // Check if current URL matches any sub-item
+            const hasActiveSubItem = item.items.some(subItem => {
+                // Check exact match first
+                if (subItem.href === currentUrl) return true;
+                
+                // Check if current URL starts with sub-item href (for nested routes)
+                if (currentUrl.startsWith(subItem.href) && subItem.href !== '/') {
+                    return true;
+                }
+                
+                return false;
+            });
+            
+            if (hasActiveSubItem) {
+                openItems.value.add(item.title);
+            }
+        }
+    });
+};
 
 const toggleItem = (title: string) => {
     if (openItems.value.has(title)) {
@@ -27,9 +71,23 @@ const toggleItem = (title: string) => {
     } else {
         openItems.value.add(title);
     }
+    saveOpenState();
 };
 
 const isOpen = (title: string) => openItems.value.has(title);
+
+// Initialize component
+onMounted(() => {
+    loadOpenState();
+    autoOpenBasedOnUrl();
+    saveOpenState();
+});
+
+// Watch for URL changes and auto-open relevant menus
+watch(() => page.url, () => {
+    autoOpenBasedOnUrl();
+    saveOpenState();
+});
 </script>
 
 <template>

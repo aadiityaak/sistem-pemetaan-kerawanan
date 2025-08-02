@@ -76,12 +76,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/kecamatan', [KecamatanController::class, 'index'])->name('kecamatan.index');
     Route::get('/kecamatan/{id}', [KecamatanController::class, 'show'])->name('kecamatan.show');
 
+    // Monitoring Data Routes
     Route::get('/monitoring-data', [MonitoringDataController::class, 'index'])->name('monitoring_data.index');
     Route::get('/monitoring-data/create', [MonitoringDataController::class, 'create'])->name('monitoring_data.create');
     Route::post('/monitoring-data', [MonitoringDataController::class, 'store'])->name('monitoring_data.store');
+    Route::get('/monitoring-data/{id}', [MonitoringDataController::class, 'show'])->name('monitoring_data.show');
     Route::get('/monitoring-data/{id}/edit', [MonitoringDataController::class, 'edit'])->name('monitoring_data.edit');
     Route::put('/monitoring-data/{id}', [MonitoringDataController::class, 'update'])->name('monitoring_data.update');
     Route::delete('/monitoring-data/{id}', [MonitoringDataController::class, 'destroy'])->name('monitoring_data.destroy');
+
+    // Categories Routes
+    Route::resource('categories', \App\Http\Controllers\CategoryController::class);
+    Route::post('/categories/{category}/toggle-status', [\App\Http\Controllers\CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
+
+    // Sub Categories Routes  
+    Route::resource('sub-categories', \App\Http\Controllers\SubCategoryController::class);
+    Route::post('/sub-categories/{subCategory}/toggle-status', [\App\Http\Controllers\SubCategoryController::class, 'toggleStatus'])->name('sub-categories.toggle-status');
 });
 
 require __DIR__ . '/settings.php';

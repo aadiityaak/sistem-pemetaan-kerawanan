@@ -1,6 +1,31 @@
 # Crime Map - Deployment Guide untuk Shared Hosting
 
-## Persiapan File untuk Upload
+## Quick Start - Automated Build
+
+### 🚀 Build & Package untuk Deployment
+
+```bash
+# Build assets dan buat deployment package
+bun run build:production
+```
+
+Script ini akan:
+
+1. Build Vite assets untuk production
+2. Membuat struktur folder yang siap upload
+3. Memodifikasi `index.php` untuk shared hosting
+4. Membuat template `.env.production`
+5. Generate file ZIP `crime-map-deployment.zip`
+
+**Output:**
+
+- `crime-map-deployment.zip` - File siap upload
+- Berisi folder `laravel-app/` dan `public_html/`
+- Instruksi deployment lengkap included
+
+---
+
+## Manual Deployment (Advanced)
 
 ### 1. Files yang HARUS di-upload ke shared hosting:
 
@@ -34,6 +59,62 @@
 ├── tsconfig.json
 └── README.md
 ```
+
+## Automated Deployment Process
+
+### Step 1: Build Production Package
+
+```bash
+bun run build:production
+```
+
+Ini akan:
+
+- ✅ Build assets dengan Vite
+- ✅ Copy semua file Laravel yang diperlukan
+- ✅ Modifikasi `index.php` untuk shared hosting
+- ✅ Buat template `.env.production`
+- ✅ Buat file ZIP siap upload
+
+### Step 2: Extract & Upload
+
+1. **Extract `crime-map-deployment.zip`**
+2. **Upload `laravel-app/` ke home directory hosting**
+    ```
+    /home/username/laravel-app/
+    ```
+3. **Upload isi `public_html/` ke public_html hosting**
+    ```
+    /public_html/
+    ```
+
+### Step 3: Configure Environment
+
+1. **Rename `.env.production` menjadi `.env`**
+2. **Edit database settings di `.env`**
+3. **Generate APP_KEY:**
+    ```bash
+    php artisan key:generate
+    ```
+
+### Step 4: Setup Database
+
+```bash
+php artisan migrate --force
+php artisan db:seed --force
+```
+
+### Step 5: Optimize
+
+```bash
+php artisan optimize
+```
+
+---
+
+## Manual Deployment (Advanced)
+
+Jika ingin deploy manual tanpa script otomatis:
 
 ## Langkah-langkah Deployment
 
