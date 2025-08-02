@@ -37,6 +37,7 @@ class MonitoringDataSeeder extends Seeder
           [
             'title' => 'Pencurian Kendaraan Bermotor',
             'description' => 'Terjadi pencurian sepeda motor di area parkir mall pada malam hari',
+            'jumlah_terdampak' => 1,
             'severity_level' => 'medium',
             'status' => 'active',
             'source' => 'Kepolisian',
@@ -50,6 +51,7 @@ class MonitoringDataSeeder extends Seeder
           [
             'title' => 'Laporan Terduga Teroris',
             'description' => 'Penemuan benda mencurigakan di area publik yang memerlukan penanganan Densus 88',
+            'jumlah_terdampak' => 200,
             'severity_level' => 'critical',
             'status' => 'resolved',
             'source' => 'Densus 88',
@@ -62,6 +64,7 @@ class MonitoringDataSeeder extends Seeder
           [
             'title' => 'Tawuran Antar Warga',
             'description' => 'Bentrokan antara dua kelompok warga akibat perselisihan lahan',
+            'jumlah_terdampak' => 15,
             'severity_level' => 'high',
             'status' => 'monitoring',
             'source' => 'Satpol PP',
@@ -74,6 +77,7 @@ class MonitoringDataSeeder extends Seeder
           [
             'title' => 'Banjir Akibat Hujan Deras',
             'description' => 'Banjir melanda 3 kelurahan akibat luapan sungai dan hujan deras berkelanjutan',
+            'jumlah_terdampak' => 600,
             'severity_level' => 'high',
             'status' => 'active',
             'source' => 'BNPB',
@@ -86,6 +90,7 @@ class MonitoringDataSeeder extends Seeder
           [
             'title' => 'Serangan Phishing Banking',
             'description' => 'Laporan nasabah terkait upaya pencurian data rekening melalui email palsu',
+            'jumlah_terdampak' => 25,
             'severity_level' => 'medium',
             'status' => 'resolved',
             'source' => 'OJK',
@@ -105,6 +110,7 @@ class MonitoringDataSeeder extends Seeder
           [
             'title' => 'Penyebaran Konten Radikal',
             'description' => 'Terdeteksi penyebaran konten radikal melalui media sosial di wilayah tertentu',
+            'jumlah_terdampak' => 500,
             'severity_level' => 'high',
             'status' => 'active',
             'source' => 'BNPT',
@@ -117,6 +123,7 @@ class MonitoringDataSeeder extends Seeder
           [
             'title' => 'Gerakan Separatis',
             'description' => 'Aktivitas kelompok yang diduga ingin memisahkan diri dari NKRI',
+            'jumlah_terdampak' => 1000,
             'severity_level' => 'critical',
             'status' => 'monitoring',
             'source' => 'TNI',
@@ -129,6 +136,7 @@ class MonitoringDataSeeder extends Seeder
           [
             'title' => 'Propaganda Ekstremis',
             'description' => 'Ditemukan pamflet dan poster berisi ajakan ekstremisme di area kampus',
+            'jumlah_terdampak' => 200,
             'severity_level' => 'medium',
             'status' => 'resolved',
             'source' => 'Kemendikbud',
@@ -383,6 +391,7 @@ class MonitoringDataSeeder extends Seeder
           'longitude' => $longitude,
           'title' => $item['title'],
           'description' => $item['description'],
+          'jumlah_terdampak' => $item['jumlah_terdampak'] ?? null,
           'additional_data' => $item['additional_data'],
           'severity_level' => $item['severity_level'],
           'status' => $item['status'],
@@ -470,6 +479,7 @@ class MonitoringDataSeeder extends Seeder
           'longitude' => $longitude,
           'title' => $title,
           'description' => 'Deskripsi untuk ' . $title . ' di wilayah ' . $randomProvince->nama,
+          'jumlah_terdampak' => rand(1, 100), // Random jumlah terdampak 1-100 orang
           'additional_data' => [
             'reporter' => 'Masyarakat',
             'verified' => rand(0, 1) == 1

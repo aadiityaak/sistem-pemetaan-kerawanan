@@ -22,6 +22,7 @@ return new class extends Migration
       $table->decimal('longitude', 10, 7);
       $table->string('title'); // Judul kejadian/data
       $table->text('description')->nullable(); // Deskripsi detail
+      $table->integer('jumlah_terdampak')->nullable(); // Jumlah orang yang terlibat atau terdampak
       $table->json('additional_data')->nullable(); // Data tambahan (fleksibel per kategori)
       $table->enum('severity_level', ['low', 'medium', 'high', 'critical'])->default('medium');
       $table->enum('status', ['active', 'resolved', 'monitoring', 'archived'])->default('active');

@@ -20,6 +20,7 @@ class MonitoringData extends Model
     'longitude',
     'title',
     'description',
+    'jumlah_terdampak',
     'additional_data',
     'severity_level',
     'status',

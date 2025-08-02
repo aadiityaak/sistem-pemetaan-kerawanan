@@ -17,7 +17,7 @@ return new class extends Migration
       $table->string('name'); // Radikalisme, Korupsi, Inflasi, etc.
       $table->string('slug')->unique(); // radikalisme, korupsi, inflasi, etc.
       $table->string('description')->nullable();
-      $table->string('icon')->nullable(); // Icon name for UI
+      $table->string('icon', 10)->nullable(); // Icon name for UI (max 10 chars)
       $table->string('color')->nullable(); // Color code for UI (inherit from parent if null)
       $table->boolean('is_active')->default(true);
       $table->integer('sort_order')->default(0);

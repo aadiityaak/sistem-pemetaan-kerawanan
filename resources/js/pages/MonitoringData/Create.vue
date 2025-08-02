@@ -69,6 +69,7 @@ const form = useForm({
     longitude: '',
     title: '',
     description: '',
+    jumlah_terdampak: '',
     severity_level: 'medium',
     status: 'active',
     incident_date: new Date().toISOString().split('T')[0],
@@ -227,6 +228,24 @@ onMounted(() => {
                                         placeholder="Masukkan deskripsi detail"
                                     ></textarea>
                                     <div v-if="form.errors.description" class="text-red-500 text-sm mt-1">{{ form.errors.description }}</div>
+                                </div>
+
+                                <!-- Jumlah Terdampak -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Jumlah Terdampak
+                                    </label>
+                                    <input
+                                        v-model="form.jumlah_terdampak"
+                                        type="number"
+                                        min="0"
+                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                                        placeholder="Masukkan jumlah orang yang terdampak"
+                                    />
+                                    <div v-if="form.errors.jumlah_terdampak" class="text-red-500 text-sm mt-1">{{ form.errors.jumlah_terdampak }}</div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        Jumlah orang yang terlibat atau terdampak dalam kejadian ini
+                                    </p>
                                 </div>
 
                                 <!-- Incident Date -->

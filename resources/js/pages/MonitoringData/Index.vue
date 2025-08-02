@@ -16,6 +16,7 @@ interface MonitoringData {
     longitude: number;
     title: string;
     description: string;
+    jumlah_terdampak: number | null;
     severity_level: string;
     status: string;
     incident_date: string;
@@ -266,6 +267,9 @@ const hasActiveFilters = computed(() => {
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Lokasi
                                 </th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    Terdampak
+                                </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Level & Status
                                 </th>
@@ -297,6 +301,14 @@ const hasActiveFilters = computed(() => {
                                     <div class="text-sm text-gray-900 dark:text-white">{{ data.provinsi.nama }}</div>
                                     <div class="text-sm text-gray-500 dark:text-gray-400">{{ data.kabupaten_kota.nama }}</div>
                                     <div class="text-sm text-gray-500 dark:text-gray-400">{{ data.kecamatan.nama }}</div>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                        {{ data.jumlah_terdampak ? data.jumlah_terdampak.toLocaleString() : '-' }}
+                                    </div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                                        {{ data.jumlah_terdampak ? 'orang' : 'tidak ada data' }}
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mb-1" :class="getSeverityColor(data.severity_level)">

@@ -36,6 +36,7 @@ class DashboardController extends Controller
     $totalProvinsi = $monitoringData->groupBy('provinsi_id')->count();
     $totalKabupatenKota = $monitoringData->groupBy('kabupaten_kota_id')->count();
     $totalKecamatan = $monitoringData->groupBy('kecamatan_id')->count();
+    $totalTerdampak = $monitoringData->sum('jumlah_terdampak');
 
     // Jika ada filter kategori, hitung sub categories, jika tidak hitung total categories
     $totalSubCategories = $selectedCategory
@@ -93,6 +94,7 @@ class DashboardController extends Controller
         'totalProvinsi' => $totalProvinsi,
         'totalKabupatenKota' => $totalKabupatenKota,
         'totalKecamatan' => $totalKecamatan,
+        'totalTerdampak' => $totalTerdampak,
         'totalSubCategories' => $totalSubCategories,
         'dataBySubCategory' => $dataBySubCategory,
         'dataByProvinsi' => $dataByProvinsi,

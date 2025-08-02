@@ -16,6 +16,7 @@ interface MonitoringData {
     longitude: number;
     title: string;
     description: string;
+    jumlah_terdampak: number | null;
     severity_level: string;
     status: string;
     incident_date: string;
@@ -251,6 +252,15 @@ onMounted(async () => {
                             <div v-if="monitoringData.description">
                                 <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Deskripsi</label>
                                 <div class="text-gray-900 dark:text-white whitespace-pre-wrap">{{ monitoringData.description }}</div>
+                            </div>
+
+                            <!-- Jumlah Terdampak -->
+                            <div v-if="monitoringData.jumlah_terdampak">
+                                <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Jumlah Terdampak</label>
+                                <div class="text-gray-900 dark:text-white">
+                                    <span class="text-2xl font-bold">{{ monitoringData.jumlah_terdampak.toLocaleString() }}</span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400 ml-1">orang</span>
+                                </div>
                             </div>
 
                             <!-- Classification -->
