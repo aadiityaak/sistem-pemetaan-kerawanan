@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, readdirSync } from 'fs';
 import JSZip from 'jszip';
-import { join, resolve } from 'path';
+import { join, resolve, dirname } from 'path';
 
 console.log('🚀 Building deployment package for Crime Map...\n');
 
@@ -80,14 +80,14 @@ mkdirSync(publicHtmlDir, { recursive: true });
 console.log('\n📦 Copying public files...');
 includePublicFiles.forEach((file) => {
     const srcPath = join(projectRoot, file);
-    const fileName = file.replace('public/', '');
+    const fileName = file.replace('public/', '').replace('public\\', '');
     const destPath = join(publicHtmlDir, fileName);
 
     if (existsSync(srcPath)) {
         try {
             // Create directory if needed
-            const destDir = destPath.substring(0, destPath.lastIndexOf('/'));
-            if (destDir !== publicHtmlDir && !existsSync(destDir)) {
+            const destDir = dirname(destPath);
+            if (!existsSync(destDir)) {
                 mkdirSync(destDir, { recursive: true });
             }
 
@@ -240,27 +240,29 @@ console.log('   ✓ Deployment instructions created');
 console.log('\n📦 Creating ZIP file...');
 const zip = new JSZip();
 
-// Function to add directory to zip
-async function addDirectoryToZip(dirPath, zipFolder = '') {
-    const items = (await Bun.file(dirPath).exists()) ? (await import('fs')).readdirSync(dirPath, { withFileTypes: true }) : [];
+// Function to add directory to zip (synchronous version)
+function addDirectoryToZip(dirPath, zipFolder = '') {
+    const items = readdirSync(dirPath, { withFileTypes: true });
 
     for (const item of items) {
         const itemPath = join(dirPath, item.name);
         const zipPath = zipFolder ? `${zipFolder}/${item.name}` : item.name;
 
         if (item.isDirectory()) {
-            await addDirectoryToZip(itemPath, zipPath);
+            addDirectoryToZip(itemPath, zipPath);
         } else {
             const fileContent = readFileSync(itemPath);
             zip.file(zipPath, fileContent);
+            console.log(`   📄 Added: ${zipPath}`);
         }
     }
 }
 
 // Add all files to zip
-await addDirectoryToZip(buildDir);
+addDirectoryToZip(buildDir);
 
 // Generate ZIP
+console.log('\n🔄 Generating ZIP file...');
 const zipContent = await zip.generateAsync({
     type: 'nodebuffer',
     compression: 'DEFLATE',
