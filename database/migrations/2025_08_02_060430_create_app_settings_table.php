@@ -13,10 +13,10 @@ return new class() extends Migration
     {
         Schema::create('app_settings', function (Blueprint $table) {
             $table->id();
-            $table->string('key')->unique();
+            $table->string('key', 100)->unique();
             $table->text('value')->nullable();
-            $table->string('type')->default('text'); // text, image, file, boolean, number
-            $table->string('group')->default('general'); // general, appearance, etc
+            $table->string('type', 50)->default('text'); // text, image, file, boolean, number
+            $table->string('group', 50)->default('general'); // general, appearance, etc
             $table->string('label');
             $table->text('description')->nullable();
             $table->timestamps();

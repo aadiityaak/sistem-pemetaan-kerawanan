@@ -24,3 +24,5 @@ yarn-error.log
 /.zed
 build-deployment/
 crime-map-deployment.zip
+temp-check/
+deployment-temp/

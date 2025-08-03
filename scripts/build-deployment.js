@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, readdirSync } from 'fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import JSZip from 'jszip';
-import { join, resolve, dirname } from 'path';
+import { dirname, join, resolve } from 'path';
 
 console.log('🚀 Building deployment package for Crime Map...\n');
 
@@ -83,6 +83,18 @@ includePublicFiles.forEach((file) => {
     const fileName = file.replace('public/', '').replace('public\\', '');
     const destPath = join(publicHtmlDir, fileName);
 
+    // Skip hot file that might reference dev server
+    if (fileName === 'hot') {
+        console.log(`   ⚠ Skipping ${fileName} (dev server reference)...`);
+        return;
+    }
+
+    // Skip any Vite dev server references
+    if (fileName.includes('vite') && fileName.includes('dev')) {
+        console.log(`   ⚠ Skipping ${fileName} (dev server reference)...`);
+        return;
+    }
+
     if (existsSync(srcPath)) {
         try {
             // Create directory if needed
@@ -119,9 +131,18 @@ if (existsSync(indexPhpPath)) {
     console.log('   ✓ index.php modified for shared hosting');
 }
 
-// Create .env.production template
-console.log('\n⚙️ Creating .env.production template...');
-const envTemplate = `APP_NAME="Crime Map"
+// Copy existing .env.production if exists, otherwise create template
+console.log('\n⚙️ Setting up .env.production...');
+const sourceEnvProd = join(projectRoot, '.env.production');
+const targetEnvProd = join(laravelAppDir, '.env.production');
+
+if (existsSync(sourceEnvProd)) {
+    // Copy existing .env.production
+    cpSync(sourceEnvProd, targetEnvProd);
+    console.log('   ✓ Copied existing .env.production');
+} else {
+    // Create .env.production template if not exists
+    const envTemplate = `APP_NAME="Crime Map"
 APP_ENV=production
 APP_KEY=base64:GENERATE_NEW_KEY_HERE
 APP_DEBUG=false
@@ -182,55 +203,128 @@ VITE_PUSHER_SCHEME="\${PUSHER_SCHEME}"
 VITE_PUSHER_APP_CLUSTER="\${PUSHER_APP_CLUSTER}"
 `;
 
-writeFileSync(join(laravelAppDir, '.env.production'), envTemplate);
-console.log('   ✓ .env.production template created');
+    writeFileSync(targetEnvProd, envTemplate);
+    console.log('   ✓ .env.production template created');
+}
 
 // Create deployment instructions
 console.log('\n📝 Creating deployment instructions...');
-const instructions = `# Crime Map - Deployment Instructions
+const instructions = `// Create deployment instructions
+console.log('📝 Creating deployment instructions...');
+const deploymentInstructions = [
+    '# Crime Map Deployment Instructions',
+    '',
+    '## File Structure Setelah Upload:',
+    '/root-hosting-directory/',
+    '├── laravel-app/           # Laravel application files',
+    '└── public_html/           # Public web files',
+    '    ├── build/             # Built assets',
+    '    ├── index.php         # Modified entry point',
+    '    └── .htaccess         # URL rewriting rules',
+    '',
+    '## Step-by-Step Deployment:',
+    '',
+    '### 1. Upload Files',
+    '- Extract crime-map-deployment.zip',
+    '- Upload folder laravel-app/ to root hosting directory (bukan di public_html)',
+    '- Upload isi folder public_html/ ke direktori public_html hosting',
+    '',
+    '### 2. Configure Environment',
+    '- Copy .env.production di laravel-app/ menjadi .env',
+    '- Edit .env sesuai database dan domain hosting:',
+    '  APP_URL=https://your-domain.com',
+    '  DB_DATABASE=your_database_name',
+    '  DB_USERNAME=your_database_user',
+    '  DB_PASSWORD=your_database_password',
+    '',
+    '### 3. Set File Permissions (via cPanel File Manager atau FTP)',
+    'laravel-app/ - 755',
+    'laravel-app/storage/ - 755 (recursive)',
+    'laravel-app/bootstrap/cache/ - 755 (recursive)',
+    'public_html/ - 755',
+    '',
+    '### 4. Clear Cache (PENTING!)',
+    'Via SSH atau buat file PHP temporary untuk clear cache:',
+    '',
+    'Option A: Via SSH',
+    'cd laravel-app',
+    'php artisan config:clear',
+    'php artisan route:clear',
+    'php artisan view:clear',
+    'php artisan cache:clear',
+    '',
+    'Option B: Via File PHP (jika tidak ada SSH)',
+    'Create file clear-cache.php di public_html:',
+    '',
+    '<?php',
+    '// clear-cache.php - Delete after use!',
+    'require_once "../laravel-app/vendor/autoload.php";',
+    '$app = require_once "../laravel-app/bootstrap/app.php";',
+    '$artisan = $app->make("Illuminate\\Contracts\\Console\\Kernel");',
+    '$artisan->call("config:clear");',
+    '$artisan->call("route:clear");  ',
+    '$artisan->call("view:clear");',
+    '$artisan->call("cache:clear");',
+    'echo "Cache cleared successfully! Please delete this file.";',
+    '?>',
+    '',
+    'Akses: https://your-domain.com/clear-cache.php',
+    'HAPUS file ini setelah digunakan!',
+    '',
+    '### 5. Run Database Migration',
+    'cd laravel-app',
+    'php artisan migrate --force',
+    'php artisan db:seed --force  # Optional: seed data',
+    '',
+    '### 6. Troubleshooting',
+    '',
+    'Error: Still showing Vite dev server references',
+    '- Clear browser cache (Ctrl+F5)',
+    '- Delete hosting cache if any',
+    '- Run clear-cache.php script',
+    '- Check .env APP_URL is correct',
+    '',
+    'Error: 500 Internal Server Error',
+    '- Check file permissions',
+    '- Ensure .env exists and is readable',
+    '- Check error logs in hosting panel',
+    '',
+    'Error: Database Connection',
+    '- Verify database credentials in .env',
+    '- Ensure database exists',
+    '- Check if hosting requires specific host (not 127.0.0.1)',
+    '',
+    'Error: CSS/JS Not Loading',
+    '- Verify build/ folder uploaded correctly',
+    '- Check .htaccess file exists in public_html',
+    '- Clear browser cache',
+    '',
+    '### 7. Post-Deployment Checks',
+    '- Homepage loads without errors',
+    '- Assets (CSS/JS) loading correctly',
+    '- Login/register functionality works',
+    '- Maps are displaying',
+    '- No console errors in browser',
+    '',
+    '## Security Notes:',
+    '- Change APP_KEY if needed: php artisan key:generate',
+    '- Set APP_DEBUG=false in production',
+    '- Use HTTPS in production',
+    '- Regular backup of database',
+    '- Keep Laravel updated',
+    '',
+    '## Support:',
+    'If you encounter issues, check Laravel logs at:',
+    'laravel-app/storage/logs/laravel.log',
+    '',
+    'Happy deploying!'
+].join('\n');
 
-## Folder Structure:
-- laravel-app/ -> Upload ke folder di atas public_html (contoh: /home/username/laravel-app/)
-- public_html/ -> Upload isi folder ini ke public_html/ di hosting
+writeFileSync(join(buildDir, 'DEPLOYMENT-INSTRUCTIONS.txt'), deploymentInstructions);
+console.log('   ✓ Deployment instructions created');
 
-## Quick Setup:
-
-1. **Upload Files:**
-   - Upload folder 'laravel-app' ke home directory hosting
-   - Upload isi folder 'public_html' ke public_html directory hosting
-
-2. **Database Setup:**
-   - Buat database MySQL di hosting panel
-   - Import file database jika ada
-
-3. **Environment Configuration:**
-   - Rename .env.production menjadi .env
-   - Edit .env dengan detail database dan domain
-   - Generate APP_KEY baru: php artisan key:generate
-
-4. **Set Permissions:**
-   chmod -R 755 storage/
-   chmod -R 755 bootstrap/cache/
-
-5. **Run Migrations:**
-   php artisan migrate --force
-   php artisan db:seed --force
-
-6. **Optimize for Production:**
-   php artisan config:cache
-   php artisan route:cache
-   php artisan view:cache
-
-## File sudah dimodifikasi:
-- index.php sudah disesuaikan untuk shared hosting
-- Path autoload dan bootstrap sudah diupdate
-
-## Important Notes:
-- Jangan lupa generate APP_KEY baru di production
-- Set APP_DEBUG=false untuk production
-- Test semua fungsi setelah deployment
-
-Built on: ${new Date().toLocaleString()}
+writeFileSync(join(buildDir, 'DEPLOYMENT-INSTRUCTIONS.txt'), deploymentInstructions);
+console.log('   ✓ Deployment instructions created');
 `;
 
 writeFileSync(join(buildDir, 'DEPLOYMENT-INSTRUCTIONS.txt'), instructions);
