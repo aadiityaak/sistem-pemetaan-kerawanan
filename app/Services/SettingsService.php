@@ -14,10 +14,10 @@ class SettingsService
      */
     public function handleFileUpload(UploadedFile $file, string $type): string
     {
-        $filename = time().'_'.$file->getClientOriginalName();
+        $filename = time() . '_' . $file->getClientOriginalName();
         $path = $file->storeAs('settings', $filename, 'public');
 
-        return '/storage/'.$path;
+        return '/storage/' . $path;
     }
 
     /**
@@ -42,6 +42,19 @@ class SettingsService
             'setting_exists' => $setting !== null,
             'setting_id' => $setting?->id,
         ]);
+
+        // Ensure required fields are present
+        if (!isset($data['label']) || empty($data['label'])) {
+            $data['label'] = ucfirst(str_replace('_', ' ', $data['key']));
+        }
+
+        if (!isset($data['group']) || empty($data['group'])) {
+            $data['group'] = 'general';
+        }
+
+        if (!isset($data['description'])) {
+            $data['description'] = null;
+        }
 
         // Handle file upload for image/file types
         if ($file && in_array($data['type'], ['image', 'file'])) {

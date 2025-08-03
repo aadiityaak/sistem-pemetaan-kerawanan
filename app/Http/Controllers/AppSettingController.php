@@ -101,7 +101,24 @@ class AppSettingController extends Controller
 
         $request->validate($rules);
 
-        $data = ['key' => $key, 'value' => $request->get('value'), 'type' => in_array($key, ['app_favicon', 'app_logo']) ? 'image' : 'text'];
+        // Get setting configuration with proper labels
+        $settingLabels = [
+            'app_name' => 'Nama Aplikasi',
+            'app_description' => 'Deskripsi Aplikasi',
+            'footer_text' => 'Teks Footer',
+            'app_favicon' => 'Favicon',
+            'app_logo' => 'Logo Aplikasi',
+        ];
+
+        $data = [
+            'key' => $key,
+            'value' => $request->get('value'),
+            'type' => in_array($key, ['app_favicon', 'app_logo']) ? 'image' : 'text',
+            'label' => $settingLabels[$key] ?? ucfirst(str_replace('_', ' ', $key)),
+            'group' => in_array($key, ['app_favicon', 'app_logo']) ? 'appearance' : 'general',
+            'description' => null,
+        ];
+
         $file = $request->hasFile('file') ? $request->file('file') : null;
 
         Log::info('Prepared data for update', [
