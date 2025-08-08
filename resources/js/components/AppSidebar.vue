@@ -56,7 +56,7 @@ const mainNavItems = ref<NavItem[]>([
     },
     {
         title: 'Kalender Kamtibmas',
-        href: '/kamtipmas-calendar',
+        href: '/kamtibmas-calendar',
         icon: Calendar,
     },
     {

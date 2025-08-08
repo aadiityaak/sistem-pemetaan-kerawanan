@@ -106,12 +106,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/sub-categories/{subCategory}/toggle-status', [\App\Http\Controllers\SubCategoryController::class, 'toggleStatus'])->name('sub-categories.toggle-status');
 
     // Kamtibmas Calendar Routes
-    Route::get('/kamtipmas-calendar', [KamtibmasEventController::class, 'index'])->name('kamtipmas-calendar.index');
-    Route::post('/kamtipmas-events', [KamtibmasEventController::class, 'store'])->name('kamtipmas-events.store');
-    Route::get('/kamtipmas-events/{kamtipmasEvent}', [KamtibmasEventController::class, 'show'])->name('kamtipmas-events.show');
-    Route::put('/kamtipmas-events/{kamtipmasEvent}', [KamtibmasEventController::class, 'update'])->name('kamtipmas-events.update');
-    Route::delete('/kamtipmas-events/{kamtipmasEvent}', [KamtibmasEventController::class, 'destroy'])->name('kamtipmas-events.destroy');
-    Route::post('/kamtipmas-events/{kamtipmasEvent}/toggle-status', [KamtibmasEventController::class, 'toggleStatus'])->name('kamtipmas-events.toggle-status');
+    Route::get('/kamtibmas-calendar', [KamtibmasEventController::class, 'index'])->name('kamtibmas-calendar.index');
+    Route::post('/kamtibmas-events', [KamtibmasEventController::class, 'store'])->name('kamtibmas-events.store');
+    Route::get('/kamtibmas-events/{kamtibmasEvent}', [KamtibmasEventController::class, 'show'])->name('kamtibmas-events.show');
+    Route::put('/kamtibmas-events/{kamtibmasEvent}', [KamtibmasEventController::class, 'update'])->name('kamtibmas-events.update');
+    Route::delete('/kamtibmas-events/{kamtibmasEvent}', [KamtibmasEventController::class, 'destroy'])->name('kamtibmas-events.destroy');
+    Route::post('/kamtibmas-events/{kamtibmasEvent}/toggle-status', [KamtibmasEventController::class, 'toggleStatus'])->name('kamtibmas-events.toggle-status');
 
     // Settings Routes (Fixed settings - only allow viewing and updating values)
     Route::get('/settings', [AppSettingController::class, 'index'])->name('settings.index');

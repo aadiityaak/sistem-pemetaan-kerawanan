@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
@@ -222,16 +223,13 @@ onMounted(() => {
                                 </div>
 
                                 <!-- Description -->
-                                <div>
-                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Deskripsi </label>
-                                    <textarea
-                                        v-model="form.description"
-                                        rows="4"
-                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                        placeholder="Masukkan deskripsi detail"
-                                    ></textarea>
-                                    <div v-if="form.errors.description" class="mt-1 text-sm text-red-500">{{ form.errors.description }}</div>
-                                </div>
+                                <RichTextEditor
+                                    v-model="form.description"
+                                    label="Deskripsi"
+                                    placeholder="Masukkan deskripsi detail tentang kejadian..."
+                                    :error="form.errors.description"
+                                    help-text="Berikan deskripsi lengkap mengenai kejadian yang terjadi"
+                                />
 
                                 <!-- Jumlah Terdampak -->
                                 <div>

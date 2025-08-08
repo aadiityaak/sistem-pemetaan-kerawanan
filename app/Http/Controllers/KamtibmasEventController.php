@@ -92,17 +92,17 @@ class KamtibmasEventController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(KamtibmasEvent $kamtipmasEvent)
+    public function show(KamtibmasEvent $kamtibmasEvent)
     {
         return response()->json([
             'event' => [
-                'id' => $kamtipmasEvent->id,
-                'title' => $kamtipmasEvent->title,
-                'start_date' => $kamtipmasEvent->start_date->format('Y-m-d'),
-                'end_date' => $kamtipmasEvent->end_date->format('Y-m-d'),
-                'description' => $kamtipmasEvent->description,
-                'color' => $kamtipmasEvent->color,
-                'is_active' => $kamtipmasEvent->is_active,
+                'id' => $kamtibmasEvent->id,
+                'title' => $kamtibmasEvent->title,
+                'start_date' => $kamtibmasEvent->start_date->format('Y-m-d'),
+                'end_date' => $kamtibmasEvent->end_date->format('Y-m-d'),
+                'description' => $kamtibmasEvent->description,
+                'color' => $kamtibmasEvent->color,
+                'is_active' => $kamtibmasEvent->is_active,
             ]
         ]);
     }
@@ -110,7 +110,7 @@ class KamtibmasEventController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, KamtibmasEvent $kamtipmasEvent)
+    public function update(Request $request, KamtibmasEvent $kamtibmasEvent)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -120,19 +120,19 @@ class KamtibmasEventController extends Controller
             'color' => 'required|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
         ]);
 
-        $kamtipmasEvent->update($validated);
+        $kamtibmasEvent->update($validated);
 
         return response()->json([
             'message' => 'Event berhasil diperbarui.',
             'event' => [
-                'id' => $kamtipmasEvent->id,
-                'title' => $kamtipmasEvent->title,
-                'start' => $kamtipmasEvent->start_date->format('Y-m-d'),
-                'end' => $kamtipmasEvent->end_date->format('Y-m-d'),
-                'description' => $kamtipmasEvent->description,
-                'color' => $kamtipmasEvent->color,
-                'isMultiDay' => $kamtipmasEvent->is_multi_day,
-                'duration' => $kamtipmasEvent->duration,
+                'id' => $kamtibmasEvent->id,
+                'title' => $kamtibmasEvent->title,
+                'start' => $kamtibmasEvent->start_date->format('Y-m-d'),
+                'end' => $kamtibmasEvent->end_date->format('Y-m-d'),
+                'description' => $kamtibmasEvent->description,
+                'color' => $kamtibmasEvent->color,
+                'isMultiDay' => $kamtibmasEvent->is_multi_day,
+                'duration' => $kamtibmasEvent->duration,
             ]
         ]);
     }
@@ -140,9 +140,9 @@ class KamtibmasEventController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(KamtibmasEvent $kamtipmasEvent)
+    public function destroy(KamtibmasEvent $kamtibmasEvent)
     {
-        $kamtipmasEvent->delete();
+        $kamtibmasEvent->delete();
 
         return response()->json([
             'message' => 'Event berhasil dihapus.'
@@ -152,11 +152,11 @@ class KamtibmasEventController extends Controller
     /**
      * Toggle event status
      */
-    public function toggleStatus(KamtibmasEvent $kamtipmasEvent)
+    public function toggleStatus(KamtibmasEvent $kamtibmasEvent)
     {
-        $kamtipmasEvent->update(['is_active' => !$kamtipmasEvent->is_active]);
+        $kamtibmasEvent->update(['is_active' => !$kamtibmasEvent->is_active]);
 
-        $status = $kamtipmasEvent->is_active ? 'diaktifkan' : 'dinonaktifkan';
+        $status = $kamtibmasEvent->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
         return response()->json([
             'message' => "Event berhasil {$status}."

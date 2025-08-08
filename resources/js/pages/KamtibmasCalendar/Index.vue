@@ -35,7 +35,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
     {
         title: 'Kalender Kamtibmas',
-        href: '/kamtipmas-calendar',
+        href: '/kamtibmas-calendar',
     },
 ];
 
@@ -128,7 +128,7 @@ const goToToday = () => {
 
 const navigateToMonth = () => {
     const dateParam = currentDate.value.toISOString().slice(0, 7); // YYYY-MM
-    router.get('/kamtipmas-calendar', { date: dateParam }, {
+    router.get('/kamtibmas-calendar', { date: dateParam }, {
         preserveState: true,
         replace: true,
     });
@@ -162,7 +162,7 @@ const editEvent = async (event: KamtibmasEvent) => {
         isLoading.value = true;
         resetForm();
         
-        const response = await fetch(`/kamtipmas-events/${event.id}`, {
+        const response = await fetch(`/kamtibmas-events/${event.id}`, {
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
@@ -244,8 +244,8 @@ const saveEvent = async () => {
         }
         
         const url = editingEvent.value 
-            ? `/kamtipmas-events/${editingEvent.value.id}`
-            : '/kamtipmas-events';
+            ? `/kamtibmas-events/${editingEvent.value.id}`
+            : '/kamtibmas-events';
         
         const method = editingEvent.value ? 'PUT' : 'POST';
         
@@ -305,7 +305,7 @@ const deleteEvent = async (event: KamtibmasEvent) => {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
                              (window as any).Laravel?.csrfToken || '';
             
-            const response = await fetch(`/kamtipmas-events/${event.id}`, {
+            const response = await fetch(`/kamtibmas-events/${event.id}`, {
                 method: 'DELETE',
                 headers: {
                     'Accept': 'application/json',
