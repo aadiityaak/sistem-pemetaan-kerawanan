@@ -17,9 +17,21 @@ class CategorySeeder extends Seeder
                 'icon' => '🧠',
                 'color' => '#3B82F6',
                 'children' => [
-                    ['name' => 'Ideologi Kanan', 'icon' => '🟦'],
-                    ['name' => 'Ideologi Kiri', 'icon' => '🟥'],
-                    ['name' => 'Isu Menonjol', 'icon' => '📌'],
+                    [
+                        'name' => 'Ideologi Kanan', 
+                        'icon' => '🟦',
+                        'description' => 'Contoh: Front Pembela Islam (FPI), Jamaah Islamiah (JI), Jamaah Ansharut Daulah (JAD), Negara Islam Indonesia (NII), Mujahidin Indonesia Barat (MIB), Mujahidin Indonesia Timur (MIT)'
+                    ],
+                    [
+                        'name' => 'Ideologi Kiri', 
+                        'icon' => '🟥',
+                        'description' => 'Contoh: Partai Komunis Indonesia (PKI), Gerwani Pemuda Rakyat, Lekra, Serikat Buruh'
+                    ],
+                    [
+                        'name' => 'Isu Menonjol', 
+                        'icon' => '📌',
+                        'description' => 'Isu-isu ideologi yang sedang menonjol dan mendapat perhatian publik'
+                    ],
                 ],
             ],
             'Politik' => [
@@ -27,9 +39,21 @@ class CategorySeeder extends Seeder
                 'icon' => '🏛️',
                 'color' => '#8B5CF6',
                 'children' => [
-                    ['name' => 'Dalam Negeri', 'icon' => '🏠'],
-                    ['name' => 'Luar Negeri', 'icon' => '🌍'],
-                    ['name' => 'Isu Menonjol', 'icon' => '📌'],
+                    [
+                        'name' => 'Dalam Negeri', 
+                        'icon' => '🏠',
+                        'description' => 'Isu politik domestik, termasuk pemilu, pilkada, dan dinamika pemerintahan dalam negeri'
+                    ],
+                    [
+                        'name' => 'Luar Negeri', 
+                        'icon' => '🌍',
+                        'description' => 'Politik luar negeri, hubungan diplomatik, dan isu internasional yang mempengaruhi Indonesia'
+                    ],
+                    [
+                        'name' => 'Isu Menonjol', 
+                        'icon' => '📌',
+                        'description' => 'Isu politik yang sedang mendapat sorotan dan perhatian khusus'
+                    ],
                 ],
             ],
             'Ekonomi' => [
@@ -37,14 +61,46 @@ class CategorySeeder extends Seeder
                 'icon' => '💰',
                 'color' => '#10B981',
                 'children' => [
-                    ['name' => 'Export Import', 'icon' => '🚢'],
-                    ['name' => 'Harga Sembako', 'icon' => '🛒'],
-                    ['name' => 'Index Pendapatan masyarakat', 'icon' => '📈'],
-                    ['name' => 'Kesenjangan Sosial', 'icon' => '⚖️'],
-                    ['name' => 'Ekonomi Asing', 'icon' => '💱'],
-                    ['name' => 'Pro Kontra Proyek Strategis Nasional', 'icon' => '🏗️'],
-                    ['name' => 'Korupsi', 'icon' => '🕳️'],
-                    ['name' => 'Isu Menonjol', 'icon' => '📌'],
+                    [
+                        'name' => 'Export Import', 
+                        'icon' => '🚢',
+                        'description' => 'Pajak, Arus Barang & Jasa Antar Negara, Perdagangan, Dampak Ekonomi'
+                    ],
+                    [
+                        'name' => 'Harga Sembako', 
+                        'icon' => '🛒',
+                        'description' => 'Harga Beras, Sagu dan Jagung, Gula Pasir, Sayur-sayuran dan Buah-buahan, Daging Sapi dan Ayam, Minyak Goreng dan Margarin, Susu, Telur dll'
+                    ],
+                    [
+                        'name' => 'Index Pendapatan masyarakat', 
+                        'icon' => '📈',
+                        'description' => 'UMR/UMK, Harga Saham, Daya Beli Masyarakat'
+                    ],
+                    [
+                        'name' => 'Kesenjangan Sosial', 
+                        'icon' => '⚖️',
+                        'description' => 'Kesenjangan Ekonomi, Kesenjangan Pendidikan, Akses Kesehatan, Kesenjangan Geografis, Kesenjangan Akses Layanan Publik'
+                    ],
+                    [
+                        'name' => 'Ekonomi Asing', 
+                        'icon' => '💱',
+                        'description' => 'Inflasi, Deflasi, Kebijakan Pajak'
+                    ],
+                    [
+                        'name' => 'Pro Kontra Proyek Strategis Nasional', 
+                        'icon' => '🏗️',
+                        'description' => 'Gejolak Masyarakat terkait proyek-proyek strategis nasional'
+                    ],
+                    [
+                        'name' => 'Korupsi', 
+                        'icon' => '🕳️',
+                        'description' => 'Isu Korupsi, OTT (Operasi tangkap tangan)'
+                    ],
+                    [
+                        'name' => 'Isu Menonjol', 
+                        'icon' => '📌',
+                        'description' => 'Isu ekonomi yang sedang mendapat perhatian khusus'
+                    ],
                 ],
             ],
             'Sosial Budaya' => [
@@ -52,13 +108,41 @@ class CategorySeeder extends Seeder
                 'icon' => '🎭',
                 'color' => '#EC4899',
                 'children' => [
-                    ['name' => 'Ormas', 'icon' => '👥'],
-                    ['name' => 'Bencana Alam', 'icon' => '🌪️'],
-                    ['name' => 'Unjuk rasa', 'icon' => '📢'],
-                    ['name' => 'Konflik sosial', 'icon' => '⚔️'],
-                    ['name' => 'PHK', 'icon' => '📉'],
-                    ['name' => 'SARA', 'icon' => '🧬'],
-                    ['name' => 'Isu Menonjol', 'icon' => '📌'],
+                    [
+                        'name' => 'Ormas', 
+                        'icon' => '👥',
+                        'description' => 'Organisasi masyarakat: Umum, Keagamaan, AMP (Asosiasi Papua Merdeka)'
+                    ],
+                    [
+                        'name' => 'Bencana Alam', 
+                        'icon' => '🌪️',
+                        'description' => 'Tanah Longsor, Banjir, Gunung Meletus'
+                    ],
+                    [
+                        'name' => 'Unjuk rasa', 
+                        'icon' => '📢',
+                        'description' => 'Demonstrasi dan aksi protes masyarakat'
+                    ],
+                    [
+                        'name' => 'Konflik sosial', 
+                        'icon' => '⚔️',
+                        'description' => 'Konflik: Pertambangan, Perkebunan, Antar kelompok & agama, Antar Negara'
+                    ],
+                    [
+                        'name' => 'PHK', 
+                        'icon' => '📉',
+                        'description' => 'Isu Pemutusan Hubungan Kerja dan dampaknya'
+                    ],
+                    [
+                        'name' => 'SARA', 
+                        'icon' => '🧬',
+                        'description' => 'Isu Suku, Ras, Agama yang berpotensi menimbulkan konflik'
+                    ],
+                    [
+                        'name' => 'Isu Menonjol', 
+                        'icon' => '📌',
+                        'description' => 'Isu sosial budaya yang sedang mendapat perhatian khusus'
+                    ],
                 ],
             ],
             'Keamanan' => [
@@ -66,9 +150,21 @@ class CategorySeeder extends Seeder
                 'icon' => '🛡️',
                 'color' => '#F59E0B',
                 'children' => [
-                    ['name' => 'Teror', 'icon' => '💣'],
-                    ['name' => 'Kemanan Negara', 'icon' => '🚓'],
-                    ['name' => 'Isu Menonjol', 'icon' => '📌'],
+                    [
+                        'name' => 'Teror', 
+                        'icon' => '💣',
+                        'description' => 'Teroris, Ancaman Bom, Ledakan BOM'
+                    ],
+                    [
+                        'name' => 'Keamanan Negara', 
+                        'icon' => '🚓',
+                        'description' => 'KKB, RMS (Republik Maluku Selatan), Isu Aceh Merdeka, Bentrok TNI POLRI'
+                    ],
+                    [
+                        'name' => 'Isu Menonjol', 
+                        'icon' => '📌',
+                        'description' => 'Isu keamanan yang sedang mendapat perhatian khusus'
+                    ],
                 ],
             ],
         ];
@@ -94,6 +190,7 @@ class CategorySeeder extends Seeder
                     ['slug' => Str::slug($mainCategoryName . '-' . $child['name'])],
                     [
                         'name' => $child['name'],
+                        'description' => $child['description'] ?? null,
                         'sort_order' => $sub_sort++,
                         'category_id' => $parent->id,
                         'icon' => $child['icon'] ?? null,
