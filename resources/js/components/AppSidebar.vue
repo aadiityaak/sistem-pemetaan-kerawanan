@@ -6,6 +6,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
 import {
+    Brain,
     Building2,
     Calendar,
     Database,
@@ -58,6 +59,11 @@ const mainNavItems = ref<NavItem[]>([
         title: 'Kalender Kamtibmas',
         href: '/kamtibmas-calendar',
         icon: Calendar,
+    },
+    {
+        title: 'Prediksi AI',
+        href: '/ai-prediction',
+        icon: Brain,
     },
     {
         title: 'Wilayah',
