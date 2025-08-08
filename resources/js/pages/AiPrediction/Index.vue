@@ -169,15 +169,51 @@
                     </div>
                 </div>
 
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                    <!-- Severity Distribution Chart -->
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <h4 class="mb-4 text-base font-semibold text-gray-900 dark:text-white">Distribusi Tingkat Keparahan</h4>
+                        <div class="relative h-64">
+                            <canvas ref="severityChartRef"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Location Distribution Chart -->
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <h4 class="mb-4 text-base font-semibold text-gray-900 dark:text-white">Lokasi Teratas</h4>
+                        <div class="relative h-64">
+                            <canvas ref="locationChartRef"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Trend Chart -->
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <h4 class="mb-4 text-base font-semibold text-gray-900 dark:text-white">Trend Bulanan</h4>
+                        <div class="relative h-64">
+                            <canvas ref="monthlyTrendChartRef"></canvas>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- AI Analysis Results -->
-                <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                    <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                        Hasil Analisis AI
-                    </h3>
-                    <div 
-                        class="prose max-w-none dark:prose-invert prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-700 dark:prose-p:text-gray-300"
-                        v-html="formatAnalysis(analysisResult.analysis)"
-                    ></div>
+                <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                    <div class="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 dark:border-gray-700 dark:from-blue-900/20 dark:to-indigo-900/20">
+                        <div class="flex items-center">
+                            <svg class="mr-3 h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                Hasil Analisis AI - Prediksi Kriminalitas
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div 
+                            class="analysis-content max-w-none"
+                            v-html="formatAnalysis(analysisResult.analysis)"
+                        ></div>
+                    </div>
                 </div>
             </div>
 
@@ -206,7 +242,7 @@ import { Button } from '@/components/ui/button'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { type BreadcrumbItem } from '@/types'
 import { Head, router } from '@inertiajs/vue3'
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 
 interface SubCategory {
     id: number
@@ -254,6 +290,14 @@ const selectedSubCategory = ref<string>('')
 const isAnalyzing = ref(false)
 const analysisResult = ref<AnalysisResult | null>(null)
 const errorMessage = ref<string>('')
+
+// Chart refs
+const severityChartRef = ref<HTMLCanvasElement>()
+const locationChartRef = ref<HTMLCanvasElement>()
+const monthlyTrendChartRef = ref<HTMLCanvasElement>()
+let severityChart: any = null
+let locationChart: any = null
+let monthlyTrendChart: any = null
 
 // Computed property for available sub-categories based on selected category
 const availableSubCategories = computed(() => {
@@ -305,6 +349,9 @@ const analyzeCategory = async () => {
 
         if (response.ok && data.success) {
             analysisResult.value = data
+            // Initialize charts after data is loaded
+            await nextTick()
+            initializeCharts()
         } else if (response.status === 422) {
             errorMessage.value = data.message || 'Data yang dikirim tidak valid'
         } else {
@@ -322,18 +369,177 @@ const analyzeCategory = async () => {
     }
 }
 
+// Chart initialization and cleanup
+const initializeCharts = async () => {
+    // Destroy existing charts
+    destroyCharts()
+    
+    if (!analysisResult.value?.statistics) return
+
+    try {
+        // Dynamically import Chart.js
+        const { Chart, registerables } = await import('chart.js')
+        Chart.register(...registerables)
+
+        const stats = analysisResult.value.statistics
+
+        // Initialize Severity Distribution Chart
+        if (severityChartRef.value && stats.severity_distribution) {
+            const severityData = Object.entries(stats.severity_distribution)
+            const severityColors = {
+                'low': '#10B981',
+                'medium': '#F59E0B', 
+                'high': '#EF4444',
+                'critical': '#DC2626'
+            }
+
+            severityChart = new Chart(severityChartRef.value, {
+                type: 'doughnut',
+                data: {
+                    labels: severityData.map(([level]) => level.charAt(0).toUpperCase() + level.slice(1)),
+                    datasets: [{
+                        data: severityData.map(([, count]) => count),
+                        backgroundColor: severityData.map(([level]) => severityColors[level] || '#6B7280'),
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            })
+        }
+
+        // Initialize Location Distribution Chart
+        if (locationChartRef.value && stats.location_distribution) {
+            const locationData = Object.values(stats.location_distribution).slice(0, 5)
+            
+            locationChart = new Chart(locationChartRef.value, {
+                type: 'bar',
+                data: {
+                    labels: locationData.map(item => item.location),
+                    datasets: [{
+                        label: 'Jumlah Kasus',
+                        data: locationData.map(item => item.count),
+                        backgroundColor: '#3B82F6',
+                        borderColor: '#1D4ED8',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            })
+        }
+
+        // Initialize Monthly Trend Chart
+        if (monthlyTrendChartRef.value && stats.monthly_trend) {
+            const trendData = Object.entries(stats.monthly_trend)
+            
+            monthlyTrendChart = new Chart(monthlyTrendChartRef.value, {
+                type: 'line',
+                data: {
+                    labels: trendData.map(([month]) => month),
+                    datasets: [{
+                        label: 'Kasus per Bulan',
+                        data: trendData.map(([, count]) => count),
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            })
+        }
+    } catch (error) {
+        console.error('Error initializing charts:', error)
+    }
+}
+
+const destroyCharts = () => {
+    if (severityChart) {
+        severityChart.destroy()
+        severityChart = null
+    }
+    if (locationChart) {
+        locationChart.destroy()
+        locationChart = null
+    }
+    if (monthlyTrendChart) {
+        monthlyTrendChart.destroy()
+        monthlyTrendChart = null
+    }
+}
+
 const formatAnalysis = (analysis: string): string => {
-    // Convert markdown-like formatting to HTML
-    return analysis
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/### (.*?)(?=\n|$)/g, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
-        .replace(/## (.*?)(?=\n|$)/g, '<h2 class="text-xl font-semibold mt-6 mb-3">$1</h2>')
-        .replace(/# (.*?)(?=\n|$)/g, '<h1 class="text-2xl font-bold mt-8 mb-4">$1</h1>')
-        .replace(/\n- (.*?)(?=\n|$)/g, '<li class="ml-4">$1</li>')
-        .replace(/\n\n/g, '</p><p class="mb-3">')
-        .replace(/^/, '<p class="mb-3">')
+    if (!analysis) return ''
+    
+    // Enhanced markdown to HTML conversion
+    let html = analysis
+        // Headers
+        .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold mt-6 mb-3 text-blue-600 dark:text-blue-400">$1</h3>')
+        .replace(/^## (.*$)/gm, '<h2 class="text-xl font-semibold mt-8 mb-4 text-blue-700 dark:text-blue-300">$1</h2>')
+        .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-bold mt-10 mb-6 text-blue-800 dark:text-blue-200">$1</h1>')
+        
+        // Bold and Italic
+        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900 dark:text-white">$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em class="italic text-gray-700 dark:text-gray-300">$1</em>')
+        
+        // Lists - handle nested structure better
+        .replace(/^\s*[-*+]\s+(.+)$/gm, '<li class="mb-1 text-gray-700 dark:text-gray-300">$1</li>')
+        
+        // Numbers (1., 2., etc.)
+        .replace(/^\s*(\d+)\.\s+(.+)$/gm, '<li class="mb-2 text-gray-700 dark:text-gray-300"><span class="font-medium text-blue-600 dark:text-blue-400">$1.</span> $2</li>')
+        
+        // Code blocks or highlighted text
+        .replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm font-mono">$1</code>')
+        
+        // Line breaks to paragraphs
+        .replace(/\n\s*\n/g, '</p><p class="mb-4 text-gray-700 dark:text-gray-300">')
+        
+        // Wrap in paragraph tags
+        .replace(/^/, '<p class="mb-4 text-gray-700 dark:text-gray-300">')
         .replace(/$/, '</p>')
-        .replace(/(<li.*?>.*?<\/li>)/g, '<ul class="list-disc pl-6 mb-3">$1</ul>')
+    
+    // Wrap consecutive li elements in ul tags
+    html = html.replace(/(<li[^>]*>.*?<\/li>\s*)+/g, (match) => {
+        return `<ul class="list-disc pl-6 mb-4 space-y-1">${match}</ul>`
+    })
+    
+    // Clean up empty paragraphs
+    html = html.replace(/<p[^>]*><\/p>/g, '')
+    
+    return html
 }
 </script>

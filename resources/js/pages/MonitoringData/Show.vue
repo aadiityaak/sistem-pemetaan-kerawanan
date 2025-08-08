@@ -496,7 +496,7 @@ onMounted(async () => {
         <!-- Image Modal/Carousel -->
         <div
             v-if="showImageModal && monitoringData.gallery && monitoringData.gallery.length > 0"
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
+            class="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-75 p-4"
             @click="closeImageModal"
         >
             <div class="relative bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden dark:bg-gray-800" @click.stop>
