@@ -4,6 +4,7 @@ use App\Http\Controllers\AppSettingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KabupatenKotaController;
 use App\Http\Controllers\KecamatanController;
+use App\Http\Controllers\KamtipmasEventController;
 use App\Http\Controllers\MonitoringDataController;
 use App\Http\Controllers\ProvinsiController;
 use Illuminate\Support\Facades\Route;
@@ -103,6 +104,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Sub Categories Routes
     Route::resource('sub-categories', \App\Http\Controllers\SubCategoryController::class);
     Route::post('/sub-categories/{subCategory}/toggle-status', [\App\Http\Controllers\SubCategoryController::class, 'toggleStatus'])->name('sub-categories.toggle-status');
+
+    // Kamtipmas Calendar Routes
+    Route::get('/kamtipmas-calendar', [KamtipmasEventController::class, 'index'])->name('kamtipmas-calendar.index');
+    Route::post('/kamtipmas-events', [KamtipmasEventController::class, 'store'])->name('kamtipmas-events.store');
+    Route::get('/kamtipmas-events/{kamtipmasEvent}', [KamtipmasEventController::class, 'show'])->name('kamtipmas-events.show');
+    Route::put('/kamtipmas-events/{kamtipmasEvent}', [KamtipmasEventController::class, 'update'])->name('kamtipmas-events.update');
+    Route::delete('/kamtipmas-events/{kamtipmasEvent}', [KamtipmasEventController::class, 'destroy'])->name('kamtipmas-events.destroy');
+    Route::post('/kamtipmas-events/{kamtipmasEvent}/toggle-status', [KamtipmasEventController::class, 'toggleStatus'])->name('kamtipmas-events.toggle-status');
 
     // Settings Routes (Fixed settings - only allow viewing and updating values)
     Route::get('/settings', [AppSettingController::class, 'index'])->name('settings.index');

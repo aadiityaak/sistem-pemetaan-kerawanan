@@ -18,9 +18,9 @@ const appLogo = computed(() => {
 </script>
 
 <template>
-    <div class="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
+    <div class="flex w-full items-center justify-center rounded-md bg-zinc-900 p-2text-sidebar-primary-foreground">
         <!-- Custom logo if available -->
-        <img v-if="appLogo" :src="appLogo" :alt="appName + ' Logo'" class="h-6 w-6 object-contain" />
+        <img v-if="appLogo" :src="appLogo" :alt="appName + ' Logo'" class="h-12 w-full object-contain" />
 
         <!-- Default SVG icon if no custom logo -->
         <svg
@@ -46,7 +46,7 @@ const appLogo = computed(() => {
             <line x1="3" x2="5" y1="19" y2="21" />
         </svg>
     </div>
-    <div class="ml-1 grid flex-1 text-left text-sm">
+    <!-- <div class="ml-1 grid flex-1 text-left text-sm">
         <span class="mb-0.5 truncate leading-tight font-semibold">{{ appName }}</span>
-    </div>
+    </div> -->
 </template>
