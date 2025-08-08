@@ -46,16 +46,36 @@ const autoOpenBasedOnUrl = () => {
     props.items.forEach((item) => {
         if (item.items && item.items.length > 0) {
             // Check if current URL matches any sub-item
-            const hasActiveSubItem = item.items.some((subItem) => {
+            let hasActiveSubItem = false;
+            
+            item.items.forEach((subItem) => {
                 // Check exact match first
-                if (subItem.href === currentUrl) return true;
+                if (subItem.href === currentUrl) {
+                    hasActiveSubItem = true;
+                    return;
+                }
 
                 // Check if current URL starts with sub-item href (for nested routes)
                 if (currentUrl.startsWith(subItem.href) && subItem.href !== '/') {
-                    return true;
+                    hasActiveSubItem = true;
+                    return;
                 }
 
-                return false;
+                // Check 3rd tier items
+                if (subItem.items && subItem.items.length > 0) {
+                    const hasActiveSubSubItem = subItem.items.some((subSubItem) => {
+                        if (subSubItem.href === currentUrl) return true;
+                        if (currentUrl.startsWith(subSubItem.href) && subSubItem.href !== '/') {
+                            return true;
+                        }
+                        return false;
+                    });
+
+                    if (hasActiveSubSubItem) {
+                        hasActiveSubItem = true;
+                        openItems.value.add(subItem.title); // Open the sub-item too
+                    }
+                }
             });
 
             if (hasActiveSubItem) {
@@ -106,16 +126,41 @@ watch(
                         <ChevronRight class="ml-auto transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
                     </SidebarMenuButton>
 
-                    <div v-show="isOpen(item.title)" class="mt-1 ml-4">
+                    <div v-show="isOpen(item.title)" class="mt-1">
                         <SidebarMenuSub>
-                            <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
-                                <SidebarMenuSubButton as-child :is-active="subItem.href === page.url">
-                                    <Link :href="subItem.href">
+                            <template v-for="subItem in item.items" :key="subItem.title">
+                                <!-- Sub-item with sub-sub-items (3rd tier) -->
+                                <SidebarMenuSubItem v-if="subItem.items && subItem.items.length > 0">
+                                    <SidebarMenuSubButton @click="toggleItem(subItem.title)" class="cursor-pointer">
                                         <component :is="subItem.icon" />
                                         <span>{{ subItem.title }}</span>
-                                    </Link>
-                                </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
+                                        <ChevronRight class="ml-auto transition-transform" :class="{ 'rotate-90': isOpen(subItem.title) }" />
+                                    </SidebarMenuSubButton>
+                                    
+                                    <div v-show="isOpen(subItem.title)" class="mt-1">
+                                        <SidebarMenuSub>
+                                            <SidebarMenuSubItem v-for="subSubItem in subItem.items" :key="subSubItem.title">
+                                                <SidebarMenuSubButton as-child :is-active="subSubItem.href === page.url">
+                                                    <Link :href="subSubItem.href">
+                                                        <component :is="subSubItem.icon" />
+                                                        <span>{{ subSubItem.title }}</span>
+                                                    </Link>
+                                                </SidebarMenuSubButton>
+                                            </SidebarMenuSubItem>
+                                        </SidebarMenuSub>
+                                    </div>
+                                </SidebarMenuSubItem>
+
+                                <!-- Regular sub-item without sub-sub-items -->
+                                <SidebarMenuSubItem v-else>
+                                    <SidebarMenuSubButton as-child :is-active="subItem.href === page.url">
+                                        <Link :href="subItem.href">
+                                            <component :is="subItem.icon" />
+                                            <span>{{ subItem.title }}</span>
+                                        </Link>
+                                    </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                            </template>
                         </SidebarMenuSub>
                     </div>
                 </SidebarMenuItem>

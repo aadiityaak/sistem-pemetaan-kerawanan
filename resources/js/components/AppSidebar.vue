@@ -22,39 +22,14 @@ import {
     Tags,
     Users,
 } from 'lucide-vue-next';
+import { onMounted, ref } from 'vue';
 
-const mainNavItems: NavItem[] = [
+const mainNavItems = ref<NavItem[]>([
     {
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
-        items: [
-            {
-                title: 'Ideologi',
-                href: '/dashboard/ideologi',
-                icon: Users,
-            },
-            {
-                title: 'Politik',
-                href: '/dashboard/politik',
-                icon: Landmark,
-            },
-            {
-                title: 'Ekonomi',
-                href: '/dashboard/ekonomi',
-                icon: DollarSign,
-            },
-            {
-                title: 'Sosial Budaya',
-                href: '/dashboard/sosial-budaya',
-                icon: Heart,
-            },
-            {
-                title: 'Keamanan',
-                href: '/dashboard/keamanan',
-                icon: Shield,
-            },
-        ],
+        items: [], // Will be populated dynamically with categories and subcategories
     },
     {
         title: 'Data Monitoring',
@@ -105,7 +80,78 @@ const mainNavItems: NavItem[] = [
         href: '/settings',
         icon: Settings,
     },
-];
+]);
+
+// Interface for API response
+interface Category {
+    id: number;
+    name: string;
+    slug: string;
+    sub_categories: SubCategory[];
+}
+
+interface SubCategory {
+    id: number;
+    category_id: number;
+    name: string;
+    slug: string;
+}
+
+// Load categories and subcategories dynamically
+const loadCategoriesMenu = async () => {
+    try {
+        const response = await fetch('/api/categories-with-subcategories');
+        const categories: Category[] = await response.json();
+        
+        // Map categories to navigation items for Dashboard submenu
+        const dashboardItems: NavItem[] = categories.map(category => ({
+            title: category.name,
+            href: `/dashboard?category=${category.slug}`,
+            icon: getIconForCategory(category.slug),
+            items: category.sub_categories.map(subCategory => ({
+                title: subCategory.name,
+                href: `/dashboard?category=${category.slug}&subcategory=${subCategory.slug}`,
+                icon: Tags, // Default icon for subcategories
+            }))
+        }));
+
+        // Update the Dashboard menu items
+        const dashboardMenuIndex = mainNavItems.value.findIndex(item => item.title === 'Dashboard');
+        if (dashboardMenuIndex !== -1) {
+            mainNavItems.value[dashboardMenuIndex].items = dashboardItems;
+        }
+    } catch (error) {
+        console.error('Failed to load categories menu:', error);
+        // Fallback to static menu if API fails
+        const dashboardMenuIndex = mainNavItems.value.findIndex(item => item.title === 'Dashboard');
+        if (dashboardMenuIndex !== -1) {
+            mainNavItems.value[dashboardMenuIndex].items = [
+                {
+                    title: 'Keamanan',
+                    href: '/dashboard?category=keamanan',
+                    icon: Shield,
+                },
+            ];
+        }
+    }
+};
+
+// Get appropriate icon for category based on slug
+const getIconForCategory = (slug: string) => {
+    const iconMap: Record<string, any> = {
+        'ideologi': Users,
+        'politik': Landmark,
+        'ekonomi': DollarSign,
+        'sosial-budaya': Heart,
+        'keamanan': Shield,
+    };
+    return iconMap[slug] || Tags;
+};
+
+// Load categories on component mount
+onMounted(() => {
+    loadCategoriesMenu();
+});
 </script>
 
 <template>

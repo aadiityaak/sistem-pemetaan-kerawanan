@@ -33,6 +33,16 @@ Route::get('/api/categories', function () {
     return \App\Models\Category::active()->ordered()->select('id', 'name', 'slug')->get();
 });
 
+Route::get('/api/categories-with-subcategories', function () {
+    return \App\Models\Category::active()
+        ->ordered()
+        ->with(['subCategories' => function ($query) {
+            $query->active()->ordered()->select('id', 'category_id', 'name', 'slug');
+        }])
+        ->select('id', 'name', 'slug')
+        ->get();
+});
+
 Route::get('/api/sub-categories/{category_id}', function ($category_id) {
     return \App\Models\SubCategory::where('category_id', $category_id)
         ->active()
