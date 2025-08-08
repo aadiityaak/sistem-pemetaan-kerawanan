@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\KamtipmasEvent;
+use App\Models\KamtibmasEvent;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
 
-class KamtipmasEventController extends Controller
+class KamtibmasEventController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -22,7 +22,7 @@ class KamtipmasEventController extends Controller
         $startDate = $date->copy()->startOfMonth()->startOfWeek();
         $endDate = $date->copy()->endOfMonth()->endOfWeek();
         
-        $events = KamtipmasEvent::active()
+        $events = KamtibmasEvent::active()
             ->inDateRange($startDate, $endDate)
             ->orderBy('start_date')
             ->get()
@@ -40,7 +40,7 @@ class KamtipmasEventController extends Controller
             });
 
         // Get all events for the month (for statistics)
-        $monthlyEvents = KamtipmasEvent::active()
+        $monthlyEvents = KamtibmasEvent::active()
             ->whereMonth('start_date', $date->month)
             ->whereYear('start_date', $date->year)
             ->get();
@@ -52,7 +52,7 @@ class KamtipmasEventController extends Controller
                                           ->where('end_date', '>=', now()->format('Y-m-d'))->count(),
         ];
 
-        return Inertia::render('KamtipmasCalendar/Index', [
+        return Inertia::render('KamtibmasCalendar/Index', [
             'events' => $events,
             'statistics' => $statistics,
             'currentDate' => $date->format('Y-m-d'),
@@ -72,7 +72,7 @@ class KamtipmasEventController extends Controller
             'color' => 'required|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
         ]);
 
-        $event = KamtipmasEvent::create($validated);
+        $event = KamtibmasEvent::create($validated);
 
         return response()->json([
             'message' => 'Event berhasil ditambahkan.',
@@ -92,7 +92,7 @@ class KamtipmasEventController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(KamtipmasEvent $kamtipmasEvent)
+    public function show(KamtibmasEvent $kamtipmasEvent)
     {
         return response()->json([
             'event' => [
@@ -110,7 +110,7 @@ class KamtipmasEventController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, KamtipmasEvent $kamtipmasEvent)
+    public function update(Request $request, KamtibmasEvent $kamtipmasEvent)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -140,7 +140,7 @@ class KamtipmasEventController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(KamtipmasEvent $kamtipmasEvent)
+    public function destroy(KamtibmasEvent $kamtipmasEvent)
     {
         $kamtipmasEvent->delete();
 
@@ -152,7 +152,7 @@ class KamtipmasEventController extends Controller
     /**
      * Toggle event status
      */
-    public function toggleStatus(KamtipmasEvent $kamtipmasEvent)
+    public function toggleStatus(KamtibmasEvent $kamtipmasEvent)
     {
         $kamtipmasEvent->update(['is_active' => !$kamtipmasEvent->is_active]);
 

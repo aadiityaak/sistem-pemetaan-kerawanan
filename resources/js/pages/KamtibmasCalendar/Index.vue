@@ -5,7 +5,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch } from 'vue';
 
-interface KamtipmasEvent {
+interface KamtibmasEvent {
     id: number;
     title: string;
     start: string;
@@ -23,7 +23,7 @@ interface Statistics {
 }
 
 const props = defineProps<{
-    events: KamtipmasEvent[];
+    events: KamtibmasEvent[];
     statistics: Statistics;
     currentDate: string;
 }>();
@@ -34,7 +34,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/dashboard',
     },
     {
-        title: 'Kalender Kamtipmas',
+        title: 'Kalender Kamtibmas',
         href: '/kamtipmas-calendar',
     },
 ];
@@ -43,7 +43,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const currentDate = ref(new Date(props.currentDate));
 const selectedDate = ref<Date | null>(null);
 const showEventModal = ref(false);
-const editingEvent = ref<KamtipmasEvent | null>(null);
+const editingEvent = ref<KamtibmasEvent | null>(null);
 
 // Event form state
 const eventForm = ref({
@@ -157,7 +157,7 @@ const openEventModal = (date?: Date) => {
     }, 100);
 };
 
-const editEvent = async (event: KamtipmasEvent) => {
+const editEvent = async (event: KamtibmasEvent) => {
     try {
         isLoading.value = true;
         resetForm();
@@ -296,7 +296,7 @@ const saveEvent = async () => {
     }
 };
 
-const deleteEvent = async (event: KamtipmasEvent) => {
+const deleteEvent = async (event: KamtibmasEvent) => {
     const confirmMessage = `Apakah Anda yakin ingin menghapus event "${event.title}"?\nTindakan ini tidak dapat dibatalkan.`;
     
     if (confirm(confirmMessage)) {
@@ -353,14 +353,14 @@ const colorPresets = [
 </script>
 
 <template>
-    <Head title="Kalender Kamtipmas" />
+    <Head title="Kalender Kamtibmas" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-1 flex-col gap-6 rounded-xl p-6">
             <!-- Header -->
             <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Kalender Kamtipmas</h1>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Kalender Kamtibmas</h1>
                     <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Jadwal kegiatan Keamanan dan Ketertiban Masyarakat</p>
                 </div>
                 <div class="flex gap-3">
