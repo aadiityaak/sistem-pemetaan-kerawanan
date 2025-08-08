@@ -5,6 +5,11 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 
+interface GalleryItem {
+    path: string;
+    url: string;
+}
+
 interface MonitoringData {
     id: number;
     provinsi_id: number;
@@ -23,6 +28,7 @@ interface MonitoringData {
     created_at: string;
     updated_at: string;
     additional_data: Record<string, any>;
+    gallery?: GalleryItem[];
     provinsi: { id: number; nama: string };
     kabupaten_kota: { id: number; nama: string; provinsi_id: number };
     kecamatan: { id: number; nama: string; kabupaten_kota_id: number };
@@ -52,6 +58,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Map related refs
 let map: any;
 const mapContainer = ref();
+
+// Gallery carousel refs
+const currentImageIndex = ref(0);
+const showImageModal = ref(false);
 
 // Severity mapping
 const severityConfig: Record<string, { label: string; color: string; bgColor: string; icon: string }> = {
@@ -141,6 +151,32 @@ const printData = () => {
     if (typeof window !== 'undefined') {
         window.print();
     }
+};
+
+// Gallery carousel methods
+const openImageModal = (index: number) => {
+    currentImageIndex.value = index;
+    showImageModal.value = true;
+};
+
+const closeImageModal = () => {
+    showImageModal.value = false;
+};
+
+const nextImage = () => {
+    if (props.monitoringData.gallery && currentImageIndex.value < props.monitoringData.gallery.length - 1) {
+        currentImageIndex.value++;
+    }
+};
+
+const prevImage = () => {
+    if (currentImageIndex.value > 0) {
+        currentImageIndex.value--;
+    }
+};
+
+const goToImage = (index: number) => {
+    currentImageIndex.value = index;
 };
 
 // Initialize map
@@ -305,6 +341,34 @@ onMounted(async () => {
                         </div>
                     </div>
 
+                    <!-- Gallery -->
+                    <div
+                        v-if="monitoringData.gallery && monitoringData.gallery.length > 0"
+                        class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                    >
+                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Galeri Foto</h3>
+                        
+                        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                            <div 
+                                v-for="(image, index) in monitoringData.gallery" 
+                                :key="index"
+                                class="group relative aspect-square cursor-pointer overflow-hidden rounded-lg border border-gray-200 hover:border-blue-500 dark:border-gray-600 dark:hover:border-blue-400"
+                                @click="openImageModal(index)"
+                            >
+                                <img 
+                                    :src="image.url" 
+                                    :alt="`Gallery image ${index + 1}`"
+                                    class="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                                />
+                                <div class="absolute inset-0 transition-all duration-200 group-hover:bg-opacity-40 flex items-center justify-center">
+                                    <svg class="h-8 w-8 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Category Information -->
                     <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Kategori</h3>
@@ -424,6 +488,86 @@ onMounted(async () => {
                                 Cetak Data
                             </Button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Image Modal/Carousel -->
+        <div
+            v-if="showImageModal && monitoringData.gallery && monitoringData.gallery.length > 0"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
+            @click="closeImageModal"
+        >
+            <div class="relative bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden dark:bg-gray-800" @click.stop>
+                <!-- Close Button -->
+                <button
+                    @click="closeImageModal"
+                    class="absolute top-4 right-4 z-10 rounded-full bg-black bg-opacity-50 p-2 text-white hover:bg-opacity-75 transition-all"
+                >
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <!-- Main Image Container -->
+                <div class="relative bg-gray-100 dark:bg-gray-900">
+                    <div class="flex items-center justify-center min-h-[60vh] max-h-[70vh]">
+                        <img
+                            :src="monitoringData.gallery[currentImageIndex].url"
+                            :alt="`Gallery image ${currentImageIndex + 1}`"
+                            class="max-h-full max-w-full object-contain"
+                        />
+                    </div>
+
+                    <!-- Navigation Arrows -->
+                    <button
+                        v-if="currentImageIndex > 0"
+                        @click="prevImage"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white bg-opacity-80 p-3 text-gray-800 shadow-lg hover:bg-opacity-100 transition-all dark:bg-gray-800 dark:text-white"
+                    >
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+
+                    <button
+                        v-if="currentImageIndex < monitoringData.gallery.length - 1"
+                        @click="nextImage"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white bg-opacity-80 p-3 text-gray-800 shadow-lg hover:bg-opacity-100 transition-all dark:bg-gray-800 dark:text-white"
+                    >
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Bottom Section -->
+                <div class="p-4 bg-white dark:bg-gray-800">
+                    <!-- Image Counter -->
+                    <div class="text-center text-sm text-gray-600 dark:text-gray-400 mb-3">
+                        {{ currentImageIndex + 1 }} dari {{ monitoringData.gallery.length }}
+                    </div>
+
+                    <!-- Thumbnail Navigation -->
+                    <div v-if="monitoringData.gallery.length > 1" class="flex justify-center space-x-2 overflow-x-auto pb-2">
+                        <button
+                            v-for="(image, index) in monitoringData.gallery"
+                            :key="index"
+                            @click="goToImage(index)"
+                            class="flex-shrink-0 h-14 w-14 overflow-hidden rounded border-2 transition-all"
+                            :class="[
+                                index === currentImageIndex 
+                                    ? 'border-blue-500 ring-2 ring-blue-300' 
+                                    : 'border-gray-300 hover:border-blue-300 dark:border-gray-600 dark:hover:border-blue-400'
+                            ]"
+                        >
+                            <img
+                                :src="image.url"
+                                :alt="`Thumbnail ${index + 1}`"
+                                class="h-full w-full object-cover"
+                            />
+                        </button>
                     </div>
                 </div>
             </div>

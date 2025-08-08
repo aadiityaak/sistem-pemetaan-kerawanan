@@ -164,6 +164,12 @@
                                     scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
                                 >
+                                    Judul
+                                </th>
+                                <th
+                                    scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
+                                >
                                     Lokasi
                                 </th>
                                 <th
@@ -203,9 +209,14 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                             <tr v-if="monitoringData.data.length === 0">
-                                <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">Tidak ada data yang ditemukan</td>
+                                <td colspan="8" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">Tidak ada data yang ditemukan</td>
                             </tr>
                             <tr v-else v-for="data in monitoringData.data" :key="data.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100 max-w-xs">
+                                        {{ data.title || 'N/A' }}
+                                    </div>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                                         {{ data.kecamatan?.nama || data.kecamatan?.name || 'N/A' }}
@@ -480,6 +491,7 @@ interface Kecamatan {
 
 interface MonitoringDataItem {
     id: number;
+    title?: string;
     category: Category;
     subCategory?: SubCategory;
     kecamatan: Kecamatan;
