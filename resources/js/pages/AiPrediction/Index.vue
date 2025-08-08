@@ -41,6 +41,7 @@
                         </label>
                         <select
                             v-model="selectedCategory"
+                            @change="resetSubCategory"
                             required
                             :disabled="isAnalyzing || !geminiEnabled"
                             class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
@@ -48,6 +49,23 @@
                             <option value="">-- Pilih Kategori --</option>
                             <option v-for="category in categories" :key="category.id" :value="category.id">
                                 {{ category.name }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Sub-Category Selection ---->
+                    <div v-if="availableSubCategories.length > 0">
+                        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Pilih Sub Kategori <span class="text-gray-400">(Opsional)</span>
+                        </label>
+                        <select
+                            v-model="selectedSubCategory"
+                            :disabled="isAnalyzing || !geminiEnabled"
+                            class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        >
+                            <option value="">-- Semua Sub Kategori --</option>
+                            <option v-for="subCategory in availableSubCategories" :key="subCategory.id" :value="subCategory.id">
+                                {{ subCategory.name }}
                             </option>
                         </select>
                     </div>
@@ -139,9 +157,11 @@
                             </div>
                             <div class="ml-5">
                                 <dl>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Powered by</dt>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                        {{ analysisResult.sub_category ? 'Sub Kategori' : 'Powered by' }}
+                                    </dt>
                                     <dd class="text-lg font-semibold text-gray-900 dark:text-white">
-                                        Gemini AI
+                                        {{ analysisResult.sub_category || 'Gemini AI' }}
                                     </dd>
                                 </dl>
                             </div>
@@ -185,14 +205,22 @@
 import { Button } from '@/components/ui/button'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { type BreadcrumbItem } from '@/types'
-import { Head } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { Head, router } from '@inertiajs/vue3'
+import { ref, computed } from 'vue'
+
+interface SubCategory {
+    id: number
+    category_id: number
+    name: string
+    slug: string
+}
 
 interface Category {
     id: number
     name: string
     slug: string
     color: string
+    sub_categories?: SubCategory[]
 }
 
 interface AnalysisResult {
@@ -202,6 +230,7 @@ interface AnalysisResult {
     data_period: string
     total_analyzed: number
     category: string
+    sub_category?: string
 }
 
 const props = defineProps<{
@@ -221,9 +250,22 @@ const breadcrumbs: BreadcrumbItem[] = [
 ]
 
 const selectedCategory = ref<string>('')
+const selectedSubCategory = ref<string>('')
 const isAnalyzing = ref(false)
 const analysisResult = ref<AnalysisResult | null>(null)
 const errorMessage = ref<string>('')
+
+// Computed property for available sub-categories based on selected category
+const availableSubCategories = computed(() => {
+    if (!selectedCategory.value) return []
+    const category = props.categories.find(cat => cat.id === parseInt(selectedCategory.value))
+    return category?.sub_categories || []
+})
+
+// Watch for category changes to reset sub-category selection
+const resetSubCategory = () => {
+    selectedSubCategory.value = ''
+}
 
 const analyzeCategory = async () => {
     if (!selectedCategory.value || !props.geminiEnabled) return
@@ -233,27 +275,48 @@ const analyzeCategory = async () => {
     analysisResult.value = null
 
     try {
+        // Get fresh CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+        
+        if (!csrfToken) {
+            throw new Error('CSRF token not found. Please refresh the page.')
+        }
+
         const response = await fetch('/ai-prediction/analyze', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify({
-                category_id: selectedCategory.value
+                category_id: selectedCategory.value,
+                sub_category_id: selectedSubCategory.value || null
             })
         })
 
+        if (response.status === 419) {
+            errorMessage.value = 'Session expired. Silakan refresh halaman dan coba lagi.'
+            return
+        }
+
         const data = await response.json()
 
-        if (data.success) {
+        if (response.ok && data.success) {
             analysisResult.value = data
+        } else if (response.status === 422) {
+            errorMessage.value = data.message || 'Data yang dikirim tidak valid'
         } else {
             errorMessage.value = data.error || 'Terjadi kesalahan saat menganalisis'
         }
     } catch (error) {
-        errorMessage.value = 'Gagal menghubungi server. Silakan coba lagi.'
         console.error('Analysis error:', error)
+        if (error.message.includes('CSRF')) {
+            errorMessage.value = 'Session expired. Silakan refresh halaman dan coba lagi.'
+        } else {
+            errorMessage.value = 'Gagal menghubungi server. Silakan refresh halaman dan coba lagi.'
+        }
     } finally {
         isAnalyzing.value = false
     }

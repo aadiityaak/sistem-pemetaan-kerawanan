@@ -23,7 +23,7 @@ class AiPredictionController extends Controller
      */
     public function index()
     {
-        $categories = Category::active()->ordered()->get();
+        $categories = Category::active()->ordered()->with('subCategories')->get();
         
         return Inertia::render('AiPrediction/Index', [
             'categories' => $categories,
@@ -38,29 +38,53 @@ class AiPredictionController extends Controller
     {
         $request->validate([
             'category_id' => 'required|exists:categories,id',
+            'sub_category_id' => 'nullable|exists:sub_categories,id',
         ]);
 
         if (!$this->geminiService->isEnabled()) {
-            return response()->json([
-                'error' => 'Gemini AI tidak aktif. Silakan aktifkan di pengaturan.',
-            ], 400);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'error' => 'Gemini AI tidak aktif. Silakan aktifkan di pengaturan.',
+                ], 400);
+            }
+            
+            return back()->withErrors([
+                'error' => 'Gemini AI tidak aktif. Silakan aktifkan di pengaturan.'
+            ]);
         }
 
         $categoryId = $request->category_id;
+        $subCategoryId = $request->sub_category_id;
         $category = Category::find($categoryId);
 
         // Get crime data for the selected category (last 3 months)
-        $crimeData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])
+        $query = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])
             ->where('category_id', $categoryId)
-            ->where('created_at', '>=', now()->subMonths(3))
-            ->orderBy('incident_date', 'desc')
+            ->where('created_at', '>=', now()->subMonths(3));
+
+        // Filter by sub-category if provided
+        if ($subCategoryId) {
+            $query->where('sub_category_id', $subCategoryId);
+        }
+
+        $crimeData = $query->orderBy('incident_date', 'desc')
             ->take(50)
             ->get();
 
         if ($crimeData->isEmpty()) {
-            return response()->json([
-                'error' => 'Tidak ada data kriminalitas untuk kategori ini dalam 3 bulan terakhir.',
-            ], 404);
+            $errorMessage = $subCategoryId 
+                ? 'Tidak ada data kriminalitas untuk sub-kategori ini dalam 3 bulan terakhir.'
+                : 'Tidak ada data kriminalitas untuk kategori ini dalam 3 bulan terakhir.';
+                
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'error' => $errorMessage,
+                ], 404);
+            }
+            
+            return back()->withErrors([
+                'error' => $errorMessage
+            ]);
         }
 
         // Prepare data for AI analysis
@@ -102,24 +126,47 @@ class AiPredictionController extends Controller
             $aiAnalysis = $this->geminiService->generateContent($prompt);
 
             if (!$aiAnalysis) {
-                return response()->json([
-                    'error' => 'Gagal mendapatkan analisis dari AI. Silakan coba lagi.',
-                ], 500);
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'error' => 'Gagal mendapatkan analisis dari AI. Silakan coba lagi.',
+                    ], 500);
+                }
+                
+                return back()->withErrors([
+                    'error' => 'Gagal mendapatkan analisis dari AI. Silakan coba lagi.'
+                ]);
             }
 
-            return response()->json([
+            $subCategory = $subCategoryId ? \App\Models\SubCategory::find($subCategoryId) : null;
+            
+            $result = [
                 'success' => true,
                 'analysis' => $aiAnalysis,
                 'statistics' => $statistics,
                 'data_period' => '3 bulan terakhir',
                 'total_analyzed' => $crimeData->count(),
                 'category' => $category->name,
-            ]);
+                'sub_category' => $subCategory ? $subCategory->name : null,
+            ];
+
+            // Return JSON for AJAX requests
+            if ($request->wantsJson()) {
+                return response()->json($result);
+            }
+
+            // Return Inertia response for form submissions
+            return back()->with('analysisResult', $result);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Terjadi kesalahan saat menganalisis data: ' . $e->getMessage(),
-            ], 500);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'error' => 'Terjadi kesalahan saat menganalisis data: ' . $e->getMessage(),
+                ], 500);
+            }
+            
+            return back()->withErrors([
+                'error' => 'Terjadi kesalahan saat menganalisis data: ' . $e->getMessage()
+            ]);
         }
     }
 
