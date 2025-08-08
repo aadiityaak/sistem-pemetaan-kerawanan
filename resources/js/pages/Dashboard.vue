@@ -121,6 +121,13 @@ const topDataBySubCategory = computed(() => {
         .slice(0, 5);
 });
 
+// Computed untuk menampilkan semua sub kategori dalam category (untuk analytics card)
+const allSubCategoriesDisplay = computed(() => {
+    return Object.entries(props.statistics.allSubCategoriesData)
+        .sort(([, a], [, b]) => (b.count as number) - (a.count as number))
+        .slice(0, 8); // Show up to 8 subcategories
+});
+
 const topDataByProvinsi = computed(() => {
     return Object.entries(props.statistics.dataByProvinsi)
         .sort(([, a], [, b]) => (b as number) - (a as number))
@@ -474,21 +481,27 @@ onMounted(async () => {
                     <!-- Top Sub Categories / Categories -->
                     <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                            🎯 {{ selectedSubCategory 
-                                ? `Data ${selectedSubCategory.name}` 
-                                : selectedCategory 
+                            🎯 {{ selectedCategory 
                                 ? `Sub Kategori ${selectedCategory.name}` 
                                 : 'Top Kategori' }}
                         </h3>
                         <div class="space-y-3">
                             <div
-                                v-for="[subCategoryId, subCategoryData] in topDataBySubCategory"
+                                v-for="[subCategoryId, subCategoryData] in allSubCategoriesDisplay"
                                 :key="subCategoryId"
                                 class="flex items-center justify-between"
+                                :class="selectedSubCategory && subCategoryData.name === selectedSubCategory.name ? 'bg-gray-200 dark:bg-gray-700 rounded-lg p-2 mb-2' : ''"
                             >
                                 <div class="flex items-center gap-2">
                                     <span class="text-lg">{{ subCategoryData.icon }}</span>
-                                    <span class="text-sm font-medium text-gray-900 dark:text-white">{{ subCategoryData.name }}</span>
+                                    <span 
+                                        class="text-sm font-medium"
+                                        :class="selectedSubCategory && subCategoryData.name === selectedSubCategory.name 
+                                            ? 'text-gray-900 dark:text-white font-semibold' 
+                                            : 'text-gray-900 dark:text-white'"
+                                    >
+                                        {{ subCategoryData.name }}
+                                    </span>
                                 </div>
                                 <span
                                     class="rounded px-2 py-1 text-xs font-medium text-white"
