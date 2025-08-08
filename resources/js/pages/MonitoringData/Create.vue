@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { GalleryInput } from '@/components/ui/gallery-input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
@@ -75,6 +76,7 @@ const form = useForm({
     status: 'active',
     incident_date: new Date().toISOString().split('T')[0],
     additional_data: {} as Record<string, any>,
+    gallery: [] as File[],
 });
 
 // Map related refs
@@ -116,7 +118,7 @@ const statusOptions = [
 ];
 
 // Watch for location changes
-watch([() => form.provinsi_id, () => form.kabupaten_kota_id], () => {
+watch(() => form.provinsi_id, () => {
     form.kabupaten_kota_id = '';
     form.kecamatan_id = '';
 });
@@ -457,14 +459,25 @@ onMounted(() => {
                         </div>
                     </div>
 
-                    <!-- Map -->
+                    <!-- Gallery & Map -->
                     <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Pilih Lokasi di Peta</h3>
-                        <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Klik pada peta untuk menentukan koordinat lokasi kejadian</p>
-                        <div ref="mapContainer" class="h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
-                        <p v-if="selectedLocation" class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                            Lokasi terpilih: {{ selectedLocation.lat.toFixed(6) }}, {{ selectedLocation.lng.toFixed(6) }}
-                        </p>
+                        <!-- Gallery Section -->
+                        <GalleryInput
+                            v-model="form.gallery"
+                        />
+
+                        <!-- Separator -->
+                        <div class="border-t border-gray-200 dark:border-gray-600 my-8"></div>
+
+                        <!-- Map Section -->
+                        <div>
+                            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Pilih Lokasi di Peta</h3>
+                            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Klik pada peta untuk menentukan koordinat lokasi kejadian</p>
+                            <div ref="mapContainer" class="h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
+                            <p v-if="selectedLocation" class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                Lokasi terpilih: {{ selectedLocation.lat.toFixed(6) }}, {{ selectedLocation.lng.toFixed(6) }}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </form>

@@ -26,12 +26,14 @@ class MonitoringData extends Model
         'status',
         'incident_date',
         'source',
+        'gallery',
     ];
 
     protected $casts = [
         'latitude' => 'decimal:7',
         'longitude' => 'decimal:7',
         'additional_data' => 'array',
+        'gallery' => 'array',
         'incident_date' => 'datetime',
     ];
 

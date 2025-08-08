@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { GalleryInput } from '@/components/ui/gallery-input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
@@ -114,8 +115,33 @@ const form = useForm({
     status: props.monitoringData.status,
     incident_date: formatDateForInput(props.monitoringData.incident_date),
     additional_data: props.monitoringData.additional_data || {},
+    gallery: [] as File[],
     _method: 'PUT',
 });
+
+// Gallery related refs and interfaces
+interface GalleryImage {
+    file?: File
+    preview: string
+    existing?: boolean
+    path?: string
+}
+
+const galleryFileInput = ref<HTMLInputElement>()
+const galleryImages = ref<GalleryImage[]>([])
+const galleryErrors = ref<string[]>([])
+const isDragOver = ref(false)
+
+// Initialize existing gallery images
+const initializeExistingGallery = () => {
+    if (props.monitoringData.gallery && Array.isArray(props.monitoringData.gallery)) {
+        galleryImages.value = props.monitoringData.gallery.map((item: any) => ({
+            preview: item.url || `/storage/${item.path || item}`,
+            existing: true,
+            path: item.path || item
+        }))
+    }
+}
 
 // Map related refs
 let map: any;
@@ -208,6 +234,98 @@ const updateMarkerPosition = () => {
 
 watch([() => form.latitude, () => form.longitude], updateMarkerPosition);
 
+// Gallery functions
+const triggerFileInput = () => {
+    galleryFileInput.value?.click()
+}
+
+const handleGalleryFileSelect = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    if (target.files) {
+        handleGalleryFiles(Array.from(target.files))
+    }
+}
+
+const handleDrop = (event: DragEvent) => {
+    isDragOver.value = false
+    if (event.dataTransfer?.files) {
+        handleGalleryFiles(Array.from(event.dataTransfer.files))
+    }
+}
+
+const handleGalleryFiles = (files: File[]) => {
+    galleryErrors.value = []
+    const maxFiles = 10
+    const maxFileSize = 10 // MB
+    const acceptedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    
+    files.forEach((file) => {
+        // Check file type
+        if (!acceptedTypes.includes(file.type)) {
+            galleryErrors.value.push(`${file.name}: Tipe file tidak didukung`)
+            return
+        }
+        
+        // Check file size
+        if (file.size > maxFileSize * 1024 * 1024) {
+            galleryErrors.value.push(`${file.name}: Ukuran file terlalu besar (max ${maxFileSize}MB)`)
+            return
+        }
+        
+        // Check total files limit
+        if (galleryImages.value.length >= maxFiles) {
+            galleryErrors.value.push(`Maksimal ${maxFiles} file`)
+            return
+        }
+        
+        // Create preview
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            galleryImages.value.push({
+                file,
+                preview: e.target?.result as string
+            })
+            updateGalleryFormData()
+        }
+        reader.readAsDataURL(file)
+    })
+}
+
+const removeGalleryImage = async (index: number) => {
+    const image = galleryImages.value[index]
+    
+    if (image.existing && image.path) {
+        // Delete existing image from server
+        try {
+            const response = await fetch(`/monitoring-data/${props.monitoringData.id}/gallery`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({ image_path: image.path })
+            })
+            
+            if (response.ok) {
+                galleryImages.value.splice(index, 1)
+            } else {
+                galleryErrors.value.push('Gagal menghapus gambar dari server')
+            }
+        } catch (error) {
+            galleryErrors.value.push('Error saat menghapus gambar')
+        }
+    } else {
+        // Remove new image (not yet uploaded)
+        galleryImages.value.splice(index, 1)
+        updateGalleryFormData()
+    }
+}
+
+const updateGalleryFormData = () => {
+    // Only include new files, not existing ones
+    form.gallery = galleryImages.value.filter(img => img.file).map(img => img.file!)
+}
+
 // Initialize map
 const initializeMap = async () => {
     if (typeof window !== 'undefined') {
@@ -253,6 +371,7 @@ const submit = () => {
 // Initialize map on mount
 onMounted(() => {
     initializeMap();
+    initializeExistingGallery();
 });
 </script>
 
@@ -526,12 +645,98 @@ onMounted(() => {
                         </div>
                     </div>
 
-                    <!-- Map -->
+                    <!-- Gallery & Map -->
                     <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Edit Lokasi di Peta</h3>
-                        <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Klik pada peta untuk mengubah koordinat lokasi kejadian</p>
-                        <div ref="mapContainer" class="h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
-                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Lokasi saat ini: {{ currentLocationText }}</p>
+                        <!-- Gallery Section -->
+                        <div class="mb-8">
+                            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Galeri</h3>
+                            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Upload gambar-gambar yang berkaitan dengan kejadian ini</p>
+                            
+                            <!-- Upload Area -->
+                            <div
+                                @click="triggerFileInput"
+                                @dragover.prevent
+                                @drop.prevent="handleDrop"
+                                class="relative cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-6 transition-colors hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500"
+                                :class="{
+                                    'border-blue-400 bg-blue-50 dark:bg-blue-900/20': isDragOver
+                                }"
+                                @dragenter="isDragOver = true"
+                                @dragleave="isDragOver = false"
+                            >
+                                <div class="text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                        <path
+                                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                    </svg>
+                                    <div class="mt-4">
+                                        <label class="cursor-pointer">
+                                            <span class="mt-2 block text-sm font-medium text-gray-900 dark:text-white">
+                                                Klik untuk upload atau drag & drop
+                                            </span>
+                                            <span class="mt-1 block text-sm text-gray-500 dark:text-gray-400">
+                                                PNG, JPG, GIF hingga 10MB
+                                            </span>
+                                            <input
+                                                ref="galleryFileInput"
+                                                type="file"
+                                                multiple
+                                                accept="image/*"
+                                                class="sr-only"
+                                                @change="handleGalleryFileSelect"
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Image Preview Grid -->
+                            <div v-if="galleryImages.length > 0" class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                                <div
+                                    v-for="(image, index) in galleryImages"
+                                    :key="index"
+                                    class="group relative aspect-square overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600"
+                                >
+                                    <img
+                                        :src="image.preview"
+                                        :alt="`Image ${index + 1}`"
+                                        class="h-full w-full object-cover transition-transform group-hover:scale-105"
+                                    />
+                                    <button
+                                        type="button"
+                                        @click="removeGalleryImage(index)"
+                                        class="absolute right-2 top-2 rounded-full bg-red-500 p-1 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
+                                        title="Hapus gambar"
+                                    >
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Error Messages -->
+                            <div v-if="galleryErrors.length > 0" class="mt-4">
+                                <div v-for="(error, index) in galleryErrors" :key="index" class="text-sm text-red-500">
+                                    {{ error }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Separator -->
+                        <div class="border-t border-gray-200 dark:border-gray-600 mb-8"></div>
+
+                        <!-- Map Section -->
+                        <div>
+                            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Edit Lokasi di Peta</h3>
+                            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Klik pada peta untuk mengubah koordinat lokasi kejadian</p>
+                            <div ref="mapContainer" class="h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
+                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Lokasi saat ini: {{ currentLocationText }}</p>
+                        </div>
                     </div>
                 </div>
             </form>

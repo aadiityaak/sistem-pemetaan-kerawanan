@@ -68,7 +68,7 @@
       <editor-content 
         :editor="editor" 
         :id="id"
-        class="prose max-w-none p-3 text-gray-900 dark:text-white focus:outline-none [&_.ProseMirror]:min-h-[100px] [&_.ProseMirror]:outline-none [&_.ProseMirror]:focus:outline-none"
+        class="prose max-w-none p-3 text-gray-900 dark:text-white focus:outline-none [&_.ProseMirror]:min-h-[600px] [&_.ProseMirror]:outline-none [&_.ProseMirror]:focus:outline-none"
       />
     </div>
     <p v-if="helpText" class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ helpText }}</p>
@@ -141,7 +141,7 @@ watch(
 }
 
 .ProseMirror {
-  min-height: 100px;
+  min-height: 600px;
 }
 
 .ProseMirror:focus {

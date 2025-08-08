@@ -28,6 +28,7 @@ return new class() extends Migration
             $table->enum('status', ['active', 'resolved', 'monitoring', 'archived'])->default('active');
             $table->timestamp('incident_date')->nullable(); // Tanggal kejadian
             $table->string('source')->nullable(); // Sumber data
+            $table->json('gallery')->nullable(); // Gallery images paths
             $table->timestamps();
 
             // Index untuk performa

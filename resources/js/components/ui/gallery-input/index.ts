@@ -1,0 +1,1 @@
+export { default as GalleryInput } from './GalleryInput.vue'

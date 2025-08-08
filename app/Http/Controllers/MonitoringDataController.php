@@ -8,6 +8,7 @@ use App\Models\Kecamatan;
 use App\Models\MonitoringData;
 use App\Models\Provinsi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class MonitoringDataController extends Controller
@@ -80,6 +81,18 @@ class MonitoringDataController extends Controller
             $item->level_kejadian = $levelMapping[$item->severity_level] ?? $item->severity_level;
             $item->tanggal_laporan = $item->incident_date;
             $item->jumlah_korban = $item->jumlah_terdampak;
+            
+            // Process gallery data
+            if ($item->gallery && is_array($item->gallery)) {
+                $item->gallery = collect($item->gallery)->map(function ($path) {
+                    return [
+                        'path' => $path,
+                        'url' => asset('storage/' . $path)
+                    ];
+                })->toArray();
+            } else {
+                $item->gallery = [];
+            }
 
             return $item;
         });
@@ -105,11 +118,15 @@ class MonitoringDataController extends Controller
     public function create()
     {
         $categories = Category::active()->ordered()->with('subCategories')->get();
-        $provinsi = Provinsi::orderBy('nama')->get();
+        $provinsiList = Provinsi::orderBy('nama')->get();
+        $kabupatenKotaList = KabupatenKota::orderBy('nama')->get();
+        $kecamatanList = Kecamatan::orderBy('nama')->get();
 
         return Inertia::render('MonitoringData/Create', [
             'categories' => $categories,
-            'provinsi' => $provinsi,
+            'provinsiList' => $provinsiList,
+            'kabupatenKotaList' => $kabupatenKotaList,
+            'kecamatanList' => $kecamatanList,
         ]);
     }
 
@@ -131,8 +148,20 @@ class MonitoringDataController extends Controller
             'incident_date' => 'nullable|date',
             'source' => 'nullable|string|max:255',
             'additional_data' => 'nullable|array',
+            'gallery' => 'nullable|array',
+            'gallery.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max per image
         ]);
 
+        // Handle gallery upload
+        $galleryPaths = [];
+        if ($request->hasFile('gallery')) {
+            foreach ($request->file('gallery') as $file) {
+                $path = $file->store('monitoring-data/gallery', 'public');
+                $galleryPaths[] = $path;
+            }
+        }
+
+        $validated['gallery'] = $galleryPaths;
         MonitoringData::create($validated);
 
         return redirect()->route('monitoring-data.index')
@@ -163,6 +192,18 @@ class MonitoringDataController extends Controller
         $monitoringData->level_kejadian = $levelMapping[$monitoringData->severity_level] ?? $monitoringData->severity_level;
         $monitoringData->tanggal_laporan = $monitoringData->incident_date;
         $monitoringData->jumlah_korban = $monitoringData->jumlah_terdampak;
+        
+        // Process gallery data
+        if ($monitoringData->gallery && is_array($monitoringData->gallery)) {
+            $monitoringData->gallery = collect($monitoringData->gallery)->map(function ($path) {
+                return [
+                    'path' => $path,
+                    'url' => asset('storage/' . $path)
+                ];
+            })->toArray();
+        } else {
+            $monitoringData->gallery = [];
+        }
 
         return Inertia::render('MonitoringData/Show', [
             'monitoringData' => $monitoringData,
@@ -208,8 +249,21 @@ class MonitoringDataController extends Controller
             'incident_date' => 'nullable|date',
             'source' => 'nullable|string|max:255',
             'additional_data' => 'nullable|array',
+            'gallery' => 'nullable|array',
+            'gallery.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max per image
         ]);
 
+        // Handle gallery upload
+        $galleryPaths = $monitoringData->gallery ?? [];
+        if ($request->hasFile('gallery')) {
+            // Upload new files and append to existing ones
+            foreach ($request->file('gallery') as $file) {
+                $path = $file->store('monitoring-data/gallery', 'public');
+                $galleryPaths[] = $path;
+            }
+        }
+
+        $validated['gallery'] = $galleryPaths;
         $monitoringData->update($validated);
 
         return redirect()->route('monitoring-data.index')
@@ -219,9 +273,41 @@ class MonitoringDataController extends Controller
     public function destroy($id)
     {
         $monitoringData = MonitoringData::findOrFail($id);
+        
+        // Delete gallery files from storage
+        if (!empty($monitoringData->gallery)) {
+            foreach ($monitoringData->gallery as $filePath) {
+                Storage::disk('public')->delete($filePath);
+            }
+        }
+        
         $monitoringData->delete();
 
         return redirect()->route('monitoring-data.index')
             ->with('success', 'Data monitoring berhasil dihapus.');
+    }
+
+    public function deleteGalleryImage(Request $request, $id)
+    {
+        $monitoringData = MonitoringData::findOrFail($id);
+        $imagePath = $request->input('image_path');
+        
+        if ($imagePath && $monitoringData->gallery && is_array($monitoringData->gallery)) {
+            // Remove from array
+            $gallery = $monitoringData->gallery;
+            $updatedGallery = array_filter($gallery, function($path) use ($imagePath) {
+                return $path !== $imagePath;
+            });
+            
+            // Update database
+            $monitoringData->update(['gallery' => array_values($updatedGallery)]);
+            
+            // Delete physical file
+            Storage::disk('public')->delete($imagePath);
+            
+            return response()->json(['message' => 'Image deleted successfully']);
+        }
+        
+        return response()->json(['error' => 'Image not found'], 404);
     }
 }
