@@ -20,16 +20,16 @@ class MonitoringDataController extends Controller
         // Search
         if ($request->has('search') && $request->search != '') {
             $query->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%'.$request->search.'%')
-                    ->orWhere('description', 'like', '%'.$request->search.'%')
+                $q->where('title', 'like', '%' . $request->search . '%')
+                    ->orWhere('description', 'like', '%' . $request->search . '%')
                     ->orWhereHas('kecamatan', function ($q) use ($request) {
-                        $q->where('nama', 'like', '%'.$request->search.'%');
+                        $q->where('nama', 'like', '%' . $request->search . '%');
                     })
                     ->orWhereHas('kecamatan.kabupatenKota', function ($q) use ($request) {
-                        $q->where('nama', 'like', '%'.$request->search.'%');
+                        $q->where('nama', 'like', '%' . $request->search . '%');
                     })
                     ->orWhereHas('category', function ($q) use ($request) {
-                        $q->where('name', 'like', '%'.$request->search.'%');
+                        $q->where('name', 'like', '%' . $request->search . '%');
                     });
             });
         }
