@@ -139,6 +139,36 @@ class MonitoringDataController extends Controller
             ->with('success', 'Data monitoring berhasil ditambahkan.');
     }
 
+    public function show($id)
+    {
+        $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])
+            ->findOrFail($id);
+
+        // Transform data untuk konsistensi dengan index
+        $statusMapping = [
+            'active' => 'aktif',
+            'resolved' => 'selesai',
+            'monitoring' => 'dalam_proses',
+            'archived' => 'arsip',
+        ];
+
+        $levelMapping = [
+            'low' => 'rendah',
+            'medium' => 'sedang',
+            'high' => 'tinggi',
+            'critical' => 'kritis',
+        ];
+
+        $monitoringData->status = $statusMapping[$monitoringData->status] ?? $monitoringData->status;
+        $monitoringData->level_kejadian = $levelMapping[$monitoringData->severity_level] ?? $monitoringData->severity_level;
+        $monitoringData->tanggal_laporan = $monitoringData->incident_date;
+        $monitoringData->jumlah_korban = $monitoringData->jumlah_terdampak;
+
+        return Inertia::render('MonitoringData/Show', [
+            'monitoringData' => $monitoringData,
+        ]);
+    }
+
     public function edit($id)
     {
         $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])->findOrFail($id);
