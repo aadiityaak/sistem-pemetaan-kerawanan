@@ -65,6 +65,19 @@ const autoOpenBasedOnUrl = () => {
                 if (subItem.items && subItem.items.length > 0) {
                     const hasActiveSubSubItem = subItem.items.some((subSubItem) => {
                         if (subSubItem.href === currentUrl) return true;
+                        // Check for URL with query parameters (more flexible matching)
+                        if (currentUrl.includes('?') && subSubItem.href.includes('?')) {
+                            const currentBase = currentUrl.split('?')[0];
+                            const itemBase = subSubItem.href.split('?')[0];
+                            if (currentBase === itemBase) {
+                                // Check if query parameters match
+                                const currentParams = new URLSearchParams(currentUrl.split('?')[1] || '');
+                                const itemParams = new URLSearchParams(subSubItem.href.split('?')[1] || '');
+                                const categoryMatch = currentParams.get('category') === itemParams.get('category');
+                                const subcategoryMatch = currentParams.get('subcategory') === itemParams.get('subcategory');
+                                return categoryMatch && subcategoryMatch;
+                            }
+                        }
                         if (currentUrl.startsWith(subSubItem.href) && subSubItem.href !== '/') {
                             return true;
                         }

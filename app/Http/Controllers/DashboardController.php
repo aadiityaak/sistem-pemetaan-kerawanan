@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\MonitoringData;
 use App\Models\Provinsi;
+use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -12,9 +13,11 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil parameter category jika ada
+        // Ambil parameter category dan subcategory jika ada
         $categorySlug = $request->query('category');
+        $subCategorySlug = $request->query('subcategory');
         $selectedCategory = null;
+        $selectedSubCategory = null;
 
         // Query monitoring data
         $query = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory']);
@@ -24,6 +27,16 @@ class DashboardController extends Controller
             $selectedCategory = Category::where('slug', $categorySlug)->first();
             if ($selectedCategory) {
                 $query->where('category_id', $selectedCategory->id);
+                
+                // Filter berdasarkan subcategory jika ada
+                if ($subCategorySlug) {
+                    $selectedSubCategory = SubCategory::where('slug', $subCategorySlug)
+                        ->where('category_id', $selectedCategory->id)
+                        ->first();
+                    if ($selectedSubCategory) {
+                        $query->where('sub_category_id', $selectedSubCategory->id);
+                    }
+                }
             }
         }
 
@@ -36,10 +49,14 @@ class DashboardController extends Controller
         $totalKecamatan = $monitoringData->groupBy('kecamatan_id')->count();
         $totalTerdampak = $monitoringData->sum('jumlah_terdampak');
 
-        // Jika ada filter kategori, hitung sub categories, jika tidak hitung total categories
-        $totalSubCategories = $selectedCategory
-          ? $monitoringData->groupBy('sub_category_id')->count()
-          : Category::count();
+        // Jika ada filter subcategory, hitung 1, jika ada filter kategori hitung sub categories, jika tidak hitung total categories
+        if ($selectedSubCategory) {
+            $totalSubCategories = 1; // Only one subcategory selected
+        } elseif ($selectedCategory) {
+            $totalSubCategories = $monitoringData->groupBy('sub_category_id')->count();
+        } else {
+            $totalSubCategories = Category::count();
+        }
 
         // Hitung berdasarkan sub kategori (jika ada filter kategori) atau kategori (jika tidak ada filter)
         $dataBySubCategory = $selectedCategory
@@ -61,6 +78,23 @@ class DashboardController extends Controller
                   'count' => $data->count(),
               ];
           });
+
+        // Hitung berdasarkan semua sub kategori dalam kategori (untuk analytics card)
+        // Ini akan selalu menampilkan semua subcategories berdasarkan kategori yang dipilih
+        $allSubCategoriesData = $selectedCategory 
+          ? MonitoringData::with(['subCategory'])
+              ->where('category_id', $selectedCategory->id)
+              ->get()
+              ->groupBy('sub_category_id')
+              ->map(function ($data) {
+                  $subCategory = $data->first()->subCategory ?? null;
+                  return [
+                      'name' => $subCategory->name ?? 'Unknown',
+                      'icon' => $subCategory->icon ?? '📊',
+                      'count' => $data->count(),
+                  ];
+              })
+          : $dataBySubCategory; // Fallback to categories if no category selected
 
         // Hitung berdasarkan provinsi
         $dataByProvinsi = $monitoringData->groupBy(function ($data) {
@@ -84,11 +118,18 @@ class DashboardController extends Controller
 
         // Ambil semua kategori untuk menu
         $categories = Category::all();
+        
+        // Ambil subcategories jika ada kategori yang dipilih
+        $subCategories = $selectedCategory 
+            ? $selectedCategory->subCategories()->active()->ordered()->get()
+            : collect();
 
         return Inertia::render('Dashboard', [
             'monitoringData' => $monitoringData,
             'selectedCategory' => $selectedCategory,
+            'selectedSubCategory' => $selectedSubCategory,
             'categories' => $categories,
+            'subCategories' => $subCategories,
             'statistics' => [
                 'totalData' => $totalData,
                 'totalProvinsi' => $totalProvinsi,
@@ -97,6 +138,7 @@ class DashboardController extends Controller
                 'totalTerdampak' => $totalTerdampak,
                 'totalSubCategories' => $totalSubCategories,
                 'dataBySubCategory' => $dataBySubCategory,
+                'allSubCategoriesData' => $allSubCategoriesData,
                 'dataByProvinsi' => $dataByProvinsi,
                 'dataBySeverity' => $dataBySeverity,
                 'dataByStatus' => $dataByStatus,

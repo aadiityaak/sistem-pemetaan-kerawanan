@@ -35,6 +35,14 @@ interface Category {
     color: string;
 }
 
+interface SubCategory {
+    id: number;
+    category_id: number;
+    name: string;
+    slug: string;
+    icon?: string;
+}
+
 interface Statistics {
     totalData: number;
     totalProvinsi: number;
@@ -43,6 +51,7 @@ interface Statistics {
     totalTerdampak: number;
     totalSubCategories: number;
     dataBySubCategory: Record<string, { name: string; icon: string; count: number }>;
+    allSubCategoriesData: Record<string, { name: string; icon: string; count: number }>;
     dataByProvinsi: Record<string, number>;
     dataBySeverity: Record<string, number>;
     dataByStatus: Record<string, number>;
@@ -51,12 +60,14 @@ interface Statistics {
 const props = defineProps<{
     monitoringData: MonitoringData[];
     selectedCategory?: Category | null;
+    selectedSubCategory?: SubCategory | null;
     categories: Category[];
+    subCategories: SubCategory[];
     statistics: Statistics;
     recentActivities: MonitoringData[];
 }>();
 
-// Dynamic breadcrumbs based on selected category
+// Dynamic breadcrumbs based on selected category and subcategory
 const breadcrumbs = computed<BreadcrumbItem[]>(() => {
     const base = [{ title: 'Dashboard', href: '/dashboard' }];
     if (props.selectedCategory) {
@@ -64,6 +75,12 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
             title: props.selectedCategory.name,
             href: `/dashboard?category=${props.selectedCategory.slug}`,
         });
+        if (props.selectedSubCategory) {
+            base.push({
+                title: props.selectedSubCategory.name,
+                href: `/dashboard?category=${props.selectedCategory.slug}&subcategory=${props.selectedSubCategory.slug}`,
+            });
+        }
     }
     return base;
 });
@@ -125,6 +142,17 @@ const getSeverityLabel = (severity: string): string => {
 const selectCategory = (categorySlug: string | null) => {
     if (categorySlug) {
         router.get(`/dashboard?category=${categorySlug}`);
+    } else {
+        router.get('/dashboard');
+    }
+};
+
+// Function to change subcategory filter
+const selectSubCategory = (subCategorySlug: string | null) => {
+    if (props.selectedCategory && subCategorySlug) {
+        router.get(`/dashboard?category=${props.selectedCategory.slug}&subcategory=${subCategorySlug}`);
+    } else if (props.selectedCategory) {
+        router.get(`/dashboard?category=${props.selectedCategory.slug}`);
     } else {
         router.get('/dashboard');
     }
@@ -220,7 +248,11 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head :title="selectedCategory ? `Dashboard ${selectedCategory.name}` : 'Dashboard'" />
+    <Head :title="selectedSubCategory 
+        ? `Dashboard ${selectedCategory?.name} - ${selectedSubCategory.name}` 
+        : selectedCategory 
+        ? `Dashboard ${selectedCategory.name}` 
+        : 'Dashboard'" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-1 flex-col gap-6 rounded-xl p-6">
@@ -236,30 +268,52 @@ onMounted(async () => {
                         </div>
                         <div>
                             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                                {{ selectedCategory ? `Dashboard ${selectedCategory.name}` : 'Dashboard Monitoring' }}
+                                {{ selectedSubCategory 
+                                    ? `Dashboard ${selectedCategory?.name} - ${selectedSubCategory.name}` 
+                                    : selectedCategory 
+                                    ? `Dashboard ${selectedCategory.name}` 
+                                    : 'Dashboard Monitoring' }}
                             </h1>
                             <p class="text-gray-600 dark:text-gray-400">
-                                {{
-                                    selectedCategory
-                                        ? `Monitoring khusus kategori ${selectedCategory.name}`
-                                        : 'Monitoring data komprehensif semua kategori'
+                                {{ selectedSubCategory
+                                    ? `Monitoring khusus subcategory ${selectedSubCategory.name}`
+                                    : selectedCategory
+                                    ? `Monitoring khusus kategori ${selectedCategory.name}`
+                                    : 'Monitoring data komprehensif semua kategori'
                                 }}
                             </p>
                         </div>
                     </div>
 
-                    <!-- Category Filter Dropdown -->
-                    <div class="relative">
-                        <select
-                            @change="selectCategory(($event.target as HTMLSelectElement).value || null)"
-                            :value="selectedCategory?.slug || ''"
-                            class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                        >
-                            <option value="">Semua Kategori</option>
-                            <option v-for="category in categories" :key="category.id" :value="category.slug">
-                                {{ category.name }}
-                            </option>
-                        </select>
+                    <!-- Filter Dropdowns -->
+                    <div class="flex gap-4">
+                        <!-- Category Filter -->
+                        <div class="relative">
+                            <select
+                                @change="selectCategory(($event.target as HTMLSelectElement).value || null)"
+                                :value="selectedCategory?.slug || ''"
+                                class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            >
+                                <option value="">Semua Kategori</option>
+                                <option v-for="category in categories" :key="category.id" :value="category.slug">
+                                    {{ category.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- SubCategory Filter (only show when category is selected) -->
+                        <div v-if="selectedCategory && subCategories.length > 0" class="relative">
+                            <select
+                                @change="selectSubCategory(($event.target as HTMLSelectElement).value || null)"
+                                :value="selectedSubCategory?.slug || ''"
+                                class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            >
+                                <option value="">Semua Sub Kategori</option>
+                                <option v-for="subCategory in subCategories" :key="subCategory.id" :value="subCategory.slug">
+                                    {{ subCategory.icon ? subCategory.icon + ' ' : '' }}{{ subCategory.name }}
+                                </option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -393,14 +447,22 @@ onMounted(async () => {
                     <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                         <div class="mb-4 flex items-center justify-between">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                🗺️ {{ selectedCategory ? `Peta ${selectedCategory.name}` : 'Peta Monitoring Data' }}
+                                🗺️ {{ selectedSubCategory 
+                                    ? `Peta ${selectedSubCategory.name}` 
+                                    : selectedCategory 
+                                    ? `Peta ${selectedCategory.name}` 
+                                    : 'Peta Monitoring Data' }}
                             </h3>
                             <div class="flex items-center gap-2 text-sm text-gray-500">
                                 <span
                                     class="h-3 w-3 rounded-full"
                                     :style="{ backgroundColor: selectedCategory ? currentTheme.color : '#6B7280' }"
                                 ></span>
-                                <span>{{ selectedCategory ? selectedCategory.name : 'Semua Data' }}</span>
+                                <span>{{ selectedSubCategory 
+                                    ? selectedSubCategory.name 
+                                    : selectedCategory 
+                                    ? selectedCategory.name 
+                                    : 'Semua Data' }}</span>
                             </div>
                         </div>
                         <div ref="mapContainer" class="h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
@@ -412,7 +474,11 @@ onMounted(async () => {
                     <!-- Top Sub Categories / Categories -->
                     <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                            🎯 {{ selectedCategory ? `Sub Kategori ${selectedCategory.name}` : 'Top Kategori' }}
+                            🎯 {{ selectedSubCategory 
+                                ? `Data ${selectedSubCategory.name}` 
+                                : selectedCategory 
+                                ? `Sub Kategori ${selectedCategory.name}` 
+                                : 'Top Kategori' }}
                         </h3>
                         <div class="space-y-3">
                             <div
