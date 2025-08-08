@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
             KabupatenKotaSeeder::class,
             KecamatanSeeder::class,
             CategorySeeder::class,
-            SubCategorySeeder::class,
+            // SubCategorySeeder::class,
             UserSeeder::class,
             MonitoringDataSeeder::class,
             AppSettingSeeder::class,

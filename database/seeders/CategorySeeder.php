@@ -3,66 +3,106 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\SubCategory;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $categories = [
-            [
-                'name' => 'Ideologi',
-                'slug' => 'ideologi',
+        $data = [
+            'Ideologi' => [
                 'description' => 'Monitoring aspek ideologi dan paham yang berkembang',
-                'icon' => 'Users',
-                'color' => '#3B82F6', // Blue
-                'sort_order' => 1,
+                'icon' => '🧠',
+                'color' => '#3B82F6',
+                'children' => [
+                    ['name' => 'Ideologi Kanan', 'icon' => '🟦'],
+                    ['name' => 'Ideologi Kiri', 'icon' => '🟥'],
+                    ['name' => 'Isu Menonjol', 'icon' => '📌'],
+                ],
             ],
-            [
-                'name' => 'Politik',
-                'slug' => 'politik',
+            'Politik' => [
                 'description' => 'Monitoring dinamika politik dan pemerintahan',
-                'icon' => 'Landmark',
-                'color' => '#8B5CF6', // Purple
-                'sort_order' => 2,
+                'icon' => '🏛️',
+                'color' => '#8B5CF6',
+                'children' => [
+                    ['name' => 'Dalam Negeri', 'icon' => '🏠'],
+                    ['name' => 'Luar Negeri', 'icon' => '🌍'],
+                    ['name' => 'Isu Menonjol', 'icon' => '📌'],
+                ],
             ],
-            [
-                'name' => 'Ekonomi',
-                'slug' => 'ekonomi',
+            'Ekonomi' => [
                 'description' => 'Monitoring kondisi ekonomi dan kesejahteraan',
-                'icon' => 'DollarSign',
-                'color' => '#10B981', // Green
-                'sort_order' => 3,
+                'icon' => '💰',
+                'color' => '#10B981',
+                'children' => [
+                    ['name' => 'Export Import', 'icon' => '🚢'],
+                    ['name' => 'Harga Sembako', 'icon' => '🛒'],
+                    ['name' => 'Index Pendapatan masyarakat', 'icon' => '📈'],
+                    ['name' => 'Kesenjangan Sosial', 'icon' => '⚖️'],
+                    ['name' => 'Ekonomi Asing', 'icon' => '💱'],
+                    ['name' => 'Pro Kontra Proyek Strategis Nasional', 'icon' => '🏗️'],
+                    ['name' => 'Korupsi', 'icon' => '🕳️'],
+                    ['name' => 'Isu Menonjol', 'icon' => '📌'],
+                ],
             ],
-            [
-                'name' => 'Sosial Budaya',
-                'slug' => 'sosial-budaya',
+            'Sosial Budaya' => [
                 'description' => 'Monitoring aspek sosial budaya masyarakat',
-                'icon' => 'Heart',
-                'color' => '#EC4899', // Pink
-                'sort_order' => 4,
+                'icon' => '🎭',
+                'color' => '#EC4899',
+                'children' => [
+                    ['name' => 'Ormas', 'icon' => '👥'],
+                    ['name' => 'Bencana Alam', 'icon' => '🌪️'],
+                    ['name' => 'Unjuk rasa', 'icon' => '📢'],
+                    ['name' => 'Konflik sosial', 'icon' => '⚔️'],
+                    ['name' => 'PHK', 'icon' => '📉'],
+                    ['name' => 'SARA', 'icon' => '🧬'],
+                    ['name' => 'Isu Menonjol', 'icon' => '📌'],
+                ],
             ],
-            [
-                'name' => 'Keamanan',
-                'slug' => 'keamanan',
+            'Keamanan' => [
                 'description' => 'Monitoring situasi keamanan dan ketertiban',
-                'icon' => 'Shield',
-                'color' => '#F59E0B', // Orange
-                'sort_order' => 5,
+                'icon' => '🛡️',
+                'color' => '#F59E0B',
+                'children' => [
+                    ['name' => 'Teror', 'icon' => '💣'],
+                    ['name' => 'Kemanan Negara', 'icon' => '🚓'],
+                    ['name' => 'Isu Menonjol', 'icon' => '📌'],
+                ],
             ],
         ];
 
-        foreach ($categories as $category) {
-            Category::updateOrCreate(
-                ['slug' => $category['slug']],
-                $category
+        $sort_order = 1;
+        foreach ($data as $mainCategoryName => $mainCategoryData) {
+            $parent = Category::updateOrCreate(
+                ['slug' => Str::slug($mainCategoryName)],
+                [
+                    'name' => $mainCategoryName,
+                    'description' => $mainCategoryData['description'],
+                    'icon' => $mainCategoryData['icon'],
+                    'color' => $mainCategoryData['color'],
+                    'sort_order' => $sort_order++,
+                ]
             );
-            echo "Category {$category['name']} berhasil ditambahkan\n";
+
+            echo "✅ Kategori utama '{$mainCategoryName}' berhasil ditambahkan\n";
+
+            $sub_sort = 1;
+            foreach ($mainCategoryData['children'] as $child) {
+                SubCategory::updateOrCreate(
+                    ['slug' => Str::slug($mainCategoryName . '-' . $child['name'])],
+                    [
+                        'name' => $child['name'],
+                        'sort_order' => $sub_sort++,
+                        'category_id' => $parent->id,
+                        'icon' => $child['icon'] ?? null,
+                    ]
+                );
+                echo "   ↳ Subkategori '{$child['name']}' ditambahkan (icon: {$child['icon']})\n";
+            }
         }
 
-        echo "CategorySeeder selesai dijalankan\n";
+        echo "🎉 CategorySeeder selesai dijalankan\n";
     }
 }
