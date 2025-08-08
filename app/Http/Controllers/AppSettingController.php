@@ -60,6 +60,29 @@ class AppSettingController extends Controller
                     'value' => $this->settingsService->getSetting('app_logo', ''),
                 ],
             ],
+            'ai' => [
+                [
+                    'key' => 'gemini_enabled',
+                    'label' => 'Aktifkan Gemini AI',
+                    'description' => 'Enable/disable fitur Gemini AI untuk analisis data',
+                    'type' => 'boolean',
+                    'value' => $this->settingsService->getSetting('gemini_enabled', 'false'),
+                ],
+                [
+                    'key' => 'gemini_api_endpoint',
+                    'label' => 'Gemini API Endpoint',
+                    'description' => 'URL endpoint Google Gemini API',
+                    'type' => 'text',
+                    'value' => $this->settingsService->getSetting('gemini_api_endpoint', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent'),
+                ],
+                [
+                    'key' => 'gemini_api_key',
+                    'label' => 'Gemini API Key',
+                    'description' => 'API Key untuk autentikasi Google Gemini',
+                    'type' => 'password',
+                    'value' => $this->settingsService->getSetting('gemini_api_key', ''),
+                ],
+            ],
         ];
 
         return Inertia::render('Settings/Index', [
@@ -84,7 +107,10 @@ class AppSettingController extends Controller
         ]);
 
         // Validate input based on setting type
-        $allowedKeys = ['app_name', 'app_description', 'footer_text', 'app_favicon', 'app_logo'];
+        $allowedKeys = [
+            'app_name', 'app_description', 'footer_text', 'app_favicon', 'app_logo',
+            'gemini_enabled', 'gemini_api_endpoint', 'gemini_api_key'
+        ];
 
         if (! in_array($key, $allowedKeys)) {
             Log::warning('Invalid setting key attempted', ['key' => $key]);
@@ -108,14 +134,35 @@ class AppSettingController extends Controller
             'footer_text' => 'Teks Footer',
             'app_favicon' => 'Favicon',
             'app_logo' => 'Logo Aplikasi',
+            'gemini_enabled' => 'Aktifkan Gemini AI',
+            'gemini_api_endpoint' => 'Gemini API Endpoint',
+            'gemini_api_key' => 'Gemini API Key',
         ];
+
+        // Determine setting type
+        $settingType = 'text';
+        if (in_array($key, ['app_favicon', 'app_logo'])) {
+            $settingType = 'image';
+        } elseif ($key === 'gemini_enabled') {
+            $settingType = 'boolean';
+        } elseif ($key === 'gemini_api_key') {
+            $settingType = 'password';
+        }
+
+        // Determine setting group
+        $settingGroup = 'general';
+        if (in_array($key, ['app_favicon', 'app_logo'])) {
+            $settingGroup = 'appearance';
+        } elseif (in_array($key, ['gemini_enabled', 'gemini_api_endpoint', 'gemini_api_key'])) {
+            $settingGroup = 'ai';
+        }
 
         $data = [
             'key' => $key,
             'value' => $request->get('value'),
-            'type' => in_array($key, ['app_favicon', 'app_logo']) ? 'image' : 'text',
+            'type' => $settingType,
             'label' => $settingLabels[$key] ?? ucfirst(str_replace('_', ' ', $key)),
-            'group' => in_array($key, ['app_favicon', 'app_logo']) ? 'appearance' : 'general',
+            'group' => $settingGroup,
             'description' => null,
         ];
 

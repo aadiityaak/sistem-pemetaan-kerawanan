@@ -39,6 +39,40 @@
                                             />
                                         </div>
 
+                                        <div v-else-if="setting.type === 'password'" class="mt-2">
+                                            <input
+                                                :id="setting.key"
+                                                v-model="forms[setting.key].value"
+                                                type="password"
+                                                class="mt-1 block w-full rounded-md border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                                :placeholder="setting.value ? '••••••••' : 'Enter API key'"
+                                            />
+                                        </div>
+
+                                        <div v-else-if="setting.type === 'number'" class="mt-2">
+                                            <input
+                                                :id="setting.key"
+                                                v-model="forms[setting.key].value"
+                                                type="number"
+                                                class="mt-1 block w-full rounded-md border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                                :placeholder="setting.value || ''"
+                                            />
+                                        </div>
+
+                                        <div v-else-if="setting.type === 'boolean'" class="mt-2">
+                                            <label class="inline-flex items-center">
+                                                <input
+                                                    :id="setting.key"
+                                                    v-model="forms[setting.key].value"
+                                                    type="checkbox"
+                                                    :checked="forms[setting.key].value === 'true'"
+                                                    @change="forms[setting.key].value = $event.target.checked ? 'true' : 'false'"
+                                                    class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800"
+                                                />
+                                                <span class="ml-2 text-sm text-gray-900 dark:text-gray-100">Aktif</span>
+                                            </label>
+                                        </div>
+
                                         <div v-else-if="setting.type === 'image'" class="mt-2">
                                             <div v-if="imagePreviews[setting.key] || setting.value" class="mb-2">
                                                 <img

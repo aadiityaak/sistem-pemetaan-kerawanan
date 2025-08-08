@@ -116,6 +116,32 @@ class AppSettingSeeder extends Seeder
         'label' => 'Data Refresh Interval (seconds)',
         'description' => 'How often to refresh data on the map (in seconds)',
       ],
+
+      // AI Settings
+      [
+        'key' => 'gemini_api_endpoint',
+        'value' => 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent',
+        'type' => 'text',
+        'group' => 'ai',
+        'label' => 'Gemini API Endpoint',
+        'description' => 'Google Gemini API endpoint URL for AI processing',
+      ],
+      [
+        'key' => 'gemini_api_key',
+        'value' => '',
+        'type' => 'password',
+        'group' => 'ai',
+        'label' => 'Gemini API Key',
+        'description' => 'Google Gemini API key for authentication',
+      ],
+      [
+        'key' => 'gemini_enabled',
+        'value' => 'false',
+        'type' => 'boolean',
+        'group' => 'ai',
+        'label' => 'Enable Gemini AI',
+        'description' => 'Enable/disable Gemini AI features',
+      ],
     ];
 
     foreach ($settings as $setting) {

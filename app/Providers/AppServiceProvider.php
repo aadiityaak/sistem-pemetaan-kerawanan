@@ -12,7 +12,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(\App\Services\GeminiService::class, function ($app) {
+            return new \App\Services\GeminiService($app->make(\App\Services\SettingsService::class));
+        });
     }
 
     /**
