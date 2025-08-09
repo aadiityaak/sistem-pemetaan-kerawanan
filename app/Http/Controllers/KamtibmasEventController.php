@@ -20,14 +20,47 @@ class KamtibmasEventController extends Controller
         $currentDate = $request->get('date', now()->format('Y-m'));
         $date = Carbon::createFromFormat('Y-m', $currentDate)->startOfMonth();
         
+        // Get event filter parameter
+        $eventFilter = $request->get('event'); // kamtibmas, agenda, etc.
+        $agendaType = $request->get('agenda_type'); // nasional, internasional (for agenda filter)
+        
         // Get events for the current view (month view - get events for 6 weeks around the month)
         $startDate = $date->copy()->startOfMonth()->startOfWeek();
         $endDate = $date->copy()->endOfMonth()->endOfWeek();
         
-        $events = Event::active()
-            ->inDateRange($startDate, $endDate)
-            ->orderBy('start_date')
-            ->get();
+        $eventsQuery = Event::active()->inDateRange($startDate, $endDate);
+        
+        // Filter by event type/category if specified
+        if ($eventFilter) {
+            switch ($eventFilter) {
+                case 'kamtibmas':
+                    $eventsQuery->where('category', 'Kamtibmas');
+                    break;
+                case 'agenda':
+                    if ($agendaType) {
+                        switch ($agendaType) {
+                            case 'nasional':
+                                $eventsQuery->where('category', 'Agenda Nasional');
+                                break;
+                            case 'internasional':
+                                $eventsQuery->where('category', 'Agenda Internasional');
+                                break;
+                            default:
+                                $eventsQuery->whereIn('category', ['Agenda Nasional', 'Agenda Internasional']);
+                                break;
+                        }
+                    } else {
+                        $eventsQuery->whereIn('category', ['Agenda Nasional', 'Agenda Internasional']);
+                    }
+                    break;
+                default:
+                    // Allow specific category filter
+                    $eventsQuery->where('category', $eventFilter);
+                    break;
+            }
+        }
+        
+        $events = $eventsQuery->orderBy('start_date')->get();
         
         // Debug: Log the query details
         \Log::info('Calendar Events Query:', [
@@ -53,11 +86,41 @@ class KamtibmasEventController extends Controller
                 ];
             });
 
-        // Get all events for the month (for statistics)
-        $monthlyEvents = Event::active()
+        // Get all events for the month (for statistics) with same filter
+        $monthlyEventsQuery = Event::active()
             ->whereMonth('start_date', $date->month)
-            ->whereYear('start_date', $date->year)
-            ->get();
+            ->whereYear('start_date', $date->year);
+            
+        // Apply same filter for statistics
+        if ($eventFilter) {
+            switch ($eventFilter) {
+                case 'kamtibmas':
+                    $monthlyEventsQuery->where('category', 'Kamtibmas');
+                    break;
+                case 'agenda':
+                    if ($agendaType) {
+                        switch ($agendaType) {
+                            case 'nasional':
+                                $monthlyEventsQuery->where('category', 'Agenda Nasional');
+                                break;
+                            case 'internasional':
+                                $monthlyEventsQuery->where('category', 'Agenda Internasional');
+                                break;
+                            default:
+                                $monthlyEventsQuery->whereIn('category', ['Agenda Nasional', 'Agenda Internasional']);
+                                break;
+                        }
+                    } else {
+                        $monthlyEventsQuery->whereIn('category', ['Agenda Nasional', 'Agenda Internasional']);
+                    }
+                    break;
+                default:
+                    $monthlyEventsQuery->where('category', $eventFilter);
+                    break;
+            }
+        }
+        
+        $monthlyEvents = $monthlyEventsQuery->get();
 
         $statistics = [
             'totalEvents' => $monthlyEvents->count(),
@@ -66,8 +129,11 @@ class KamtibmasEventController extends Controller
                                           ->where('end_date', '>=', now()->format('Y-m-d'))->count(),
         ];
 
-        // Get Indonesian holidays
-        $holidays = $this->getIndonesianHolidays($date->year);
+        // Get Indonesian holidays (only for Kamtibmas view)
+        $holidays = [];
+        if ($eventFilter === 'kamtibmas') {
+            $holidays = $this->getIndonesianHolidays($date->year);
+        }
 
         return Inertia::render('KamtibmasCalendar/Index', [
             'events' => $events,
@@ -75,6 +141,8 @@ class KamtibmasEventController extends Controller
             'currentDate' => $date->format('Y-m-d'),
             'holidays' => $holidays,
             'categories' => Event::getCategories(),
+            'eventFilter' => $eventFilter,
+            'agendaType' => $agendaType,
         ]);
     }
 
@@ -88,7 +156,7 @@ class KamtibmasEventController extends Controller
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'description' => ['nullable', 'string'],
-            'category' => ['required', 'string', 'in:agenda_nasional,agenda_internasional,kamtibmas'],
+            'category' => ['required', 'string', 'in:' . implode(',', Event::getCategories())],
             'color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{3,6}$/'],
         ]);
 
@@ -139,7 +207,7 @@ class KamtibmasEventController extends Controller
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'description' => ['nullable', 'string'],
-            'category' => ['required', 'string', 'in:agenda_nasional,agenda_internasional,kamtibmas'],
+            'category' => ['required', 'string', 'in:' . implode(',', Event::getCategories())],
             'color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{3,6}$/'],
         ]);
 

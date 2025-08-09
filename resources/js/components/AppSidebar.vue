@@ -9,6 +9,7 @@ import {
     Brain,
     Building2,
     Calendar,
+    CalendarDays,
     Database,
     DollarSign,
     FileText,
@@ -35,7 +36,32 @@ const mainNavItems = ref<NavItem[]>([
         items: [], // Will be populated dynamically with categories and subcategories
     },
     {
-        title: 'DATA MONITORING',
+        title: 'ISU NEGATIF ANGGOTA BRIMOB',
+        href: '/dashboard?category=keamanan&subcategory=isu-negatif-anggota-brimob',
+        icon: ShieldAlert,
+    },
+    {
+        title: 'KALENDER KAMTIBMAS',
+        href: '/event?event=kamtibmas',
+        icon: Calendar,
+    },
+    {
+        title: 'AGENDA',
+        href: '/event?event=agenda',
+        icon: CalendarDays,
+    },
+    {
+        title: 'INDAS',
+        href: '/indas',
+        icon: ScrollText,
+    },
+    {
+        title: 'PREDIKSI AI',
+        href: '/ai-prediction',
+        icon: Brain,
+    },
+    {
+        title: 'DATA CENTER',
         href: '/monitoring-data',
         icon: ShieldAlert,
         items: [
@@ -56,26 +82,20 @@ const mainNavItems = ref<NavItem[]>([
             },
         ],
     },
+]);
+
+// Settings nav items for sidebar footer
+const settingsNavItems = ref<NavItem[]>([
     {
-        title: 'KALENDER KAMTIBMAS',
-        href: '/kamtibmas-calendar',
-        icon: Calendar,
-    },
-    {
-        title: 'PREDIKSI AI',
-        href: '/ai-prediction',
-        icon: Brain,
-    },
-    {
-        title: 'INDAS',
-        href: '/indas',
-        icon: ScrollText,
-    },
-    {
-        title: 'WILAYAH',
-        href: '/provinsi',
-        icon: Globe,
+        title: 'PENGATURAN',
+        href: '/settings',
+        icon: Settings,
         items: [
+            {
+                title: 'Pengaturan Aplikasi',
+                href: '/settings',
+                icon: Settings,
+            },
             {
                 title: 'Provinsi',
                 href: '/provinsi',
@@ -92,11 +112,6 @@ const mainNavItems = ref<NavItem[]>([
                 icon: MapPin,
             },
         ],
-    },
-    {
-        title: 'PENGATURAN',
-        href: '/settings',
-        icon: Settings,
     },
 ]);
 
@@ -191,6 +206,7 @@ onMounted(() => {
         </SidebarContent>
 
         <SidebarFooter>
+            <NavMain :items="settingsNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

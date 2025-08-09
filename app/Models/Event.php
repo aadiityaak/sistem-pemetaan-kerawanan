@@ -106,9 +106,15 @@ class Event extends Model
     public static function getCategories()
     {
         return [
-            'agenda_nasional' => 'Agenda Nasional',
-            'agenda_internasional' => 'Agenda Internasional', 
-            'kamtibmas' => 'Kamtibmas'
+            'Agenda Nasional',
+            'Agenda Internasional', 
+            'Kamtibmas',
+            'Meeting',
+            'Training',
+            'Conference',
+            'Workshop',
+            'Seminar',
+            'Other'
         ];
     }
 }

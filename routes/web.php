@@ -116,13 +116,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('sub-categories', \App\Http\Controllers\SubCategoryController::class);
     Route::post('/sub-categories/{subCategory}/toggle-status', [\App\Http\Controllers\SubCategoryController::class, 'toggleStatus'])->name('sub-categories.toggle-status');
 
-    // Kamtibmas Calendar Routes
-    Route::get('/kamtibmas-calendar', [KamtibmasEventController::class, 'index'])->name('kamtibmas-calendar.index');
+    // Event Calendar Routes (Universal for Kamtibmas, Agenda, etc.)
+    Route::get('/event', [KamtibmasEventController::class, 'index'])->name('event.index');
+    Route::post('/event', [KamtibmasEventController::class, 'store'])->name('event.store');
+    Route::get('/event/{event}', [KamtibmasEventController::class, 'show'])->name('event.show');
+    Route::put('/event/{event}', [KamtibmasEventController::class, 'update'])->name('event.update');
+    Route::delete('/event/{event}', [KamtibmasEventController::class, 'destroy'])->name('event.destroy');
+    Route::post('/event/{event}/toggle-status', [KamtibmasEventController::class, 'toggleStatus'])->name('event.toggle-status');
+    
+    // Legacy routes for backward compatibility
+    Route::get('/kamtibmas-calendar', function() {
+        return redirect('/event?event=kamtibmas');
+    });
     Route::post('/kamtibmas-events', [KamtibmasEventController::class, 'store'])->name('kamtibmas-events.store');
     Route::get('/kamtibmas-events/{event}', [KamtibmasEventController::class, 'show'])->name('kamtibmas-events.show');
     Route::put('/kamtibmas-events/{event}', [KamtibmasEventController::class, 'update'])->name('kamtibmas-events.update');
     Route::delete('/kamtibmas-events/{event}', [KamtibmasEventController::class, 'destroy'])->name('kamtibmas-events.destroy');
     Route::post('/kamtibmas-events/{event}/toggle-status', [KamtibmasEventController::class, 'toggleStatus'])->name('kamtibmas-events.toggle-status');
+
 
     // Settings Routes (Fixed settings - only allow viewing and updating values)
     Route::get('/settings', [AppSettingController::class, 'index'])->name('settings.index');

@@ -29,6 +29,8 @@ const props = defineProps<{
     currentDate: string;
     holidays: any[];
     categories: Record<string, string>;
+    eventFilter?: string;
+    agendaType?: string;
 }>();
 
 
@@ -38,8 +40,8 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/dashboard',
     },
     {
-        title: 'Kalender Kamtibmas',
-        href: '/kamtibmas-calendar',
+        title: props.eventFilter === 'agenda' ? 'Agenda' : 'Kalender Kamtibmas',
+        href: props.eventFilter === 'agenda' ? '/event?event=agenda' : '/event?event=kamtibmas',
     },
 ];
 
@@ -58,12 +60,28 @@ const eventForm = ref({
     start_date: '',
     end_date: '',
     description: '',
-    category: 'kamtibmas',
+    category: props.eventFilter === 'agenda' ? 'Agenda Nasional' : 'Kamtibmas',
     color: '#3B82F6',
 });
 
 const errors = ref<Record<string, string>>({});
 const isLoading = ref(false);
+
+// Filter categories based on current view
+const availableCategories = computed(() => {
+    const allCategories = Object.values(props.categories);
+    
+    if (props.eventFilter === 'agenda') {
+        // For agenda view, show all categories except Kamtibmas
+        return allCategories.filter(category => category !== 'Kamtibmas');
+    } else if (props.eventFilter === 'kamtibmas') {
+        // For kamtibmas view, only show Kamtibmas
+        return ['Kamtibmas'];
+    } else {
+        // For all events view, show all categories
+        return allCategories;
+    }
+});
 
 // Calendar navigation
 const monthNames = [
@@ -76,6 +94,16 @@ const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 // Filter state - initialize from current date
 const selectedMonth = ref(currentDate.value.getMonth() + 1);
 const selectedYear = ref(currentDate.value.getFullYear());
+
+// Agenda type filter (only for agenda view)
+const selectedAgendaType = ref(props.eventFilter === 'agenda' ? (props.agendaType || 'all') : '');
+
+// Agenda type options for filtering
+const agendaTypeOptions = computed(() => [
+    { value: 'all', label: 'Semua Agenda' },
+    { value: 'nasional', label: 'Agenda Nasional' },
+    { value: 'internasional', label: 'Agenda Internasional' },
+]);
 
 // Navigation state to prevent infinite loops
 let isNavigating = false;
@@ -148,8 +176,8 @@ const calendarDays = computed(() => {
         date.setDate(startDate.getDate() + i);
         
         const dayEvents = props.events.filter(event => {
-            const eventStart = new Date(event.start);
-            const eventEnd = new Date(event.end);
+            const eventStart = new Date(event.start + 'T00:00:00');
+            const eventEnd = new Date(event.end + 'T23:59:59');
             return date >= eventStart && date <= eventEnd;
         });
 
@@ -198,7 +226,14 @@ const goToToday = () => {
 
 const navigateToMonth = () => {
     const dateParam = currentDate.value.toISOString().slice(0, 7); // YYYY-MM
-    router.get('/kamtibmas-calendar', { date: dateParam }, {
+    const params: any = { date: dateParam, event: props.eventFilter };
+    
+    // Add agenda type filter if in agenda view
+    if (props.eventFilter === 'agenda' && selectedAgendaType.value && selectedAgendaType.value !== 'all') {
+        params.agenda_type = selectedAgendaType.value;
+    }
+    
+    router.get(route('event.index'), params, {
         preserveState: true,
         replace: true,
     });
@@ -236,14 +271,25 @@ watch([selectedMonth, selectedYear], () => {
     }
 }, { flush: 'post' });
 
+// Watch for agenda type filter changes
+watch(selectedAgendaType, () => {
+    try {
+        if (!isNavigating && props.eventFilter === 'agenda') {
+            applyDateFilter();
+        }
+    } catch (error) {
+        console.error('Error in agenda type filter watcher:', error);
+    }
+}, { flush: 'post' });
+
 // Event management
 const openDayModal = (date: Date) => {
     selectedDate.value = date;
     
     // Get events for this day
     const dayEvents = props.events.filter(event => {
-        const eventStart = new Date(event.start);
-        const eventEnd = new Date(event.end);
+        const eventStart = new Date(event.start + 'T00:00:00');
+        const eventEnd = new Date(event.end + 'T23:59:59');
         return date >= eventStart && date <= eventEnd;
     });
     
@@ -308,7 +354,7 @@ const editEvent = async (event: KamtibmasEvent) => {
         isLoading.value = true;
         resetForm();
         
-        const response = await fetch(`/kamtibmas-events/${event.id}`, {
+        const response = await fetch(route('event.show', { event: event.id }), {
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
@@ -352,12 +398,20 @@ const editEvent = async (event: KamtibmasEvent) => {
 };
 
 const resetForm = () => {
+    // Set default category based on current filter
+    let defaultCategory = 'Kamtibmas';
+    if (props.eventFilter === 'agenda') {
+        defaultCategory = 'Agenda Nasional';
+    } else if (availableCategories.value.length > 0) {
+        defaultCategory = availableCategories.value[0];
+    }
+    
     eventForm.value = {
         title: '',
         start_date: '',
         end_date: '',
         description: '',
-        category: 'kamtibmas',
+        category: defaultCategory,
         color: '#3B82F6',
     };
     errors.value = {};
@@ -405,8 +459,8 @@ const saveEvent = async () => {
         }
         
         const url = editingEvent.value 
-            ? `/kamtibmas-events/${editingEvent.value.id}`
-            : '/kamtibmas-events';
+            ? route('event.update', { event: editingEvent.value.id })
+            : route('event.store');
         
         const method = editingEvent.value ? 'PUT' : 'POST';
         
@@ -436,8 +490,14 @@ const saveEvent = async () => {
             
             // Refresh the page with current date parameters to show updated events
             const currentDateParam = currentDate.value.toISOString().slice(0, 7); // YYYY-MM
+            const params: any = { date: currentDateParam, event: props.eventFilter };
             
-            router.get('/kamtibmas-calendar', { date: currentDateParam }, {
+            // Add agenda type filter if in agenda view
+            if (props.eventFilter === 'agenda' && selectedAgendaType.value && selectedAgendaType.value !== 'all') {
+                params.agenda_type = selectedAgendaType.value;
+            }
+            
+            router.get(route('event.index'), params, {
                 preserveState: false,
                 replace: false,
                 onFinish: () => {
@@ -476,7 +536,7 @@ const deleteEvent = async (event: KamtibmasEvent) => {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
                              (window as any).Laravel?.csrfToken || '';
             
-            const response = await fetch(`/kamtibmas-events/${event.id}`, {
+            const response = await fetch(route('event.show', { event: event.id }), {
                 method: 'DELETE',
                 headers: {
                     'Accept': 'application/json',
@@ -492,7 +552,14 @@ const deleteEvent = async (event: KamtibmasEvent) => {
                 
                 // Refresh the page with current date parameters to show updated events
                 const currentDateParam = currentDate.value.toISOString().slice(0, 7); // YYYY-MM
-                router.get('/kamtibmas-calendar', { date: currentDateParam }, {
+                const params: any = { date: currentDateParam, event: props.eventFilter };
+                
+                // Add agenda type filter if in agenda view
+                if (props.eventFilter === 'agenda' && selectedAgendaType.value && selectedAgendaType.value !== 'all') {
+                    params.agenda_type = selectedAgendaType.value;
+                }
+                
+                router.get(route('event.index'), params, {
                     preserveState: false,
                     replace: false,
                     onFinish: () => {
@@ -580,15 +647,19 @@ const colorPresets = [
 </script>
 
 <template>
-    <Head title="Kalender Kamtibmas" />
+    <Head :title="props.eventFilter === 'agenda' ? 'Agenda - Calendar Event' : 'Kalender Kamtibmas'" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-1 flex-col gap-6 rounded-xl p-6">
             <!-- Header -->
             <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Kalender Kamtibmas</h1>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Jadwal kegiatan Keamanan dan Ketertiban Masyarakat</p>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+                        {{ props.eventFilter === 'agenda' ? 'Agenda - Calendar Event' : 'Kalender Kamtibmas' }}
+                    </h1>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        {{ props.eventFilter === 'agenda' ? 'Kelola agenda dan event organisasi' : 'Jadwal kegiatan Keamanan dan Ketertiban Masyarakat' }}
+                    </p>
                 </div>
                 <div class="flex gap-3">
                     <Button @click="goToToday" variant="outline" size="sm">
@@ -664,6 +735,19 @@ const colorPresets = [
                         
                         <!-- Month/Year Filters -->
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                            <!-- Agenda Type Filter (only for agenda view) -->
+                            <div v-if="props.eventFilter === 'agenda'" class="flex items-center gap-2">
+                                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Jenis:</label>
+                                <select
+                                    v-model="selectedAgendaType"
+                                    class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                >
+                                    <option v-for="option in agendaTypeOptions" :key="option.value" :value="option.value">
+                                        {{ option.label }}
+                                    </option>
+                                </select>
+                            </div>
+                            
                             <div class="flex items-center gap-2">
                                 <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Bulan:</label>
                                 <select
@@ -942,8 +1026,8 @@ const colorPresets = [
                                         'bg-white dark:bg-gray-700': !isLoading
                                     }"
                                 >
-                                    <option v-for="(label, key) in categories" :key="key" :value="key">
-                                        {{ label }}
+                                    <option v-for="category in availableCategories" :key="category" :value="category">
+                                        {{ category }}
                                     </option>
                                 </select>
                                 <div v-if="errors.category" class="mt-1 text-sm text-red-600">{{ errors.category }}</div>
