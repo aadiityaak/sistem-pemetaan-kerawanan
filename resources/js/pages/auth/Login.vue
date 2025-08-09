@@ -28,17 +28,17 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthBase title="Log in to your account" description="Enter your email and password below to log in">
+    <AuthBase title="> ACCESS_REQUIRED" description="> authenticate_user_credentials...">
         <Head title="Log in" />
 
-        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
-            {{ status }}
+        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-400 font-mono bg-green-500/10 border border-green-500/30 rounded p-3">
+            > {{ status }}
         </div>
 
-        <form @submit.prevent="submit" class="flex flex-col gap-6">
+        <form @submit.prevent="submit" class="flex flex-col gap-6 font-mono">
             <div class="grid gap-6">
                 <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
+                    <Label for="email" class="text-green-400 font-mono text-sm">> user_id:</Label>
                     <Input
                         id="email"
                         type="email"
@@ -47,16 +47,17 @@ const submit = () => {
                         :tabindex="1"
                         autocomplete="email"
                         v-model="form.email"
-                        placeholder="email@example.com"
+                        placeholder="user@system.local"
+                        class="bg-black/50 border-green-500/30 text-green-300 placeholder-green-500/50 focus:border-green-400 focus:ring-green-400/50 font-mono"
                     />
-                    <InputError :message="form.errors.email" />
+                    <InputError :message="form.errors.email" class="text-red-400 font-mono text-xs" />
                 </div>
 
                 <div class="grid gap-2">
                     <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
-                        <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm" :tabindex="5">
-                            Forgot password?
+                        <Label for="password" class="text-green-400 font-mono text-sm">> password:</Label>
+                        <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-xs text-green-300/70 hover:text-green-300 font-mono" :tabindex="5">
+                            > recovery_mode?
                         </TextLink>
                     </div>
                     <Input
@@ -66,28 +67,50 @@ const submit = () => {
                         :tabindex="2"
                         autocomplete="current-password"
                         v-model="form.password"
-                        placeholder="Password"
+                        placeholder="••••••••"
+                        class="bg-black/50 border-green-500/30 text-green-300 placeholder-green-500/50 focus:border-green-400 focus:ring-green-400/50 font-mono"
                     />
-                    <InputError :message="form.errors.password" />
+                    <InputError :message="form.errors.password" class="text-red-400 font-mono text-xs" />
                 </div>
 
                 <div class="flex items-center justify-between">
-                    <Label for="remember" class="flex items-center space-x-3">
-                        <Checkbox id="remember" v-model="form.remember" :tabindex="3" />
-                        <span>Remember me</span>
+                    <Label for="remember" class="flex items-center space-x-3 text-green-300/70 font-mono text-sm">
+                        <Checkbox id="remember" v-model="form.remember" :tabindex="3" class="border-green-500/30 text-green-400 focus:ring-green-400/50" />
+                        <span>> maintain_session</span>
                     </Label>
                 </div>
 
-                <Button type="submit" class="mt-4 w-full" :tabindex="4" :disabled="form.processing">
-                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                    Log in
+                <Button type="submit" class="mt-4 w-full bg-green-600/20 border border-green-500/50 text-green-400 hover:bg-green-500/30 hover:border-green-400 font-mono tracking-wider transition-all duration-300 glow-button" :tabindex="4" :disabled="form.processing">
+                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
+                    {{ form.processing ? '> AUTHENTICATING...' : '> EXECUTE LOGIN' }}
                 </Button>
             </div>
 
-            <div class="text-center text-sm text-muted-foreground">
-                Don't have an account?
-                <TextLink :href="route('register')" :tabindex="5">Sign up</TextLink>
+            <div class="text-center text-sm text-green-300/60 font-mono">
+                > need_access_token?
+                <TextLink :href="route('register')" :tabindex="5" class="text-green-400 hover:text-green-300 ml-1">register_user</TextLink>
             </div>
         </form>
     </AuthBase>
 </template>
+
+<style scoped>
+.glow-button {
+    box-shadow: 
+        0 0 10px rgba(0, 255, 65, 0.2),
+        0 0 20px rgba(0, 255, 65, 0.1);
+    transition: all 0.3s ease;
+}
+
+.glow-button:hover {
+    box-shadow: 
+        0 0 20px rgba(0, 255, 65, 0.4),
+        0 0 40px rgba(0, 255, 65, 0.2),
+        0 0 60px rgba(0, 255, 65, 0.1);
+    transform: translateY(-1px);
+}
+
+.glow-button:active {
+    transform: translateY(0);
+}
+</style>

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome');
+    return redirect('/login');
 })->name('home');
 
 Route::get('/api/provinsi', function () {
@@ -70,10 +70,6 @@ Route::get('/api/sub-categories/{category_id}', function ($category_id) {
     });
     return $subCategories;
 });
-
-Route::get('/', function () {
-    return Inertia::render('Welcome');
-})->name('home');
 
 Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
