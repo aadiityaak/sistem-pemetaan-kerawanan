@@ -3,8 +3,8 @@ import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
+import { type AppPageProps, type NavItem } from '@/types';
+import { Link, usePage } from '@inertiajs/vue3';
 import {
     Brain,
     Building2,
@@ -26,7 +26,14 @@ import {
     Tags,
     Users,
 } from 'lucide-vue-next';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+
+const page = usePage<AppPageProps>();
+
+// Check if current user is admin
+const isAdmin = computed(() => {
+    return page.props.auth?.user?.role === 'admin';
+});
 
 const mainNavItems = ref<NavItem[]>([
     {
@@ -84,36 +91,47 @@ const mainNavItems = ref<NavItem[]>([
     },
 ]);
 
-// Settings nav items for sidebar footer
-const settingsNavItems = ref<NavItem[]>([
-    {
+// Settings nav items for sidebar footer (computed to include admin-only items)
+const settingsNavItems = computed<NavItem[]>(() => {
+    const baseItems = [
+        {
+            title: 'Provinsi',
+            href: '/provinsi',
+            icon: Map,
+        },
+        {
+            title: 'Kabupaten/Kota',
+            href: '/kabupaten-kota',
+            icon: Building2,
+        },
+        {
+            title: 'Kecamatan',
+            href: '/kecamatan',
+            icon: MapPin,
+        },
+    ];
+
+    // Add admin-only items
+    if (isAdmin.value) {
+        baseItems.unshift({
+            title: 'User Management',
+            href: '/users',
+            icon: Users,
+        });
+        baseItems.unshift({
+            title: 'Pengaturan Aplikasi',
+            href: '/settings',
+            icon: Settings,
+        });
+    }
+
+    return [{
         title: 'PENGATURAN',
-        href: '/settings',
+        href: isAdmin.value ? '/settings' : '/provinsi',
         icon: Settings,
-        items: [
-            {
-                title: 'Pengaturan Aplikasi',
-                href: '/settings',
-                icon: Settings,
-            },
-            {
-                title: 'Provinsi',
-                href: '/provinsi',
-                icon: Map,
-            },
-            {
-                title: 'Kabupaten/Kota',
-                href: '/kabupaten-kota',
-                icon: Building2,
-            },
-            {
-                title: 'Kecamatan',
-                href: '/kecamatan',
-                icon: MapPin,
-            },
-        ],
-    },
-]);
+        items: baseItems,
+    }];
+});
 
 // Interface for API response
 interface Category {

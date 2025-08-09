@@ -151,9 +151,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/kamtibmas-events/{event}/toggle-status', [KamtibmasEventController::class, 'toggleStatus'])->name('kamtibmas-events.toggle-status');
 
 
-    // Settings Routes (Fixed settings - only allow viewing and updating values)
-    Route::get('/settings', [AppSettingController::class, 'index'])->name('settings.index');
-    Route::match(['POST', 'PUT'], '/settings/{key}', [AppSettingController::class, 'update'])->name('settings.update');
+    // User Management Routes (Admin only)
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/users', [\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [\App\Http\Controllers\UserController::class, 'create'])->name('users.create');
+        Route::post('/users', [\App\Http\Controllers\UserController::class, 'store'])->name('users.store');
+        Route::get('/users/{user}', [\App\Http\Controllers\UserController::class, 'show'])->name('users.show');
+        Route::get('/users/{user}/edit', [\App\Http\Controllers\UserController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{user}', [\App\Http\Controllers\UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('users.destroy');
+        Route::post('/users/{user}/toggle-status', [\App\Http\Controllers\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+    });
+
+    // Settings Routes (Admin only - Fixed settings - only allow viewing and updating values)
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/settings', [AppSettingController::class, 'index'])->name('settings.index');
+        Route::match(['POST', 'PUT'], '/settings/{key}', [AppSettingController::class, 'update'])->name('settings.update');
+    });
 });
 
 require __DIR__.'/settings.php';
