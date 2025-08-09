@@ -18,6 +18,7 @@ import {
     LayoutGrid,
     Map,
     MapPin,
+    ScrollText,
     Settings,
     Shield,
     ShieldAlert,
@@ -34,7 +35,7 @@ const mainNavItems = ref<NavItem[]>([
         items: [], // Will be populated dynamically with categories and subcategories
     },
     {
-        title: 'Data Monitoring',
+        title: 'DATA MONITORING',
         href: '/monitoring-data',
         icon: ShieldAlert,
         items: [
@@ -56,17 +57,22 @@ const mainNavItems = ref<NavItem[]>([
         ],
     },
     {
-        title: 'Kalender Kamtibmas',
+        title: 'KALENDER KAMTIBMAS',
         href: '/kamtibmas-calendar',
         icon: Calendar,
     },
     {
-        title: 'Prediksi AI',
+        title: 'PREDIKSI AI',
         href: '/ai-prediction',
         icon: Brain,
     },
     {
-        title: 'Wilayah',
+        title: 'INDAS',
+        href: '/indas',
+        icon: ScrollText,
+    },
+    {
+        title: 'WILAYAH',
         href: '/provinsi',
         icon: Globe,
         items: [
@@ -88,7 +94,7 @@ const mainNavItems = ref<NavItem[]>([
         ],
     },
     {
-        title: 'Pengaturan',
+        title: 'PENGATURAN',
         href: '/settings',
         icon: Settings,
     },
@@ -127,15 +133,15 @@ const loadCategoriesMenu = async () => {
             }))
         }));
 
-        // Update the Dashboard menu items
-        const dashboardMenuIndex = mainNavItems.value.findIndex(item => item.title === 'Dashboard');
+        // Update the Dashboard menu items (search by href instead of title)
+        const dashboardMenuIndex = mainNavItems.value.findIndex(item => item.href === '/dashboard');
         if (dashboardMenuIndex !== -1) {
             mainNavItems.value[dashboardMenuIndex].items = dashboardItems;
         }
     } catch (error) {
         console.error('Failed to load categories menu:', error);
-        // Fallback to static menu if API fails
-        const dashboardMenuIndex = mainNavItems.value.findIndex(item => item.title === 'Dashboard');
+        // Fallback to static menu if API fails (search by href instead of title)
+        const dashboardMenuIndex = mainNavItems.value.findIndex(item => item.href === '/dashboard');
         if (dashboardMenuIndex !== -1) {
             mainNavItems.value[dashboardMenuIndex].items = [
                 {

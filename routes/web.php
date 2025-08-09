@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AppSettingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\IndasController;
 use App\Http\Controllers\KabupatenKotaController;
 use App\Http\Controllers\KecamatanController;
 use App\Http\Controllers\KamtibmasEventController;
@@ -101,6 +102,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // AI Prediction Routes
     Route::get('/ai-prediction', [\App\Http\Controllers\AiPredictionController::class, 'index'])->name('ai-prediction.index');
     Route::post('/ai-prediction/analyze', [\App\Http\Controllers\AiPredictionController::class, 'analyze'])->name('ai-prediction.analyze');
+
+    // INDAS Routes
+    Route::get('/indas', [IndasController::class, 'index'])->name('indas.index');
+    Route::get('/indas/trends', [IndasController::class, 'trends'])->name('indas.trends');
+    Route::get('/indas/recommendations', [IndasController::class, 'recommendations'])->name('indas.recommendations');
 
     // Categories Routes
     Route::resource('categories', \App\Http\Controllers\CategoryController::class);
