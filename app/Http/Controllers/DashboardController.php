@@ -16,6 +16,8 @@ class DashboardController extends Controller
         // Ambil parameter category dan subcategory jika ada
         $categorySlug = $request->query('category');
         $subCategorySlug = $request->query('subcategory');
+        $selectedMonth = $request->query('month');
+        $selectedYear = $request->query('year');
         $selectedCategory = null;
         $selectedSubCategory = null;
 
@@ -38,6 +40,15 @@ class DashboardController extends Controller
                     }
                 }
             }
+        }
+
+        // Filter berdasarkan bulan dan tahun jika ada
+        if ($selectedYear) {
+            $query->whereYear('incident_date', $selectedYear);
+        }
+        
+        if ($selectedMonth) {
+            $query->whereMonth('incident_date', $selectedMonth);
         }
 
         $monitoringData = $query->get();
@@ -128,6 +139,8 @@ class DashboardController extends Controller
             'monitoringData' => $monitoringData,
             'selectedCategory' => $selectedCategory,
             'selectedSubCategory' => $selectedSubCategory,
+            'selectedMonth' => $selectedMonth,
+            'selectedYear' => $selectedYear,
             'categories' => $categories,
             'subCategories' => $subCategories,
             'statistics' => [

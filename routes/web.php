@@ -113,10 +113,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Kamtibmas Calendar Routes
     Route::get('/kamtibmas-calendar', [KamtibmasEventController::class, 'index'])->name('kamtibmas-calendar.index');
     Route::post('/kamtibmas-events', [KamtibmasEventController::class, 'store'])->name('kamtibmas-events.store');
-    Route::get('/kamtibmas-events/{kamtibmasEvent}', [KamtibmasEventController::class, 'show'])->name('kamtibmas-events.show');
-    Route::put('/kamtibmas-events/{kamtibmasEvent}', [KamtibmasEventController::class, 'update'])->name('kamtibmas-events.update');
-    Route::delete('/kamtibmas-events/{kamtibmasEvent}', [KamtibmasEventController::class, 'destroy'])->name('kamtibmas-events.destroy');
-    Route::post('/kamtibmas-events/{kamtibmasEvent}/toggle-status', [KamtibmasEventController::class, 'toggleStatus'])->name('kamtibmas-events.toggle-status');
+    Route::get('/kamtibmas-events/{event}', [KamtibmasEventController::class, 'show'])->name('kamtibmas-events.show');
+    Route::put('/kamtibmas-events/{event}', [KamtibmasEventController::class, 'update'])->name('kamtibmas-events.update');
+    Route::delete('/kamtibmas-events/{event}', [KamtibmasEventController::class, 'destroy'])->name('kamtibmas-events.destroy');
+    Route::post('/kamtibmas-events/{event}/toggle-status', [KamtibmasEventController::class, 'toggleStatus'])->name('kamtibmas-events.toggle-status');
 
     // Settings Routes (Fixed settings - only allow viewing and updating values)
     Route::get('/settings', [AppSettingController::class, 'index'])->name('settings.index');

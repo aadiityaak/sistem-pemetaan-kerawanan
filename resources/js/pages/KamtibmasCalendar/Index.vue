@@ -11,6 +11,7 @@ interface KamtibmasEvent {
     start: string;
     end: string;
     description?: string;
+    category: string;
     color: string;
     isMultiDay: boolean;
     duration: number;
@@ -26,6 +27,8 @@ const props = defineProps<{
     events: KamtibmasEvent[];
     statistics: Statistics;
     currentDate: string;
+    holidays: any[];
+    categories: Record<string, string>;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -43,7 +46,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 const currentDate = ref(new Date(props.currentDate));
 const selectedDate = ref<Date | null>(null);
 const showEventModal = ref(false);
+const showDayModal = ref(false);
 const editingEvent = ref<KamtibmasEvent | null>(null);
+const selectedDayEvents = ref<KamtibmasEvent[]>([]);
+const selectedDayHolidays = ref<any[]>([]);
 
 // Event form state
 const eventForm = ref({
@@ -51,6 +57,7 @@ const eventForm = ref({
     start_date: '',
     end_date: '',
     description: '',
+    category: 'kamtibmas',
     color: '#3B82F6',
 });
 
@@ -93,6 +100,14 @@ const calendarDays = computed(() => {
             const eventEnd = new Date(event.end);
             return date >= eventStart && date <= eventEnd;
         });
+
+        const dayHolidays = props.holidays.filter(holiday => {
+            const holidayDate = new Date(holiday.start);
+            return date.toDateString() === holidayDate.toDateString();
+        });
+
+        // Combine events and holidays
+        const allDayItems = [...dayEvents, ...dayHolidays];
         
         days.push({
             date: new Date(date),
@@ -100,6 +115,8 @@ const calendarDays = computed(() => {
             isCurrentMonth: date.getMonth() === month,
             isToday: date.toDateString() === today.toDateString(),
             events: dayEvents,
+            holidays: dayHolidays,
+            allItems: allDayItems,
         });
     }
     
@@ -135,6 +152,27 @@ const navigateToMonth = () => {
 };
 
 // Event management
+const openDayModal = (date: Date) => {
+    selectedDate.value = date;
+    
+    // Get events for this day
+    const dayEvents = props.events.filter(event => {
+        const eventStart = new Date(event.start);
+        const eventEnd = new Date(event.end);
+        return date >= eventStart && date <= eventEnd;
+    });
+    
+    // Get holidays for this day
+    const dayHolidays = props.holidays.filter(holiday => {
+        const holidayDate = new Date(holiday.start);
+        return date.toDateString() === holidayDate.toDateString();
+    });
+    
+    selectedDayEvents.value = dayEvents;
+    selectedDayHolidays.value = dayHolidays;
+    showDayModal.value = true;
+};
+
 const openEventModal = (date?: Date) => {
     // Reset form and state
     resetForm();
@@ -146,6 +184,7 @@ const openEventModal = (date?: Date) => {
     }
     
     editingEvent.value = null;
+    showDayModal.value = false;
     showEventModal.value = true;
     
     // Focus on title field after modal opens
@@ -180,6 +219,7 @@ const editEvent = async (event: KamtibmasEvent) => {
             start_date: data.event.start_date,
             end_date: data.event.end_date,
             description: data.event.description || '',
+            category: data.event.category || 'kamtibmas',
             color: data.event.color,
         };
         
@@ -209,6 +249,7 @@ const resetForm = () => {
         start_date: '',
         end_date: '',
         description: '',
+        category: 'kamtibmas',
         color: '#3B82F6',
     };
     errors.value = {};
@@ -274,8 +315,14 @@ const saveEvent = async () => {
                 onFinish: () => {
                     // Show success message
                     const message = editingEvent.value ? 'Event berhasil diperbarui!' : 'Event berhasil ditambahkan!';
-                    // You can integrate with a toast library here
                     console.log(message);
+                    
+                    // Re-open day modal if it was open
+                    if (selectedDate.value) {
+                        setTimeout(() => {
+                            openDayModal(selectedDate.value!);
+                        }, 100);
+                    }
                 }
             });
         } else {
@@ -320,6 +367,13 @@ const deleteEvent = async (event: KamtibmasEvent) => {
                 router.reload({
                     onFinish: () => {
                         console.log('Event berhasil dihapus!');
+                        
+                        // Re-open day modal if it was open
+                        if (selectedDate.value) {
+                            setTimeout(() => {
+                                openDayModal(selectedDate.value!);
+                            }, 100);
+                        }
                     }
                 });
             } else {
@@ -337,6 +391,23 @@ const closeModal = () => {
     resetForm();
     selectedDate.value = null;
     editingEvent.value = null;
+};
+
+const closeDayModal = () => {
+    showDayModal.value = false;
+    selectedDate.value = null;
+    selectedDayEvents.value = [];
+    selectedDayHolidays.value = [];
+};
+
+const formatDateDisplay = (date: Date) => {
+    const options: Intl.DateTimeFormatOptions = {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    };
+    return new Intl.DateTimeFormat('id-ID', options).format(date);
 };
 
 // Color presets
@@ -466,8 +537,10 @@ const colorPresets = [
                                 'border-gray-200 dark:border-gray-700': day.isCurrentMonth,
                                 'border-gray-100 bg-gray-50 dark:border-gray-800 dark:bg-gray-800': !day.isCurrentMonth,
                                 'ring-2 ring-blue-500': day.isToday,
+                                'bg-red-50 border-red-200 dark:bg-red-900 dark:border-red-700': day.holidays.some(h => h.isNationalHoliday),
+                                'bg-orange-50 border-orange-200 dark:bg-orange-900 dark:border-orange-700': day.holidays.some(h => !h.isNationalHoliday) && !day.holidays.some(h => h.isNationalHoliday),
                             }"
-                            @click="openEventModal(day.date)"
+                            @click="openDayModal(day.date)"
                         >
                             <!-- Day Number -->
                             <div class="flex items-center justify-between">
@@ -481,15 +554,36 @@ const colorPresets = [
                                 >
                                     {{ day.day }}
                                 </span>
-                                <div v-if="day.events.length > 0" class="rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-900 dark:text-blue-400">
-                                    {{ day.events.length }}
+                                <div v-if="day.allItems.length > 0" class="flex items-center gap-1">
+                                    <div v-if="day.events.length > 0" class="rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-900 dark:text-blue-400">
+                                        {{ day.events.length }}
+                                    </div>
+                                    <div v-if="day.holidays.length > 0" class="rounded-full px-1.5 py-0.5 text-xs font-medium"
+                                         :class="day.holidays.some(h => h.isNationalHoliday) 
+                                             ? 'bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400' 
+                                             : 'bg-orange-100 text-orange-600 dark:bg-orange-900 dark:text-orange-400'"
+                                    >
+                                        🏛️
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Events -->
+                            <!-- Events and Holidays -->
                             <div class="mt-1 space-y-1">
+                                <!-- Display holidays first -->
                                 <div
-                                    v-for="(event, index) in day.events.slice(0, 3)"
+                                    v-for="holiday in day.holidays"
+                                    :key="holiday.id"
+                                    class="truncate rounded px-2 py-1 text-xs font-medium text-white cursor-default"
+                                    :style="{ backgroundColor: holiday.color }"
+                                    :title="`${holiday.title} - ${holiday.description}`"
+                                >
+                                    <span class="truncate block">🏛️ {{ holiday.title }}</span>
+                                </div>
+                                
+                                <!-- Display events -->
+                                <div
+                                    v-for="(event, index) in day.events.slice(0, day.holidays.length > 0 ? 2 : 3)"
                                     :key="event.id"
                                     class="event-item group relative truncate rounded px-2 py-1 text-xs font-medium text-white cursor-pointer transition-all hover:shadow-md hover:scale-105"
                                     :style="{ backgroundColor: event.color }"
@@ -510,8 +604,9 @@ const colorPresets = [
                                         </button>
                                     </div>
                                 </div>
-                                <div v-if="day.events.length > 3" class="text-xs text-gray-500 dark:text-gray-400">
-                                    +{{ day.events.length - 3 }} lainnya
+                                
+                                <div v-if="day.allItems.length > (day.holidays.length > 0 ? 3 : 3)" class="text-xs text-gray-500 dark:text-gray-400">
+                                    +{{ day.allItems.length - (day.holidays.length > 0 ? 3 : 3) }} lainnya
                                 </div>
                             </div>
                         </div>
@@ -629,6 +724,30 @@ const colorPresets = [
                                 <div v-if="errors.description" class="mt-1 text-sm text-red-600">{{ errors.description }}</div>
                             </div>
 
+                            <!-- Category -->
+                            <div>
+                                <label for="category-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Kategori <span class="text-red-500">*</span>
+                                </label>
+                                <select
+                                    id="category-select"
+                                    v-model="eventForm.category"
+                                    :disabled="isLoading"
+                                    class="mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none focus:ring-2 transition-colors"
+                                    :class="{
+                                        'border-red-300 focus:border-red-500 focus:ring-red-500': errors.category,
+                                        'border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600': !errors.category,
+                                        'bg-gray-100 cursor-not-allowed dark:bg-gray-600': isLoading,
+                                        'bg-white dark:bg-gray-700': !isLoading
+                                    }"
+                                >
+                                    <option v-for="(label, key) in categories" :key="key" :value="key">
+                                        {{ label }}
+                                    </option>
+                                </select>
+                                <div v-if="errors.category" class="mt-1 text-sm text-red-600">{{ errors.category }}</div>
+                            </div>
+
                             <!-- Color -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Warna Event</label>
@@ -692,6 +811,152 @@ const colorPresets = [
                         >
                             Batal
                         </Button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day Events Modal -->
+        <div 
+            v-if="showDayModal && selectedDate" 
+            class="fixed inset-0 z-50 overflow-y-auto" 
+            aria-labelledby="day-modal-title" 
+            role="dialog" 
+            aria-modal="true"
+            @keydown.escape="closeDayModal()"
+        >
+            <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div 
+                    class="fixed inset-0 bg-gray-500 bg-opacity-75 backdrop-blur-sm transition-opacity" 
+                    aria-hidden="true" 
+                    @click="closeDayModal()"
+                ></div>
+                <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+                <div class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle dark:bg-gray-800"
+                     @click.stop>
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 dark:bg-gray-800">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white" id="day-modal-title">
+                                {{ formatDateDisplay(selectedDate) }}
+                            </h3>
+                            <div class="flex items-center gap-2">
+                                <Button @click="openEventModal(selectedDate)" size="sm">
+                                    <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Tambah Event
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 space-y-4">
+                            <!-- Holidays Section -->
+                            <div v-if="selectedDayHolidays.length > 0">
+                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">🏛️ Hari Libur</h4>
+                                <div class="space-y-2">
+                                    <div
+                                        v-for="holiday in selectedDayHolidays"
+                                        :key="holiday.id"
+                                        class="flex items-center justify-between p-3 rounded-lg border"
+                                        :class="holiday.isNationalHoliday 
+                                            ? 'bg-red-50 border-red-200 dark:bg-red-900 dark:border-red-700' 
+                                            : 'bg-orange-50 border-orange-200 dark:bg-orange-900 dark:border-orange-700'"
+                                    >
+                                        <div class="flex-1">
+                                            <h5 class="font-medium text-gray-900 dark:text-white">{{ holiday.title }}</h5>
+                                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ holiday.description }}</p>
+                                        </div>
+                                        <div 
+                                            class="w-4 h-4 rounded-full flex-shrink-0"
+                                            :style="{ backgroundColor: holiday.color }"
+                                        ></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Events Section -->
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center justify-between">
+                                    📅 Event ({{ selectedDayEvents.length }})
+                                </h4>
+                                
+                                <div v-if="selectedDayEvents.length === 0" class="text-center py-8">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Tidak ada event</h3>
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Mulai dengan membuat event baru untuk hari ini.</p>
+                                    <div class="mt-6">
+                                        <Button @click="openEventModal(selectedDate)" size="sm">
+                                            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                            </svg>
+                                            Tambah Event
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                <div v-else class="space-y-3">
+                                    <div
+                                        v-for="event in selectedDayEvents"
+                                        :key="event.id"
+                                        class="group flex items-center justify-between p-4 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
+                                    >
+                                        <div class="flex items-center space-x-3 flex-1">
+                                            <div 
+                                                class="w-4 h-4 rounded-full flex-shrink-0"
+                                                :style="{ backgroundColor: event.color }"
+                                            ></div>
+                                            <div class="flex-1 min-w-0">
+                                                <h5 class="font-medium text-gray-900 dark:text-white">{{ event.title }}</h5>
+                                                <div class="flex items-center gap-4 mt-1">
+                                                    <span class="text-sm text-gray-500 dark:text-gray-400">
+                                                        {{ categories[event.category] || event.category }}
+                                                    </span>
+                                                    <span v-if="event.isMultiDay" class="text-sm text-gray-500 dark:text-gray-400">
+                                                        {{ event.duration }} hari
+                                                    </span>
+                                                </div>
+                                                <p v-if="event.description" class="text-sm text-gray-600 dark:text-gray-400 mt-1 truncate">
+                                                    {{ event.description }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button 
+                                                @click="editEvent(event)" 
+                                                variant="outline" 
+                                                size="sm"
+                                                class="text-blue-600 hover:text-blue-700"
+                                            >
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </Button>
+                                            <Button 
+                                                @click="deleteEvent(event)" 
+                                                variant="outline" 
+                                                size="sm"
+                                                class="text-red-600 hover:text-red-700"
+                                            >
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 dark:bg-gray-700">
+                        <div class="flex justify-end">
+                            <Button @click="closeDayModal()" variant="outline">
+                                Tutup
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>

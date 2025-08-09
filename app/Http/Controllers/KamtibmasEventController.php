@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\KamtibmasEvent;
+use App\Models\Event;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 class KamtibmasEventController extends Controller
 {
@@ -22,7 +24,7 @@ class KamtibmasEventController extends Controller
         $startDate = $date->copy()->startOfMonth()->startOfWeek();
         $endDate = $date->copy()->endOfMonth()->endOfWeek();
         
-        $events = KamtibmasEvent::active()
+        $events = Event::active()
             ->inDateRange($startDate, $endDate)
             ->orderBy('start_date')
             ->get()
@@ -33,6 +35,7 @@ class KamtibmasEventController extends Controller
                     'start' => $event->start_date->format('Y-m-d'),
                     'end' => $event->end_date->format('Y-m-d'),
                     'description' => $event->description,
+                    'category' => $event->category,
                     'color' => $event->color,
                     'isMultiDay' => $event->is_multi_day,
                     'duration' => $event->duration,
@@ -40,7 +43,7 @@ class KamtibmasEventController extends Controller
             });
 
         // Get all events for the month (for statistics)
-        $monthlyEvents = KamtibmasEvent::active()
+        $monthlyEvents = Event::active()
             ->whereMonth('start_date', $date->month)
             ->whereYear('start_date', $date->year)
             ->get();
@@ -52,10 +55,15 @@ class KamtibmasEventController extends Controller
                                           ->where('end_date', '>=', now()->format('Y-m-d'))->count(),
         ];
 
+        // Get Indonesian holidays
+        $holidays = $this->getIndonesianHolidays($date->year);
+
         return Inertia::render('KamtibmasCalendar/Index', [
             'events' => $events,
             'statistics' => $statistics,
             'currentDate' => $date->format('Y-m-d'),
+            'holidays' => $holidays,
+            'categories' => Event::getCategories(),
         ]);
     }
 
@@ -69,10 +77,11 @@ class KamtibmasEventController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'description' => 'nullable|string',
+            'category' => 'required|string|in:agenda_nasional,agenda_internasional,kamtibmas',
             'color' => 'required|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
         ]);
 
-        $event = KamtibmasEvent::create($validated);
+        $event = Event::create($validated);
 
         return response()->json([
             'message' => 'Event berhasil ditambahkan.',
@@ -82,6 +91,7 @@ class KamtibmasEventController extends Controller
                 'start' => $event->start_date->format('Y-m-d'),
                 'end' => $event->end_date->format('Y-m-d'),
                 'description' => $event->description,
+                'category' => $event->category,
                 'color' => $event->color,
                 'isMultiDay' => $event->is_multi_day,
                 'duration' => $event->duration,
@@ -92,17 +102,18 @@ class KamtibmasEventController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(KamtibmasEvent $kamtibmasEvent)
+    public function show(Event $event)
     {
         return response()->json([
             'event' => [
-                'id' => $kamtibmasEvent->id,
-                'title' => $kamtibmasEvent->title,
-                'start_date' => $kamtibmasEvent->start_date->format('Y-m-d'),
-                'end_date' => $kamtibmasEvent->end_date->format('Y-m-d'),
-                'description' => $kamtibmasEvent->description,
-                'color' => $kamtibmasEvent->color,
-                'is_active' => $kamtibmasEvent->is_active,
+                'id' => $event->id,
+                'title' => $event->title,
+                'start_date' => $event->start_date->format('Y-m-d'),
+                'end_date' => $event->end_date->format('Y-m-d'),
+                'description' => $event->description,
+                'category' => $event->category,
+                'color' => $event->color,
+                'is_active' => $event->is_active,
             ]
         ]);
     }
@@ -110,29 +121,31 @@ class KamtibmasEventController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, KamtibmasEvent $kamtibmasEvent)
+    public function update(Request $request, Event $event)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'description' => 'nullable|string',
+            'category' => 'required|string|in:agenda_nasional,agenda_internasional,kamtibmas',
             'color' => 'required|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
         ]);
 
-        $kamtibmasEvent->update($validated);
+        $event->update($validated);
 
         return response()->json([
             'message' => 'Event berhasil diperbarui.',
             'event' => [
-                'id' => $kamtibmasEvent->id,
-                'title' => $kamtibmasEvent->title,
-                'start' => $kamtibmasEvent->start_date->format('Y-m-d'),
-                'end' => $kamtibmasEvent->end_date->format('Y-m-d'),
-                'description' => $kamtibmasEvent->description,
-                'color' => $kamtibmasEvent->color,
-                'isMultiDay' => $kamtibmasEvent->is_multi_day,
-                'duration' => $kamtibmasEvent->duration,
+                'id' => $event->id,
+                'title' => $event->title,
+                'start' => $event->start_date->format('Y-m-d'),
+                'end' => $event->end_date->format('Y-m-d'),
+                'description' => $event->description,
+                'category' => $event->category,
+                'color' => $event->color,
+                'isMultiDay' => $event->is_multi_day,
+                'duration' => $event->duration,
             ]
         ]);
     }
@@ -140,9 +153,9 @@ class KamtibmasEventController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(KamtibmasEvent $kamtibmasEvent)
+    public function destroy(Event $event)
     {
-        $kamtibmasEvent->delete();
+        $event->delete();
 
         return response()->json([
             'message' => 'Event berhasil dihapus.'
@@ -152,14 +165,69 @@ class KamtibmasEventController extends Controller
     /**
      * Toggle event status
      */
-    public function toggleStatus(KamtibmasEvent $kamtibmasEvent)
+    public function toggleStatus(Event $event)
     {
-        $kamtibmasEvent->update(['is_active' => !$kamtibmasEvent->is_active]);
+        $event->update(['is_active' => !$event->is_active]);
 
-        $status = $kamtibmasEvent->is_active ? 'diaktifkan' : 'dinonaktifkan';
+        $status = $event->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
         return response()->json([
             'message' => "Event berhasil {$status}."
         ]);
+    }
+
+    /**
+     * Get Indonesian holidays from API
+     */
+    private function getIndonesianHolidays($year = null)
+    {
+        $year = $year ?? now()->year;
+        $cacheKey = "indonesian_holidays_{$year}";
+        
+        // Cache holidays for 1 day to avoid excessive API calls
+        return Cache::remember($cacheKey, now()->addDay(), function () use ($year) {
+            try {
+                $response = Http::timeout(10)->get('https://api-harilibur.vercel.app/api');
+                
+                if ($response->successful()) {
+                    $holidays = collect($response->json())
+                        ->filter(function ($holiday) use ($year) {
+                            // Filter holidays for the specified year
+                            return Carbon::parse($holiday['holiday_date'])->year === $year;
+                        })
+                        ->map(function ($holiday) {
+                            $date = Carbon::parse($holiday['holiday_date']);
+                            return [
+                                'id' => 'holiday_' . $date->format('Y_m_d'),
+                                'title' => $holiday['holiday_name'],
+                                'start' => $date->format('Y-m-d'),
+                                'end' => $date->format('Y-m-d'),
+                                'description' => $holiday['is_national_holiday'] 
+                                    ? 'Hari Libur Nasional' 
+                                    : 'Hari Besar Agama',
+                                'color' => $holiday['is_national_holiday'] 
+                                    ? '#DC2626' // Red for national holidays
+                                    : '#F59E0B', // Orange for religious holidays
+                                'isHoliday' => true,
+                                'isNationalHoliday' => $holiday['is_national_holiday'],
+                                'isMultiDay' => false,
+                                'duration' => 1,
+                            ];
+                        })
+                        ->values()
+                        ->toArray();
+                    
+                    return $holidays;
+                }
+                
+                // Return empty array if API fails
+                return [];
+                
+            } catch (\Exception $e) {
+                // Log the error and return empty array
+                \Log::warning('Failed to fetch Indonesian holidays: ' . $e->getMessage());
+                return [];
+            }
+        });
     }
 }

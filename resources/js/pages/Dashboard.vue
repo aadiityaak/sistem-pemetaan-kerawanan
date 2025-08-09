@@ -61,6 +61,8 @@ const props = defineProps<{
     monitoringData: MonitoringData[];
     selectedCategory?: Category | null;
     selectedSubCategory?: SubCategory | null;
+    selectedMonth?: string | null;
+    selectedYear?: string | null;
     categories: Category[];
     subCategories: SubCategory[];
     statistics: Statistics;
@@ -184,25 +186,81 @@ const getStatusLabel = (status: string): string => {
     return labels[status] || status;
 };
 
+// Helper function to build URL with all filters
+const buildFilterUrl = (params: Record<string, string | null>) => {
+    const urlParams = new URLSearchParams();
+    
+    Object.entries(params).forEach(([key, value]) => {
+        if (value) {
+            urlParams.append(key, value);
+        }
+    });
+    
+    const queryString = urlParams.toString();
+    return `/dashboard${queryString ? `?${queryString}` : ''}`;
+};
+
 // Function to change category filter
 const selectCategory = (categorySlug: string | null) => {
-    if (categorySlug) {
-        router.get(`/dashboard?category=${categorySlug}`);
-    } else {
-        router.get('/dashboard');
-    }
+    router.get(buildFilterUrl({
+        category: categorySlug,
+        subcategory: categorySlug ? props.selectedSubCategory?.slug || null : null,
+        month: props.selectedMonth,
+        year: props.selectedYear,
+    }));
 };
 
 // Function to change subcategory filter
 const selectSubCategory = (subCategorySlug: string | null) => {
-    if (props.selectedCategory && subCategorySlug) {
-        router.get(`/dashboard?category=${props.selectedCategory.slug}&subcategory=${subCategorySlug}`);
-    } else if (props.selectedCategory) {
-        router.get(`/dashboard?category=${props.selectedCategory.slug}`);
-    } else {
-        router.get('/dashboard');
-    }
+    router.get(buildFilterUrl({
+        category: props.selectedCategory?.slug || null,
+        subcategory: subCategorySlug,
+        month: props.selectedMonth,
+        year: props.selectedYear,
+    }));
 };
+
+// Function to change month filter
+const selectMonth = (month: string | null) => {
+    router.get(buildFilterUrl({
+        category: props.selectedCategory?.slug || null,
+        subcategory: props.selectedSubCategory?.slug || null,
+        month: month,
+        year: props.selectedYear,
+    }));
+};
+
+// Function to change year filter
+const selectYear = (year: string | null) => {
+    router.get(buildFilterUrl({
+        category: props.selectedCategory?.slug || null,
+        subcategory: props.selectedSubCategory?.slug || null,
+        month: props.selectedMonth,
+        year: year,
+    }));
+};
+
+// Generate month and year options
+const monthOptions = [
+    { value: '1', label: 'Januari' },
+    { value: '2', label: 'Februari' },
+    { value: '3', label: 'Maret' },
+    { value: '4', label: 'April' },
+    { value: '5', label: 'Mei' },
+    { value: '6', label: 'Juni' },
+    { value: '7', label: 'Juli' },
+    { value: '8', label: 'Agustus' },
+    { value: '9', label: 'September' },
+    { value: '10', label: 'Oktober' },
+    { value: '11', label: 'November' },
+    { value: '12', label: 'Desember' },
+];
+
+const currentYear = new Date().getFullYear();
+const yearOptions = Array.from({ length: 10 }, (_, i) => ({
+    value: String(currentYear - i),
+    label: String(currentYear - i)
+}));
 
 // Initialize map
 onMounted(async () => {
@@ -332,7 +390,7 @@ onMounted(async () => {
                     </div>
 
                     <!-- Filter Dropdowns -->
-                    <div class="flex gap-4">
+                    <div class="flex flex-wrap gap-3">
                         <!-- Category Filter -->
                         <div class="relative">
                             <select
@@ -357,6 +415,34 @@ onMounted(async () => {
                                 <option value="">Semua Sub Kategori</option>
                                 <option v-for="subCategory in subCategories" :key="subCategory.id" :value="subCategory.slug">
                                     {{ subCategory.icon ? subCategory.icon + ' ' : '' }}{{ subCategory.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Year Filter -->
+                        <div class="relative">
+                            <select
+                                @change="selectYear(($event.target as HTMLSelectElement).value || null)"
+                                :value="selectedYear || ''"
+                                class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            >
+                                <option value="">Semua Tahun</option>
+                                <option v-for="year in yearOptions" :key="year.value" :value="year.value">
+                                    {{ year.label }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Month Filter (only show when year is selected) -->
+                        <div v-if="selectedYear" class="relative">
+                            <select
+                                @change="selectMonth(($event.target as HTMLSelectElement).value || null)"
+                                :value="selectedMonth || ''"
+                                class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            >
+                                <option value="">Semua Bulan</option>
+                                <option v-for="month in monthOptions" :key="month.value" :value="month.value">
+                                    {{ month.label }}
                                 </option>
                             </select>
                         </div>
