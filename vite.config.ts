@@ -20,4 +20,9 @@ export default defineConfig({
             },
         }),
     ],
+    build: {
+        reportCompressedSize: false,
+        chunkSizeWarningLimit: 1000,
+    },
+    logLevel: 'warn',
 });

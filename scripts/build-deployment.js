@@ -40,6 +40,11 @@ const includeFiles = [
     'composer.lock',
 ];
 
+// Files to include in laravel-app directory
+const laravelAppPublicFiles = [
+    'public/build/manifest.json',
+];
+
 const includePublicFiles = [
     'public/build',
     'public/favicon.ico',
@@ -59,6 +64,7 @@ mkdirSync(laravelAppDir, { recursive: true });
 
 // Copy Laravel files
 console.log('📦 Copying Laravel application files...');
+process.stdout.write('   ');
 includeFiles.forEach((file) => {
     const srcPath = join(projectRoot, file);
     const destPath = join(laravelAppDir, file);
@@ -66,21 +72,50 @@ includeFiles.forEach((file) => {
     if (existsSync(srcPath)) {
         try {
             cpSync(srcPath, destPath, { recursive: true });
-            console.log(`   ✓ ${file}`);
+            // Reduced logging - only show progress dot
+            process.stdout.write('.');
         } catch (error) {
-            console.log(`   ✗ Failed to copy ${file}: ${error.message}`);
+            console.log(`\n   ✗ Failed to copy ${file}: ${error.message}`);
         }
     } else {
         console.log(`   ⚠ ${file} not found, skipping...`);
     }
 });
+console.log(' ✓');
+
+// Copy specific public files to laravel-app directory (for Laravel to find)
+console.log('📦 Copying public files to laravel-app...');
+process.stdout.write('   ');
+laravelAppPublicFiles.forEach((file) => {
+    const srcPath = join(projectRoot, file);
+    const destPath = join(laravelAppDir, file);
+    
+    if (existsSync(srcPath)) {
+        try {
+            // Create directory if needed
+            const destDir = dirname(destPath);
+            if (!existsSync(destDir)) {
+                mkdirSync(destDir, { recursive: true });
+            }
+            
+            cpSync(srcPath, destPath, { recursive: true });
+            process.stdout.write('.');
+        } catch (error) {
+            console.log(`\n   ✗ Failed to copy ${file}: ${error.message}`);
+        }
+    } else {
+        console.log(`\n   ⚠ ${file} not found, skipping...`);
+    }
+});
+console.log(' ✓\n');
 
 // Create public_html folder
 const publicHtmlDir = join(buildDir, 'public_html');
 mkdirSync(publicHtmlDir, { recursive: true });
 
 // Copy public files to public_html
-console.log('\n📦 Copying public files...');
+console.log('📦 Copying public files...');
+process.stdout.write('   ');
 includePublicFiles.forEach((file) => {
     const srcPath = join(projectRoot, file);
     const fileName = file.replace('public/', '').replace('public\\', '');
@@ -107,7 +142,8 @@ includePublicFiles.forEach((file) => {
             }
 
             cpSync(srcPath, destPath, { recursive: true });
-            console.log(`   ✓ ${fileName}`);
+            // Reduced logging - only show progress dot
+            process.stdout.write('.');
         } catch (error) {
             console.log(`   ✗ Failed to copy ${fileName}: ${error.message}`);
         }
@@ -115,9 +151,10 @@ includePublicFiles.forEach((file) => {
         console.log(`   ⚠ ${file} not found, skipping...`);
     }
 });
+console.log(' ✓\n');
 
 // Modify index.php for shared hosting
-console.log('\n🔧 Modifying index.php for shared hosting...');
+console.log('🔧 Modifying index.php for shared hosting...');
 const indexPhpPath = join(publicHtmlDir, 'index.php');
 if (existsSync(indexPhpPath)) {
     let indexContent = readFileSync(indexPhpPath, 'utf8');
@@ -135,7 +172,7 @@ if (existsSync(indexPhpPath)) {
 }
 
 // Copy existing .env.production if exists, otherwise create template
-console.log('\n⚙️ Setting up .env.production...');
+console.log('⚙️ Setting up .env.production...');
 const sourceEnvProd = join(projectRoot, '.env.production');
 const targetEnvProd = join(laravelAppDir, '.env.production');
 
@@ -211,7 +248,7 @@ VITE_PUSHER_APP_CLUSTER="\${PUSHER_APP_CLUSTER}"
 }
 
 // Create deployment instructions
-console.log('\n📝 Creating deployment instructions...');
+console.log('📝 Creating deployment instructions...');
 const instructions = `// Create deployment instructions
 console.log('📝 Creating deployment instructions...');
 const deploymentInstructions = [
@@ -361,7 +398,7 @@ writeFileSync(join(buildDir, 'DEPLOYMENT-INSTRUCTIONS.txt'), instructions);
 console.log('   ✓ Deployment instructions created');
 
 // Create ZIP file
-console.log('\n📦 Creating ZIP file...');
+console.log('📦 Creating ZIP file...');
 const zip = new JSZip();
 
 // Function to add directory to zip (synchronous version)
@@ -377,7 +414,8 @@ function addDirectoryToZip(dirPath, zipFolder = '') {
         } else {
             const fileContent = readFileSync(itemPath);
             zip.file(zipPath, fileContent);
-            console.log(`   📄 Added: ${zipPath}`);
+            // Only show progress for ZIP creation - no individual file logging
+            if (Math.random() < 0.01) process.stdout.write('.'); // Show occasional progress
         }
     }
 }
@@ -386,7 +424,7 @@ function addDirectoryToZip(dirPath, zipFolder = '') {
 addDirectoryToZip(buildDir);
 
 // Generate ZIP
-console.log('\n🔄 Generating ZIP file...');
+console.log('🔄 Generating ZIP file...');
 const zipContent = await zip.generateAsync({
     type: 'nodebuffer',
     compression: 'DEFLATE',
