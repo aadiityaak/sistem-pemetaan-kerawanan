@@ -17,6 +17,22 @@ class MonitoringDataController extends Controller
     {
         $query = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory']);
 
+        // Set default date range to last 6 months if not provided
+        $defaultStartDate = now()->subMonths(6)->format('Y-m-d');
+        $defaultEndDate = now()->format('Y-m-d');
+        
+        $startDate = $request->query('start_date', $defaultStartDate);
+        $endDate = $request->query('end_date', $defaultEndDate);
+
+        // Filter berdasarkan tanggal
+        if ($startDate) {
+            $query->whereDate('incident_date', '>=', $startDate);
+        }
+        
+        if ($endDate) {
+            $query->whereDate('incident_date', '<=', $endDate);
+        }
+
         // Search
         if ($request->has('search') && $request->search != '') {
             $query->where(function ($q) use ($request) {
@@ -97,11 +113,19 @@ class MonitoringDataController extends Controller
             return $item;
         });
 
-        // Statistik sesuai dengan yang diharapkan Vue component
-        $totalData = MonitoringData::count();
-        $activeData = MonitoringData::where('status', 'active')->count();
-        $completedData = MonitoringData::where('status', 'resolved')->count();
-        $criticalData = MonitoringData::where('severity_level', 'critical')->count();
+        // Statistik sesuai dengan yang diharapkan Vue component - apply date filters
+        $statsQuery = MonitoringData::query();
+        if ($startDate) {
+            $statsQuery->whereDate('incident_date', '>=', $startDate);
+        }
+        if ($endDate) {
+            $statsQuery->whereDate('incident_date', '<=', $endDate);
+        }
+        
+        $totalData = (clone $statsQuery)->count();
+        $activeData = (clone $statsQuery)->where('status', 'active')->count();
+        $completedData = (clone $statsQuery)->where('status', 'resolved')->count();
+        $criticalData = (clone $statsQuery)->where('severity_level', 'critical')->count();
 
         return Inertia::render('MonitoringData/Index', [
             'monitoringData' => $monitoringData,
@@ -111,7 +135,13 @@ class MonitoringDataController extends Controller
                 'completed' => $completedData,
                 'critical' => $criticalData,
             ],
-            'filters' => $request->only(['search', 'status', 'level']),
+            'filters' => array_merge(
+                $request->only(['search', 'status', 'level']),
+                [
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                ]
+            ),
         ]);
     }
 

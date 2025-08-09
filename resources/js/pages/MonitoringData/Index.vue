@@ -103,7 +103,7 @@
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">🔍 Filter & Pencarian</h3>
                 </div>
                 <div class="p-6">
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
                         <!-- Search -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pencarian</label>
@@ -154,6 +154,26 @@
                                 <option value="tinggi">🔴 Tinggi</option>
                                 <option value="kritis">⚠️ Kritis</option>
                             </select>
+                        </div>
+
+                        <!-- Start Date Filter -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanggal Mulai</label>
+                            <input
+                                v-model="startDate"
+                                type="date"
+                                class="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 leading-5 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            />
+                        </div>
+
+                        <!-- End Date Filter -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanggal Akhir</label>
+                            <input
+                                v-model="endDate"
+                                type="date"
+                                class="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 leading-5 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            />
                         </div>
                     </div>
                 </div>
@@ -541,6 +561,8 @@ const props = defineProps<{
         search?: string;
         status?: string;
         level?: string;
+        start_date?: string;
+        end_date?: string;
     };
 }>();
 
@@ -548,12 +570,14 @@ const props = defineProps<{
 const searchQuery = ref(props.filters.search || '');
 const selectedStatus = ref(props.filters.status || '');
 const selectedLevel = ref(props.filters.level || '');
+const startDate = ref(props.filters.start_date || '');
+const endDate = ref(props.filters.end_date || '');
 const showDeleteModal = ref(false);
 const dataToDelete = ref<MonitoringDataItem | null>(null);
 const searchTimeout = ref<number | null>(null);
 
 // Watch for filter changes with debounce
-watch([searchQuery, selectedStatus, selectedLevel], () => {
+watch([searchQuery, selectedStatus, selectedLevel, startDate, endDate], () => {
     if (searchTimeout.value) {
         clearTimeout(searchTimeout.value);
     }
@@ -564,6 +588,8 @@ watch([searchQuery, selectedStatus, selectedLevel], () => {
         if (searchQuery.value) params.search = searchQuery.value;
         if (selectedStatus.value) params.status = selectedStatus.value;
         if (selectedLevel.value) params.level = selectedLevel.value;
+        if (startDate.value) params.start_date = startDate.value;
+        if (endDate.value) params.end_date = endDate.value;
 
         router.get(route('monitoring-data.index'), params, {
             preserveState: true,
