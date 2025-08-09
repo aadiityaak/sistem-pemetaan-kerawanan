@@ -139,6 +139,14 @@ const topDataByProvinsi = computed(() => {
         .slice(0, 5);
 });
 
+// Computed untuk top 3 isu menonjol (berdasarkan jumlah terdampak)
+const topIssues = computed(() => {
+    return props.monitoringData
+        .filter(data => data.jumlah_terdampak && data.jumlah_terdampak > 0)
+        .sort((a, b) => (b.jumlah_terdampak || 0) - (a.jumlah_terdampak || 0))
+        .slice(0, 3);
+});
+
 // Helper functions
 const getSeverityLabel = (severity: string): string => {
     const labels: Record<string, string> = {
@@ -367,142 +375,155 @@ onMounted(async () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-1 flex-col gap-6 rounded-xl p-6">
-            <!-- Header with Category Filter -->
+            <!-- Header -->
             <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <div
-                            class="mr-4 flex h-12 w-12 items-center justify-center rounded-lg"
-                            :class="selectedCategory?.image_url ? 'bg-gray-50 dark:bg-gray-800' : (selectedCategory ? currentTheme.bgColor : 'bg-gray-100 dark:bg-gray-900')"
-                        >
-                            <img v-if="selectedCategory?.image_url" :src="selectedCategory.image_url" alt="Category icon" class="h-10 w-10 object-contain rounded" />
-                            <span v-else class="text-2xl">{{ selectedCategory ? (selectedCategory.icon || currentTheme.icon) : '📊' }}</span>
-                        </div>
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                <span>Dashboard</span>
-                                <span v-if="selectedCategory">{{ selectedCategory.name }}</span>
-                                <template v-if="selectedSubCategory">
-                                    <span>/</span>
-                                    <img v-if="selectedSubCategory.image_url" :src="selectedSubCategory.image_url" alt="Subcategory icon" class="h-6 w-6 object-contain rounded" />
-                                    <span>{{ selectedSubCategory.name }}</span>
-                                </template>
-                                <span v-if="!selectedCategory">Monitoring</span>
-                            </h1>
-                            <p class="text-gray-600 dark:text-gray-400">
-                                {{ selectedSubCategory
-                                    ? `Monitoring khusus subcategory ${selectedSubCategory.name}`
-                                    : selectedCategory
-                                    ? `Monitoring khusus kategori ${selectedCategory.name}`
-                                    : 'Monitoring data komprehensif semua kategori'
-                                }}
-                            </p>
-                        </div>
+                <div class="flex items-center">
+                    <div
+                        class="mr-4 flex h-12 w-12 items-center justify-center rounded-lg"
+                        :class="selectedCategory?.image_url ? 'bg-gray-50 dark:bg-gray-800' : (selectedCategory ? currentTheme.bgColor : 'bg-gray-100 dark:bg-gray-900')"
+                    >
+                        <img v-if="selectedCategory?.image_url" :src="selectedCategory.image_url" alt="Category icon" class="h-10 w-10 object-contain rounded" />
+                        <span v-else class="text-2xl">{{ selectedCategory ? (selectedCategory.icon || currentTheme.icon) : '📊' }}</span>
                     </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <span>Dashboard</span>
+                            <span v-if="selectedCategory">{{ selectedCategory.name }}</span>
+                            <template v-if="selectedSubCategory">
+                                <span>/</span>
+                                <img v-if="selectedSubCategory.image_url" :src="selectedSubCategory.image_url" alt="Subcategory icon" class="h-6 w-6 object-contain rounded" />
+                                <span>{{ selectedSubCategory.name }}</span>
+                            </template>
+                            <span v-if="!selectedCategory">Monitoring</span>
+                        </h1>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            {{ selectedSubCategory
+                                ? `Monitoring khusus subcategory ${selectedSubCategory.name}`
+                                : selectedCategory
+                                ? `Monitoring khusus kategori ${selectedCategory.name}`
+                                : 'Monitoring data komprehensif semua kategori'
+                            }}
+                        </p>
+                    </div>
+                </div>
+            </div>
 
-                    <!-- Filter Dropdowns -->
-                    <div class="flex flex-wrap gap-3">
+            <!-- Filters Card -->
+            <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">🔍 Filter & Pencarian</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <!-- Category Filter -->
-                        <div class="relative">
-                            <button
-                                @click="categoryDropdownOpen = !categoryDropdownOpen"
-                                class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white min-w-[180px] justify-between"
-                            >
-                                <div class="flex items-center gap-2">
-                                    <div class="flex items-center justify-center w-4 h-4">
-                                        <img v-if="selectedCategory?.image_url" :src="selectedCategory.image_url" alt="Category" class="w-4 h-4 object-contain rounded" />
-                                        <span v-else-if="selectedCategory?.icon" class="text-sm">{{ selectedCategory.icon }}</span>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kategori</label>
+                            <div class="relative">
+                                <button
+                                    @click="categoryDropdownOpen = !categoryDropdownOpen"
+                                    class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white w-full justify-between"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <div class="flex items-center justify-center w-4 h-4">
+                                            <img v-if="selectedCategory?.image_url" :src="selectedCategory.image_url" alt="Category" class="w-4 h-4 object-contain rounded" />
+                                            <span v-else-if="selectedCategory?.icon" class="text-sm">{{ selectedCategory.icon }}</span>
+                                            <span v-else class="text-sm">🟢</span>
+                                        </div>
+                                        <span>{{ selectedCategory?.name || 'Semua Kategori' }}</span>
                                     </div>
-                                    <span>{{ selectedCategory?.name || 'Semua Kategori' }}</span>
+                                    <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': categoryDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                
+                                <div v-if="categoryDropdownOpen" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-700 dark:border-gray-600 max-h-60 overflow-y-auto">
+                                    <button
+                                        @click="selectCategory(null); categoryDropdownOpen = false"
+                                        class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
+                                    >
+                                        <span class="text-sm">🟢</span>
+                                        <span>Semua Kategori</span>
+                                    </button>
+                                    <button
+                                        v-for="category in categories" :key="category.id"
+                                        @click="selectCategory(category.slug); categoryDropdownOpen = false"
+                                        class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
+                                    >
+                                        <div class="flex items-center justify-center w-4 h-4">
+                                            <img v-if="category.image_url" :src="category.image_url" alt="Category" class="w-4 h-4 object-contain rounded" />
+                                            <span v-else-if="category.icon" class="text-sm">{{ category.icon }}</span>
+                                        </div>
+                                        <span>{{ category.name }}</span>
+                                    </button>
                                 </div>
-                                <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': categoryDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            
-                            <div v-if="categoryDropdownOpen" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-700 dark:border-gray-600 max-h-60 overflow-y-auto">
-                                <button
-                                    @click="selectCategory(null); categoryDropdownOpen = false"
-                                    class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
-                                >
-                                    <div class="w-4 h-4"></div>
-                                    <span>Semua</span>
-                                </button>
-                                <button
-                                    v-for="category in categories" :key="category.id"
-                                    @click="selectCategory(category.slug); categoryDropdownOpen = false"
-                                    class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
-                                >
-                                    <div class="flex items-center justify-center w-4 h-4">
-                                        <img v-if="category.image_url" :src="category.image_url" alt="Category" class="w-4 h-4 object-contain rounded" />
-                                        <span v-else-if="category.icon" class="text-sm">{{ category.icon }}</span>
-                                    </div>
-                                    <span>{{ category.name }}</span>
-                                </button>
                             </div>
                         </div>
 
-                        <!-- SubCategory Filter (only show when category is selected) -->
-                        <div v-if="selectedCategory && subCategories.length > 0" class="relative">
-                            <button
-                                @click="subCategoryDropdownOpen = !subCategoryDropdownOpen"
-                                class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white min-w-[200px] justify-between"
-                            >
-                                <div class="flex items-center gap-2">
-                                    <div class="flex items-center justify-center w-4 h-4">
-                                        <img v-if="selectedSubCategory?.image_url" :src="selectedSubCategory.image_url" alt="Subcategory" class="w-4 h-4 object-contain rounded" />
-                                        <span v-else-if="selectedSubCategory?.icon" class="text-sm">{{ selectedSubCategory.icon || '🔥' }}</span>
+                        <!-- SubCategory Filter -->
+                        <div v-if="selectedCategory && subCategories.length > 0">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sub Kategori</label>
+                            <div class="relative">
+                                <button
+                                    @click="subCategoryDropdownOpen = !subCategoryDropdownOpen"
+                                    class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white w-full justify-between"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <div class="flex items-center justify-center w-4 h-4">
+                                            <img v-if="selectedSubCategory?.image_url" :src="selectedSubCategory.image_url" alt="Subcategory" class="w-4 h-4 object-contain rounded" />
+                                            <span v-else-if="selectedSubCategory?.icon" class="text-sm">{{ selectedSubCategory.icon }}</span>
+                                            <span v-else class="text-sm">🟢</span>
+                                        </div>
+                                        <span>{{ selectedSubCategory?.name || 'Semua Sub Kategori' }}</span>
                                     </div>
-                                    <span>{{ selectedSubCategory?.name || 'Semua Sub Kategori' }}</span>
+                                    <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': subCategoryDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                
+                                <div v-if="subCategoryDropdownOpen" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-700 dark:border-gray-600 max-h-60 overflow-y-auto">
+                                    <button
+                                        @click="selectSubCategory(null); subCategoryDropdownOpen = false"
+                                        class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
+                                    >
+                                        <span class="text-sm">🟢</span>
+                                        <span>Semua Sub Kategori</span>
+                                    </button>
+                                    <button
+                                        v-for="subCategory in subCategories" :key="subCategory.id"
+                                        @click="selectSubCategory(subCategory.slug); subCategoryDropdownOpen = false"
+                                        class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
+                                    >
+                                        <div class="flex items-center justify-center w-4 h-4">
+                                            <img v-if="subCategory.image_url" :src="subCategory.image_url" alt="Subcategory" class="w-4 h-4 object-contain rounded" />
+                                            <span v-else-if="subCategory.icon" class="text-sm">{{ subCategory.icon }}</span>
+                                        </div>
+                                        <span>{{ subCategory.name }}</span>
+                                    </button>
                                 </div>
-                                <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': subCategoryDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            
-                            <div v-if="subCategoryDropdownOpen" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-700 dark:border-gray-600 max-h-60 overflow-y-auto">
-                                <button
-                                    @click="selectSubCategory(null); subCategoryDropdownOpen = false"
-                                    class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
-                                >
-                                    <div class="w-4 h-4"></div>
-                                    <span>Semua</span>
-                                </button>
-                                <button
-                                    v-for="subCategory in subCategories" :key="subCategory.id"
-                                    @click="selectSubCategory(subCategory.slug); subCategoryDropdownOpen = false"
-                                    class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
-                                >
-                                    <div class="flex items-center justify-center w-4 h-4">
-                                        <img v-if="subCategory.image_url" :src="subCategory.image_url" alt="Subcategory" class="w-4 h-4 object-contain rounded" />
-                                        <span v-else-if="subCategory.icon" class="text-sm">{{ subCategory.icon }}</span>
-                                    </div>
-                                    <span>{{ subCategory.name }}</span>
-                                </button>
                             </div>
                         </div>
 
                         <!-- Start Date Filter -->
-                        <div class="relative">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanggal Mulai</label>
                             <input
                                 type="date"
                                 @change="selectStartDate(($event.target as HTMLInputElement).value || null)"
                                 :value="startDate || ''"
-                                class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                 placeholder="Tanggal Mulai"
-                                title="Tanggal Mulai"
                             />
                         </div>
 
                         <!-- End Date Filter -->
-                        <div class="relative">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanggal Akhir</label>
                             <input
                                 type="date"
                                 @change="selectEndDate(($event.target as HTMLInputElement).value || null)"
                                 :value="endDate || ''"
-                                class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                 placeholder="Tanggal Akhir"
-                                title="Tanggal Akhir"
                             />
                         </div>
                     </div>
@@ -863,6 +884,54 @@ onMounted(async () => {
                                 >
                                     {{ subCategoryData.count }} data
                                 </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top 3 Isu Menonjol -->
+                    <div v-if="topIssues.length > 0" class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">🔥 Top 3 Isu Menonjol</h3>
+                        <div class="space-y-4">
+                            <div
+                                v-for="(issue, index) in topIssues"
+                                :key="issue.id"
+                                class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                                @click="$inertia.visit(`/monitoring-data/${issue.id}`)"
+                            >
+                                <div class="flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white"
+                                     :class="index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : 'bg-orange-600'">
+                                    {{ index + 1 }}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                                {{ issue.title }}
+                                            </p>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <div class="flex items-center justify-center w-4 h-4">
+                                                    <img v-if="issue.sub_category.image_url" :src="issue.sub_category.image_url" alt="Subcategory" class="w-3 h-3 object-contain rounded" />
+                                                    <span v-else-if="issue.sub_category.icon" class="text-xs">{{ issue.sub_category.icon }}</span>
+                                                </div>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ issue.sub_category.name }}</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                {{ issue.provinsi.nama }}, {{ issue.kabupaten_kota.nama }}
+                                            </p>
+                                        </div>
+                                        <div class="text-right ml-2">
+                                            <div class="flex items-center gap-1">
+                                                <svg class="w-3 h-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                                </svg>
+                                                <span class="text-sm font-semibold text-orange-600 dark:text-orange-400">
+                                                    {{ issue.jumlah_terdampak?.toLocaleString() }}
+                                                </span>
+                                            </div>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">terdampak</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

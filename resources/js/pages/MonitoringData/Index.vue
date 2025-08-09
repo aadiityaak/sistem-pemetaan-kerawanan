@@ -81,12 +81,32 @@
                 </div>
             </div>
 
-            <!-- Filters and Actions -->
+            <!-- Action Button -->
+            <div class="mb-6 flex justify-between items-center">
+                <div></div>
+                <div>
+                    <Link
+                        :href="route('monitoring-data.create')"
+                        class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition duration-150 ease-in-out hover:bg-blue-700 focus:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:bg-blue-900 leading-5 whitespace-nowrap"
+                    >
+                        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Tambah Data
+                    </Link>
+                </div>
+            </div>
+
+            <!-- Filters Card -->
             <div class="mb-6 rounded-lg border border-gray-200 bg-white shadow dark:border-gray-700 dark:bg-gray-800">
+                <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">🔍 Filter & Pencarian</h3>
+                </div>
                 <div class="p-6">
-                    <div class="flex flex-col gap-4 sm:flex-row">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <!-- Search -->
-                        <div class="flex-1">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pencarian</label>
                             <div class="relative">
                                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,43 +128,32 @@
                         </div>
 
                         <!-- Filter Status -->
-                        <div class="sm:w-48">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
                             <select
                                 v-model="selectedStatus"
                                 class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                             >
-                                <option value="">Semua Status</option>
-                                <option value="aktif">Aktif</option>
-                                <option value="selesai">Selesai</option>
-                                <option value="dalam_proses">Dalam Proses</option>
+                                <option value="">🟢 Semua Status</option>
+                                <option value="aktif">🔵 Aktif</option>
+                                <option value="selesai">✅ Selesai</option>
+                                <option value="dalam_proses">⏳ Dalam Proses</option>
                             </select>
                         </div>
 
                         <!-- Filter Level -->
-                        <div class="sm:w-48">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tingkat Keparahan</label>
                             <select
                                 v-model="selectedLevel"
                                 class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                             >
-                                <option value="">Semua Level</option>
-                                <option value="rendah">Rendah</option>
-                                <option value="sedang">Sedang</option>
-                                <option value="tinggi">Tinggi</option>
-                                <option value="kritis">Kritis</option>
+                                <option value="">🟢 Semua Level</option>
+                                <option value="rendah">🟡 Rendah</option>
+                                <option value="sedang">🟠 Sedang</option>
+                                <option value="tinggi">🔴 Tinggi</option>
+                                <option value="kritis">⚠️ Kritis</option>
                             </select>
-                        </div>
-
-                        <!-- Add Button -->
-                        <div class="sm:w-auto">
-                            <Link
-                                :href="route('monitoring-data.create')"
-                                class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition duration-150 ease-in-out hover:bg-blue-700 focus:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:bg-blue-900"
-                            >
-                                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                                Tambah Data
-                            </Link>
                         </div>
                     </div>
                 </div>
@@ -256,51 +265,51 @@
                                     <div class="flex items-center justify-end space-x-2">
                                         <Link
                                             :href="route('monitoring-data.show', data.id)"
-                                            class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                                            title="Lihat Detail"
+                                            class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:text-blue-400 dark:bg-blue-900/50 dark:hover:bg-blue-900 transition-colors duration-200"
                                         >
-                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path
                                                     stroke-linecap="round"
                                                     stroke-linejoin="round"
                                                     stroke-width="2"
                                                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                                ></path>
+                                                />
                                                 <path
                                                     stroke-linecap="round"
                                                     stroke-linejoin="round"
                                                     stroke-width="2"
                                                     d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                                ></path>
+                                                />
                                             </svg>
+                                            Lihat
                                         </Link>
                                         <Link
                                             :href="route('monitoring-data.edit', data.id)"
-                                            class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                            title="Edit"
+                                            class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 dark:text-indigo-400 dark:bg-indigo-900/50 dark:hover:bg-indigo-900 transition-colors duration-200"
                                         >
-                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path
                                                     stroke-linecap="round"
                                                     stroke-linejoin="round"
                                                     stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                                ></path>
+                                                />
                                             </svg>
+                                            Edit
                                         </Link>
                                         <button
                                             @click="confirmDelete(data)"
-                                            class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                            title="Hapus"
+                                            class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 dark:text-red-400 dark:bg-red-900/50 dark:hover:bg-red-900 transition-colors duration-200"
                                         >
-                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path
                                                     stroke-linecap="round"
                                                     stroke-linejoin="round"
                                                     stroke-width="2"
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                ></path>
+                                                />
                                             </svg>
+                                            Hapus
                                         </button>
                                     </div>
                                 </td>
@@ -407,13 +416,14 @@
         </div>
 
         <!-- Delete Confirmation Modal -->
-        <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                <div class="bg-opacity-75 fixed inset-0 bg-gray-500 transition-opacity" aria-hidden="true"></div>
-                <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
-                <div
-                    class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle dark:bg-gray-800"
-                >
+        <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <!-- Backdrop - prevent closing on click -->
+            <div class="fixed inset-0 bg-gray-500/75 transition-opacity" @click.prevent.stop></div>
+            <!-- Modal content - prevent event bubbling -->
+            <div
+                @click.stop
+                class="relative transform overflow-hidden rounded-lg bg-white shadow-xl transition-all w-full max-w-lg dark:bg-gray-800"
+            >
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 dark:bg-gray-800">
                         <div class="sm:flex sm:items-start">
                             <div
@@ -455,7 +465,6 @@
                         </button>
                     </div>
                 </div>
-            </div>
         </div>
     </AppLayout>
 </template>

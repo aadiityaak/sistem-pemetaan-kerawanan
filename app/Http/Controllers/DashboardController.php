@@ -16,8 +16,13 @@ class DashboardController extends Controller
         // Ambil parameter category dan subcategory jika ada
         $categorySlug = $request->query('category');
         $subCategorySlug = $request->query('subcategory');
-        $startDate = $request->query('start_date');
-        $endDate = $request->query('end_date');
+        
+        // Set default date range to last 6 months if not provided
+        $defaultStartDate = now()->subMonths(6)->format('Y-m-d');
+        $defaultEndDate = now()->format('Y-m-d');
+        
+        $startDate = $request->query('start_date', $defaultStartDate);
+        $endDate = $request->query('end_date', $defaultEndDate);
         $selectedCategory = null;
         $selectedSubCategory = null;
 
