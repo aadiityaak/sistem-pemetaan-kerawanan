@@ -7,7 +7,8 @@
       "Bash(mkdir:*)",
       "Bash(npm install:*)",
       "Bash(rm:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(composer dev:*)"
     ],
     "deny": []
   }

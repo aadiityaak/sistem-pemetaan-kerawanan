@@ -72,6 +72,36 @@ const monthNames = [
 
 const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 
+// Filter state - initialize from current date
+const selectedMonth = ref(currentDate.value.getMonth() + 1);
+const selectedYear = ref(currentDate.value.getFullYear());
+
+// Sync filter state when currentDate changes (from props)
+watch(() => props.currentDate, (newCurrentDate) => {
+    const date = new Date(newCurrentDate);
+    currentDate.value = date;
+    selectedMonth.value = date.getMonth() + 1;
+    selectedYear.value = date.getFullYear();
+}, { immediate: true });
+
+// Generate year options (current year ± 5 years)
+const yearOptions = computed(() => {
+    const currentYearValue = new Date().getFullYear();
+    const years = [];
+    for (let i = currentYearValue - 5; i <= currentYearValue + 5; i++) {
+        years.push(i);
+    }
+    return years;
+});
+
+// Generate month options
+const monthOptions = computed(() => {
+    return monthNames.map((name, index) => ({
+        value: index + 1,
+        label: name
+    }));
+});
+
 const currentMonth = computed(() => monthNames[currentDate.value.getMonth()]);
 const currentYear = computed(() => currentDate.value.getFullYear());
 
@@ -128,6 +158,8 @@ const previousMonth = () => {
     const newDate = new Date(currentDate.value);
     newDate.setMonth(newDate.getMonth() - 1);
     currentDate.value = newDate;
+    selectedMonth.value = newDate.getMonth() + 1;
+    selectedYear.value = newDate.getFullYear();
     navigateToMonth();
 };
 
@@ -135,11 +167,16 @@ const nextMonth = () => {
     const newDate = new Date(currentDate.value);
     newDate.setMonth(newDate.getMonth() + 1);
     currentDate.value = newDate;
+    selectedMonth.value = newDate.getMonth() + 1;
+    selectedYear.value = newDate.getFullYear();
     navigateToMonth();
 };
 
 const goToToday = () => {
-    currentDate.value = new Date();
+    const today = new Date();
+    currentDate.value = today;
+    selectedMonth.value = today.getMonth() + 1;
+    selectedYear.value = today.getFullYear();
     navigateToMonth();
 };
 
@@ -150,6 +187,22 @@ const navigateToMonth = () => {
         replace: true,
     });
 };
+
+// Filter functions
+const applyDateFilter = () => {
+    const newDate = new Date(selectedYear.value, selectedMonth.value - 1, 1);
+    currentDate.value = newDate;
+    navigateToMonth();
+};
+
+// Watch for filter changes (debounced to prevent infinite loops)
+let filterTimeout: number;
+watch([selectedMonth, selectedYear], () => {
+    clearTimeout(filterTimeout);
+    filterTimeout = window.setTimeout(() => {
+        applyDateFilter();
+    }, 100);
+});
 
 // Event management
 const openDayModal = (date: Date) => {
@@ -224,7 +277,8 @@ const editEvent = async (event: KamtibmasEvent) => {
         };
         
         editingEvent.value = event;
-        showEventModal.value = true;
+        showDayModal.value = false; // Close day modal first
+        showEventModal.value = true; // Then open event modal
         
         // Focus on title field after modal opens
         setTimeout(() => {
@@ -264,23 +318,35 @@ const saveEvent = async () => {
         errors.value = {};
         
         // Client-side validation
+        let hasErrors = false;
+        
         if (!eventForm.value.title.trim()) {
             errors.value.title = 'Judul event harus diisi';
-            return;
+            hasErrors = true;
         }
         
         if (!eventForm.value.start_date) {
             errors.value.start_date = 'Tanggal mulai harus diisi';
-            return;
+            hasErrors = true;
         }
         
         if (!eventForm.value.end_date) {
             errors.value.end_date = 'Tanggal selesai harus diisi';
-            return;
+            hasErrors = true;
         }
         
-        if (new Date(eventForm.value.end_date) < new Date(eventForm.value.start_date)) {
+        if (!eventForm.value.category) {
+            errors.value.category = 'Kategori harus dipilih';
+            hasErrors = true;
+        }
+        
+        if (eventForm.value.start_date && eventForm.value.end_date && 
+            new Date(eventForm.value.end_date) < new Date(eventForm.value.start_date)) {
             errors.value.end_date = 'Tanggal selesai tidak boleh lebih kecil dari tanggal mulai';
+            hasErrors = true;
+        }
+        
+        if (hasErrors) {
             return;
         }
         
@@ -308,8 +374,8 @@ const saveEvent = async () => {
         const data = await response.json();
         
         if (response.ok) {
-            showEventModal.value = false;
-            resetForm();
+            // Force close without confirmation since data was saved
+            closeModal(true);
             // Refresh the page to show updated events
             router.reload({
                 onFinish: () => {
@@ -386,7 +452,27 @@ const deleteEvent = async (event: KamtibmasEvent) => {
     }
 };
 
-const closeModal = () => {
+// Check if there are unsaved changes
+const hasUnsavedChanges = computed(() => {
+    if (!showEventModal.value) return false;
+    
+    const form = eventForm.value;
+    return form.title.trim() !== '' || 
+           form.description.trim() !== '' || 
+           form.start_date !== '' || 
+           form.end_date !== '' || 
+           form.color !== '#3B82F6';
+});
+
+const closeModal = (force = false) => {
+    // If there are unsaved changes and not forced, ask for confirmation
+    if (hasUnsavedChanges.value && !force && !isLoading.value) {
+        const confirmMessage = 'Ada perubahan yang belum disimpan. Yakin ingin menutup modal?';
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+    }
+    
     showEventModal.value = false;
     resetForm();
     selectedDate.value = null;
@@ -498,23 +584,53 @@ const colorPresets = [
             <!-- Calendar -->
             <div class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
                 <!-- Calendar Header -->
-                <div class="flex items-center justify-between border-b border-gray-200 p-6 dark:border-gray-700">
-                    <div class="flex items-center gap-4">
-                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                            {{ currentMonth }} {{ currentYear }}
-                        </h2>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <Button @click="previousMonth" variant="outline" size="sm">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </Button>
-                        <Button @click="nextMonth" variant="outline" size="sm">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </Button>
+                <div class="border-b border-gray-200 p-6 dark:border-gray-700">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex items-center gap-4">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                {{ currentMonth }} {{ currentYear }}
+                            </h2>
+                        </div>
+                        
+                        <!-- Month/Year Filters -->
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                            <div class="flex items-center gap-2">
+                                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Bulan:</label>
+                                <select
+                                    v-model="selectedMonth"
+                                    class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                >
+                                    <option v-for="month in monthOptions" :key="month.value" :value="month.value">
+                                        {{ month.label }}
+                                    </option>
+                                </select>
+                            </div>
+                            
+                            <div class="flex items-center gap-2">
+                                <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Tahun:</label>
+                                <select
+                                    v-model="selectedYear"
+                                    class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                >
+                                    <option v-for="year in yearOptions" :key="year" :value="year">
+                                        {{ year }}
+                                    </option>
+                                </select>
+                            </div>
+                            
+                            <div class="flex items-center gap-2">
+                                <Button @click="previousMonth" variant="outline" size="sm">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </Button>
+                                <Button @click="nextMonth" variant="outline" size="sm">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -624,19 +740,34 @@ const colorPresets = [
             aria-modal="true"
             @keydown.escape="!isLoading && closeModal()"
         >
-            <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                <div 
-                    class="fixed inset-0 bg-gray-500 bg-opacity-75 backdrop-blur-sm transition-opacity" 
-                    aria-hidden="true" 
-                    @click="!isLoading && closeModal()"
-                ></div>
-                <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
-                <div class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle dark:bg-gray-800"
-                     @click.stop>
+            <!-- Modal backdrop -->
+            <div 
+                class="fixed inset-0 bg-gray-500/75 backdrop-blur-sm transition-opacity" 
+                aria-hidden="true"
+            ></div>
+            
+            <!-- Modal content container -->
+            <div class="fixed inset-0 z-10 overflow-y-auto">
+                <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                    <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg dark:bg-gray-800"
+                         @click.stop>
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 dark:bg-gray-800">
-                        <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white" id="modal-title">
-                            {{ editingEvent ? 'Edit Event' : 'Tambah Event Baru' }}
-                        </h3>
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white" id="modal-title">
+                                {{ editingEvent ? 'Edit Event' : 'Tambah Event Baru' }}
+                            </h3>
+                            <button
+                                @click="closeModal(false)"
+                                :disabled="isLoading"
+                                class="rounded-full p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 transition-colors"
+                                :class="{ 'cursor-not-allowed opacity-50': isLoading }"
+                                title="Tutup modal"
+                            >
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
                         <div class="mt-4 space-y-4">
                             <!-- Title -->
                             <div>
@@ -804,13 +935,14 @@ const colorPresets = [
                             {{ isLoading ? 'Menyimpan...' : (editingEvent ? 'Perbarui Event' : 'Simpan Event') }}
                         </Button>
                         <Button 
-                            @click="closeModal" 
+                            @click="closeModal(false)" 
                             variant="outline" 
                             :disabled="isLoading"
                             class="mt-3 w-full sm:mt-0 sm:w-auto"
                         >
                             Batal
                         </Button>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -825,15 +957,18 @@ const colorPresets = [
             aria-modal="true"
             @keydown.escape="closeDayModal()"
         >
-            <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                <div 
-                    class="fixed inset-0 bg-gray-500 bg-opacity-75 backdrop-blur-sm transition-opacity" 
-                    aria-hidden="true" 
-                    @click="closeDayModal()"
-                ></div>
-                <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
-                <div class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle dark:bg-gray-800"
-                     @click.stop>
+            <!-- Modal backdrop -->
+            <div 
+                class="fixed inset-0 bg-gray-500/75 backdrop-blur-sm transition-opacity" 
+                aria-hidden="true" 
+                @click="closeDayModal()"
+            ></div>
+            
+            <!-- Modal content container -->
+            <div class="fixed inset-0 z-10 overflow-y-auto">
+                <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                    <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl dark:bg-gray-800"
+                         @click.stop>
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 dark:bg-gray-800">
                         <div class="flex items-center justify-between">
                             <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white" id="day-modal-title">
@@ -957,6 +1092,7 @@ const colorPresets = [
                                 Tutup
                             </Button>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>
