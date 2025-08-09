@@ -12,8 +12,8 @@ const appName = computed(() => {
 });
 
 const appLogo = computed(() => {
-    // Use app_logo if available, otherwise fallback to favicon
-    return page.props.appSettings?.app_logo || page.props.appSettings?.app_favicon || null;
+    // Use app_logo only, do not fallback to favicon
+    return page.props.appSettings?.app_logo || null;
 });
 </script>
 

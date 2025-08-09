@@ -64,8 +64,8 @@ const props = defineProps<{
     monitoringData: MonitoringData[];
     selectedCategory?: Category | null;
     selectedSubCategory?: SubCategory | null;
-    selectedMonth?: string | null;
-    selectedYear?: string | null;
+    startDate?: string | null;
+    endDate?: string | null;
     categories: Category[];
     subCategories: SubCategory[];
     statistics: Statistics;
@@ -208,8 +208,8 @@ const selectCategory = (categorySlug: string | null) => {
     router.get(buildFilterUrl({
         category: categorySlug,
         subcategory: categorySlug ? props.selectedSubCategory?.slug || null : null,
-        month: props.selectedMonth,
-        year: props.selectedYear,
+        start_date: props.startDate || null,
+        end_date: props.endDate || null,
     }));
 };
 
@@ -218,52 +218,31 @@ const selectSubCategory = (subCategorySlug: string | null) => {
     router.get(buildFilterUrl({
         category: props.selectedCategory?.slug || null,
         subcategory: subCategorySlug,
-        month: props.selectedMonth,
-        year: props.selectedYear,
+        start_date: props.startDate || null,
+        end_date: props.endDate || null,
     }));
 };
 
-// Function to change month filter
-const selectMonth = (month: string | null) => {
+// Function to change start date filter
+const selectStartDate = (startDate: string | null) => {
     router.get(buildFilterUrl({
         category: props.selectedCategory?.slug || null,
         subcategory: props.selectedSubCategory?.slug || null,
-        month: month,
-        year: props.selectedYear,
+        start_date: startDate,
+        end_date: props.endDate || null,
     }));
 };
 
-// Function to change year filter
-const selectYear = (year: string | null) => {
+// Function to change end date filter
+const selectEndDate = (endDate: string | null) => {
     router.get(buildFilterUrl({
         category: props.selectedCategory?.slug || null,
         subcategory: props.selectedSubCategory?.slug || null,
-        month: props.selectedMonth,
-        year: year,
+        start_date: props.startDate || null,
+        end_date: endDate,
     }));
 };
 
-// Generate month and year options
-const monthOptions = [
-    { value: '1', label: 'Januari' },
-    { value: '2', label: 'Februari' },
-    { value: '3', label: 'Maret' },
-    { value: '4', label: 'April' },
-    { value: '5', label: 'Mei' },
-    { value: '6', label: 'Juni' },
-    { value: '7', label: 'Juli' },
-    { value: '8', label: 'Agustus' },
-    { value: '9', label: 'September' },
-    { value: '10', label: 'Oktober' },
-    { value: '11', label: 'November' },
-    { value: '12', label: 'Desember' },
-];
-
-const currentYear = new Date().getFullYear();
-const yearOptions = Array.from({ length: 10 }, (_, i) => ({
-    value: String(currentYear - i),
-    label: String(currentYear - i)
-}));
 
 // Custom dropdown state
 const categoryDropdownOpen = ref(false);
@@ -391,7 +370,10 @@ onMounted(async () => {
                         <div>
                             <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                                 <span>Dashboard</span>
+                                <span v-if="selectedCategory">{{ selectedCategory.name }}</span>
                                 <template v-if="selectedSubCategory">
+                                    <span>/</span>
+                                    <img v-if="selectedSubCategory.image_url" :src="selectedSubCategory.image_url" alt="Subcategory icon" class="h-6 w-6 object-contain rounded" />
                                     <span>{{ selectedSubCategory.name }}</span>
                                 </template>
                                 <span v-if="!selectedCategory">Monitoring</span>
@@ -433,7 +415,7 @@ onMounted(async () => {
                                     class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
                                 >
                                     <div class="w-4 h-4"></div>
-                                    <span>Semua Kategori</span>
+                                    <span>Semua</span>
                                 </button>
                                 <button
                                     v-for="category in categories" :key="category.id"
@@ -458,7 +440,7 @@ onMounted(async () => {
                                 <div class="flex items-center gap-2">
                                     <div class="flex items-center justify-center w-4 h-4">
                                         <img v-if="selectedSubCategory?.image_url" :src="selectedSubCategory.image_url" alt="Subcategory" class="w-4 h-4 object-contain rounded" />
-                                        <span v-else-if="selectedSubCategory?.icon" class="text-sm">{{ selectedSubCategory.icon }}</span>
+                                        <span v-else-if="selectedSubCategory?.icon" class="text-sm">{{ selectedSubCategory.icon || '🔥' }}</span>
                                     </div>
                                     <span>{{ selectedSubCategory?.name || 'Semua Sub Kategori' }}</span>
                                 </div>
@@ -473,7 +455,7 @@ onMounted(async () => {
                                     class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
                                 >
                                     <div class="w-4 h-4"></div>
-                                    <span>Semua Sub Kategori</span>
+                                    <span>Semua</span>
                                 </button>
                                 <button
                                     v-for="subCategory in subCategories" :key="subCategory.id"
@@ -489,32 +471,28 @@ onMounted(async () => {
                             </div>
                         </div>
 
-                        <!-- Year Filter -->
+                        <!-- Start Date Filter -->
                         <div class="relative">
-                            <select
-                                @change="selectYear(($event.target as HTMLSelectElement).value || null)"
-                                :value="selectedYear || ''"
+                            <input
+                                type="date"
+                                @change="selectStartDate(($event.target as HTMLInputElement).value || null)"
+                                :value="startDate || ''"
                                 class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            >
-                                <option value="">Semua Tahun</option>
-                                <option v-for="year in yearOptions" :key="year.value" :value="year.value">
-                                    {{ year.label }}
-                                </option>
-                            </select>
+                                placeholder="Tanggal Mulai"
+                                title="Tanggal Mulai"
+                            />
                         </div>
 
-                        <!-- Month Filter (only show when year is selected) -->
-                        <div v-if="selectedYear" class="relative">
-                            <select
-                                @change="selectMonth(($event.target as HTMLSelectElement).value || null)"
-                                :value="selectedMonth || ''"
+                        <!-- End Date Filter -->
+                        <div class="relative">
+                            <input
+                                type="date"
+                                @change="selectEndDate(($event.target as HTMLInputElement).value || null)"
+                                :value="endDate || ''"
                                 class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                            >
-                                <option value="">Semua Bulan</option>
-                                <option v-for="month in monthOptions" :key="month.value" :value="month.value">
-                                    {{ month.label }}
-                                </option>
-                            </select>
+                                placeholder="Tanggal Akhir"
+                                title="Tanggal Akhir"
+                            />
                         </div>
                     </div>
                 </div>
