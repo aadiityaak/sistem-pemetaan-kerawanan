@@ -28,7 +28,7 @@ import { onMounted, ref } from 'vue';
 
 const mainNavItems = ref<NavItem[]>([
     {
-        title: 'Dashboard',
+        title: 'IPOLEKSOSBUDKAM',
         href: '/dashboard',
         icon: LayoutGrid,
         items: [], // Will be populated dynamically with categories and subcategories
