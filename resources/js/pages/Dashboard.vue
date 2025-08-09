@@ -265,6 +265,10 @@ const yearOptions = Array.from({ length: 10 }, (_, i) => ({
     label: String(currentYear - i)
 }));
 
+// Custom dropdown state
+const categoryDropdownOpen = ref(false);
+const subCategoryDropdownOpen = ref(false);
+
 // Initialize map
 onMounted(async () => {
     if (typeof window !== 'undefined') {
@@ -288,25 +292,25 @@ onMounted(async () => {
                 const markerColor = props.selectedCategory ? currentTheme.value.color : severityConfig.color;
 
                 // Determine marker icon: sub category image > sub category icon > category theme icon > severity icon
-                let markerIcon = severityConfig.icon; // Default to severity icon
+                let markerContent = '';
                 let hasCustomImage = false;
                 
-                if (props.selectedCategory) {
-                    markerIcon = currentTheme.value.icon; // Use category theme icon if filtered
-                }
-                
                 if (data.sub_category.image_url) {
-                    // If subcategory has custom image, use a generic map marker icon but mark as custom
-                    markerIcon = '📍'; // Generic pin icon for custom image categories
+                    // Use actual custom image in marker
+                    markerContent = `<img src="${data.sub_category.image_url}" style="width: 16px; height: 16px; object-fit: contain; border-radius: 2px;">`;
                     hasCustomImage = true;
                 } else if (data.sub_category.icon) {
-                    markerIcon = data.sub_category.icon; // Use sub category icon if available
+                    markerContent = `<span style="font-size: 12px;">${data.sub_category.icon}</span>`;
+                } else if (props.selectedCategory) {
+                    markerContent = `<span style="font-size: 12px;">${currentTheme.value.icon}</span>`;
+                } else {
+                    markerContent = `<span style="font-size: 12px;">${severityConfig.icon}</span>`;
                 }
 
                 const customIcon = L.divIcon({
                     html: `<div style="
-                        background-color: ${markerColor}; 
-                        border: 2px solid white; 
+                        background-color: ${hasCustomImage ? '#ffffff' : markerColor}; 
+                        border: 2px solid ${markerColor}; 
                         border-radius: 50%; 
                         width: 24px; 
                         height: 24px;
@@ -315,7 +319,8 @@ onMounted(async () => {
                         justify-content: center;
                         font-size: 12px;
                         box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                    ">${markerIcon}</div>`,
+                        overflow: hidden;
+                    ">${markerContent}</div>`,
                     className: 'custom-marker',
                     iconSize: [24, 24],
                     iconAnchor: [12, 12],
@@ -406,30 +411,82 @@ onMounted(async () => {
                     <div class="flex flex-wrap gap-3">
                         <!-- Category Filter -->
                         <div class="relative">
-                            <select
-                                @change="selectCategory(($event.target as HTMLSelectElement).value || null)"
-                                :value="selectedCategory?.slug || ''"
-                                class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            <button
+                                @click="categoryDropdownOpen = !categoryDropdownOpen"
+                                class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white min-w-[180px] justify-between"
                             >
-                                <option value="">Semua Kategori</option>
-                                <option v-for="category in categories" :key="category.id" :value="category.slug">
-                                    {{ category.image_url ? '🖼️ ' : (category.icon ? category.icon + ' ' : '') }}{{ category.name }}
-                                </option>
-                            </select>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex items-center justify-center w-4 h-4">
+                                        <img v-if="selectedCategory?.image_url" :src="selectedCategory.image_url" alt="Category" class="w-4 h-4 object-contain rounded" />
+                                        <span v-else-if="selectedCategory?.icon" class="text-sm">{{ selectedCategory.icon }}</span>
+                                    </div>
+                                    <span>{{ selectedCategory?.name || 'Semua Kategori' }}</span>
+                                </div>
+                                <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': categoryDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            
+                            <div v-if="categoryDropdownOpen" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-700 dark:border-gray-600 max-h-60 overflow-y-auto">
+                                <button
+                                    @click="selectCategory(null); categoryDropdownOpen = false"
+                                    class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
+                                >
+                                    <div class="w-4 h-4"></div>
+                                    <span>Semua Kategori</span>
+                                </button>
+                                <button
+                                    v-for="category in categories" :key="category.id"
+                                    @click="selectCategory(category.slug); categoryDropdownOpen = false"
+                                    class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
+                                >
+                                    <div class="flex items-center justify-center w-4 h-4">
+                                        <img v-if="category.image_url" :src="category.image_url" alt="Category" class="w-4 h-4 object-contain rounded" />
+                                        <span v-else-if="category.icon" class="text-sm">{{ category.icon }}</span>
+                                    </div>
+                                    <span>{{ category.name }}</span>
+                                </button>
+                            </div>
                         </div>
 
                         <!-- SubCategory Filter (only show when category is selected) -->
                         <div v-if="selectedCategory && subCategories.length > 0" class="relative">
-                            <select
-                                @change="selectSubCategory(($event.target as HTMLSelectElement).value || null)"
-                                :value="selectedSubCategory?.slug || ''"
-                                class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            <button
+                                @click="subCategoryDropdownOpen = !subCategoryDropdownOpen"
+                                class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white min-w-[200px] justify-between"
                             >
-                                <option value="">Semua Sub Kategori</option>
-                                <option v-for="subCategory in subCategories" :key="subCategory.id" :value="subCategory.slug">
-                                    {{ subCategory.image_url ? '🖼️ ' : (subCategory.icon ? subCategory.icon + ' ' : '') }}{{ subCategory.name }}
-                                </option>
-                            </select>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex items-center justify-center w-4 h-4">
+                                        <img v-if="selectedSubCategory?.image_url" :src="selectedSubCategory.image_url" alt="Subcategory" class="w-4 h-4 object-contain rounded" />
+                                        <span v-else-if="selectedSubCategory?.icon" class="text-sm">{{ selectedSubCategory.icon }}</span>
+                                    </div>
+                                    <span>{{ selectedSubCategory?.name || 'Semua Sub Kategori' }}</span>
+                                </div>
+                                <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': subCategoryDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            
+                            <div v-if="subCategoryDropdownOpen" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-700 dark:border-gray-600 max-h-60 overflow-y-auto">
+                                <button
+                                    @click="selectSubCategory(null); subCategoryDropdownOpen = false"
+                                    class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
+                                >
+                                    <div class="w-4 h-4"></div>
+                                    <span>Semua Sub Kategori</span>
+                                </button>
+                                <button
+                                    v-for="subCategory in subCategories" :key="subCategory.id"
+                                    @click="selectSubCategory(subCategory.slug); subCategoryDropdownOpen = false"
+                                    class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
+                                >
+                                    <div class="flex items-center justify-center w-4 h-4">
+                                        <img v-if="subCategory.image_url" :src="subCategory.image_url" alt="Subcategory" class="w-4 h-4 object-contain rounded" />
+                                        <span v-else-if="subCategory.icon" class="text-sm">{{ subCategory.icon }}</span>
+                                    </div>
+                                    <span>{{ subCategory.name }}</span>
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Year Filter -->
