@@ -339,6 +339,17 @@ onMounted(async () => {
                                 Level: ${getSeverityLabel(data.severity_level)}
                             </span>
                         </div>
+                        <div class="mt-3 pt-2 border-t border-gray-200">
+                            <a href="/monitoring-data/${data.id}" 
+                               class="!text-white inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors duration-200"
+                               style="text-decoration: none;">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                                Lihat Detail
+                            </a>
+                        </div>
                     </div>
                 `);
             });
@@ -628,10 +639,10 @@ onMounted(async () => {
                         <div class="mb-4 flex items-center justify-between">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                                 🗺️ {{ selectedSubCategory 
-                                    ? `Peta ${selectedSubCategory.name}` 
+                                    ? `${selectedSubCategory.name}` 
                                     : selectedCategory 
-                                    ? `Peta ${selectedCategory.name}` 
-                                    : 'Peta Monitoring Data' }}
+                                    ? `${selectedCategory.name}` 
+                                    : 'Monitoring Data' }}
                             </h3>
                             <div class="flex items-center gap-2 text-sm text-gray-500">
                                 <span
