@@ -27,7 +27,18 @@ class KamtibmasEventController extends Controller
         $events = Event::active()
             ->inDateRange($startDate, $endDate)
             ->orderBy('start_date')
-            ->get()
+            ->get();
+        
+        // Debug: Log the query details
+        \Log::info('Calendar Events Query:', [
+            'current_date' => $currentDate,
+            'start_date' => $startDate->format('Y-m-d H:i:s'),
+            'end_date' => $endDate->format('Y-m-d H:i:s'),
+            'events_found' => $events->count(),
+            'all_active_events' => Event::active()->count()
+        ]);
+        
+        $events = $events
             ->map(function ($event) {
                 return [
                     'id' => $event->id,
@@ -73,12 +84,12 @@ class KamtibmasEventController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'description' => 'nullable|string',
-            'category' => 'required|string|in:agenda_nasional,agenda_internasional,kamtibmas',
-            'color' => 'required|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
+            'title' => ['required', 'string', 'max:255'],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'description' => ['nullable', 'string'],
+            'category' => ['required', 'string', 'in:agenda_nasional,agenda_internasional,kamtibmas'],
+            'color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{3,6}$/'],
         ]);
 
         $event = Event::create($validated);
@@ -124,12 +135,12 @@ class KamtibmasEventController extends Controller
     public function update(Request $request, Event $event)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'description' => 'nullable|string',
-            'category' => 'required|string|in:agenda_nasional,agenda_internasional,kamtibmas',
-            'color' => 'required|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
+            'title' => ['required', 'string', 'max:255'],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'description' => ['nullable', 'string'],
+            'category' => ['required', 'string', 'in:agenda_nasional,agenda_internasional,kamtibmas'],
+            'color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{3,6}$/'],
         ]);
 
         $event->update($validated);

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 interface KamtibmasEvent {
     id: number;
@@ -30,6 +30,7 @@ const props = defineProps<{
     holidays: any[];
     categories: Record<string, string>;
 }>();
+
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -76,12 +77,33 @@ const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 const selectedMonth = ref(currentDate.value.getMonth() + 1);
 const selectedYear = ref(currentDate.value.getFullYear());
 
+// Navigation state to prevent infinite loops
+let isNavigating = false;
+
 // Sync filter state when currentDate changes (from props)
 watch(() => props.currentDate, (newCurrentDate) => {
-    const date = new Date(newCurrentDate);
-    currentDate.value = date;
-    selectedMonth.value = date.getMonth() + 1;
-    selectedYear.value = date.getFullYear();
+    try {
+        isNavigating = true;
+        const date = new Date(newCurrentDate);
+        
+        // Validate date
+        if (isNaN(date.getTime())) {
+            console.warn('Invalid date received from props:', newCurrentDate);
+            return;
+        }
+        
+        currentDate.value = date;
+        selectedMonth.value = date.getMonth() + 1;
+        selectedYear.value = date.getFullYear();
+        
+        // Reset flag after state updates
+        nextTick(() => {
+            isNavigating = false;
+        });
+    } catch (error) {
+        console.error('Error in currentDate watcher:', error);
+        isNavigating = false;
+    }
 }, { immediate: true });
 
 // Generate year options (current year ± 5 years)
@@ -155,29 +177,23 @@ const calendarDays = computed(() => {
 
 // Navigation functions
 const previousMonth = () => {
-    const newDate = new Date(currentDate.value);
-    newDate.setMonth(newDate.getMonth() - 1);
-    currentDate.value = newDate;
-    selectedMonth.value = newDate.getMonth() + 1;
-    selectedYear.value = newDate.getFullYear();
-    navigateToMonth();
+    selectedMonth.value = selectedMonth.value === 1 ? 12 : selectedMonth.value - 1;
+    if (selectedMonth.value === 12) {
+        selectedYear.value = selectedYear.value - 1;
+    }
 };
 
 const nextMonth = () => {
-    const newDate = new Date(currentDate.value);
-    newDate.setMonth(newDate.getMonth() + 1);
-    currentDate.value = newDate;
-    selectedMonth.value = newDate.getMonth() + 1;
-    selectedYear.value = newDate.getFullYear();
-    navigateToMonth();
+    selectedMonth.value = selectedMonth.value === 12 ? 1 : selectedMonth.value + 1;
+    if (selectedMonth.value === 1) {
+        selectedYear.value = selectedYear.value + 1;
+    }
 };
 
 const goToToday = () => {
     const today = new Date();
-    currentDate.value = today;
     selectedMonth.value = today.getMonth() + 1;
     selectedYear.value = today.getFullYear();
-    navigateToMonth();
 };
 
 const navigateToMonth = () => {
@@ -190,19 +206,35 @@ const navigateToMonth = () => {
 
 // Filter functions
 const applyDateFilter = () => {
-    const newDate = new Date(selectedYear.value, selectedMonth.value - 1, 1);
-    currentDate.value = newDate;
-    navigateToMonth();
+    try {
+        const newDate = new Date(selectedYear.value, selectedMonth.value - 1, 1);
+        
+        // Validate the constructed date
+        if (isNaN(newDate.getTime())) {
+            console.warn('Invalid date in applyDateFilter:', {
+                year: selectedYear.value,
+                month: selectedMonth.value
+            });
+            return;
+        }
+        
+        currentDate.value = newDate;
+        navigateToMonth();
+    } catch (error) {
+        console.error('Error in applyDateFilter:', error);
+    }
 };
 
-// Watch for filter changes (debounced to prevent infinite loops)
-let filterTimeout: number;
+// Watch for filter changes (only when user changes dropdowns, not navigation buttons)
 watch([selectedMonth, selectedYear], () => {
-    clearTimeout(filterTimeout);
-    filterTimeout = window.setTimeout(() => {
-        applyDateFilter();
-    }, 100);
-});
+    try {
+        if (!isNavigating && selectedMonth.value && selectedYear.value) {
+            applyDateFilter();
+        }
+    } catch (error) {
+        console.error('Error in filter watcher:', error);
+    }
+}, { flush: 'post' });
 
 // Event management
 const openDayModal = (date: Date) => {
@@ -230,11 +262,33 @@ const openEventModal = (date?: Date) => {
     // Reset form and state
     resetForm();
     
+    // Determine the best date to use:
+    let targetDate: Date;
+    
     if (date) {
-        selectedDate.value = date;
-        eventForm.value.start_date = date.toISOString().slice(0, 10);
-        eventForm.value.end_date = date.toISOString().slice(0, 10);
+        // Explicitly provided date (from day modal buttons)
+        targetDate = date;
+    } else if (selectedDate.value) {
+        // Use currently selected date from day modal
+        targetDate = selectedDate.value;
+    } else {
+        // Fallback: use today if viewing current month, otherwise first day of viewed month
+        const today = new Date();
+        const viewingCurrentMonth = currentDate.value.getMonth() === today.getMonth() && 
+                                   currentDate.value.getFullYear() === today.getFullYear();
+        
+        if (viewingCurrentMonth) {
+            targetDate = today;
+        } else {
+            // Use first day of currently viewed month
+            targetDate = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1);
+        }
     }
+    
+    selectedDate.value = targetDate;
+    // Format date in local timezone to avoid timezone conversion issues
+    eventForm.value.start_date = formatDateLocal(targetDate);
+    eventForm.value.end_date = formatDateLocal(targetDate);
     
     editingEvent.value = null;
     showDayModal.value = false;
@@ -376,18 +430,22 @@ const saveEvent = async () => {
         if (response.ok) {
             // Force close without confirmation since data was saved
             closeModal(true);
-            // Refresh the page to show updated events
-            router.reload({
+            
+            // Show success message
+            const message = editingEvent.value ? 'Event berhasil diperbarui!' : 'Event berhasil ditambahkan!';
+            
+            // Refresh the page with current date parameters to show updated events
+            const currentDateParam = currentDate.value.toISOString().slice(0, 7); // YYYY-MM
+            
+            router.get('/kamtibmas-calendar', { date: currentDateParam }, {
+                preserveState: false,
+                replace: false,
                 onFinish: () => {
-                    // Show success message
-                    const message = editingEvent.value ? 'Event berhasil diperbarui!' : 'Event berhasil ditambahkan!';
-                    console.log(message);
-                    
                     // Re-open day modal if it was open
                     if (selectedDate.value) {
                         setTimeout(() => {
                             openDayModal(selectedDate.value!);
-                        }, 100);
+                        }, 200);
                     }
                 }
             });
@@ -430,15 +488,19 @@ const deleteEvent = async (event: KamtibmasEvent) => {
             const data = await response.json();
             
             if (response.ok) {
-                router.reload({
+                console.log('Event berhasil dihapus!');
+                
+                // Refresh the page with current date parameters to show updated events
+                const currentDateParam = currentDate.value.toISOString().slice(0, 7); // YYYY-MM
+                router.get('/kamtibmas-calendar', { date: currentDateParam }, {
+                    preserveState: false,
+                    replace: false,
                     onFinish: () => {
-                        console.log('Event berhasil dihapus!');
-                        
                         // Re-open day modal if it was open
                         if (selectedDate.value) {
                             setTimeout(() => {
                                 openDayModal(selectedDate.value!);
-                            }, 100);
+                            }, 200);
                         }
                     }
                 });
@@ -494,6 +556,14 @@ const formatDateDisplay = (date: Date) => {
         day: 'numeric'
     };
     return new Intl.DateTimeFormat('id-ID', options).format(date);
+};
+
+// Helper function to format date as YYYY-MM-DD in local timezone
+const formatDateLocal = (date: Date) => {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
 };
 
 // Color presets
