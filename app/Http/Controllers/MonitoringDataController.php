@@ -118,6 +118,15 @@ class MonitoringDataController extends Controller
     public function create()
     {
         $categories = Category::active()->ordered()->with('subCategories')->get();
+        
+        // Append image URLs to categories and subcategories
+        $categories->each(function ($category) {
+            $category->append(['image_url']);
+            $category->subCategories->each(function ($subCategory) {
+                $subCategory->append(['image_url']);
+            });
+        });
+        
         $provinsiList = Provinsi::orderBy('nama')->get();
         $kabupatenKotaList = KabupatenKota::orderBy('nama')->get();
         $kecamatanList = Kecamatan::orderBy('nama')->get();
@@ -173,6 +182,14 @@ class MonitoringDataController extends Controller
         $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])
             ->findOrFail($id);
 
+        // Append image URLs to category and subcategory
+        if ($monitoringData->category) {
+            $monitoringData->category->append(['image_url']);
+        }
+        if ($monitoringData->subCategory) {
+            $monitoringData->subCategory->append(['image_url']);
+        }
+
         // Transform data untuk konsistensi dengan index
         $statusMapping = [
             'active' => 'aktif',
@@ -214,6 +231,15 @@ class MonitoringDataController extends Controller
     {
         $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])->findOrFail($id);
         $categories = Category::active()->ordered()->with('subCategories')->get();
+        
+        // Append image URLs to categories and subcategories
+        $categories->each(function ($category) {
+            $category->append(['image_url']);
+            $category->subCategories->each(function ($subCategory) {
+                $subCategory->append(['image_url']);
+            });
+        });
+        
         $provinsi = Provinsi::orderBy('nama')->get();
 
         // Send all kabupaten/kota and kecamatan for dynamic filtering in frontend

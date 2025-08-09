@@ -29,6 +29,8 @@ interface Category {
     name: string;
     slug: string;
     color: string;
+    icon?: string;
+    image_url?: string;
     sub_categories: SubCategory[];
 }
 
@@ -36,6 +38,8 @@ interface SubCategory {
     id: number;
     name: string;
     slug: string;
+    icon?: string;
+    image_url?: string;
     category_id: number;
 }
 
@@ -284,7 +288,7 @@ onMounted(() => {
                                     >
                                         <option value="">Pilih Kategori</option>
                                         <option v-for="category in categories" :key="category.id" :value="category.id">
-                                            {{ category.name }}
+                                            {{ category.image_url ? '🖼️ ' : (category.icon ? category.icon + ' ' : '') }}{{ category.name }}
                                         </option>
                                     </select>
                                     <div v-if="form.errors.category_id" class="mt-1 text-sm text-red-500">{{ form.errors.category_id }}</div>
@@ -303,7 +307,7 @@ onMounted(() => {
                                     >
                                         <option value="">Pilih Sub Kategori</option>
                                         <option v-for="subCategory in filteredSubCategories" :key="subCategory.id" :value="subCategory.id">
-                                            {{ subCategory.name }}
+                                            {{ subCategory.image_url ? '🖼️ ' : (subCategory.icon ? subCategory.icon + ' ' : '') }}{{ subCategory.name }}
                                         </option>
                                     </select>
                                     <div v-if="form.errors.sub_category_id" class="mt-1 text-sm text-red-500">{{ form.errors.sub_category_id }}</div>

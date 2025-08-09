@@ -24,7 +24,7 @@ interface MonitoringData {
     provinsi: { id: number; nama: string };
     kabupaten_kota: { id: number; nama: string; provinsi_id: number };
     kecamatan: { id: number; nama: string; kabupaten_kota_id: number };
-    category: { id: number; name: string; slug: string; color: string };
+    category: { id: number; name: string; slug: string; color: string; icon?: string; image_url?: string };
     sub_category: { id: number; name: string; slug: string; icon?: string; image_url?: string };
 }
 
@@ -33,6 +33,8 @@ interface Category {
     name: string;
     slug: string;
     color: string;
+    icon?: string;
+    image_url?: string;
 }
 
 interface SubCategory {
@@ -51,8 +53,8 @@ interface Statistics {
     totalKecamatan: number;
     totalTerdampak: number;
     totalSubCategories: number;
-    dataBySubCategory: Record<string, { name: string; icon: string; count: number }>;
-    allSubCategoriesData: Record<string, { name: string; icon: string; count: number }>;
+    dataBySubCategory: Record<string, { name: string; icon: string; image_url?: string; count: number }>;
+    allSubCategoriesData: Record<string, { name: string; icon: string; image_url?: string; count: number }>;
     dataByProvinsi: Record<string, number>;
     dataBySeverity: Record<string, number>;
     dataByStatus: Record<string, number>;
@@ -323,8 +325,8 @@ onMounted(async () => {
                     icon: customIcon,
                 }).addTo(map);
 
-                // Add popup with sub category icon if available
-                const popupIcon = data.sub_category.icon || '📊';
+                // Add popup with sub category icon or image if available
+                const popupIcon = data.sub_category.image_url ? '🖼️' : (data.sub_category.icon || '📊');
                 marker.bindPopup(`
                     <div class="p-3">
                         <div class="flex items-center gap-2 mb-2">
@@ -376,7 +378,8 @@ onMounted(async () => {
                             class="mr-4 flex h-12 w-12 items-center justify-center rounded-lg"
                             :class="selectedCategory ? currentTheme.bgColor : 'bg-gray-100 dark:bg-gray-900'"
                         >
-                            <span class="text-2xl">{{ selectedCategory ? currentTheme.icon : '📊' }}</span>
+                            <img v-if="selectedCategory?.image_url" :src="selectedCategory.image_url" alt="Category icon" class="h-8 w-8 object-contain" />
+                            <span v-else class="text-2xl">{{ selectedCategory ? (selectedCategory.icon || currentTheme.icon) : '📊' }}</span>
                         </div>
                         <div>
                             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -408,7 +411,7 @@ onMounted(async () => {
                             >
                                 <option value="">Semua Kategori</option>
                                 <option v-for="category in categories" :key="category.id" :value="category.slug">
-                                    {{ category.name }}
+                                    {{ category.image_url ? '🖼️ ' : (category.icon ? category.icon + ' ' : '') }}{{ category.name }}
                                 </option>
                             </select>
                         </div>
@@ -681,9 +684,17 @@ onMounted(async () => {
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <div class="text-sm">
-                                                <div class="font-medium text-gray-900 dark:text-white">{{ data.category.name }}</div>
-                                                <div class="text-gray-500 dark:text-gray-400">{{ data.sub_category.name }}</div>
+                                            <div class="text-sm space-y-1">
+                                                <div class="flex items-center gap-1">
+                                                    <img v-if="data.category.image_url" :src="data.category.image_url" alt="Category icon" class="h-4 w-4 object-contain" />
+                                                    <span v-else-if="data.category.icon" class="text-xs">{{ data.category.icon }}</span>
+                                                    <span class="font-medium text-gray-900 dark:text-white">{{ data.category.name }}</span>
+                                                </div>
+                                                <div class="flex items-center gap-1">
+                                                    <img v-if="data.sub_category.image_url" :src="data.sub_category.image_url" alt="Subcategory icon" class="h-3 w-3 object-contain" />
+                                                    <span v-else-if="data.sub_category.icon" class="text-xs">{{ data.sub_category.icon }}</span>
+                                                    <span class="text-gray-500 dark:text-gray-400">{{ data.sub_category.name }}</span>
+                                                </div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">

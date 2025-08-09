@@ -32,8 +32,8 @@ interface MonitoringData {
     provinsi: { id: number; nama: string };
     kabupaten_kota: { id: number; nama: string; provinsi_id: number };
     kecamatan: { id: number; nama: string; kabupaten_kota_id: number };
-    category: { id: number; name: string; slug: string; color: string };
-    sub_category: { id: number; name: string; slug: string };
+    category: { id: number; name: string; slug: string; color: string; icon?: string; image_url?: string };
+    sub_category: { id: number; name: string; slug: string; icon?: string; image_url?: string };
 }
 
 const props = defineProps<{
@@ -377,16 +377,23 @@ onMounted(async () => {
                             <div>
                                 <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Kategori Utama</label>
                                 <div class="flex items-center gap-2">
-                                    <div
-                                        class="h-4 w-4 rounded-full border border-gray-200"
-                                        :style="{ backgroundColor: monitoringData.category.color }"
-                                    ></div>
+                                    <div class="flex h-8 w-8 items-center justify-center">
+                                        <img v-if="monitoringData.category.image_url" :src="monitoringData.category.image_url" alt="Category icon" class="h-6 w-6 object-contain rounded" />
+                                        <span v-else-if="monitoringData.category.icon" class="text-sm">{{ monitoringData.category.icon }}</span>
+                                        <div v-else class="h-4 w-4 rounded-full border border-gray-200" :style="{ backgroundColor: monitoringData.category.color }"></div>
+                                    </div>
                                     <span class="text-gray-900 dark:text-white">{{ monitoringData.category.name }}</span>
                                 </div>
                             </div>
                             <div>
                                 <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Sub Kategori</label>
-                                <div class="text-gray-900 dark:text-white">{{ monitoringData.sub_category.name }}</div>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex h-6 w-6 items-center justify-center">
+                                        <img v-if="monitoringData.sub_category.image_url" :src="monitoringData.sub_category.image_url" alt="Subcategory icon" class="h-5 w-5 object-contain rounded" />
+                                        <span v-else-if="monitoringData.sub_category.icon" class="text-xs">{{ monitoringData.sub_category.icon }}</span>
+                                    </div>
+                                    <span class="text-gray-900 dark:text-white">{{ monitoringData.sub_category.name }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
