@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 interface Category {
     id: number;
@@ -10,6 +11,8 @@ interface Category {
     slug: string;
     description?: string;
     icon?: string;
+    image_path?: string;
+    image_url?: string;
     color: string;
     is_active: boolean;
     sort_order: number;
@@ -39,16 +42,21 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const form = useForm({
-    name: props.category.name,
+    name: props.category.name || '',
     description: props.category.description || '',
     icon: props.category.icon || '',
-    color: props.category.color,
-    is_active: props.category.is_active,
-    sort_order: props.category.sort_order,
+    image: null,
+    color: props.category.color || '#3B82F6',
+    is_active: props.category.is_active !== undefined ? props.category.is_active : true,
+    sort_order: props.category.sort_order || 0,
 });
 
 const submit = () => {
-    form.put(`/categories/${props.category.id}`, {
+    // Use POST with _method spoofing for file uploads
+    form.transform((data) => ({
+        ...data,
+        _method: 'PUT'
+    })).post(`/categories/${props.category.id}`, {
         onSuccess: () => {
             // Redirect handled by controller
         },
@@ -60,6 +68,62 @@ const commonIcons = ['🛡️', '🏛️', '🗳️', '💰', '🤝', '⚖️', 
 
 const selectIcon = (icon: string) => {
     form.icon = icon;
+};
+
+// Image preview state
+const imagePreview = ref<string | null>(props.category.image_url || null);
+const hasExistingImage = ref<boolean>(!!props.category.image_path);
+
+const handleImageUpload = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    
+    if (file) {
+        form.image = file;
+        
+        // Create preview URL
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            imagePreview.value = e.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+    }
+};
+
+const removeImage = () => {
+    form.image = null;
+    imagePreview.value = null;
+    hasExistingImage.value = false;
+    // Reset file input
+    const fileInput = document.getElementById('image-upload') as HTMLInputElement;
+    if (fileInput) {
+        fileInput.value = '';
+    }
+};
+
+const deleteExistingImage = async () => {
+    if (confirm('Apakah Anda yakin ingin menghapus gambar ini?')) {
+        try {
+            const response = await fetch(`/categories/${props.category.id}/delete-image`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'Accept': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                hasExistingImage.value = false;
+                imagePreview.value = null;
+                alert('Gambar berhasil dihapus.');
+            } else {
+                alert('Gagal menghapus gambar.');
+            }
+        } catch (error) {
+            console.error('Error deleting image:', error);
+            alert('Terjadi kesalahan saat menghapus gambar.');
+        }
+    }
 };
 </script>
 
@@ -203,6 +267,76 @@ const selectIcon = (icon: string) => {
                                 <div v-if="form.errors.icon" class="mt-1 text-sm text-red-500">{{ form.errors.icon }}</div>
                             </div>
 
+                            <!-- Custom Image Upload -->
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Upload Gambar Kustom </label>
+                                <div class="space-y-3">
+                                    <!-- Existing Image Display -->
+                                    <div v-if="hasExistingImage && !imagePreview" class="relative">
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                                            <div class="flex items-center gap-3">
+                                                <img v-if="category.image_url" :src="category.image_url" alt="Current image" class="w-12 h-12 object-cover rounded" />
+                                                <div>
+                                                    <p class="text-sm font-medium text-gray-900 dark:text-white">Gambar saat ini</p>
+                                                    <p class="text-xs text-gray-500 dark:text-gray-400">Upload gambar baru untuk mengganti</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                @click="deleteExistingImage"
+                                                class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm"
+                                            >
+                                                Hapus
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Image Upload Area -->
+                                    <div class="relative">
+                                        <input
+                                            id="image-upload"
+                                            type="file"
+                                            accept="image/*"
+                                            class="hidden"
+                                            @change="handleImageUpload"
+                                        />
+                                        <label
+                                            for="image-upload"
+                                            class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                                        >
+                                            <div v-if="!imagePreview" class="flex flex-col items-center justify-center pt-5 pb-6">
+                                                <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                                </svg>
+                                                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                                    <span class="font-semibold">Klik untuk upload</span> atau drag & drop
+                                                </p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF, SVG (MAX. 2MB)</p>
+                                            </div>
+                                            <div v-else class="relative w-full h-full flex items-center justify-center">
+                                                <img :src="imagePreview" alt="Preview" class="max-w-full max-h-full object-contain rounded" />
+                                            </div>
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- Remove New Image Button -->
+                                    <div v-if="imagePreview && !hasExistingImage" class="flex justify-center">
+                                        <button
+                                            type="button"
+                                            @click="removeImage"
+                                            class="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                        >
+                                            Hapus Gambar Baru
+                                        </button>
+                                    </div>
+                                    
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        Gambar kustom akan digunakan sebagai prioritas utama. Jika tidak ada gambar, akan menggunakan emoji icon.
+                                    </p>
+                                </div>
+                                <div v-if="form.errors.image" class="mt-1 text-sm text-red-500">{{ form.errors.image }}</div>
+                            </div>
+
                             <!-- Preview -->
                             <div>
                                 <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Preview </label>
@@ -210,9 +344,11 @@ const selectIcon = (icon: string) => {
                                     <div class="flex items-center">
                                         <div
                                             class="mr-3 flex h-10 w-10 items-center justify-center rounded-lg"
-                                            :style="{ backgroundColor: form.color + '20', color: form.color }"
+                                            :style="(imagePreview || (hasExistingImage && category.image_url)) ? '' : { backgroundColor: form.color + '20', color: form.color }"
                                         >
-                                            <span class="text-lg">{{ form.icon || '📁' }}</span>
+                                            <img v-if="imagePreview" :src="imagePreview" alt="Preview" class="h-10 w-10 object-cover rounded-lg" />
+                                            <img v-else-if="hasExistingImage && category.image_url" :src="category.image_url" alt="Current" class="h-10 w-10 object-cover rounded-lg" />
+                                            <span v-else class="text-lg">{{ form.icon || '📁' }}</span>
                                         </div>
                                         <div>
                                             <div class="text-sm font-medium text-gray-900 dark:text-white">
@@ -220,6 +356,12 @@ const selectIcon = (icon: string) => {
                                             </div>
                                             <div class="text-sm text-gray-500 dark:text-gray-400">
                                                 {{ form.description || 'Deskripsi kategori' }}
+                                            </div>
+                                            <div v-if="imagePreview || (hasExistingImage && category.image_url)" class="text-xs text-blue-600 dark:text-blue-400">
+                                                Menggunakan gambar kustom
+                                            </div>
+                                            <div v-else-if="form.icon" class="text-xs text-green-600 dark:text-green-400">
+                                                Menggunakan emoji icon
                                             </div>
                                         </div>
                                     </div>

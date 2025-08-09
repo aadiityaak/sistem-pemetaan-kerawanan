@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -28,6 +29,12 @@ class CategoryController extends Controller
         }
 
         $categories = $query->orderBy('sort_order')->paginate(10);
+        
+        // Append image URL to each category
+        $categories->through(function ($category) {
+            $category->append(['image_url']);
+            return $category;
+        });
 
         return Inertia::render('Categories/Index', [
             'categories' => $categories,
@@ -52,6 +59,7 @@ class CategoryController extends Controller
             'name' => 'required|string|max:255|unique:categories,name',
             'description' => 'nullable|string|max:1000',
             'icon' => 'nullable|string|max:10',
+            'image' => 'nullable|image|mimes:jpeg,jpg,png,gif,svg|max:2048',
             'color' => 'required|string|max:7',
             'is_active' => 'boolean',
             'sort_order' => 'nullable|integer|min:0',
@@ -59,6 +67,15 @@ class CategoryController extends Controller
 
         // Generate slug
         $validated['slug'] = Str::slug($validated['name']);
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('categories', 'public');
+            $validated['image_path'] = $imagePath;
+        }
+
+        // Remove image from validated data as it's not a database field
+        unset($validated['image']);
 
         // Set default sort_order if not provided
         if (! isset($validated['sort_order'])) {
@@ -79,6 +96,14 @@ class CategoryController extends Controller
         $category->load(['subCategories' => function ($query) {
             $query->orderBy('sort_order');
         }]);
+        
+        // Append image URLs to category and subcategories
+        $category->append(['image_url']);
+        if ($category->subCategories) {
+            $category->subCategories->each(function ($subCategory) {
+                $subCategory->append(['image_url']);
+            });
+        }
 
         return Inertia::render('Categories/Show', [
             'category' => $category,
@@ -90,6 +115,9 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
+        // Load the category with image URL attribute
+        $category->append(['image_url']);
+        
         return Inertia::render('Categories/Edit', [
             'category' => $category,
         ]);
@@ -104,6 +132,7 @@ class CategoryController extends Controller
             'name' => 'required|string|max:255|unique:categories,name,'.$category->id,
             'description' => 'nullable|string|max:1000',
             'icon' => 'nullable|string|max:10',
+            'image' => 'nullable|image|mimes:jpeg,jpg,png,gif,svg|max:2048',
             'color' => 'required|string|max:7',
             'is_active' => 'boolean',
             'sort_order' => 'nullable|integer|min:0',
@@ -113,6 +142,20 @@ class CategoryController extends Controller
         if ($validated['name'] !== $category->name) {
             $validated['slug'] = Str::slug($validated['name']);
         }
+
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($category->image_path) {
+                Storage::disk('public')->delete($category->image_path);
+            }
+            
+            $imagePath = $request->file('image')->store('categories', 'public');
+            $validated['image_path'] = $imagePath;
+        }
+
+        // Remove image from validated data as it's not a database field
+        unset($validated['image']);
 
         $category->update($validated);
 
@@ -137,6 +180,11 @@ class CategoryController extends Controller
                 ->with('error', 'Kategori tidak dapat dihapus karena masih digunakan dalam data monitoring.');
         }
 
+        // Delete image if exists
+        if ($category->image_path) {
+            Storage::disk('public')->delete($category->image_path);
+        }
+
         $category->delete();
 
         return redirect()->route('categories.index')
@@ -154,5 +202,20 @@ class CategoryController extends Controller
 
         return redirect()->route('categories.index')
             ->with('success', "Kategori berhasil {$status}.");
+    }
+
+    /**
+     * Delete category image
+     */
+    public function deleteImage(Category $category)
+    {
+        if ($category->image_path) {
+            Storage::disk('public')->delete($category->image_path);
+            $category->update(['image_path' => null]);
+
+            return back()->with('success', 'Gambar kategori berhasil dihapus.');
+        }
+
+        return back()->with('error', 'Kategori tidak memiliki gambar.');
     }
 }

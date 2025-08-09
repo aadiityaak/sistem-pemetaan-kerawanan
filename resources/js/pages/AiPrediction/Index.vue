@@ -7,7 +7,7 @@
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Prediksi AI</h1>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Analisis prediktif data kriminalitas menggunakan AI Gemini
+                    Analisis prediktif data menggunakan AI
                 </p>
             </div>
 
@@ -22,7 +22,7 @@
                             AI Belum Dikonfigurasi
                         </h3>
                         <p class="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
-                            Silakan aktifkan dan konfigurasi Gemini AI di halaman 
+                            Silakan aktifkan dan konfigurasi AI di halaman 
                             <a href="/settings" class="font-medium underline">Pengaturan</a> untuk menggunakan fitur prediksi.
                         </p>
                     </div>

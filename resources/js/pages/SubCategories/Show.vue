@@ -10,6 +10,8 @@ interface Category {
     slug: string;
     description?: string;
     icon?: string;
+    image_path?: string;
+    image_url?: string;
     color: string;
     is_active: boolean;
     sort_order: number;
@@ -26,6 +28,8 @@ interface SubCategory {
     slug: string;
     description?: string;
     icon?: string;
+    image_path?: string;
+    image_url?: string;
     color?: string;
     is_active: boolean;
     sort_order: number;
@@ -156,16 +160,18 @@ const printData = () => {
                                     <div class="flex items-center gap-3">
                                         <div
                                             class="flex h-12 w-12 items-center justify-center rounded-lg"
-                                            :style="{
+                                            :style="subCategory.image_url ? '' : {
                                                 backgroundColor: (subCategory.color || subCategory.category.color) + '20',
                                                 color: subCategory.color || subCategory.category.color,
                                             }"
                                         >
-                                            <span class="text-2xl">{{ subCategory.icon || '📄' }}</span>
+                                            <img v-if="subCategory.image_url" :src="subCategory.image_url" alt="Subcategory icon" class="h-12 w-12 object-contain rounded-lg" />
+                                            <span v-else class="text-2xl">{{ subCategory.icon || '📄' }}</span>
                                         </div>
                                         <div>
                                             <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                                {{ subCategory.icon || 'Tidak ada icon' }}
+                                                <span v-if="subCategory.image_url">Gambar kustom</span>
+                                                <span v-else>{{ subCategory.icon || 'Tidak ada icon' }}</span>
                                             </div>
                                             <div class="text-xs text-gray-500 dark:text-gray-400">
                                                 {{ subCategory.color || subCategory.category.color }}
@@ -202,9 +208,10 @@ const printData = () => {
                             <div class="flex items-center">
                                 <div
                                     class="mr-3 flex h-12 w-12 items-center justify-center rounded-lg"
-                                    :style="{ backgroundColor: subCategory.category.color + '20', color: subCategory.category.color }"
+                                    :style="subCategory.category.image_url ? '' : { backgroundColor: subCategory.category.color + '20', color: subCategory.category.color }"
                                 >
-                                    <span class="text-xl">{{ subCategory.category.icon || '📁' }}</span>
+                                    <img v-if="subCategory.category.image_url" :src="subCategory.category.image_url" alt="Category icon" class="h-12 w-12 object-contain rounded-lg" />
+                                    <span v-else class="text-xl">{{ subCategory.category.icon || '📁' }}</span>
                                 </div>
                                 <div>
                                     <div class="text-lg font-medium text-gray-900 dark:text-white">{{ subCategory.category.name }}</div>
@@ -303,12 +310,13 @@ const printData = () => {
                             <div class="flex items-center">
                                 <div
                                     class="mr-3 flex h-10 w-10 items-center justify-center rounded-lg"
-                                    :style="{
+                                    :style="subCategory.image_url ? '' : {
                                         backgroundColor: (subCategory.color || subCategory.category.color) + '20',
                                         color: subCategory.color || subCategory.category.color,
                                     }"
                                 >
-                                    <span class="text-lg">{{ subCategory.icon || '📄' }}</span>
+                                    <img v-if="subCategory.image_url" :src="subCategory.image_url" alt="Subcategory icon" class="h-10 w-10 object-contain rounded-lg" />
+                                    <span v-else class="text-lg">{{ subCategory.icon || '📄' }}</span>
                                 </div>
                                 <div>
                                     <div class="text-sm font-medium text-gray-900 dark:text-white">{{ subCategory.name }}</div>

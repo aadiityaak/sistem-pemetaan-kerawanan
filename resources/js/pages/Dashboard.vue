@@ -25,7 +25,7 @@ interface MonitoringData {
     kabupaten_kota: { id: number; nama: string; provinsi_id: number };
     kecamatan: { id: number; nama: string; kabupaten_kota_id: number };
     category: { id: number; name: string; slug: string; color: string };
-    sub_category: { id: number; name: string; slug: string; icon?: string };
+    sub_category: { id: number; name: string; slug: string; icon?: string; image_url?: string };
 }
 
 interface Category {
@@ -41,6 +41,7 @@ interface SubCategory {
     name: string;
     slug: string;
     icon?: string;
+    image_url?: string;
 }
 
 interface Statistics {
@@ -284,13 +285,20 @@ onMounted(async () => {
                 // Create custom HTML marker with theme color if category specific
                 const markerColor = props.selectedCategory ? currentTheme.value.color : severityConfig.color;
 
-                // Determine marker icon: sub category icon > category theme icon > severity icon
+                // Determine marker icon: sub category image > sub category icon > category theme icon > severity icon
                 let markerIcon = severityConfig.icon; // Default to severity icon
+                let hasCustomImage = false;
+                
                 if (props.selectedCategory) {
                     markerIcon = currentTheme.value.icon; // Use category theme icon if filtered
                 }
-                if (data.sub_category.icon) {
-                    markerIcon = data.sub_category.icon; // Use sub category icon if available (priority)
+                
+                if (data.sub_category.image_url) {
+                    // If subcategory has custom image, use a generic map marker icon but mark as custom
+                    markerIcon = '📍'; // Generic pin icon for custom image categories
+                    hasCustomImage = true;
+                } else if (data.sub_category.icon) {
+                    markerIcon = data.sub_category.icon; // Use sub category icon if available
                 }
 
                 const customIcon = L.divIcon({
@@ -414,7 +422,7 @@ onMounted(async () => {
                             >
                                 <option value="">Semua Sub Kategori</option>
                                 <option v-for="subCategory in subCategories" :key="subCategory.id" :value="subCategory.slug">
-                                    {{ subCategory.icon ? subCategory.icon + ' ' : '' }}{{ subCategory.name }}
+                                    {{ subCategory.image_url ? '🖼️ ' : (subCategory.icon ? subCategory.icon + ' ' : '') }}{{ subCategory.name }}
                                 </option>
                             </select>
                         </div>
@@ -777,7 +785,7 @@ onMounted(async () => {
                                 :class="selectedSubCategory && subCategoryData.name === selectedSubCategory.name ? 'bg-gray-200 dark:bg-gray-700 rounded-lg p-2 mb-2' : ''"
                             >
                                 <div class="flex items-center gap-2">
-                                    <span class="text-lg">{{ subCategoryData.icon }}</span>
+                                    <span class="text-lg">{{ subCategoryData.image_url ? '🖼️' : subCategoryData.icon }}</span>
                                     <span 
                                         class="text-sm font-medium"
                                         :class="selectedSubCategory && subCategoryData.name === selectedSubCategory.name 

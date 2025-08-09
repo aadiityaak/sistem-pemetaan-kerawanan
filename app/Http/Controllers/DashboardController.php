@@ -52,6 +52,13 @@ class DashboardController extends Controller
         }
 
         $monitoringData = $query->get();
+        
+        // Append image URLs to subcategories
+        $monitoringData->each(function ($data) {
+            if ($data->subCategory) {
+                $data->subCategory->append(['image_url']);
+            }
+        });
 
         // Hitung statistik
         $totalData = $monitoringData->count();
@@ -73,10 +80,14 @@ class DashboardController extends Controller
         $dataBySubCategory = $selectedCategory
           ? $monitoringData->groupBy('sub_category_id')->map(function ($data) {
               $subCategory = $data->first()->subCategory ?? null;
+              if ($subCategory) {
+                  $subCategory->append(['image_url']);
+              }
 
               return [
                   'name' => $subCategory->name ?? 'Unknown',
                   'icon' => $subCategory->icon ?? '📊',
+                  'image_url' => $subCategory->image_url ?? null,
                   'count' => $data->count(),
               ];
           })
@@ -99,9 +110,13 @@ class DashboardController extends Controller
               ->groupBy('sub_category_id')
               ->map(function ($data) {
                   $subCategory = $data->first()->subCategory ?? null;
+                  if ($subCategory) {
+                      $subCategory->append(['image_url']);
+                  }
                   return [
                       'name' => $subCategory->name ?? 'Unknown',
                       'icon' => $subCategory->icon ?? '📊',
+                      'image_url' => $subCategory->image_url ?? null,
                       'count' => $data->count(),
                   ];
               })
@@ -129,11 +144,19 @@ class DashboardController extends Controller
 
         // Ambil semua kategori untuk menu
         $categories = Category::all();
+        $categories->each(function ($category) {
+            $category->append(['image_url']);
+        });
         
         // Ambil subcategories jika ada kategori yang dipilih
         $subCategories = $selectedCategory 
             ? $selectedCategory->subCategories()->active()->ordered()->get()
             : collect();
+            
+        // Append image URLs to subcategories
+        $subCategories->each(function ($subCategory) {
+            $subCategory->append(['image_url']);
+        });
 
         return Inertia::render('Dashboard', [
             'monitoringData' => $monitoringData,

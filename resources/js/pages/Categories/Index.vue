@@ -11,6 +11,8 @@ interface Category {
     slug: string;
     description?: string;
     icon?: string;
+    image_path?: string;
+    image_url?: string;
     color: string;
     is_active: boolean;
     sort_order: number;
@@ -230,9 +232,10 @@ const hasActiveFilters = computed(() => {
                                     <div class="flex items-center">
                                         <div
                                             class="mr-3 flex h-10 w-10 items-center justify-center rounded-lg"
-                                            :style="{ backgroundColor: category.color + '20', color: category.color }"
+                                            :style="category.image_url ? '' : { backgroundColor: category.color + '20', color: category.color }"
                                         >
-                                            <span class="text-lg">{{ category.icon || '📁' }}</span>
+                                            <img v-if="category.image_url" :src="category.image_url" alt="Category icon" class="h-10 w-10 object-contain rounded-lg" />
+                                            <span v-else class="text-lg">{{ category.icon || '📁' }}</span>
                                         </div>
                                         <div>
                                             <div class="text-sm font-medium text-gray-900 dark:text-white">{{ category.name }}</div>

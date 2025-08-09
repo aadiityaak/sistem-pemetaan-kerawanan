@@ -111,10 +111,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Categories Routes
     Route::resource('categories', \App\Http\Controllers\CategoryController::class);
     Route::post('/categories/{category}/toggle-status', [\App\Http\Controllers\CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
+    Route::delete('/categories/{category}/delete-image', [\App\Http\Controllers\CategoryController::class, 'deleteImage'])->name('categories.delete-image');
 
     // Sub Categories Routes
     Route::resource('sub-categories', \App\Http\Controllers\SubCategoryController::class);
     Route::post('/sub-categories/{subCategory}/toggle-status', [\App\Http\Controllers\SubCategoryController::class, 'toggleStatus'])->name('sub-categories.toggle-status');
+    Route::delete('/sub-categories/{subCategory}/delete-image', [\App\Http\Controllers\SubCategoryController::class, 'deleteImage'])->name('sub-categories.delete-image');
 
     // Event Calendar Routes (Universal for Kamtibmas, Agenda, etc.)
     Route::get('/event', [KamtibmasEventController::class, 'index'])->name('event.index');

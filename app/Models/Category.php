@@ -15,6 +15,7 @@ class Category extends Model
         'slug',
         'description',
         'icon',
+        'image_path',
         'color',
         'is_active',
         'sort_order',
@@ -55,5 +56,29 @@ class Category extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy('sort_order')->orderBy('name');
+    }
+
+    /**
+     * Get the category image URL or return null
+     */
+    public function getImageUrlAttribute()
+    {
+        return $this->image_path ? asset('storage/' . $this->image_path) : null;
+    }
+
+    /**
+     * Get the effective icon (image or emoji icon)
+     */
+    public function getEffectiveIconAttribute()
+    {
+        return $this->image_path ? $this->getImageUrlAttribute() : $this->icon;
+    }
+
+    /**
+     * Check if category has custom image
+     */
+    public function hasCustomImage()
+    {
+        return !empty($this->image_path);
     }
 }

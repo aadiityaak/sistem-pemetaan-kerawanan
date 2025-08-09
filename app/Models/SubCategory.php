@@ -17,6 +17,7 @@ class SubCategory extends Model
         'slug',
         'description',
         'icon',
+        'image_path',
         'color',
         'is_active',
         'sort_order',
@@ -65,5 +66,33 @@ class SubCategory extends Model
     public function getEffectiveColorAttribute()
     {
         return $this->color ?? $this->category->color ?? '#6B7280';
+    }
+
+    /**
+     * Get the subcategory image URL or return null
+     */
+    public function getImageUrlAttribute()
+    {
+        return $this->image_path ? asset('storage/' . $this->image_path) : null;
+    }
+
+    /**
+     * Get the effective icon (image, emoji icon, or parent category icon)
+     */
+    public function getEffectiveIconAttribute()
+    {
+        if ($this->image_path) {
+            return $this->getImageUrlAttribute();
+        }
+        
+        return $this->icon ?? $this->category->effective_icon ?? $this->category->icon;
+    }
+
+    /**
+     * Check if subcategory has custom image
+     */
+    public function hasCustomImage()
+    {
+        return !empty($this->image_path);
     }
 }
