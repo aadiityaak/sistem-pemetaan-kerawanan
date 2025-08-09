@@ -28,6 +28,9 @@ class DashboardController extends Controller
         if ($categorySlug) {
             $selectedCategory = Category::where('slug', $categorySlug)->first();
             if ($selectedCategory) {
+                // Append image URL to selected category
+                $selectedCategory->append(['image_url']);
+                
                 $query->where('category_id', $selectedCategory->id);
                 
                 // Filter berdasarkan subcategory jika ada
@@ -36,6 +39,8 @@ class DashboardController extends Controller
                         ->where('category_id', $selectedCategory->id)
                         ->first();
                     if ($selectedSubCategory) {
+                        // Append image URL to selected subcategory
+                        $selectedSubCategory->append(['image_url']);
                         $query->where('sub_category_id', $selectedSubCategory->id);
                     }
                 }

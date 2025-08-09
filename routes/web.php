@@ -32,25 +32,43 @@ Route::get('/api/kecamatan/{kabupaten_kota_id}', function ($kabupaten_kota_id) {
 });
 
 Route::get('/api/categories', function () {
-    return \App\Models\Category::active()->ordered()->select('id', 'name', 'slug')->get();
+    $categories = \App\Models\Category::active()->ordered()->select('id', 'name', 'slug', 'icon', 'image_path')->get();
+    $categories->each(function ($category) {
+        $category->append(['image_url']);
+    });
+    return $categories;
 });
 
 Route::get('/api/categories-with-subcategories', function () {
-    return \App\Models\Category::active()
+    $categories = \App\Models\Category::active()
         ->ordered()
         ->with(['subCategories' => function ($query) {
-            $query->active()->ordered()->select('id', 'category_id', 'name', 'slug');
+            $query->active()->ordered()->select('id', 'category_id', 'name', 'slug', 'icon', 'image_path');
         }])
-        ->select('id', 'name', 'slug')
+        ->select('id', 'name', 'slug', 'icon', 'image_path')
         ->get();
+    
+    // Append image URLs to categories and subcategories
+    $categories->each(function ($category) {
+        $category->append(['image_url']);
+        $category->subCategories->each(function ($subCategory) {
+            $subCategory->append(['image_url']);
+        });
+    });
+    
+    return $categories;
 });
 
 Route::get('/api/sub-categories/{category_id}', function ($category_id) {
-    return \App\Models\SubCategory::where('category_id', $category_id)
+    $subCategories = \App\Models\SubCategory::where('category_id', $category_id)
         ->active()
         ->ordered()
-        ->select('id', 'name', 'slug', 'category_id')
+        ->select('id', 'name', 'slug', 'category_id', 'icon', 'image_path')
         ->get();
+    $subCategories->each(function ($subCategory) {
+        $subCategory->append(['image_url']);
+    });
+    return $subCategories;
 });
 
 Route::get('/', function () {

@@ -325,12 +325,14 @@ onMounted(async () => {
                     icon: customIcon,
                 }).addTo(map);
 
-                // Add popup with sub category icon or image if available
-                const popupIcon = data.sub_category.image_url ? '🖼️' : (data.sub_category.icon || '📊');
+                // Add popup with sub category icon or image if available  
+                const popupIcon = data.sub_category.image_url 
+                    ? `<img src="${data.sub_category.image_url}" alt="Subcategory" style="width: 16px; height: 16px; object-fit: contain; border-radius: 2px;">` 
+                    : `<span style="font-size: 16px;">${data.sub_category.icon || '📊'}</span>`;
                 marker.bindPopup(`
                     <div class="p-3">
                         <div class="flex items-center gap-2 mb-2">
-                            <span class="text-lg">${popupIcon}</span>
+                            <div class="flex items-center justify-center" style="min-width: 20px;">${popupIcon}</div>
                             <div class="font-semibold text-sm" style="color: ${markerColor}">${data.title}</div>
                         </div>
                         <div class="text-xs text-gray-600 mt-1">
@@ -376,18 +378,18 @@ onMounted(async () => {
                     <div class="flex items-center">
                         <div
                             class="mr-4 flex h-12 w-12 items-center justify-center rounded-lg"
-                            :class="selectedCategory ? currentTheme.bgColor : 'bg-gray-100 dark:bg-gray-900'"
+                            :class="selectedCategory?.image_url ? 'bg-gray-50 dark:bg-gray-800' : (selectedCategory ? currentTheme.bgColor : 'bg-gray-100 dark:bg-gray-900')"
                         >
-                            <img v-if="selectedCategory?.image_url" :src="selectedCategory.image_url" alt="Category icon" class="h-8 w-8 object-contain" />
+                            <img v-if="selectedCategory?.image_url" :src="selectedCategory.image_url" alt="Category icon" class="h-10 w-10 object-contain rounded" />
                             <span v-else class="text-2xl">{{ selectedCategory ? (selectedCategory.icon || currentTheme.icon) : '📊' }}</span>
                         </div>
                         <div>
-                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                                {{ selectedSubCategory 
-                                    ? `Dashboard ${selectedCategory?.name} - ${selectedSubCategory.name}` 
-                                    : selectedCategory 
-                                    ? `Dashboard ${selectedCategory.name}` 
-                                    : 'Dashboard Monitoring' }}
+                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                <span>Dashboard</span>
+                                <template v-if="selectedSubCategory">
+                                    <span>{{ selectedSubCategory.name }}</span>
+                                </template>
+                                <span v-if="!selectedCategory">Monitoring</span>
                             </h1>
                             <p class="text-gray-600 dark:text-gray-400">
                                 {{ selectedSubCategory
@@ -796,7 +798,10 @@ onMounted(async () => {
                                 :class="selectedSubCategory && subCategoryData.name === selectedSubCategory.name ? 'bg-gray-200 dark:bg-gray-700 rounded-lg p-2 mb-2' : ''"
                             >
                                 <div class="flex items-center gap-2">
-                                    <span class="text-lg">{{ subCategoryData.image_url ? '🖼️' : subCategoryData.icon }}</span>
+                                    <div class="flex items-center justify-center w-5 h-5">
+                                        <img v-if="subCategoryData.image_url" :src="subCategoryData.image_url" alt="Subcategory" class="w-4 h-4 object-contain rounded" />
+                                        <span v-else class="text-lg">{{ subCategoryData.icon }}</span>
+                                    </div>
                                     <span 
                                         class="text-sm font-medium"
                                         :class="selectedSubCategory && subCategoryData.name === selectedSubCategory.name 
