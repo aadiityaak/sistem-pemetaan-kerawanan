@@ -2,6 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useInitials } from '@/composables/useInitials';
 import type { User } from '@/types';
+import { LocateIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
 
 interface Props {
@@ -30,5 +31,8 @@ const showAvatar = computed(() => props.user.avatar && props.user.avatar !== '')
     <div class="grid flex-1 text-left text-sm leading-tight">
         <span class="truncate font-medium">{{ user.name }}</span>
         <span v-if="showEmail" class="truncate text-xs text-muted-foreground">{{ user.email }}</span>
+        <span v-else-if="user.role === 'user' && user.provinsi" class="truncate text-xs text-muted-foreground">
+            <LocateIcon class="mr-1 inline-block h-4 w-4" /> {{ user.provinsi.nama }}
+        </span>
     </div>
 </template>

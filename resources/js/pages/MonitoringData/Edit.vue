@@ -74,6 +74,8 @@ const props = defineProps<{
     kabupatenKota: KabupatenKota[];
     kecamatan: Kecamatan[];
     categories: Category[];
+    isUserRestricted?: boolean;
+    userProvinsiId?: number;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -548,7 +550,8 @@ onMounted(() => {
                                     <select
                                         v-model="form.provinsi_id"
                                         required
-                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                        :disabled="props.isUserRestricted"
+                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         <option value="">Pilih Provinsi</option>
                                         <option v-for="prov in provinsi" :key="prov.id" :value="prov.id">

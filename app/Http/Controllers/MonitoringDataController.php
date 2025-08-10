@@ -292,7 +292,7 @@ class MonitoringDataController extends Controller
         ]);
     }
 
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
         $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])->findOrFail($id);
         $categories = Category::active()->ordered()->with('subCategories')->get();
@@ -305,11 +305,26 @@ class MonitoringDataController extends Controller
             });
         });
         
-        $provinsi = Provinsi::orderBy('nama')->get();
+        // Filter provinces based on user's permission
+        $provinsiQuery = Provinsi::orderBy('nama');
+        if ($request->has('province_filter')) {
+            $provinsiQuery->where('id', $request->input('province_filter'));
+        }
+        $provinsi = $provinsiQuery->get();
 
-        // Send all kabupaten/kota and kecamatan for dynamic filtering in frontend
-        $kabupatenKota = KabupatenKota::orderBy('nama')->get();
-        $kecamatan = Kecamatan::orderBy('nama')->get();
+        // Filter kabupaten/kota and kecamatan based on user's province
+        $kabupatenKotaQuery = KabupatenKota::orderBy('nama');
+        $kecamatanQuery = Kecamatan::orderBy('nama');
+        
+        if ($request->has('province_filter')) {
+            $kabupatenKotaQuery->where('provinsi_id', $request->input('province_filter'));
+            $kecamatanQuery->whereHas('kabupatenKota', function ($q) use ($request) {
+                $q->where('provinsi_id', $request->input('province_filter'));
+            });
+        }
+        
+        $kabupatenKota = $kabupatenKotaQuery->get();
+        $kecamatan = $kecamatanQuery->get();
 
         return Inertia::render('MonitoringData/Edit', [
             'monitoringData' => $monitoringData,
@@ -317,6 +332,8 @@ class MonitoringDataController extends Controller
             'provinsi' => $provinsi,
             'kabupatenKota' => $kabupatenKota,
             'kecamatan' => $kecamatan,
+            'isUserRestricted' => $request->has('province_filter'),
+            'userProvinsiId' => $request->input('province_filter'),
         ]);
     }
 

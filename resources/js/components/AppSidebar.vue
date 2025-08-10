@@ -35,12 +35,14 @@ const isAdmin = computed(() => {
     return page.props.auth?.user?.role === 'admin';
 });
 
-const mainNavItems = ref<NavItem[]>([
+// Main nav items (computed to handle admin-only items)
+const mainNavItems = computed<NavItem[]>(() => {
+    const baseItems: NavItem[] = [
     {
         title: 'IPOLEKSOSBUDKAM',
         href: '/dashboard',
         icon: LayoutGrid,
-        items: [], // Will be populated dynamically with categories and subcategories
+        items: dashboardItems.value, // Use computed dashboard items
     },
     {
         title: 'ISU NEGATIF ANGGOTA BRIMOB',
@@ -72,16 +74,20 @@ const mainNavItems = ref<NavItem[]>([
         href: '/ai-prediction',
         icon: Brain,
     },
-    {
-        title: 'DATA CENTER',
-        href: '/monitoring-data',
-        icon: ShieldAlert,
-        items: [
-            {
-                title: 'Data Monitoring',
-                href: '/monitoring-data',
-                icon: Database,
-            },
+    ];
+
+    // Add DATA CENTER menu with role-based items
+    const dataCenterItems = [
+        {
+            title: 'Data Monitoring',
+            href: '/monitoring-data',
+            icon: Database,
+        },
+    ];
+
+    // Add admin-only category management items
+    if (isAdmin.value) {
+        dataCenterItems.push(
             {
                 title: 'Kategori',
                 href: '/categories',
@@ -91,10 +97,19 @@ const mainNavItems = ref<NavItem[]>([
                 title: 'Sub Kategori',
                 href: '/sub-categories',
                 icon: FileText,
-            },
-        ],
-    },
-]);
+            }
+        );
+    }
+
+    baseItems.push({
+        title: 'DATA CENTER',
+        href: '/monitoring-data',
+        icon: ShieldAlert,
+        items: dataCenterItems,
+    });
+
+    return baseItems;
+});
 
 // Settings nav items for sidebar footer (computed to include admin-only items)
 const settingsNavItems = computed<NavItem[]>(() => {
@@ -153,44 +168,41 @@ interface SubCategory {
     slug: string;
 }
 
+// Reactive categories data
+const categories = ref<Category[]>([]);
+
 // Load categories and subcategories dynamically
 const loadCategoriesMenu = async () => {
     try {
         const response = await fetch('/api/categories-with-subcategories');
-        const categories: Category[] = await response.json();
-        
-        // Map categories to navigation items for Dashboard submenu
-        const dashboardItems: NavItem[] = categories.map(category => ({
-            title: category.name,
-            href: `/dashboard?category=${category.slug}`,
-            icon: getIconForCategory(category.slug),
-            items: category.sub_categories.map(subCategory => ({
-                title: subCategory.name,
-                href: `/dashboard?category=${category.slug}&subcategory=${subCategory.slug}`,
-                icon: Tags, // Default icon for subcategories
-            }))
-        }));
-
-        // Update the Dashboard menu items (search by href instead of title)
-        const dashboardMenuIndex = mainNavItems.value.findIndex(item => item.href === '/dashboard');
-        if (dashboardMenuIndex !== -1) {
-            mainNavItems.value[dashboardMenuIndex].items = dashboardItems;
-        }
+        categories.value = await response.json();
     } catch (error) {
         console.error('Failed to load categories menu:', error);
-        // Fallback to static menu if API fails (search by href instead of title)
-        const dashboardMenuIndex = mainNavItems.value.findIndex(item => item.href === '/dashboard');
-        if (dashboardMenuIndex !== -1) {
-            mainNavItems.value[dashboardMenuIndex].items = [
-                {
-                    title: 'Keamanan',
-                    href: '/dashboard?category=keamanan',
-                    icon: Shield,
-                },
-            ];
-        }
+        // Set fallback categories
+        categories.value = [
+            {
+                id: 1,
+                name: 'Keamanan',
+                slug: 'keamanan',
+                sub_categories: []
+            }
+        ];
     }
 };
+
+// Computed dashboard items based on loaded categories
+const dashboardItems = computed<NavItem[]>(() => {
+    return categories.value.map(category => ({
+        title: category.name,
+        href: `/dashboard?category=${category.slug}`,
+        icon: getIconForCategory(category.slug),
+        items: category.sub_categories.map(subCategory => ({
+            title: subCategory.name,
+            href: `/dashboard?category=${category.slug}&subcategory=${subCategory.slug}`,
+            icon: Tags, // Default icon for subcategories
+        }))
+    }));
+});
 
 // Get appropriate icon for category based on slug
 const getIconForCategory = (slug: string) => {
