@@ -9,7 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 
-class KamtibmasEventController extends Controller
+class EventController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -22,6 +22,7 @@ class KamtibmasEventController extends Controller
         
         // Get event filter parameter
         $eventFilter = $request->get('event'); // kamtibmas, agenda, etc.
+        $categoryFilter = $request->get('category'); // direct category filter
         $agendaType = $request->get('agenda_type'); // nasional, internasional (for agenda filter)
         
         // Get events for the current view (month view - get events for 6 weeks around the month)
@@ -30,8 +31,12 @@ class KamtibmasEventController extends Controller
         
         $eventsQuery = Event::active()->inDateRange($startDate, $endDate);
         
+        // Filter by direct category if specified
+        if ($categoryFilter) {
+            $eventsQuery->where('category', $categoryFilter);
+        }
         // Filter by event type/category if specified
-        if ($eventFilter) {
+        else if ($eventFilter) {
             switch ($eventFilter) {
                 case 'kamtibmas':
                     $eventsQuery->where('category', 'Kamtibmas');
@@ -92,7 +97,10 @@ class KamtibmasEventController extends Controller
             ->whereYear('start_date', $date->year);
             
         // Apply same filter for statistics
-        if ($eventFilter) {
+        if ($categoryFilter) {
+            $monthlyEventsQuery->where('category', $categoryFilter);
+        }
+        else if ($eventFilter) {
             switch ($eventFilter) {
                 case 'kamtibmas':
                     $monthlyEventsQuery->where('category', 'Kamtibmas');
@@ -131,7 +139,7 @@ class KamtibmasEventController extends Controller
 
         // Get Indonesian holidays (only for Kamtibmas view)
         $holidays = [];
-        if ($eventFilter === 'kamtibmas') {
+        if ($eventFilter === 'kamtibmas' || $categoryFilter === 'Kamtibmas') {
             $holidays = $this->getIndonesianHolidays($date->year);
         }
 
@@ -142,6 +150,7 @@ class KamtibmasEventController extends Controller
             'holidays' => $holidays,
             'categories' => Event::getCategories(),
             'eventFilter' => $eventFilter,
+            'categoryFilter' => $categoryFilter,
             'agendaType' => $agendaType,
         ]);
     }

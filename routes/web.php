@@ -2,10 +2,10 @@
 
 use App\Http\Controllers\AppSettingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\IndasController;
 use App\Http\Controllers\KabupatenKotaController;
 use App\Http\Controllers\KecamatanController;
-use App\Http\Controllers\KamtibmasEventController;
 use App\Http\Controllers\MonitoringDataController;
 use App\Http\Controllers\ProvinsiController;
 use Illuminate\Support\Facades\Route;
@@ -133,22 +133,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/sub-categories/{subCategory}/delete-image', [\App\Http\Controllers\SubCategoryController::class, 'deleteImage'])->name('sub-categories.delete-image');
 
     // Event Calendar Routes (Universal for Kamtibmas, Agenda, etc.)
-    Route::get('/event', [KamtibmasEventController::class, 'index'])->name('event.index');
-    Route::post('/event', [KamtibmasEventController::class, 'store'])->name('event.store');
-    Route::get('/event/{event}', [KamtibmasEventController::class, 'show'])->name('event.show');
-    Route::put('/event/{event}', [KamtibmasEventController::class, 'update'])->name('event.update');
-    Route::delete('/event/{event}', [KamtibmasEventController::class, 'destroy'])->name('event.destroy');
-    Route::post('/event/{event}/toggle-status', [KamtibmasEventController::class, 'toggleStatus'])->name('event.toggle-status');
+    Route::get('/event', [EventController::class, 'index'])->name('event.index');
+    Route::post('/event', [EventController::class, 'store'])->name('event.store');
+    Route::get('/event/{event}', [EventController::class, 'show'])->name('event.show');
+    Route::put('/event/{event}', [EventController::class, 'update'])->name('event.update');
+    Route::delete('/event/{event}', [EventController::class, 'destroy'])->name('event.destroy');
+    Route::post('/event/{event}/toggle-status', [EventController::class, 'toggleStatus'])->name('event.toggle-status');
+    
+    // Specific route for Agenda Internal Korp Brimob POLRI
+    Route::get('/agenda-internal-korp-brimob', function() {
+        return redirect('/event?category=Agenda Internal Korp Brimob POLRI');
+    })->name('agenda-internal-korp-brimob.index');
     
     // Legacy routes for backward compatibility
     Route::get('/kamtibmas-calendar', function() {
         return redirect('/event?event=kamtibmas');
     });
-    Route::post('/kamtibmas-events', [KamtibmasEventController::class, 'store'])->name('kamtibmas-events.store');
-    Route::get('/kamtibmas-events/{event}', [KamtibmasEventController::class, 'show'])->name('kamtibmas-events.show');
-    Route::put('/kamtibmas-events/{event}', [KamtibmasEventController::class, 'update'])->name('kamtibmas-events.update');
-    Route::delete('/kamtibmas-events/{event}', [KamtibmasEventController::class, 'destroy'])->name('kamtibmas-events.destroy');
-    Route::post('/kamtibmas-events/{event}/toggle-status', [KamtibmasEventController::class, 'toggleStatus'])->name('kamtibmas-events.toggle-status');
+    Route::post('/kamtibmas-events', [EventController::class, 'store'])->name('kamtibmas-events.store');
+    Route::get('/kamtibmas-events/{event}', [EventController::class, 'show'])->name('kamtibmas-events.show');
+    Route::put('/kamtibmas-events/{event}', [EventController::class, 'update'])->name('kamtibmas-events.update');
+    Route::delete('/kamtibmas-events/{event}', [EventController::class, 'destroy'])->name('kamtibmas-events.destroy');
+    Route::post('/kamtibmas-events/{event}/toggle-status', [EventController::class, 'toggleStatus'])->name('kamtibmas-events.toggle-status');
 
 
     // User Management Routes (Admin only)

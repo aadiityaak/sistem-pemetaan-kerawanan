@@ -108,6 +108,7 @@ class Event extends Model
         return [
             'Agenda Nasional',
             'Agenda Internasional', 
+            'Agenda Internal Korp Brimob POLRI',
             'Kamtibmas',
             'Meeting',
             'Training',

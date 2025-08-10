@@ -30,6 +30,7 @@ const props = defineProps<{
     holidays: any[];
     categories: Record<string, string>;
     eventFilter?: string;
+    categoryFilter?: string;
     agendaType?: string;
 }>();
 
@@ -40,10 +41,38 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/dashboard',
     },
     {
-        title: props.eventFilter === 'agenda' ? 'Agenda' : 'Kalender Kamtibmas',
-        href: props.eventFilter === 'agenda' ? '/event?event=agenda' : '/event?event=kamtibmas',
+        title: getPageTitle(),
+        href: getCurrentHref(),
     },
 ];
+
+function getPageTitle() {
+    if (props.categoryFilter === 'Agenda Internal Korp Brimob POLRI') {
+        return 'Agenda Internal Korp Brimob POLRI';
+    }
+    return props.eventFilter === 'agenda' ? 'Agenda' : 'Kalender Kamtibmas';
+}
+
+function getCurrentHref() {
+    if (props.categoryFilter === 'Agenda Internal Korp Brimob POLRI') {
+        return '/agenda-internal-korp-brimob';
+    }
+    return props.eventFilter === 'agenda' ? '/event?event=agenda' : '/event?event=kamtibmas';
+}
+
+function getPageDescription() {
+    if (props.categoryFilter === 'Agenda Internal Korp Brimob POLRI') {
+        return 'Kelola agenda dan kegiatan internal Korps Brimob POLRI';
+    }
+    return props.eventFilter === 'agenda' ? 'Kelola agenda dan event organisasi' : 'Jadwal kegiatan Keamanan dan Ketertiban Masyarakat';
+}
+
+function getDefaultCategory() {
+    if (props.categoryFilter === 'Agenda Internal Korp Brimob POLRI') {
+        return 'Agenda Internal Korp Brimob POLRI';
+    }
+    return props.eventFilter === 'agenda' ? 'Agenda Nasional' : 'Kamtibmas';
+}
 
 // Calendar state
 const currentDate = ref(new Date(props.currentDate));
@@ -60,7 +89,7 @@ const eventForm = ref({
     start_date: '',
     end_date: '',
     description: '',
-    category: props.eventFilter === 'agenda' ? 'Agenda Nasional' : 'Kamtibmas',
+    category: getDefaultCategory(),
     color: '#3B82F6',
 });
 
@@ -226,7 +255,15 @@ const goToToday = () => {
 
 const navigateToMonth = () => {
     const dateParam = currentDate.value.toISOString().slice(0, 7); // YYYY-MM
-    const params: any = { date: dateParam, event: props.eventFilter };
+    const params: any = { date: dateParam };
+    
+    if (props.eventFilter) {
+        params.event = props.eventFilter;
+    }
+    
+    if (props.categoryFilter) {
+        params.category = props.categoryFilter;
+    }
     
     // Add agenda type filter if in agenda view
     if (props.eventFilter === 'agenda' && selectedAgendaType.value && selectedAgendaType.value !== 'all') {
@@ -399,10 +436,8 @@ const editEvent = async (event: KamtibmasEvent) => {
 
 const resetForm = () => {
     // Set default category based on current filter
-    let defaultCategory = 'Kamtibmas';
-    if (props.eventFilter === 'agenda') {
-        defaultCategory = 'Agenda Nasional';
-    } else if (availableCategories.value.length > 0) {
+    let defaultCategory = getDefaultCategory();
+    if (!availableCategories.value.includes(defaultCategory) && availableCategories.value.length > 0) {
         defaultCategory = availableCategories.value[0];
     }
     
@@ -490,7 +525,15 @@ const saveEvent = async () => {
             
             // Refresh the page with current date parameters to show updated events
             const currentDateParam = currentDate.value.toISOString().slice(0, 7); // YYYY-MM
-            const params: any = { date: currentDateParam, event: props.eventFilter };
+            const params: any = { date: currentDateParam };
+            
+            if (props.eventFilter) {
+                params.event = props.eventFilter;
+            }
+            
+            if (props.categoryFilter) {
+                params.category = props.categoryFilter;
+            }
             
             // Add agenda type filter if in agenda view
             if (props.eventFilter === 'agenda' && selectedAgendaType.value && selectedAgendaType.value !== 'all') {
@@ -552,7 +595,15 @@ const deleteEvent = async (event: KamtibmasEvent) => {
                 
                 // Refresh the page with current date parameters to show updated events
                 const currentDateParam = currentDate.value.toISOString().slice(0, 7); // YYYY-MM
-                const params: any = { date: currentDateParam, event: props.eventFilter };
+                const params: any = { date: currentDateParam };
+                
+                if (props.eventFilter) {
+                    params.event = props.eventFilter;
+                }
+                
+                if (props.categoryFilter) {
+                    params.category = props.categoryFilter;
+                }
                 
                 // Add agenda type filter if in agenda view
                 if (props.eventFilter === 'agenda' && selectedAgendaType.value && selectedAgendaType.value !== 'all') {
@@ -647,7 +698,7 @@ const colorPresets = [
 </script>
 
 <template>
-    <Head :title="props.eventFilter === 'agenda' ? 'Agenda - Calendar Event' : 'Kalender Kamtibmas'" />
+    <Head :title="getPageTitle()" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-1 flex-col gap-6 rounded-xl p-6">
@@ -655,10 +706,10 @@ const colorPresets = [
             <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                        {{ props.eventFilter === 'agenda' ? 'Agenda - Calendar Event' : 'Kalender Kamtibmas' }}
+                        {{ getPageTitle() }}
                     </h1>
                     <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        {{ props.eventFilter === 'agenda' ? 'Kelola agenda dan event organisasi' : 'Jadwal kegiatan Keamanan dan Ketertiban Masyarakat' }}
+                        {{ getPageDescription() }}
                     </p>
                 </div>
                 <div class="flex gap-3">

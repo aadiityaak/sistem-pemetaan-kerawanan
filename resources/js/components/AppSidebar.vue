@@ -58,6 +58,11 @@ const mainNavItems = ref<NavItem[]>([
         icon: CalendarDays,
     },
     {
+        title: 'AGENDA INTERNAL KORP BRIMOB POLRI',
+        href: '/agenda-internal-korp-brimob',
+        icon: Calendar,
+    },
+    {
         title: 'INDAS',
         href: '/indas',
         icon: ScrollText,
