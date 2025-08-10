@@ -17,6 +17,11 @@ class MonitoringDataController extends Controller
     {
         $query = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory']);
 
+        // Apply province filter for non-admin users
+        if ($request->has('province_filter')) {
+            $query->where('provinsi_id', $request->input('province_filter'));
+        }
+
         // Set default date range to last 6 months if not provided
         $defaultStartDate = now()->subMonths(6)->format('Y-m-d');
         $defaultEndDate = now()->format('Y-m-d');
@@ -115,6 +120,12 @@ class MonitoringDataController extends Controller
 
         // Statistik sesuai dengan yang diharapkan Vue component - apply date filters
         $statsQuery = MonitoringData::query();
+        
+        // Apply province filter for non-admin users in statistics
+        if ($request->has('province_filter')) {
+            $statsQuery->where('provinsi_id', $request->input('province_filter'));
+        }
+        
         if ($startDate) {
             $statsQuery->whereDate('incident_date', '>=', $startDate);
         }
@@ -145,7 +156,7 @@ class MonitoringDataController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $categories = Category::active()->ordered()->with('subCategories')->get();
         
@@ -157,9 +168,26 @@ class MonitoringDataController extends Controller
             });
         });
         
-        $provinsiList = Provinsi::orderBy('nama')->get();
-        $kabupatenKotaList = KabupatenKota::orderBy('nama')->get();
-        $kecamatanList = Kecamatan::orderBy('nama')->get();
+        // Filter provinces based on user's permission
+        $provinsiQuery = Provinsi::orderBy('nama');
+        if ($request->has('province_filter')) {
+            $provinsiQuery->where('id', $request->input('province_filter'));
+        }
+        $provinsiList = $provinsiQuery->get();
+        
+        // Filter kabupaten/kota and kecamatan based on user's province
+        $kabupatenKotaQuery = KabupatenKota::orderBy('nama');
+        $kecamatanQuery = Kecamatan::orderBy('nama');
+        
+        if ($request->has('province_filter')) {
+            $kabupatenKotaQuery->where('provinsi_id', $request->input('province_filter'));
+            $kecamatanQuery->whereHas('kabupatenKota', function ($q) use ($request) {
+                $q->where('provinsi_id', $request->input('province_filter'));
+            });
+        }
+        
+        $kabupatenKotaList = $kabupatenKotaQuery->get();
+        $kecamatanList = $kecamatanQuery->get();
 
         return Inertia::render('MonitoringData/Create', [
             'categories' => $categories,
@@ -171,6 +199,13 @@ class MonitoringDataController extends Controller
 
     public function store(Request $request)
     {
+        // Check if user can access this province
+        if ($request->has('province_filter')) {
+            $request->validate([
+                'provinsi_id' => 'required|in:' . $request->input('province_filter'),
+            ]);
+        }
+        
         $validated = $request->validate([
             'provinsi_id' => 'required|exists:provinsi,id',
             'kabupaten_kota_id' => 'required|exists:kabupaten_kota,id',

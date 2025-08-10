@@ -4,6 +4,11 @@ import { Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 
 // Define types
+interface Provinsi {
+    id: number;
+    nama: string;
+}
+
 interface User {
     id: number;
     name: string;
@@ -12,6 +17,7 @@ interface User {
     is_active: boolean;
     last_login_at?: string;
     created_at: string;
+    provinsi?: Provinsi;
 }
 
 interface PaginatedUsers {
@@ -298,6 +304,9 @@ const toggleUserStatus = (user: User) => {
                                     Role
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                    Province
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
                                     Status
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
@@ -313,7 +322,7 @@ const toggleUserStatus = (user: User) => {
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                             <tr v-if="users.data.length === 0">
-                                <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No users found</td>
+                                <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No users found</td>
                             </tr>
                             <tr v-else v-for="user in users.data" :key="user.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <td class="px-6 py-4">
@@ -328,6 +337,14 @@ const toggleUserStatus = (user: User) => {
                                         class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
                                     >
                                         {{ user.role === 'admin' ? '👑 Admin' : '👤 User' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                                    <span v-if="user.provinsi" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                                        🌍 {{ user.provinsi.nama }}
+                                    </span>
+                                    <span v-else class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                                        🌐 All Provinces
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">

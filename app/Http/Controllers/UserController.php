@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Provinsi;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -12,7 +13,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query();
+        $query = User::with('provinsi');
 
         // Search functionality
         if ($request->has('search') && $request->search != '') {
@@ -52,7 +53,11 @@ class UserController extends Controller
 
     public function create()
     {
-        return Inertia::render('Users/Create');
+        $provinsiList = Provinsi::orderBy('nama')->get();
+        
+        return Inertia::render('Users/Create', [
+            'provinsiList' => $provinsiList,
+        ]);
     }
 
     public function store(Request $request)
@@ -63,6 +68,7 @@ class UserController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:admin,user',
             'is_active' => 'boolean',
+            'provinsi_id' => 'nullable|exists:provinsi,id',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -76,6 +82,8 @@ class UserController extends Controller
 
     public function show(User $user)
     {
+        $user->load('provinsi');
+        
         return Inertia::render('Users/Show', [
             'user' => $user
         ]);
@@ -83,8 +91,12 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
+        $user->load('provinsi');
+        $provinsiList = Provinsi::orderBy('nama')->get();
+        
         return Inertia::render('Users/Edit', [
-            'user' => $user
+            'user' => $user,
+            'provinsiList' => $provinsiList,
         ]);
     }
 
@@ -102,6 +114,7 @@ class UserController extends Controller
             'password' => 'nullable|string|min:8|confirmed',
             'role' => 'required|in:admin,user',
             'is_active' => 'boolean',
+            'provinsi_id' => 'nullable|exists:provinsi,id',
         ]);
 
         // Don't allow users to demote themselves from admin

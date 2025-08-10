@@ -29,6 +29,11 @@ class DashboardController extends Controller
         // Query monitoring data
         $query = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory']);
 
+        // Apply province filter for non-admin users
+        if ($request->has('province_filter')) {
+            $query->where('provinsi_id', $request->input('province_filter'));
+        }
+
         // Filter berdasarkan category jika ada
         if ($categorySlug) {
             $selectedCategory = Category::where('slug', $categorySlug)->first();
@@ -113,10 +118,18 @@ class DashboardController extends Controller
 
         // Hitung berdasarkan semua sub kategori dalam kategori (untuk analytics card)
         // Ini akan selalu menampilkan semua subcategories berdasarkan kategori yang dipilih
-        $allSubCategoriesData = $selectedCategory 
+        $allSubCategoriesQuery = $selectedCategory 
           ? MonitoringData::with(['subCategory'])
               ->where('category_id', $selectedCategory->id)
-              ->get()
+          : MonitoringData::with(['subCategory']);
+          
+        // Apply province filter for non-admin users in subcategory analytics
+        if ($request->has('province_filter')) {
+            $allSubCategoriesQuery->where('provinsi_id', $request->input('province_filter'));
+        }
+        
+        $allSubCategoriesData = $selectedCategory 
+          ? $allSubCategoriesQuery->get()
               ->groupBy('sub_category_id')
               ->map(function ($data) {
                   $subCategory = $data->first()->subCategory ?? null;

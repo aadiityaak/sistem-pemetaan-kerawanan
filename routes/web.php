@@ -71,7 +71,7 @@ Route::get('/api/sub-categories/{category_id}', function ($category_id) {
     return $subCategories;
 });
 
-Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified', 'province.filter'])->name('dashboard');
 
 // Dashboard dengan parameter category (contoh: /dashboard?category=keamanan)
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -103,15 +103,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/kecamatan', [KecamatanController::class, 'index'])->name('kecamatan.index');
     Route::get('/kecamatan/{id}', [KecamatanController::class, 'show'])->name('kecamatan.show');
 
-    // Monitoring Data Routes
-    Route::get('/monitoring-data', [MonitoringDataController::class, 'index'])->name('monitoring-data.index');
-    Route::get('/monitoring-data/create', [MonitoringDataController::class, 'create'])->name('monitoring-data.create');
-    Route::post('/monitoring-data', [MonitoringDataController::class, 'store'])->name('monitoring-data.store');
-    Route::get('/monitoring-data/{id}', [MonitoringDataController::class, 'show'])->name('monitoring-data.show');
-    Route::get('/monitoring-data/{id}/edit', [MonitoringDataController::class, 'edit'])->name('monitoring-data.edit');
-    Route::put('/monitoring-data/{id}', [MonitoringDataController::class, 'update'])->name('monitoring-data.update');
-    Route::delete('/monitoring-data/{id}', [MonitoringDataController::class, 'destroy'])->name('monitoring-data.destroy');
-    Route::delete('/monitoring-data/{id}/gallery', [MonitoringDataController::class, 'deleteGalleryImage'])->name('monitoring-data.delete-gallery');
+    // Monitoring Data Routes - Apply province filter for non-admin users
+    Route::middleware(['province.filter'])->group(function () {
+        Route::get('/monitoring-data', [MonitoringDataController::class, 'index'])->name('monitoring-data.index');
+        Route::get('/monitoring-data/create', [MonitoringDataController::class, 'create'])->name('monitoring-data.create');
+        Route::post('/monitoring-data', [MonitoringDataController::class, 'store'])->name('monitoring-data.store');
+        Route::get('/monitoring-data/{id}', [MonitoringDataController::class, 'show'])->name('monitoring-data.show');
+        Route::get('/monitoring-data/{id}/edit', [MonitoringDataController::class, 'edit'])->name('monitoring-data.edit');
+        Route::put('/monitoring-data/{id}', [MonitoringDataController::class, 'update'])->name('monitoring-data.update');
+        Route::delete('/monitoring-data/{id}', [MonitoringDataController::class, 'destroy'])->name('monitoring-data.destroy');
+        Route::delete('/monitoring-data/{id}/gallery', [MonitoringDataController::class, 'deleteGalleryImage'])->name('monitoring-data.delete-gallery');
+    });
 
     // AI Prediction Routes
     Route::get('/ai-prediction', [\App\Http\Controllers\AiPredictionController::class, 'index'])->name('ai-prediction.index');

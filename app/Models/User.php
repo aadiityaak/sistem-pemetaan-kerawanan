@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -23,6 +24,7 @@ class User extends Authenticatable
         'password',
         'role',
         'is_active',
+        'provinsi_id',
     ];
 
     /**
@@ -80,5 +82,27 @@ class User extends Authenticatable
     public function updateLastLogin(): void
     {
         $this->update(['last_login_at' => now()]);
+    }
+
+    /**
+     * Get the provinsi that owns the user
+     */
+    public function provinsi(): BelongsTo
+    {
+        return $this->belongsTo(Provinsi::class);
+    }
+
+    /**
+     * Check if user can access data from specific province
+     */
+    public function canAccessProvinsi(?int $provinsiId): bool
+    {
+        // Admin can access all provinces
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        // User can only access their own province
+        return $this->provinsi_id === $provinsiId;
     }
 }

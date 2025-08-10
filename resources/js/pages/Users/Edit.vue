@@ -2,6 +2,11 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
+interface Provinsi {
+    id: number;
+    nama: string;
+}
+
 interface User {
     id: number;
     name: string;
@@ -12,10 +17,13 @@ interface User {
     created_at: string;
     updated_at: string;
     email_verified_at?: string;
+    provinsi_id?: number;
+    provinsi?: Provinsi;
 }
 
 const props = defineProps<{
     user: User;
+    provinsiList: Provinsi[];
 }>();
 
 const form = useForm({
@@ -25,6 +33,7 @@ const form = useForm({
     password_confirmation: '',
     role: props.user.role,
     is_active: props.user.is_active,
+    provinsi_id: props.user.provinsi_id ?? null,
 });
 
 const submit = () => {
@@ -182,6 +191,31 @@ const submit = () => {
                             </p>
                         </div>
 
+                        <!-- Province Selection -->
+                        <div>
+                            <label for="provinsi_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Province
+                            </label>
+                            <select
+                                v-model="form.provinsi_id"
+                                id="provinsi_id"
+                                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            >
+                                <option :value="null">Select Province</option>
+                                <option v-for="provinsi in props.provinsiList" :key="provinsi.id" :value="provinsi.id">
+                                    {{ provinsi.nama }}
+                                </option>
+                            </select>
+                            <div v-if="form.errors.provinsi_id" class="mt-1 text-sm text-red-600 dark:text-red-400">
+                                {{ form.errors.provinsi_id }}
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                Current Province: <span class="font-medium">{{ user.provinsi?.nama || 'None assigned' }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-1 border-t border-gray-200 dark:border-gray-700 pt-6">
                         <!-- Active Status -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
