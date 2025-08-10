@@ -677,7 +677,7 @@ onMounted(async () => {
                                     : 'Semua Data' }}</span>
                             </div>
                         </div>
-                        <div ref="mapContainer" class="h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
+                        <div ref="mapContainer" class="h-96 rounded-lg border border-gray-200 dark:border-gray-700 relative z-0"></div>
                     </div>
 
                     <!-- Monitoring Data Table -->
@@ -754,14 +754,10 @@ onMounted(async () => {
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="text-sm space-y-1">
-                                                <div class="flex items-center gap-1">
-                                                    <img v-if="data.category.image_url" :src="data.category.image_url" alt="Category icon" class="h-4 w-4 object-contain" />
-                                                    <span v-else-if="data.category.icon" class="text-xs">{{ data.category.icon }}</span>
+                                                <div>
                                                     <span class="font-medium text-gray-900 dark:text-white">{{ data.category.name }}</span>
                                                 </div>
-                                                <div class="flex items-center gap-1">
-                                                    <img v-if="data.sub_category.image_url" :src="data.sub_category.image_url" alt="Subcategory icon" class="h-3 w-3 object-contain" />
-                                                    <span v-else-if="data.sub_category.icon" class="text-xs">{{ data.sub_category.icon }}</span>
+                                                <div>
                                                     <span class="text-gray-500 dark:text-gray-400">{{ data.sub_category.name }}</span>
                                                 </div>
                                             </div>
