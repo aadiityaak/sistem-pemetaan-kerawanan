@@ -934,7 +934,7 @@ onMounted(async () => {
 
                     <!-- Severity Level Distribution -->
                     <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">📊 Tingkat Keparahan</h3>
+                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">📊 Tingkat Resiko</h3>
                         <div class="space-y-3">
                             <div v-for="(config, severity) in severityIcons" :key="severity" class="flex items-center gap-3">
                                 <span class="text-lg">{{ config.icon }}</span>

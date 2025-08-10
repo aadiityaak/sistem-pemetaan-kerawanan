@@ -24,7 +24,7 @@ class AiPredictionController extends Controller
     public function index()
     {
         $categories = Category::active()->ordered()->with('subCategories')->get();
-        
+
         return Inertia::render('AiPrediction/Index', [
             'categories' => $categories,
             'geminiEnabled' => $this->geminiService->isEnabled(),
@@ -47,7 +47,7 @@ class AiPredictionController extends Controller
                     'error' => 'Gemini AI tidak aktif. Silakan aktifkan di pengaturan.',
                 ], 400);
             }
-            
+
             return back()->withErrors([
                 'error' => 'Gemini AI tidak aktif. Silakan aktifkan di pengaturan.'
             ]);
@@ -72,16 +72,16 @@ class AiPredictionController extends Controller
             ->get();
 
         if ($crimeData->isEmpty()) {
-            $errorMessage = $subCategoryId 
+            $errorMessage = $subCategoryId
                 ? 'Tidak ada data kriminalitas untuk sub-kategori ini dalam 6 bulan terakhir.'
                 : 'Tidak ada data kriminalitas untuk kategori ini dalam 6 bulan terakhir.';
-                
+
             if ($request->wantsJson()) {
                 return response()->json([
                     'error' => $errorMessage,
                 ], 404);
             }
-            
+
             return back()->withErrors([
                 'error' => $errorMessage
             ]);
@@ -131,14 +131,14 @@ class AiPredictionController extends Controller
                         'error' => 'Gagal mendapatkan analisis dari AI. Silakan coba lagi.',
                     ], 500);
                 }
-                
+
                 return back()->withErrors([
                     'error' => 'Gagal mendapatkan analisis dari AI. Silakan coba lagi.'
                 ]);
             }
 
             $subCategory = $subCategoryId ? \App\Models\SubCategory::find($subCategoryId) : null;
-            
+
             $result = [
                 'success' => true,
                 'analysis' => $aiAnalysis,
@@ -156,14 +156,13 @@ class AiPredictionController extends Controller
 
             // Return Inertia response for form submissions
             return back()->with('analysisResult', $result);
-
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return response()->json([
                     'error' => 'Terjadi kesalahan saat menganalisis data: ' . $e->getMessage(),
                 ], 500);
             }
-            
+
             return back()->withErrors([
                 'error' => 'Terjadi kesalahan saat menganalisis data: ' . $e->getMessage()
             ]);
@@ -176,11 +175,11 @@ class AiPredictionController extends Controller
     private function createAnalysisPrompt(string $categoryName, array $crimeData, array $statistics): string
     {
         $prompt = "Sebagai seorang ahli analisis kriminalitas, analisis data kejahatan kategori '{$categoryName}' berikut:\n\n";
-        
+
         $prompt .= "STATISTIK UMUM:\n";
         $prompt .= "- Total kasus: " . $statistics['total_cases'] . "\n";
         $prompt .= "- Periode: 6 bulan terakhir\n";
-        $prompt .= "- Distribusi tingkat keparahan: " . json_encode($statistics['severity_distribution']) . "\n";
+        $prompt .= "- Distribusi Tingkat Resiko: " . json_encode($statistics['severity_distribution']) . "\n";
         $prompt .= "- Trend bulanan: " . json_encode($statistics['monthly_trend']) . "\n\n";
 
         $prompt .= "LOKASI DENGAN KASUS TERBANYAK:\n";
@@ -208,28 +207,28 @@ class AiPredictionController extends Controller
         $prompt .= "   - Identifikasi pola waktu (hari, minggu, bulan)\n";
         $prompt .= "   - Trend peningkatan atau penurunan\n";
         $prompt .= "   - Faktor musiman yang mempengaruhi\n\n";
-        
+
         $prompt .= "2. **ANALISIS GEOGRAFIS**\n";
         $prompt .= "   - Wilayah dengan risiko tinggi\n";
         $prompt .= "   - Pola penyebaran geografis\n";
         $prompt .= "   - Faktor lokasi yang berkontribusi\n\n";
-        
+
         $prompt .= "3. **PREDIKSI DAN PROYEKSI**\n";
         $prompt .= "   - Prediksi trend 6 bulan ke depan berdasarkan data 6 bulan terakhir\n";
         $prompt .= "   - Wilayah yang berpotensi mengalami peningkatan\n";
         $prompt .= "   - Estimasi dampak berdasarkan data historis\n";
         $prompt .= "   - Proyeksi pola musiman dan siklus tahunan\n\n";
-        
+
         $prompt .= "4. **REKOMENDASI STRATEGIS**\n";
         $prompt .= "   - Prioritas penanganan berdasarkan tingkat risiko\n";
         $prompt .= "   - Strategi pencegahan yang dapat diterapkan\n";
         $prompt .= "   - Alokasi sumber daya yang optimal\n\n";
-        
+
         $prompt .= "5. **FAKTOR RISIKO**\n";
         $prompt .= "   - Identifikasi faktor pemicu utama\n";
         $prompt .= "   - Kondisi yang meningkatkan kemungkinan kejadian\n";
         $prompt .= "   - Indikator peringatan dini\n\n";
-        
+
         $prompt .= "Format jawaban dengan struktur yang jelas menggunakan markdown dan berikan insight yang actionable untuk pengambilan keputusan.";
 
         return $prompt;

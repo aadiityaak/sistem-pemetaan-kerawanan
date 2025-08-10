@@ -178,7 +178,7 @@
                 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <!-- Severity Distribution Chart -->
                     <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                        <h4 class="mb-4 text-base font-semibold text-gray-900 dark:text-white">Distribusi Tingkat Keparahan</h4>
+                        <h4 class="mb-4 text-base font-semibold text-gray-900 dark:text-white">Distribusi Tingkat Resiko</h4>
                         <div class="relative h-64">
                             <canvas ref="severityChartRef"></canvas>
                         </div>

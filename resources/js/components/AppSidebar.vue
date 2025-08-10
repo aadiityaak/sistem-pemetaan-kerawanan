@@ -86,12 +86,16 @@ const mainNavItems = computed<NavItem[]>(() => {
             },
         ],
     },
-    {
-        title: 'PREDIKSI AI',
-        href: '/ai-prediction',
-        icon: Brain,
-    },
     ];
+
+    // Add admin-only PREDIKSI AI menu
+    if (isAdmin.value) {
+        baseItems.push({
+            title: 'PREDIKSI AI',
+            href: '/ai-prediction',
+            icon: Brain,
+        });
+    }
 
     // Add DATA CENTER menu with role-based items
     const dataCenterItems = [

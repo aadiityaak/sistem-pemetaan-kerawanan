@@ -115,9 +115,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/monitoring-data/{id}/gallery', [MonitoringDataController::class, 'deleteGalleryImage'])->name('monitoring-data.delete-gallery');
     });
 
-    // AI Prediction Routes
-    Route::get('/ai-prediction', [\App\Http\Controllers\AiPredictionController::class, 'index'])->name('ai-prediction.index');
-    Route::post('/ai-prediction/analyze', [\App\Http\Controllers\AiPredictionController::class, 'analyze'])->name('ai-prediction.analyze');
+    // AI Prediction Routes (Admin only)
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/ai-prediction', [\App\Http\Controllers\AiPredictionController::class, 'index'])->name('ai-prediction.index');
+        Route::post('/ai-prediction/analyze', [\App\Http\Controllers\AiPredictionController::class, 'analyze'])->name('ai-prediction.analyze');
+    });
 
     // INDAS Routes - Economic, Tourism & Social Analysis System
     Route::middleware(['province.filter'])->group(function () {

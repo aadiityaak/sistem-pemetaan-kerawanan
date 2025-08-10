@@ -8,7 +8,7 @@
 
 ### 1.1 Deskripsi Umum
 
-Crime Map adalah aplikasi web modern berbasis Laravel 11 dan Vue 3 yang dirancang untuk memvisualisasikan, menganalisis, dan memonitor data kriminalitas di seluruh wilayah Indonesia. Aplikasi ini menggunakan peta interaktif untuk memberikan insight mendalam tentang distribusi kejahatan berdasarkan geografis, kategori, dan tingkat keparahan.
+Crime Map adalah aplikasi web modern berbasis Laravel 11 dan Vue 3 yang dirancang untuk memvisualisasikan, menganalisis, dan memonitor data kriminalitas di seluruh wilayah Indonesia. Aplikasi ini menggunakan peta interaktif untuk memberikan insight mendalam tentang distribusi kejahatan berdasarkan geografis, kategori, dan Tingkat Resiko.
 
 ### 1.2 Tujuan Pembelajaran
 
@@ -140,14 +140,14 @@ crime-map/
 - **Interactive Dashboard**: Overview statistik real-time
 - **Filter by Category**: Filter data berdasarkan kategori
 - **Geographic Statistics**: Statistik per provinsi, kabupaten, kecamatan
-- **Severity Analysis**: Analisis tingkat keparahan (Low, Medium, High, Critical)
+- **Severity Analysis**: Analisis Tingkat Resiko (Low, Medium, High, Critical)
 - **Status Monitoring**: Tracking status (Active, Resolved, Monitoring, Archived)
 
 ### 4.3 Pemetaan Interaktif
 
 - **Leaflet.js Integration**: Peta interaktif dengan zoom dan pan
 - **Marker Clustering**: Pengelompokan marker untuk performa optimal
-- **Custom Markers**: Marker berbeda per kategori dan tingkat keparahan
+- **Custom Markers**: Marker berbeda per kategori dan Tingkat Resiko
 - **Popup Information**: Detail lengkap kejadian dalam popup
 - **Layer Control**: Toggle visibility berbagai layer data
 
@@ -183,7 +183,7 @@ crime-map/
 
 - **Geographic Input**: Latitude/longitude dengan map picker
 - **Category Selection**: Dropdown kategori dan sub-kategori
-- **Severity Levels**: 4 tingkat keparahan (Low → Critical)
+- **Severity Levels**: 4 Tingkat Resiko (Low → Critical)
 - **Status Tracking**: Lifecycle management (Active → Resolved)
 - **Additional Data**: JSON field untuk data custom per kategori
 - **Source Attribution**: Tracking sumber data
