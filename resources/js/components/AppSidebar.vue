@@ -75,7 +75,7 @@ const mainNavItems = computed<NavItem[]>(() => {
                 icon: LayoutGrid,
             },
             {
-                title: 'Data Entry',
+                title: 'Input Data',
                 href: '/indas/data-entry',
                 icon: Database,
             },

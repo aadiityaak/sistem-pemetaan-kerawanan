@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             MonitoringDataSeeder::class,
             AppSettingSeeder::class,
+            IndasIndicatorTypeSeeder::class,
         ]);
     }
 }

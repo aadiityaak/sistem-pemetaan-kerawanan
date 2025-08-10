@@ -68,6 +68,13 @@
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400">
                           {{ indicator.unit }}
                         </span>
+                        <button
+                          @click="confirmDelete(indicator)"
+                          class="p-1 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
+                          title="Delete indicator"
+                        >
+                          <TrashIcon class="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                     <p v-if="indicator.description" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -116,6 +123,13 @@
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400">
                           {{ indicator.unit }}
                         </span>
+                        <button
+                          @click="confirmDelete(indicator)"
+                          class="p-1 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
+                          title="Delete indicator"
+                        >
+                          <TrashIcon class="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                     <p v-if="indicator.description" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -164,6 +178,13 @@
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400">
                           {{ indicator.unit }}
                         </span>
+                        <button
+                          @click="confirmDelete(indicator)"
+                          class="p-1 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
+                          title="Delete indicator"
+                        >
+                          <TrashIcon class="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                     <p v-if="indicator.description" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -290,6 +311,52 @@
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal && indicatorToDelete" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" @click="closeDeleteModal">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800" @click.stop>
+        <div class="mt-3">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Delete Indicator</h3>
+            <button @click="closeDeleteModal" class="text-gray-400 hover:text-gray-600">
+              <XMarkIcon class="h-5 w-5" />
+            </button>
+          </div>
+          
+          <div class="mb-4">
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">
+              Are you sure you want to delete this indicator?
+            </p>
+            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+              <h4 class="font-medium text-gray-900 dark:text-white">{{ indicatorToDelete.name }}</h4>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Category: {{ indicatorToDelete.category }} • Weight: {{ indicatorToDelete.weight_factor }} • Unit: {{ indicatorToDelete.unit }}
+              </p>
+            </div>
+            <p class="text-xs text-red-600 dark:text-red-400 mt-2">
+              <strong>Warning:</strong> This action cannot be undone. The indicator will be permanently deleted.
+            </p>
+          </div>
+
+          <div class="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              @click="closeDeleteModal"
+              class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              @click="deleteIndicator"
+              :disabled="isDeleting"
+              class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+            >
+              {{ isDeleting ? 'Deleting...' : 'Delete' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </AppLayout>
 </template>
 
@@ -302,7 +369,8 @@ import {
   UsersIcon,
   PlusIcon,
   XMarkIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  TrashIcon
 } from '@heroicons/vue/24/outline'
 import AppLayout from '@/layouts/AppLayout.vue'
 
@@ -324,7 +392,10 @@ defineProps<{
 }>()
 
 const showAddModal = ref(false)
+const showDeleteModal = ref(false)
 const isSubmitting = ref(false)
+const isDeleting = ref(false)
+const indicatorToDelete = ref<Indicator | null>(null)
 
 const form = reactive({
   category: '',
@@ -368,6 +439,36 @@ const submitForm = async () => {
   } catch (error) {
     console.error('Error adding indicator:', error)
     isSubmitting.value = false
+  }
+}
+
+const confirmDelete = (indicator: Indicator) => {
+  indicatorToDelete.value = indicator
+  showDeleteModal.value = true
+}
+
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+  indicatorToDelete.value = null
+}
+
+const deleteIndicator = async () => {
+  if (!indicatorToDelete.value) return
+  
+  isDeleting.value = true
+  
+  try {
+    await router.delete(route('indas.indicators.delete', indicatorToDelete.value.id), {
+      onSuccess: () => {
+        closeDeleteModal()
+      },
+      onFinish: () => {
+        isDeleting.value = false
+      }
+    })
+  } catch (error) {
+    console.error('Error deleting indicator:', error)
+    isDeleting.value = false
   }
 }
 </script>

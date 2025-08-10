@@ -30,22 +30,22 @@ interface AnalysisResult {
       nama: string
     }
   }
-  economic_score: number
-  tourism_score: number
-  social_score: number
-  total_score: number
-  economic_trend: number | null
-  tourism_trend: number | null
-  social_trend: number | null
-  total_trend: number | null
+  economic_score: number | string | null
+  tourism_score: number | string | null
+  social_score: number | string | null
+  total_score: number | string | null
+  economic_trend: number | string | null
+  tourism_trend: number | string | null
+  social_trend: number | string | null
+  total_trend: number | string | null
 }
 
 interface Stats {
   total_regions: number
-  avg_economic_score: number
-  avg_tourism_score: number
-  avg_social_score: number
-  avg_total_score: number
+  avg_economic_score: number | string | null
+  avg_tourism_score: number | string | null
+  avg_social_score: number | string | null
+  avg_total_score: number | string | null
 }
 
 interface DemoPoint {
@@ -145,19 +145,25 @@ const updatePeriod = () => {
   })
 }
 
-const formatScore = (score: number) => {
-  return score ? score.toFixed(1) : '0.0'
+const formatScore = (score: number | string | null | undefined) => {
+  if (score === null || score === undefined || score === '') return '0.0'
+  const numScore = typeof score === 'string' ? parseFloat(score) : score
+  return isNaN(numScore) ? '0.0' : numScore.toFixed(1)
 }
 
-const formatTrend = (trend: number | null) => {
-  if (trend === null) return '-'
-  return trend >= 0 ? `+${trend.toFixed(1)}` : trend.toFixed(1)
+const formatTrend = (trend: number | string | null | undefined) => {
+  if (trend === null || trend === undefined || trend === '') return '-'
+  const numTrend = typeof trend === 'string' ? parseFloat(trend) : trend
+  if (isNaN(numTrend)) return '-'
+  return numTrend >= 0 ? `+${numTrend.toFixed(1)}` : numTrend.toFixed(1)
 }
 
-const getTrendClass = (trend: number | null) => {
-  if (trend === null) return 'text-gray-400'
-  if (trend > 0) return 'text-green-600 dark:text-green-400'
-  if (trend < 0) return 'text-red-600 dark:text-red-400'
+const getTrendClass = (trend: number | string | null | undefined) => {
+  if (trend === null || trend === undefined || trend === '') return 'text-gray-400'
+  const numTrend = typeof trend === 'string' ? parseFloat(trend) : trend
+  if (isNaN(numTrend)) return 'text-gray-400'
+  if (numTrend > 0) return 'text-green-600 dark:text-green-400'
+  if (numTrend < 0) return 'text-red-600 dark:text-red-400'
   return 'text-gray-600 dark:text-gray-400'
 }
 
@@ -719,10 +725,10 @@ const showRegionDetails = (kabupatenKotaId: number) => {
             </div>
             <div class="mt-8">
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                Data Entry
+                Input Data
               </h3>
               <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Enter monthly indicator data and trigger automatic calculations
+                Masukkan data indikator bulanan dan jalankan kalkulasi otomatis
               </p>
             </div>
           </Link>

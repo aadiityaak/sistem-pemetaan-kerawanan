@@ -1,14 +1,14 @@
 <template>
-  <AppLayout title="INDAS - Data Entry">
+  <AppLayout title="INDAS - Input Data">
     <div class="py-12">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-8">
           <div class="sm:flex sm:items-center sm:justify-between">
             <div>
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Data Entry</h1>
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Input Data</h1>
               <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Enter monthly indicator values for INDAS analysis
+                Masukkan nilai indikator bulanan untuk analisis INDAS
               </p>
             </div>
             <div class="mt-4 sm:mt-0">
@@ -25,9 +25,9 @@
         <!-- Filter Card -->
         <div class="bg-white dark:bg-gray-800 shadow rounded-lg mb-8">
           <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Filters</h3>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Filter</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Select period and region for data entry
+              Pilih periode dan wilayah untuk input data
             </p>
           </div>
           
@@ -131,7 +131,7 @@
               <!-- Calculate Button -->
               <div class="space-y-1">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Actions
+                  Aksi
                 </label>
                 <button
                   @click="calculateAll"
@@ -140,7 +140,7 @@
                 >
                   <CalculatorIcon v-if="!isCalculating" class="h-4 w-4 mr-2" />
                   <ArrowPathIcon v-else class="h-4 w-4 mr-2 animate-spin" />
-                  {{ isCalculating ? 'Calculating...' : 'Calculate' }}
+                  {{ isCalculating ? 'Menghitung...' : 'Hitung' }}
                 </button>
               </div>
             </div>
@@ -153,7 +153,7 @@
                 </div>
                 <div class="ml-3">
                   <p class="text-sm font-medium text-blue-800 dark:text-blue-200">
-                    Entering data for: {{ selectedKabupatenKota.nama }}, {{ selectedKabupatenKota.provinsi.nama }}
+                    Input data untuk: {{ selectedKabupatenKota.nama }}, {{ selectedKabupatenKota.provinsi.nama }}
                   </p>
                   <p class="text-xs text-blue-600 dark:text-blue-300">
                     Period: {{ months[selectedMonth - 1] }} {{ selectedYear }}

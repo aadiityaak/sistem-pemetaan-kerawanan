@@ -126,6 +126,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/indas', [IndasController::class, 'index'])->name('indas.index');
         Route::get('/indas/indicators', [IndasController::class, 'indicators'])->name('indas.indicators');
         Route::post('/indas/indicators', [IndasController::class, 'storeIndicator'])->name('indas.indicators.store');
+        Route::delete('/indas/indicators/{id}', [IndasController::class, 'deleteIndicator'])->name('indas.indicators.delete');
         Route::get('/indas/data-entry', [IndasController::class, 'dataEntry'])->name('indas.data-entry');
         Route::post('/indas/data', [IndasController::class, 'storeData'])->name('indas.data.store');
         Route::post('/indas/calculate', [IndasController::class, 'calculateAll'])->name('indas.calculate');

@@ -104,6 +104,22 @@ class IndasController extends Controller
         return redirect()->back()->with('success', 'Indicator added successfully');
     }
 
+    public function deleteIndicator(Request $request, $id)
+    {
+        $indicator = IndasIndicatorType::findOrFail($id);
+        
+        // Check if indicator has associated data
+        $hasData = IndasMonthlyData::where('indicator_type_id', $id)->exists();
+        
+        if ($hasData) {
+            return redirect()->back()->with('error', 'Cannot delete indicator that has associated data. Delete the data first.');
+        }
+        
+        $indicator->delete();
+        
+        return redirect()->back()->with('success', 'Indicator deleted successfully');
+    }
+
     public function dataEntry(Request $request)
     {
         $user = $request->user();
