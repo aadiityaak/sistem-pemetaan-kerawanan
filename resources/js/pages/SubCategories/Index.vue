@@ -115,8 +115,13 @@ const clearFilters = () => {
     router.get('/sub-categories');
 };
 
-const deleteSubCategory = (id: number) => {
-    if (confirm('Apakah Anda yakin ingin menghapus sub kategori ini? Pastikan tidak ada data monitoring yang terkait.')) {
+const deleteSubCategory = (id: number, monitoringDataCount: number = 0) => {
+    if (monitoringDataCount > 0) {
+        alert(`Sub kategori ini tidak dapat dihapus karena masih digunakan dalam ${monitoringDataCount} data monitoring. Silakan hapus data monitoring terkait terlebih dahulu atau nonaktifkan sub kategori ini.`);
+        return;
+    }
+    
+    if (confirm('Apakah Anda yakin ingin menghapus sub kategori ini?')) {
         router.delete(`/sub-categories/${id}`, {
             preserveScroll: true,
         });
@@ -294,9 +299,17 @@ const hasActiveFilters = computed(() => {
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <span class="text-sm font-medium text-gray-900 dark:text-white">
+                                    <span 
+                                        class="text-sm font-medium"
+                                        :class="(subCategory.monitoring_data_count || 0) > 0 
+                                            ? 'text-blue-600 dark:text-blue-400' 
+                                            : 'text-gray-900 dark:text-white'"
+                                    >
                                         {{ subCategory.monitoring_data_count || 0 }}
                                     </span>
+                                    <div v-if="(subCategory.monitoring_data_count || 0) > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        📌 Ada data
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4">
                                     <span
@@ -364,10 +377,16 @@ const hasActiveFilters = computed(() => {
                                             </svg>
                                         </Button>
                                         <Button
-                                            @click="deleteSubCategory(subCategory.id)"
+                                            @click="deleteSubCategory(subCategory.id, subCategory.monitoring_data_count || 0)"
                                             variant="outline"
                                             size="sm"
-                                            class="text-red-600 hover:text-red-800"
+                                            :class="(subCategory.monitoring_data_count || 0) > 0 
+                                                ? 'text-gray-400 cursor-not-allowed' 
+                                                : 'text-red-600 hover:text-red-800'"
+                                            :disabled="(subCategory.monitoring_data_count || 0) > 0"
+                                            :title="(subCategory.monitoring_data_count || 0) > 0 
+                                                ? `Tidak dapat dihapus - masih digunakan dalam ${subCategory.monitoring_data_count} data monitoring` 
+                                                : 'Hapus sub kategori'"
                                         >
                                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path
