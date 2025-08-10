@@ -73,7 +73,7 @@ class AppSettingController extends Controller
                     'label' => 'Gemini API Endpoint',
                     'description' => 'URL endpoint Google Gemini API',
                     'type' => 'text',
-                    'value' => $this->settingsService->getSetting('gemini_api_endpoint', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent'),
+                    'value' => $this->settingsService->getSetting('gemini_api_endpoint', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'),
                 ],
                 [
                     'key' => 'gemini_api_key',
@@ -108,8 +108,14 @@ class AppSettingController extends Controller
 
         // Validate input based on setting type
         $allowedKeys = [
-            'app_name', 'app_description', 'footer_text', 'app_favicon', 'app_logo',
-            'gemini_enabled', 'gemini_api_endpoint', 'gemini_api_key'
+            'app_name',
+            'app_description',
+            'footer_text',
+            'app_favicon',
+            'app_logo',
+            'gemini_enabled',
+            'gemini_api_endpoint',
+            'gemini_api_key'
         ];
 
         if (! in_array($key, $allowedKeys)) {

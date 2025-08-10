@@ -57,10 +57,10 @@ class AiPredictionController extends Controller
         $subCategoryId = $request->sub_category_id;
         $category = Category::find($categoryId);
 
-        // Get crime data for the selected category (last 3 months)
+        // Get crime data for the selected category (last 6 months)
         $query = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])
             ->where('category_id', $categoryId)
-            ->where('created_at', '>=', now()->subMonths(3));
+            ->where('created_at', '>=', now()->subMonths(6));
 
         // Filter by sub-category if provided
         if ($subCategoryId) {
@@ -68,13 +68,13 @@ class AiPredictionController extends Controller
         }
 
         $crimeData = $query->orderBy('incident_date', 'desc')
-            ->take(50)
+            ->take(100)
             ->get();
 
         if ($crimeData->isEmpty()) {
             $errorMessage = $subCategoryId 
-                ? 'Tidak ada data kriminalitas untuk sub-kategori ini dalam 3 bulan terakhir.'
-                : 'Tidak ada data kriminalitas untuk kategori ini dalam 3 bulan terakhir.';
+                ? 'Tidak ada data kriminalitas untuk sub-kategori ini dalam 6 bulan terakhir.'
+                : 'Tidak ada data kriminalitas untuk kategori ini dalam 6 bulan terakhir.';
                 
             if ($request->wantsJson()) {
                 return response()->json([
@@ -143,7 +143,7 @@ class AiPredictionController extends Controller
                 'success' => true,
                 'analysis' => $aiAnalysis,
                 'statistics' => $statistics,
-                'data_period' => '3 bulan terakhir',
+                'data_period' => '6 bulan terakhir',
                 'total_analyzed' => $crimeData->count(),
                 'category' => $category->name,
                 'sub_category' => $subCategory ? $subCategory->name : null,
@@ -179,7 +179,7 @@ class AiPredictionController extends Controller
         
         $prompt .= "STATISTIK UMUM:\n";
         $prompt .= "- Total kasus: " . $statistics['total_cases'] . "\n";
-        $prompt .= "- Periode: 3 bulan terakhir\n";
+        $prompt .= "- Periode: 6 bulan terakhir\n";
         $prompt .= "- Distribusi tingkat keparahan: " . json_encode($statistics['severity_distribution']) . "\n";
         $prompt .= "- Trend bulanan: " . json_encode($statistics['monthly_trend']) . "\n\n";
 
@@ -190,7 +190,7 @@ class AiPredictionController extends Controller
         $prompt .= "\n";
 
         $prompt .= "SAMPLE DATA DETAIL:\n";
-        foreach (array_slice($crimeData, 0, 10) as $data) {
+        foreach (array_slice($crimeData, 0, 15) as $data) {
             $prompt .= "- Lokasi: {$data['location']}\n";
             $prompt .= "  Tanggal: {$data['date']}\n";
             $prompt .= "  Tingkat: {$data['severity']}\n";
@@ -215,9 +215,10 @@ class AiPredictionController extends Controller
         $prompt .= "   - Faktor lokasi yang berkontribusi\n\n";
         
         $prompt .= "3. **PREDIKSI DAN PROYEKSI**\n";
-        $prompt .= "   - Prediksi trend 3 bulan ke depan\n";
+        $prompt .= "   - Prediksi trend 6 bulan ke depan berdasarkan data 6 bulan terakhir\n";
         $prompt .= "   - Wilayah yang berpotensi mengalami peningkatan\n";
-        $prompt .= "   - Estimasi dampak berdasarkan data historis\n\n";
+        $prompt .= "   - Estimasi dampak berdasarkan data historis\n";
+        $prompt .= "   - Proyeksi pola musiman dan siklus tahunan\n\n";
         
         $prompt .= "4. **REKOMENDASI STRATEGIS**\n";
         $prompt .= "   - Prioritas penanganan berdasarkan tingkat risiko\n";

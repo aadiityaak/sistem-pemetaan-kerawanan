@@ -58,7 +58,7 @@ class AppSettingSeeder extends Seeder
       ],
       [
         'key' => 'logo_url',
-        'value' => null,
+        'value' => 'Logo.webp',
         'type' => 'image',
         'group' => 'appearance',
         'label' => 'Site Logo',
@@ -66,7 +66,7 @@ class AppSettingSeeder extends Seeder
       ],
       [
         'key' => 'favicon_url',
-        'value' => null,
+        'value' => 'fav.png',
         'type' => 'image',
         'group' => 'appearance',
         'label' => 'Favicon',
@@ -120,7 +120,7 @@ class AppSettingSeeder extends Seeder
       // AI Settings
       [
         'key' => 'gemini_api_endpoint',
-        'value' => 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent',
+        'value' => 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
         'type' => 'text',
         'group' => 'ai',
         'label' => 'Gemini API Endpoint',

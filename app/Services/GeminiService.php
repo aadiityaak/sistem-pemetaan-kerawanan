@@ -21,8 +21,8 @@ class GeminiService
     public function isEnabled(): bool
     {
         return $this->settingsService->getSetting('gemini_enabled', 'false') === 'true' &&
-               !empty($this->getApiKey()) &&
-               !empty($this->getEndpoint());
+            !empty($this->getApiKey()) &&
+            !empty($this->getEndpoint());
     }
 
     /**
@@ -38,7 +38,7 @@ class GeminiService
      */
     public function getEndpoint(): string
     {
-        return $this->settingsService->getSetting('gemini_api_endpoint', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent');
+        return $this->settingsService->getSetting('gemini_api_endpoint', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent');
     }
 
     /**
@@ -101,7 +101,6 @@ class GeminiService
 
             Log::error('Gemini API error: ' . $response->body());
             return null;
-
         } catch (\Exception $e) {
             Log::error('Gemini API exception: ' . $e->getMessage());
             return null;
@@ -118,7 +117,7 @@ class GeminiService
         }
 
         $prompt = "Analisis data kriminalitas berikut dan berikan insight yang berguna:\n\n";
-        
+
         foreach ($crimeData as $data) {
             $prompt .= "- Kategori: {$data['category']}\n";
             $prompt .= "  Lokasi: {$data['location']}\n";
