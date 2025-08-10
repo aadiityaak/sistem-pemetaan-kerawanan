@@ -68,6 +68,23 @@ const mainNavItems = computed<NavItem[]>(() => {
         title: 'INDAS',
         href: '/indas',
         icon: ScrollText,
+        items: [
+            {
+                title: 'Dashboard',
+                href: '/indas',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Data Entry',
+                href: '/indas/data-entry',
+                icon: Database,
+            },
+            {
+                title: 'Indicator Types',
+                href: '/indas/indicators',
+                icon: Settings,
+            },
+        ],
     },
     {
         title: 'PREDIKSI AI',

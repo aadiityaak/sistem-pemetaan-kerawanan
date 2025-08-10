@@ -119,10 +119,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/ai-prediction', [\App\Http\Controllers\AiPredictionController::class, 'index'])->name('ai-prediction.index');
     Route::post('/ai-prediction/analyze', [\App\Http\Controllers\AiPredictionController::class, 'analyze'])->name('ai-prediction.analyze');
 
-    // INDAS Routes
-    Route::get('/indas', [IndasController::class, 'index'])->name('indas.index');
-    Route::get('/indas/trends', [IndasController::class, 'trends'])->name('indas.trends');
-    Route::get('/indas/recommendations', [IndasController::class, 'recommendations'])->name('indas.recommendations');
+    // INDAS Routes - Economic, Tourism & Social Analysis System
+    Route::middleware(['province.filter'])->group(function () {
+        Route::get('/indas', [IndasController::class, 'index'])->name('indas.index');
+        Route::get('/indas/indicators', [IndasController::class, 'indicators'])->name('indas.indicators');
+        Route::post('/indas/indicators', [IndasController::class, 'storeIndicator'])->name('indas.indicators.store');
+        Route::get('/indas/data-entry', [IndasController::class, 'dataEntry'])->name('indas.data-entry');
+        Route::post('/indas/data', [IndasController::class, 'storeData'])->name('indas.data.store');
+        Route::post('/indas/calculate', [IndasController::class, 'calculateAll'])->name('indas.calculate');
+    });
 
     // Categories Routes (Admin only)
     Route::middleware(['role:admin'])->group(function () {

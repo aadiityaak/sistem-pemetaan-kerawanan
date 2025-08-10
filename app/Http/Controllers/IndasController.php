@@ -2,356 +2,325 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
-use App\Models\MonitoringData;
-use App\Models\Provinsi;
-use Carbon\Carbon;
+use App\Models\IndasRegion;
+use App\Models\IndasIndicatorType;
+use App\Models\IndasMonthlyData;
+use App\Models\IndasAnalysisResult;
+use App\Models\KabupatenKota;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class IndasController extends Controller
 {
-    /**
-     * Display INDAS main page with situation summary
-     */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
-        // Periode analisis (default: 30 hari terakhir)
-        $period = $request->query('period', 30);
-        $startDate = Carbon::now()->subDays($period);
-
-        // Ambil data monitoring dalam periode
-        $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'category', 'subCategory'])
-            ->where('incident_date', '>=', $startDate)
-            ->orderBy('incident_date', 'desc')
-            ->get();
-
-        // Hitung statistik keamanan
-        $securityStats = $this->calculateSecurityStats($monitoringData);
+        $user = $request->user();
         
-        // Analisis tren
-        $trendAnalysis = $this->analyzeTrends($monitoringData, $startDate);
+        // Get current month/year or use provided values
+        $month = $request->input('month', now()->month);
+        $year = $request->input('year', now()->year);
         
-        // Ancaman prioritas
-        $priorityThreats = $this->identifyPriorityThreats($monitoringData);
+        // Base query for analysis results
+        $query = IndasAnalysisResult::with(['kabupatenKota.provinsi'])
+            ->forPeriod($month, $year)
+            ->latest();
         
-        // Kondisi regional
-        $regionalStatus = $this->assessRegionalStatus($monitoringData);
+        // Apply province filter for non-admin users
+        if (!$user->isAdmin() && $user->provinsi_id) {
+            $query->whereHas('kabupatenKota', function ($q) use ($user) {
+                $q->where('provinsi_id', $user->provinsi_id);
+            });
+        }
         
-        // Rekomendasi keamanan
-        $recommendations = $this->generateRecommendations($monitoringData);
-
+        $analysisResults = $query->get();
+        
+        // Get summary statistics
+        $stats = [
+            'total_regions' => $analysisResults->count(),
+            'avg_economic_score' => $analysisResults->avg('economic_score') ?? 0,
+            'avg_tourism_score' => $analysisResults->avg('tourism_score') ?? 0,
+            'avg_social_score' => $analysisResults->avg('social_score') ?? 0,
+            'avg_total_score' => $analysisResults->avg('total_score') ?? 0,
+        ];
+        
         return Inertia::render('Indas/Index', [
-            'period' => $period,
-            'monitoringData' => $monitoringData,
-            'securityStats' => $securityStats,
-            'trendAnalysis' => $trendAnalysis,
-            'priorityThreats' => $priorityThreats,
-            'regionalStatus' => $regionalStatus,
-            'recommendations' => $recommendations,
-            'lastUpdated' => Carbon::now()->format('d M Y H:i'),
+            'analysisResults' => $analysisResults,
+            'currentMonth' => $month,
+            'currentYear' => $year,
+            'stats' => $stats,
         ]);
     }
 
-    /**
-     * Display trend analysis page
-     */
-    public function trends(Request $request)
+    public function regions(Request $request)
     {
-        $period = $request->query('period', 90); // 3 bulan default untuk analisis tren
-        $startDate = Carbon::now()->subDays($period);
-
-        $monitoringData = MonitoringData::with(['provinsi', 'category', 'subCategory'])
-            ->where('incident_date', '>=', $startDate)
-            ->get();
-
-        // Analisis tren per kategori
-        $categoryTrends = $this->analyzeCategoryTrends($monitoringData, $startDate, $period);
+        $user = $request->user();
         
-        // Analisis tren geografis
-        $geographicTrends = $this->analyzeGeographicTrends($monitoringData, $startDate);
+        $query = KabupatenKota::with(['provinsi']);
         
-        // Prediksi risiko
-        $riskPrediction = $this->predictRisks($monitoringData);
-
-        return Inertia::render('Indas/Trends', [
-            'period' => $period,
-            'categoryTrends' => $categoryTrends,
-            'geographicTrends' => $geographicTrends,
-            'riskPrediction' => $riskPrediction,
-            'lastUpdated' => Carbon::now()->format('d M Y H:i'),
+        // Apply province filter for non-admin users
+        if (!$user->isAdmin() && $user->provinsi_id) {
+            $query->where('provinsi_id', $user->provinsi_id);
+        }
+        
+        // Add search functionality
+        if ($request->has('search')) {
+            $query->where('nama', 'like', '%'.$request->search.'%');
+        }
+        
+        return Inertia::render('Indas/Regions', [
+            'kabupatenKota' => $query->get(),
+            'filters' => [
+                'search' => $request->search,
+            ],
         ]);
     }
 
-    /**
-     * Display recommendations page
-     */
-    public function recommendations(Request $request)
+    public function indicators()
     {
-        $period = $request->query('period', 30);
-        $startDate = Carbon::now()->subDays($period);
-
-        $monitoringData = MonitoringData::with(['provinsi', 'category', 'subCategory'])
-            ->where('incident_date', '>=', $startDate)
-            ->get();
-
-        // Rekomendasi strategis
-        $strategicRecommendations = $this->generateStrategicRecommendations($monitoringData);
-        
-        // Rekomendasi taktis
-        $tacticalRecommendations = $this->generateTacticalRecommendations($monitoringData);
-        
-        // Rekomendasi regional
-        $regionalRecommendations = $this->generateRegionalRecommendations($monitoringData);
-
-        return Inertia::render('Indas/Recommendations', [
-            'period' => $period,
-            'strategicRecommendations' => $strategicRecommendations,
-            'tacticalRecommendations' => $tacticalRecommendations,
-            'regionalRecommendations' => $regionalRecommendations,
-            'lastUpdated' => Carbon::now()->format('d M Y H:i'),
+        return Inertia::render('Indas/Indicators', [
+            'indicators' => IndasIndicatorType::active()->get()->groupBy('category'),
         ]);
     }
 
-    /**
-     * Calculate security statistics
-     */
-    private function calculateSecurityStats($monitoringData)
+    public function storeIndicator(Request $request)
     {
-        $total = $monitoringData->count();
-        $critical = $monitoringData->where('severity_level', 'critical')->count();
-        $high = $monitoringData->where('severity_level', 'high')->count();
-        $medium = $monitoringData->where('severity_level', 'medium')->count();
-        $low = $monitoringData->where('severity_level', 'low')->count();
-
-        $active = $monitoringData->where('status', 'active')->count();
-        $resolved = $monitoringData->where('status', 'resolved')->count();
-        $monitoring = $monitoringData->where('status', 'monitoring')->count();
-
-        return [
-            'total_incidents' => $total,
-            'critical_level' => $critical,
-            'high_level' => $high,
-            'medium_level' => $medium,
-            'low_level' => $low,
-            'active_cases' => $active,
-            'resolved_cases' => $resolved,
-            'monitoring_cases' => $monitoring,
-            'security_index' => $this->calculateSecurityIndex($critical, $high, $medium, $low),
-            'affected_population' => $monitoringData->sum('jumlah_terdampak'),
-            'provinces_affected' => $monitoringData->groupBy('provinsi_id')->count(),
-        ];
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'required|in:ekonomi,pariwisata,sosial',
+            'unit' => 'required|string|max:50',
+            'weight_factor' => 'required|numeric|min:0|max:1',
+            'description' => 'nullable|string',
+        ]);
+        
+        IndasIndicatorType::create($request->validated());
+        
+        return redirect()->back()->with('success', 'Indicator added successfully');
     }
 
-    /**
-     * Calculate security index (0-100, higher is better)
-     */
-    private function calculateSecurityIndex($critical, $high, $medium, $low)
+    public function dataEntry(Request $request)
     {
-        $total = $critical + $high + $medium + $low;
+        $user = $request->user();
+        $month = $request->input('month', now()->month);
+        $year = $request->input('year', now()->year);
         
-        if ($total === 0) return 100;
+        // Get available kabupaten/kota directly
+        $kabupatenKotaQuery = KabupatenKota::with(['provinsi']);
         
-        // Weighted scoring: critical=-4, high=-2, medium=-1, low=0
-        $score = ($critical * -4) + ($high * -2) + ($medium * -1) + ($low * 0);
-        $maxNegativeScore = $total * -4; // Worst case scenario
+        if (!$user->isAdmin() && $user->provinsi_id) {
+            $kabupatenKotaQuery->where('provinsi_id', $user->provinsi_id);
+        }
         
-        // Normalize to 0-100 scale
-        $index = 100 + (($score / $maxNegativeScore) * 100);
+        $kabupatenKota = $kabupatenKotaQuery->get();
+        $indicators = IndasIndicatorType::active()->get()->groupBy('category');
         
-        return max(0, min(100, round($index)));
-    }
-
-    /**
-     * Analyze trends over time
-     */
-    private function analyzeTrends($monitoringData, $startDate)
-    {
-        $days = Carbon::now()->diffInDays($startDate);
-        $midPoint = Carbon::now()->subDays($days / 2);
-        
-        $recentData = $monitoringData->where('incident_date', '>=', $midPoint);
-        $olderData = $monitoringData->where('incident_date', '<', $midPoint);
-        
-        $recentCount = $recentData->count();
-        $olderCount = $olderData->count();
-        
-        $trend = $olderCount > 0 ? (($recentCount - $olderCount) / $olderCount) * 100 : 0;
-        
-        return [
-            'overall_trend' => $trend > 5 ? 'increasing' : ($trend < -5 ? 'decreasing' : 'stable'),
-            'trend_percentage' => round(abs($trend), 1),
-            'recent_incidents' => $recentCount,
-            'previous_incidents' => $olderCount,
-            'daily_average' => round($recentCount / ($days / 2), 1),
-        ];
-    }
-
-    /**
-     * Identify priority threats
-     */
-    private function identifyPriorityThreats($monitoringData)
-    {
-        return $monitoringData
-            ->whereIn('severity_level', ['critical', 'high'])
-            ->where('status', 'active')
-            ->sortByDesc(function ($item) {
-                return $item->severity_level === 'critical' ? 2 : 1;
+        // Get existing data for the period
+        $existingData = IndasMonthlyData::with(['indicatorType'])
+            ->forPeriod($month, $year)
+            ->when(!$user->isAdmin() && $user->provinsi_id, function ($query) use ($user) {
+                $query->whereHas('kabupatenKota', function ($q) use ($user) {
+                    $q->where('provinsi_id', $user->provinsi_id);
+                });
             })
-            ->take(10)
-            ->values()
-            ->toArray();
+            ->get()
+            ->groupBy(['kabupaten_kota_id', 'indicator_type_id']);
+        
+        return Inertia::render('Indas/DataEntry', [
+            'kabupatenKota' => $kabupatenKota,
+            'indicators' => $indicators,
+            'currentMonth' => $month,
+            'currentYear' => $year,
+            'existingData' => $existingData,
+        ]);
     }
 
-    /**
-     * Assess regional security status
-     */
-    private function assessRegionalStatus($monitoringData)
+    public function storeData(Request $request)
     {
-        $regionalData = $monitoringData->groupBy('provinsi.nama')->map(function ($data, $province) {
-            $critical = $data->where('severity_level', 'critical')->count();
-            $high = $data->where('severity_level', 'high')->count();
-            $total = $data->count();
+        $request->validate([
+            'kabupaten_kota_id' => 'required|exists:kabupaten_kota,id',
+            'indicator_type_id' => 'required|exists:indas_indicator_types,id',
+            'value' => 'required|numeric|min:0',
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer|min:2020|max:2030',
+            'notes' => 'nullable|string',
+        ]);
+        
+        $user = $request->user();
+        
+        // Check access to kabupaten/kota
+        if (!$user->isAdmin() && $user->provinsi_id) {
+            $kabupatenKota = KabupatenKota::find($request->kabupaten_kota_id);
+            if (!$kabupatenKota || $kabupatenKota->provinsi_id !== $user->provinsi_id) {
+                abort(403, 'Unauthorized access to this region');
+            }
+        }
+        
+        // Update or create monthly data
+        IndasMonthlyData::updateOrCreate(
+            [
+                'kabupaten_kota_id' => $request->kabupaten_kota_id,
+                'indicator_type_id' => $request->indicator_type_id,
+                'month' => $request->month,
+                'year' => $request->year,
+            ],
+            [
+                'value' => $request->value,
+                'user_id' => $user->id,
+                'notes' => $request->notes,
+            ]
+        );
+        
+        // Trigger recalculation for this kabupaten/kota and period
+        $this->calculateScores($request->kabupaten_kota_id, $request->month, $request->year);
+        
+        return redirect()->back()->with('success', 'Data saved successfully');
+    }
+
+    public function calculateAll(Request $request)
+    {
+        $month = $request->input('month', now()->month);
+        $year = $request->input('year', now()->year);
+        $user = $request->user();
+        
+        $kabupatenKotaQuery = KabupatenKota::query();
+        
+        if (!$user->isAdmin() && $user->provinsi_id) {
+            $kabupatenKotaQuery->where('provinsi_id', $user->provinsi_id);
+        }
+        
+        $kabupatenKotaList = $kabupatenKotaQuery->get();
+        $calculatedCount = 0;
+        
+        foreach ($kabupatenKotaList as $kabupatenKota) {
+            if ($this->calculateScores($kabupatenKota->id, $month, $year)) {
+                $calculatedCount++;
+            }
+        }
+        
+        return redirect()->back()->with('success', "Calculated scores for {$calculatedCount} regions");
+    }
+
+    private function calculateScores($kabupatenKotaId, $month, $year)
+    {
+        // Get all data for this kabupaten/kota and period
+        $monthlyData = IndasMonthlyData::with('indicatorType')
+            ->where('kabupaten_kota_id', $kabupatenKotaId)
+            ->where('month', $month)
+            ->where('year', $year)
+            ->get()
+            ->groupBy('indicatorType.category');
+        
+        $scores = [
+            'economic_score' => 0,
+            'tourism_score' => 0,
+            'social_score' => 0,
+        ];
+        
+        $calculationDetails = [];
+        
+        // Calculate category scores using agreed formula
+        foreach (['ekonomi', 'pariwisata', 'sosial'] as $category) {
+            $categoryData = $monthlyData->get($category, collect());
             
-            $riskLevel = 'low';
-            if ($critical > 0 || ($high / max($total, 1)) > 0.5) {
-                $riskLevel = 'high';
-            } elseif ($high > 0 || ($total > 5)) {
-                $riskLevel = 'medium';
+            if ($categoryData->isEmpty()) {
+                $calculationDetails[$category] = ['message' => 'No data available'];
+                continue;
             }
             
-            return [
-                'province' => $province,
-                'total_incidents' => $total,
-                'critical_incidents' => $critical,
-                'high_incidents' => $high,
-                'risk_level' => $riskLevel,
-                'affected_population' => $data->sum('jumlah_terdampak'),
-            ];
-        })->sortByDesc('total_incidents')->values();
-
-        return $regionalData;
-    }
-
-    /**
-     * Generate security recommendations
-     */
-    private function generateRecommendations($monitoringData)
-    {
-        $recommendations = [];
-        
-        // Check for critical incidents
-        $critical = $monitoringData->where('severity_level', 'critical');
-        if ($critical->count() > 0) {
-            $recommendations[] = [
-                'priority' => 'high',
-                'category' => 'Respons Darurat',
-                'title' => 'Penanganan Insiden Kritis',
-                'description' => "Terdapat {$critical->count()} insiden kritis yang memerlukan respons segera.",
-                'actions' => [
-                    'Aktifkan pusat komando darurat',
-                    'Koordinasi dengan instansi terkait',
-                    'Monitor perkembangan 24/7'
-                ]
-            ];
-        }
-        
-        // Check for increasing trends
-        $trendAnalysis = $this->analyzeTrends($monitoringData, Carbon::now()->subDays(30));
-        if ($trendAnalysis['overall_trend'] === 'increasing') {
-            $recommendations[] = [
-                'priority' => 'medium',
-                'category' => 'Pencegahan',
-                'title' => 'Antisipasi Peningkatan Insiden',
-                'description' => "Tren insiden meningkat {$trendAnalysis['trend_percentage']}% dalam periode ini.",
-                'actions' => [
-                    'Tingkatkan patroli di area rawan',
-                    'Perkuat sistem early warning',
-                    'Koordinasi antar unit keamanan'
-                ]
+            $weightedSum = 0;
+            $totalWeight = 0;
+            $details = [];
+            
+            foreach ($categoryData as $data) {
+                $weight = $data->indicatorType->weight_factor;
+                $value = $data->value;
+                $weightedSum += $value * $weight;
+                $totalWeight += $weight;
+                
+                $details[] = [
+                    'indicator' => $data->indicatorType->name,
+                    'value' => $value,
+                    'weight' => $weight,
+                    'weighted_value' => $value * $weight,
+                ];
+            }
+            
+            $categoryScore = $totalWeight > 0 ? ($weightedSum / $totalWeight) : 0;
+            
+            // Map category to score field
+            $scoreField = match($category) {
+                'ekonomi' => 'economic_score',
+                'pariwisata' => 'tourism_score',
+                'sosial' => 'social_score',
+            };
+            
+            $scores[$scoreField] = $categoryScore;
+            $calculationDetails[$category] = [
+                'weighted_sum' => $weightedSum,
+                'total_weight' => $totalWeight,
+                'score' => $categoryScore,
+                'details' => $details,
             ];
         }
         
-        // Check high-risk provinces
-        $highRiskProvinces = $this->assessRegionalStatus($monitoringData)
-            ->where('risk_level', 'high')->take(3);
+        // Calculate total score with agreed weights
+        // Economic: 40%, Tourism: 35%, Social: 25%
+        $totalScore = ($scores['economic_score'] * 0.4) + 
+                     ($scores['tourism_score'] * 0.35) + 
+                     ($scores['social_score'] * 0.25);
         
-        if ($highRiskProvinces->count() > 0) {
-            $provinces = $highRiskProvinces->pluck('province')->implode(', ');
-            $recommendations[] = [
-                'priority' => 'high',
-                'category' => 'Regional',
-                'title' => 'Perhatian Khusus Wilayah Berisiko Tinggi',
-                'description' => "Provinsi berisiko tinggi: {$provinces}",
-                'actions' => [
-                    'Alokasi sumber daya tambahan',
-                    'Intensifkan koordinasi regional',
-                    'Evaluasi strategi keamanan lokal'
-                ]
-            ];
+        $scores['total_score'] = $totalScore;
+        $calculationDetails['total'] = [
+            'economic_weight' => 0.4,
+            'tourism_weight' => 0.35,
+            'social_weight' => 0.25,
+            'total_score' => $totalScore,
+        ];
+        
+        // Get previous month for trend calculation
+        $prevMonth = $month - 1;
+        $prevYear = $year;
+        
+        if ($prevMonth < 1) {
+            $prevMonth = 12;
+            $prevYear = $year - 1;
         }
-
-        return $recommendations;
-    }
-
-    /**
-     * Analyze category trends (for trends page)
-     */
-    private function analyzeCategoryTrends($monitoringData, $startDate, $period)
-    {
-        // Implementation for detailed category trend analysis
-        return $monitoringData->groupBy('category.name')->map(function ($data, $categoryName) {
-            return [
-                'category' => $categoryName,
-                'total' => $data->count(),
-                'trend' => 'stable', // Simplified for now
-                'weekly_data' => [] // Weekly breakdown data
-            ];
-        });
-    }
-
-    /**
-     * Analyze geographic trends (for trends page) 
-     */
-    private function analyzeGeographicTrends($monitoringData, $startDate)
-    {
-        // Implementation for geographic trend analysis
-        return [];
-    }
-
-    /**
-     * Predict risks based on current data (for trends page)
-     */
-    private function predictRisks($monitoringData)
-    {
-        // Implementation for risk prediction
-        return [];
-    }
-
-    /**
-     * Generate strategic recommendations (for recommendations page)
-     */
-    private function generateStrategicRecommendations($monitoringData)
-    {
-        // Implementation for strategic recommendations
-        return [];
-    }
-
-    /**
-     * Generate tactical recommendations (for recommendations page)
-     */
-    private function generateTacticalRecommendations($monitoringData)
-    {
-        // Implementation for tactical recommendations
-        return [];
-    }
-
-    /**
-     * Generate regional recommendations (for recommendations page)
-     */
-    private function generateRegionalRecommendations($monitoringData)
-    {
-        // Implementation for regional recommendations
-        return [];
+        
+        $previousResult = IndasAnalysisResult::where('kabupaten_kota_id', $kabupatenKotaId)
+            ->where('month', $prevMonth)
+            ->where('year', $prevYear)
+            ->first();
+        
+        $trends = [
+            'economic_trend' => null,
+            'tourism_trend' => null,
+            'social_trend' => null,
+            'total_trend' => null,
+        ];
+        
+        if ($previousResult) {
+            foreach (['economic', 'tourism', 'social', 'total'] as $type) {
+                $currentScore = $scores["{$type}_score"];
+                $previousScore = $previousResult->{"{$type}_score"};
+                
+                if ($previousScore > 0) {
+                    $trends["{$type}_trend"] = (($currentScore - $previousScore) / $previousScore) * 100;
+                }
+            }
+        }
+        
+        // Save analysis result
+        IndasAnalysisResult::updateOrCreate(
+            [
+                'kabupaten_kota_id' => $kabupatenKotaId,
+                'month' => $month,
+                'year' => $year,
+            ],
+            array_merge($scores, $trends, [
+                'calculation_details' => $calculationDetails,
+            ])
+        );
+        
+        return true;
     }
 }
