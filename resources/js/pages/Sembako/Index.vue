@@ -266,7 +266,19 @@ import { computed, ref, watch } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { Plus, Eye, Edit, Trash } from 'lucide-vue-next'
 import AppLayout from '@/layouts/AppLayout.vue'
-import { debounce } from 'lodash-es'
+
+// Simple debounce function
+const debounce = (func: Function, wait: number) => {
+    let timeout: ReturnType<typeof setTimeout>
+    return function executedFunction(...args: any[]) {
+        const later = () => {
+            clearTimeout(timeout)
+            func(...args)
+        }
+        clearTimeout(timeout)
+        timeout = setTimeout(later, wait)
+    }
+}
 
 interface KabupatenKota {
     id: number

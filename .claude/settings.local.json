@@ -11,7 +11,8 @@
       "Bash(composer dev:*)",
       "Bash(sed:*)",
       "Bash(timeout:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(bun run:*)"
     ],
     "deny": []
   }
