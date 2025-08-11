@@ -21,6 +21,10 @@ class PartaiPolitik extends Model
         'status_aktif' => 'boolean'
     ];
 
+    protected $appends = [
+        'logo_url'
+    ];
+
     public function jumlahSuara(): HasMany
     {
         return $this->hasMany(JumlahSuara::class, 'partai_id');

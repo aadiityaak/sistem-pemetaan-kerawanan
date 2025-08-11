@@ -47,8 +47,13 @@ class PartaiPolitikController extends Controller
             'singkatan' => 'required|string|max:50',
             'nomor_urut' => 'required|integer|unique:partai_politik,nomor_urut',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'status_aktif' => 'boolean'
+            'status_aktif' => 'sometimes|boolean'
         ]);
+
+        // Handle checkbox default value
+        if (!isset($validated['status_aktif'])) {
+            $validated['status_aktif'] = false;
+        }
 
         if ($request->hasFile('logo')) {
             $logoPath = $request->file('logo')->store('partai-logos', 'public');
@@ -87,8 +92,13 @@ class PartaiPolitikController extends Controller
             'singkatan' => 'required|string|max:50',
             'nomor_urut' => 'required|integer|unique:partai_politik,nomor_urut,' . $partaiPolitik->id,
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'status_aktif' => 'boolean'
+            'status_aktif' => 'sometimes|boolean'
         ]);
+
+        // Handle checkbox default value
+        if (!isset($validated['status_aktif'])) {
+            $validated['status_aktif'] = false;
+        }
 
         if ($request->hasFile('logo')) {
             // Delete old logo if exists
