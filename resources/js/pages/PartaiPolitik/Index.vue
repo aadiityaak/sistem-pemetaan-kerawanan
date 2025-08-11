@@ -103,6 +103,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">No. Urut</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Nama Partai</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Singkatan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Ketua Umum</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Data Suara</th>
                             <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">Aksi</th>
@@ -128,6 +129,19 @@
                                 <span class="inline-flex rounded-full bg-gray-100 px-2 text-xs font-semibold leading-5 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
                                     {{ partai.singkatan }}
                                 </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                                <div v-if="partai.nama_ketua || partai.foto_ketua_url" class="flex items-center">
+                                    <img v-if="partai.foto_ketua_url" :src="partai.foto_ketua_url" :alt="partai.nama_ketua || 'Ketua Umum'" class="mr-3 h-8 w-8 rounded-full object-cover">
+                                    <div class="mr-3 h-8 w-8 rounded-full bg-gray-300 dark:bg-gray-600" v-else></div>
+                                    <div>
+                                        <div class="font-medium">{{ partai.nama_ketua || 'Belum diisi' }}</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">Ketua Umum</div>
+                                    </div>
+                                </div>
+                                <div v-else class="text-gray-500 dark:text-gray-400 text-xs italic">
+                                    Belum diisi
+                                </div>
                             </td>
                             <td class="whitespace-nowrap px-6 py-4 text-sm">
                                 <span v-if="partai.status_aktif" class="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800 dark:bg-green-900 dark:text-green-300">
@@ -166,25 +180,28 @@
                     </tbody>
                 </table>
 
-                <!-- Empty State -->
-                <div v-if="partaiPolitik.data.length === 0" class="py-12 text-center">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">Tidak ada partai politik</h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Mulai dengan menambahkan partai politik pertama.</p>
-                    <div class="mt-6">
-                        <Link
-                            :href="route('partai-politik.create')"
-                            class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
-                        >
-                            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                <tbody v-if="partaiPolitik.data.length === 0" class="bg-white dark:bg-gray-800">
+                    <tr>
+                        <td colspan="7" class="py-12 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                             </svg>
-                            Tambah Partai
-                        </Link>
-                    </div>
-                </div>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">Tidak ada partai politik</h3>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Mulai dengan menambahkan partai politik pertama.</p>
+                            <div class="mt-6">
+                                <Link
+                                    :href="route('partai-politik.create')"
+                                    class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
+                                >
+                                    <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Tambah Partai
+                                </Link>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
             </div>
 
             <!-- Pagination -->
@@ -278,6 +295,9 @@ interface PartaiPolitik {
     nomor_urut: number
     logo_path: string | null
     logo_url: string | null
+    foto_ketua: string | null
+    foto_ketua_url: string | null
+    nama_ketua: string | null
     status_aktif: boolean
     jumlah_suara: Array<{
         id: number

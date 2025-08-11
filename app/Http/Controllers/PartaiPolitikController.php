@@ -47,6 +47,8 @@ class PartaiPolitikController extends Controller
             'singkatan' => 'required|string|max:50',
             'nomor_urut' => 'required|integer|unique:partai_politik,nomor_urut',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'nama_ketua' => 'nullable|string|max:100',
+            'foto_ketua' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status_aktif' => 'sometimes|boolean'
         ]);
 
@@ -58,6 +60,11 @@ class PartaiPolitikController extends Controller
         if ($request->hasFile('logo')) {
             $logoPath = $request->file('logo')->store('partai-logos', 'public');
             $validated['logo_path'] = $logoPath;
+        }
+
+        if ($request->hasFile('foto_ketua')) {
+            $fotoKetuaPath = $request->file('foto_ketua')->store('ketua-fotos', 'public');
+            $validated['foto_ketua'] = $fotoKetuaPath;
         }
 
         unset($validated['logo']);
@@ -92,6 +99,8 @@ class PartaiPolitikController extends Controller
             'singkatan' => 'required|string|max:50',
             'nomor_urut' => 'required|integer|unique:partai_politik,nomor_urut,' . $partaiPolitik->id,
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'nama_ketua' => 'nullable|string|max:100',
+            'foto_ketua' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status_aktif' => 'sometimes|boolean'
         ]);
 
@@ -110,6 +119,16 @@ class PartaiPolitikController extends Controller
             $validated['logo_path'] = $logoPath;
         }
 
+        if ($request->hasFile('foto_ketua')) {
+            // Delete old chairman photo if exists
+            if ($partaiPolitik->foto_ketua) {
+                Storage::delete('public/' . $partaiPolitik->foto_ketua);
+            }
+            
+            $fotoKetuaPath = $request->file('foto_ketua')->store('ketua-fotos', 'public');
+            $validated['foto_ketua'] = $fotoKetuaPath;
+        }
+
         unset($validated['logo']);
         $partaiPolitik->update($validated);
 
@@ -122,6 +141,11 @@ class PartaiPolitikController extends Controller
         // Delete logo file if exists
         if ($partaiPolitik->logo_path) {
             Storage::delete('public/' . $partaiPolitik->logo_path);
+        }
+
+        // Delete chairman photo file if exists
+        if ($partaiPolitik->foto_ketua) {
+            Storage::delete('public/' . $partaiPolitik->foto_ketua);
         }
 
         $partaiPolitik->delete();

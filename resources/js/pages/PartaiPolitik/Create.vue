@@ -123,6 +123,50 @@
                                     class="h-16 w-16 rounded-lg object-cover shadow-sm"
                                 />
                             </div>
+
+                            <!-- Nama Ketua Umum -->
+                            <div>
+                                <label for="nama_ketua" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Nama Ketua Umum
+                                </label>
+                                <input
+                                    id="nama_ketua"
+                                    v-model="form.nama_ketua"
+                                    type="text"
+                                    class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                    placeholder="Masukkan nama lengkap ketua umum"
+                                    maxlength="100"
+                                />
+                                <div v-if="form.errors.nama_ketua" class="mt-1 text-sm text-red-600">{{ form.errors.nama_ketua }}</div>
+                            </div>
+
+                            <!-- Foto Ketua Umum Upload -->
+                            <div>
+                                <label for="foto_ketua" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Foto Ketua Umum
+                                </label>
+                                <input
+                                    id="foto_ketua"
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/jpg,image/gif"
+                                    class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                    @change="handleFotoKetuaChange"
+                                />
+                                <div v-if="form.errors.foto_ketua" class="mt-1 text-sm text-red-600">{{ form.errors.foto_ketua }}</div>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    Upload foto ketua umum (format: JPG, PNG, GIF, maksimal 2MB)
+                                </p>
+                            </div>
+
+                            <!-- Preview Foto Ketua -->
+                            <div v-if="fotoKetuaPreview" class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700">
+                                <p class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Preview Foto Ketua Umum:</p>
+                                <img 
+                                    :src="fotoKetuaPreview" 
+                                    :alt="form.nama_ketua || 'Ketua Umum'"
+                                    class="h-20 w-20 rounded-lg object-cover shadow-sm"
+                                />
+                            </div>
                         </div>
 
                         <!-- Submit Button -->
@@ -164,10 +208,13 @@ const form = useForm({
     singkatan: '',
     nomor_urut: null as number | null,
     logo: null as File | null,
+    nama_ketua: '',
+    foto_ketua: null as File | null,
     status_aktif: true
 })
 
 const logoPreview = ref<string | null>(null)
+const fotoKetuaPreview = ref<string | null>(null)
 
 const handleLogoChange = (event: Event) => {
     const target = event.target as HTMLInputElement
@@ -185,6 +232,25 @@ const handleLogoChange = (event: Event) => {
     } else {
         form.logo = null
         logoPreview.value = null
+    }
+}
+
+const handleFotoKetuaChange = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+    
+    if (file) {
+        form.foto_ketua = file
+        
+        // Create preview URL
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            fotoKetuaPreview.value = e.target?.result as string
+        }
+        reader.readAsDataURL(file)
+    } else {
+        form.foto_ketua = null
+        fotoKetuaPreview.value = null
     }
 }
 

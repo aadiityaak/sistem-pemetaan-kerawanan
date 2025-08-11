@@ -92,6 +92,33 @@
                                         </span>
                                     </dd>
                                 </div>
+
+                                <!-- Ketua Umum -->
+                                <div class="mb-3">
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Ketua Umum</dt>
+                                    <dd class="text-sm">
+                                        <div v-if="partaiPolitik.nama_ketua || partaiPolitik.foto_ketua_url" class="flex items-center mt-2">
+                                            <img 
+                                                v-if="partaiPolitik.foto_ketua_url" 
+                                                :src="partaiPolitik.foto_ketua_url" 
+                                                :alt="partaiPolitik.nama_ketua || 'Ketua Umum'"
+                                                class="mr-3 h-12 w-12 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-600"
+                                            />
+                                            <div class="mr-3 h-12 w-12 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center" v-else>
+                                                <svg class="h-6 w-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <div class="font-medium text-gray-900 dark:text-gray-100">{{ partaiPolitik.nama_ketua || 'Belum diisi' }}</div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">Ketua Umum</div>
+                                            </div>
+                                        </div>
+                                        <div v-else class="text-gray-500 dark:text-gray-400 italic">
+                                            Belum diisi
+                                        </div>
+                                    </dd>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -266,6 +293,9 @@ interface PartaiPolitik {
     nomor_urut: number
     logo_path: string | null
     logo_url: string | null
+    foto_ketua: string | null
+    foto_ketua_url: string | null
+    nama_ketua: string | null
     status_aktif: boolean
     jumlah_suara: JumlahSuara[]
 }

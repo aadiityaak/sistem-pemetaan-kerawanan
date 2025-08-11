@@ -14,6 +14,8 @@ class PartaiPolitik extends Model
         'singkatan',
         'nomor_urut',
         'logo_path',
+        'foto_ketua',
+        'nama_ketua',
         'status_aktif'
     ];
 
@@ -22,7 +24,8 @@ class PartaiPolitik extends Model
     ];
 
     protected $appends = [
-        'logo_url'
+        'logo_url',
+        'foto_ketua_url'
     ];
 
     public function jumlahSuara(): HasMany
@@ -39,6 +42,14 @@ class PartaiPolitik extends Model
     {
         if ($this->logo_path) {
             return asset('storage/' . $this->logo_path);
+        }
+        return null;
+    }
+
+    public function getFotoKetuaUrlAttribute()
+    {
+        if ($this->foto_ketua) {
+            return asset('storage/' . $this->foto_ketua);
         }
         return null;
     }
