@@ -119,19 +119,9 @@ const mainNavItems = computed<NavItem[]>(() => {
         },
         {
             title: 'Pasar Saham',
-            href: '/pasar-saham/screener',
+            href: '/pasar-saham/chart',
             icon: TrendingUp,
             items: [
-                {
-                    title: 'Stock Screener',
-                    href: '/pasar-saham/screener',
-                    icon: Settings,
-                },
-                {
-                    title: 'Market Heatmap',
-                    href: '/pasar-saham/heatmap',
-                    icon: Map,
-                },
                 {
                     title: 'Advanced Chart',
                     href: '/pasar-saham/chart',
