@@ -1,24 +1,19 @@
 <template>
-    <AppLayout title="Edit Data Sembako">
-        <div class="p-6">
+    <Head title="Edit Data Sembako" />
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <div class="flex flex-1 flex-col gap-6 rounded-xl p-4">
             <!-- Header -->
-            <div class="mb-6">
-                <div class="flex items-center space-x-4">
-                    <Link :href="route('sembako.index')"
-                          class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
-                        <ArrowLeft class="w-5 h-5" />
-                    </Link>
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Edit Data Sembako</h1>
-                        <p class="mt-1 text-gray-600 dark:text-gray-400">Perbarui data harga sembako</p>
-                    </div>
-                </div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Edit Data Sembako</h1>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Perbarui data harga sembako - {{ sembako.nama_komoditas }}</p>
             </div>
 
-            <!-- Form -->
-            <div class="max-w-2xl">
-                <div class="bg-white shadow-sm rounded-lg dark:bg-gray-800">
-                    <form @submit.prevent="submit" class="p-6 space-y-6">
+            <form @submit.prevent="submit">
+                <div class="mx-auto max-w-2xl space-y-6">
+                    <!-- Informasi Komoditas -->
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Informasi Komoditas</h3>
+                        <div class="space-y-4">
                         <!-- Nama Komoditas -->
                         <div>
                             <label for="nama_komoditas" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -177,9 +172,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useForm, Link } from '@inertiajs/vue3'
+import { useForm, Link, Head } from '@inertiajs/vue3'
 import { ArrowLeft } from 'lucide-vue-next'
 import AppLayout from '@/layouts/AppLayout.vue'
+import { type BreadcrumbItem } from '@/types'
 
 interface KabupatenKota {
     id: number
@@ -205,6 +201,13 @@ const props = defineProps<{
     sembako: SembakoItem
     kabupatenKota: KabupatenKota[]
 }>()
+
+// Breadcrumbs
+const breadcrumbs: BreadcrumbItem[] = [
+    { label: 'Dashboard', href: '/dashboard' },
+    { label: 'Data Sembako', href: '/sembako' },
+    { label: 'Edit Data', href: '#' },
+]
 
 const form = useForm({
     nama_komoditas: props.sembako.nama_komoditas,

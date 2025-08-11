@@ -145,10 +145,11 @@
                             <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                                 <Link v-for="link in sembako.links"
                                       :key="link.label"
-                                      :href="link.url"
+                                      :href="link.url || '#'"
                                       v-html="link.label"
                                       :class="[
                                           'relative inline-flex items-center px-2 py-2 border text-sm font-medium',
+                                          !link.url && 'pointer-events-none',
                                           link.active
                                               ? 'z-10 bg-blue-50 border-blue-500 text-blue-600 dark:bg-blue-900 dark:border-blue-400 dark:text-blue-200'
                                               : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700'
