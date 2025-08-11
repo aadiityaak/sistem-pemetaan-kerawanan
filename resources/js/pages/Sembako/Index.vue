@@ -2,60 +2,90 @@
     <AppLayout title="Data Sembako">
         <div class="p-6">
             <!-- Header -->
-            <div class="mb-6 flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Data Harga Sembako</h1>
-                    <p class="mt-1 text-gray-600 dark:text-gray-400">Kelola data harga sembako di seluruh kabupaten/kota</p>
-                </div>
-                <Link :href="route('sembako.create')"
-                      class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-600/50 transition ease-in-out duration-150">
-                    <Plus class="w-4 h-4 mr-2" />
-                    Tambah Data
-                </Link>
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Data Harga Sembako</h1>
+                <p class="mt-1 text-gray-600 dark:text-gray-400">Kelola data harga sembako di seluruh kabupaten/kota</p>
             </div>
 
-            <!-- Filters -->
-            <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+            <!-- Action Button -->
+            <div class="mb-6 flex justify-between items-center">
+                <div></div>
                 <div>
-                    <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Cari Komoditas</label>
-                    <input
-                        type="text"
-                        id="search"
-                        v-model="searchQuery"
-                        placeholder="Nama komoditas..."
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                    />
-                </div>
-                <div>
-                    <label for="kabupaten" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Kabupaten/Kota</label>
-                    <select
-                        id="kabupaten"
-                        v-model="selectedKabupaten"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                    >
-                        <option value="">Semua Kabupaten/Kota</option>
-                        <option
-                            v-for="kabupaten in kabupatenKota"
-                            :key="kabupaten.id"
-                            :value="kabupaten.id"
-                        >
-                            {{ kabupaten.nama }} - {{ kabupaten.provinsi.nama }}
-                        </option>
-                    </select>
-                </div>
-                <div>
-                    <label for="tanggal" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal</label>
-                    <input
-                        type="date"
-                        id="tanggal"
-                        v-model="selectedDate"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                    />
+                    <Link :href="route('sembako.create')"
+                          class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition duration-150 ease-in-out hover:bg-blue-700 focus:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:bg-blue-900 leading-5 whitespace-nowrap">
+                        <Plus class="mr-2 h-4 w-4" />
+                        Tambah Data
+                    </Link>
                 </div>
             </div>
 
-            <!-- Data Table -->
-            <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800">
+            <!-- Filters Card -->
+            <div class="mb-6 rounded-lg border border-gray-200 bg-white shadow dark:border-gray-700 dark:bg-gray-800">
+                <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">🔍 Filter & Pencarian</h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <!-- Search -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pencarian Komoditas</label>
+                            <div class="relative">
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                                <input
+                                    v-model="searchQuery"
+                                    type="text"
+                                    placeholder="Cari nama komoditas..."
+                                    class="block w-full rounded-md border border-gray-300 bg-white py-2 pr-3 pl-10 leading-5 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Filter Kabupaten/Kota -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kabupaten/Kota</label>
+                            <select
+                                v-model="selectedKabupaten"
+                                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            >
+                                <option value="">🌍 Semua Kabupaten/Kota</option>
+                                <option v-for="kabupaten in kabupatenKota" :key="kabupaten.id" :value="kabupaten.id">
+                                    {{ kabupaten.nama }} - {{ kabupaten.provinsi.nama }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Filter Tanggal Awal -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanggal Mulai</label>
+                            <input
+                                v-model="startDate"
+                                type="date"
+                                class="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 leading-5 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            />
+                        </div>
+
+                        <!-- Filter Tanggal Akhir -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanggal Akhir</label>
+                            <input
+                                v-model="endDate"
+                                type="date"
+                                class="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 leading-5 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="rounded-lg border border-gray-200 bg-white shadow dark:border-gray-700 dark:bg-gray-800">
+                <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Daftar Data Harga Sembako</h3>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-900">
@@ -103,16 +133,19 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                         <Link :href="route('sembako.show', item.id)"
-                                              class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                            <Eye class="w-4 h-4" />
+                                              class="inline-flex items-center px-2 py-1 text-xs font-medium rounded border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-600 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40">
+                                            <Eye class="w-3 h-3 mr-1" />
+                                            Lihat
                                         </Link>
                                         <Link :href="route('sembako.edit', item.id)"
-                                              class="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300">
-                                            <Edit class="w-4 h-4" />
+                                              class="inline-flex items-center px-2 py-1 text-xs font-medium rounded border border-yellow-300 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 dark:border-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400 dark:hover:bg-yellow-900/40">
+                                            <Edit class="w-3 h-3 mr-1" />
+                                            Edit
                                         </Link>
                                         <button @click="confirmDelete(item)"
-                                                class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                                            <Trash class="w-4 h-4" />
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium rounded border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-600 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40">
+                                            <Trash class="w-3 h-3 mr-1" />
+                                            Hapus
                                         </button>
                                     </div>
                                 </td>
@@ -214,7 +247,8 @@ const props = defineProps<{
 // Filters
 const searchQuery = ref('')
 const selectedKabupaten = ref('')
-const selectedDate = ref('')
+const startDate = ref('')
+const endDate = ref('')
 
 // Computed filtered data
 const filteredSembako = computed(() => {
@@ -233,9 +267,15 @@ const filteredSembako = computed(() => {
         )
     }
 
-    if (selectedDate.value) {
+    if (startDate.value) {
         filtered = filtered.filter(item => 
-            item.tanggal_pencatatan === selectedDate.value
+            item.tanggal_pencatatan >= startDate.value
+        )
+    }
+
+    if (endDate.value) {
+        filtered = filtered.filter(item => 
+            item.tanggal_pencatatan <= endDate.value
         )
     }
 

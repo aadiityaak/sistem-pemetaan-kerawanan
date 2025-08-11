@@ -196,9 +196,9 @@ const props = defineProps<{
 
 // Breadcrumbs
 const breadcrumbs: BreadcrumbItem[] = [
-    { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Data Sembako', href: '/sembako' },
-    { label: 'Tambah Data', href: '#' },
+    { title: 'Dashboard', url: '/dashboard' },
+    { title: 'Data Sembako', url: '/sembako' },
+    { title: 'Tambah Data', url: '#' },
 ]
 
 const form = useForm({
@@ -209,6 +209,7 @@ const form = useForm({
     tanggal_pencatatan: new Date().toISOString().split('T')[0],
     keterangan: '',
 })
+
 
 const groupedKabupaten = computed(() => {
     const grouped = props.kabupatenKota.reduce((acc, kabupaten) => {
@@ -225,6 +226,7 @@ const groupedKabupaten = computed(() => {
 
     return Object.values(grouped).sort((a, b) => a.nama.localeCompare(b.nama))
 })
+
 
 const submit = () => {
     form.post(route('sembako.store'))

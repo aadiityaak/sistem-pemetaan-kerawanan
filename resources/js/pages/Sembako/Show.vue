@@ -1,31 +1,29 @@
 <template>
-    <AppLayout title="Detail Data Sembako">
-        <div class="p-6">
+    <Head title="Detail Data Sembako" />
+    <AppLayout :breadcrumbs="breadcrumbs">
+        <div class="flex flex-1 flex-col gap-6 rounded-xl p-4">
             <!-- Header -->
-            <div class="mb-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <Link :href="route('sembako.index')"
-                              class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
-                            <ArrowLeft class="w-5 h-5" />
-                        </Link>
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Detail Data Sembako</h1>
-                            <p class="mt-1 text-gray-600 dark:text-gray-400">{{ sembako.nama_komoditas }}</p>
-                        </div>
-                    </div>
-                    <div class="flex space-x-2">
-                        <Link :href="route('sembako.edit', sembako.id)"
-                              class="inline-flex items-center px-4 py-2 bg-yellow-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-700 focus:bg-yellow-700 active:bg-yellow-900 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:bg-yellow-600/50 transition ease-in-out duration-150">
-                            <Edit class="w-4 h-4 mr-2" />
-                            Edit
-                        </Link>
-                        <button @click="confirmDelete"
-                                class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:bg-red-600/50 transition ease-in-out duration-150">
-                            <Trash class="w-4 h-4 mr-2" />
-                            Hapus
-                        </button>
-                    </div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Detail Data Sembako</h1>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ sembako.nama_komoditas }}</p>
+                </div>
+                <div class="flex space-x-3">
+                    <Link :href="route('sembako.index')"
+                          class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                        <ArrowLeft class="mr-2 h-4 w-4" />
+                        Kembali
+                    </Link>
+                    <Link :href="route('sembako.edit', sembako.id)"
+                          class="inline-flex items-center rounded-lg bg-yellow-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
+                        <Edit class="mr-2 h-4 w-4" />
+                        Edit
+                    </Link>
+                    <button @click="confirmDelete"
+                            class="inline-flex items-center rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                        <Trash class="mr-2 h-4 w-4" />
+                        Hapus
+                    </button>
                 </div>
             </div>
 
@@ -104,9 +102,10 @@
 </template>
 
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3'
+import { Link, router, Head } from '@inertiajs/vue3'
 import { ArrowLeft, Edit, Trash, TrendingUp } from 'lucide-vue-next'
 import AppLayout from '@/layouts/AppLayout.vue'
+import { type BreadcrumbItem } from '@/types'
 
 interface KabupatenKota {
     id: number
@@ -132,6 +131,13 @@ interface SembakoItem {
 const props = defineProps<{
     sembako: SembakoItem
 }>()
+
+// Breadcrumbs
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', url: '/dashboard' },
+    { title: 'Data Sembako', url: '/sembako' },
+    { title: 'Detail Data', url: '#' },
+]
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('id-ID', {
