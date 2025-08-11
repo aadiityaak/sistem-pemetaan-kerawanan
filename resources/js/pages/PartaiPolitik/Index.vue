@@ -276,6 +276,7 @@ interface PartaiPolitik {
     nama_partai: string
     singkatan: string
     nomor_urut: number
+    logo_path: string | null
     logo_url: string | null
     status_aktif: boolean
     jumlah_suara: Array<{

@@ -76,22 +76,21 @@
                                 <div v-if="form.errors.nomor_urut" class="mt-1 text-sm text-red-600">{{ form.errors.nomor_urut }}</div>
                             </div>
 
-                            <!-- Logo URL -->
+                            <!-- Logo Upload -->
                             <div>
-                                <label for="logo_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    URL Logo
+                                <label for="logo" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Logo Partai
                                 </label>
                                 <input
-                                    id="logo_url"
-                                    v-model="form.logo_url"
-                                    type="url"
+                                    id="logo"
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/jpg,image/gif,image/svg+xml"
                                     class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
-                                    placeholder="https://example.com/logo.png (opsional)"
-                                    maxlength="255"
+                                    @change="handleLogoChange"
                                 />
-                                <div v-if="form.errors.logo_url" class="mt-1 text-sm text-red-600">{{ form.errors.logo_url }}</div>
+                                <div v-if="form.errors.logo" class="mt-1 text-sm text-red-600">{{ form.errors.logo }}</div>
                                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    Masukkan URL logo partai (opsional)
+                                    Upload logo partai (format: JPG, PNG, GIF, SVG, maksimal 2MB)
                                 </p>
                             </div>
 
@@ -116,18 +115,13 @@
                             </div>
 
                             <!-- Preview Logo -->
-                            <div v-if="form.logo_url" class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700">
+                            <div v-if="logoPreview" class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700">
                                 <p class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Preview Logo:</p>
                                 <img 
-                                    :src="form.logo_url" 
+                                    :src="logoPreview" 
                                     :alt="form.nama_partai"
                                     class="h-16 w-16 rounded-lg object-cover shadow-sm"
-                                    @error="logoError = true"
-                                    @load="logoError = false"
                                 />
-                                <p v-if="logoError" class="mt-2 text-sm text-red-600">
-                                    Gagal memuat gambar. Pastikan URL logo valid.
-                                </p>
                             </div>
                         </div>
 
@@ -169,9 +163,30 @@ const form = useForm({
     nama_partai: '',
     singkatan: '',
     nomor_urut: null as number | null,
-    logo_url: '',
+    logo: null as File | null,
     status_aktif: true
 })
+
+const logoPreview = ref<string | null>(null)
+
+const handleLogoChange = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+    
+    if (file) {
+        form.logo = file
+        
+        // Create preview URL
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            logoPreview.value = e.target?.result as string
+        }
+        reader.readAsDataURL(file)
+    } else {
+        form.logo = null
+        logoPreview.value = null
+    }
+}
 
 const submit = () => {
     form.post(route('partai-politik.store'), {

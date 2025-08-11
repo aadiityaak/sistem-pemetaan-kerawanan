@@ -46,10 +46,16 @@ class PartaiPolitikController extends Controller
             'nama_partai' => 'required|string|max:100',
             'singkatan' => 'required|string|max:50',
             'nomor_urut' => 'required|integer|unique:partai_politik,nomor_urut',
-            'logo_url' => 'nullable|string|max:255',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'status_aktif' => 'boolean'
         ]);
 
+        if ($request->hasFile('logo')) {
+            $logoPath = $request->file('logo')->store('partai-logos', 'public');
+            $validated['logo_path'] = $logoPath;
+        }
+
+        unset($validated['logo']);
         PartaiPolitik::create($validated);
 
         return redirect()->route('partai-politik.index')
@@ -80,10 +86,21 @@ class PartaiPolitikController extends Controller
             'nama_partai' => 'required|string|max:100',
             'singkatan' => 'required|string|max:50',
             'nomor_urut' => 'required|integer|unique:partai_politik,nomor_urut,' . $partaiPolitik->id,
-            'logo_url' => 'nullable|string|max:255',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'status_aktif' => 'boolean'
         ]);
 
+        if ($request->hasFile('logo')) {
+            // Delete old logo if exists
+            if ($partaiPolitik->logo_path) {
+                Storage::delete('public/' . $partaiPolitik->logo_path);
+            }
+            
+            $logoPath = $request->file('logo')->store('partai-logos', 'public');
+            $validated['logo_path'] = $logoPath;
+        }
+
+        unset($validated['logo']);
         $partaiPolitik->update($validated);
 
         return redirect()->route('partai-politik.index')
@@ -92,6 +109,11 @@ class PartaiPolitikController extends Controller
 
     public function destroy(PartaiPolitik $partaiPolitik)
     {
+        // Delete logo file if exists
+        if ($partaiPolitik->logo_path) {
+            Storage::delete('public/' . $partaiPolitik->logo_path);
+        }
+
         $partaiPolitik->delete();
 
         return redirect()->route('partai-politik.index')

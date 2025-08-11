@@ -13,7 +13,7 @@ class PartaiPolitik extends Model
         'nama_partai',
         'singkatan',
         'nomor_urut',
-        'logo_url',
+        'logo_path',
         'status_aktif'
     ];
 
@@ -29,5 +29,13 @@ class PartaiPolitik extends Model
     public function scopeAktif($query)
     {
         return $query->where('status_aktif', true);
+    }
+
+    public function getLogoUrlAttribute()
+    {
+        if ($this->logo_path) {
+            return asset('storage/' . $this->logo_path);
+        }
+        return null;
     }
 }
