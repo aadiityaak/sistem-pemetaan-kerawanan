@@ -10,6 +10,7 @@ use App\Http\Controllers\MonitoringDataController;
 use App\Http\Controllers\PartaiPolitikController;
 use App\Http\Controllers\PasarSahamController;
 use App\Http\Controllers\ProvinsiController;
+use App\Http\Controllers\SembakoController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -145,6 +146,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/pasar-saham/heatmap', [PasarSahamController::class, 'heatmap'])->name('pasar-saham.heatmap');
     Route::get('/pasar-saham/chart', [PasarSahamController::class, 'chart'])->name('pasar-saham.chart');
     Route::get('/pasar-saham/watchlist', [PasarSahamController::class, 'watchlist'])->name('pasar-saham.watchlist');
+
+    // Sembako Routes
+    Route::resource('sembako', SembakoController::class);
 
     // Categories Routes (Admin only)
     Route::middleware(['role:admin'])->group(function () {

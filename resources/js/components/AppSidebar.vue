@@ -24,6 +24,7 @@ import {
     Settings,
     Shield,
     ShieldAlert,
+    ShoppingCart,
     Tags,
     TrendingUp,
     Users,
@@ -110,6 +111,11 @@ const mainNavItems = computed<NavItem[]>(() => {
             title: 'Partai Politik',
             href: '/partai-politik',
             icon: Flag,
+        },
+        {
+            title: 'Sembako',
+            href: '/sembako',
+            icon: ShoppingCart,
         },
         {
             title: 'Pasar Saham',
