@@ -7,6 +7,7 @@ use App\Http\Controllers\IndasController;
 use App\Http\Controllers\KabupatenKotaController;
 use App\Http\Controllers\KecamatanController;
 use App\Http\Controllers\MonitoringDataController;
+use App\Http\Controllers\PartaiPolitikController;
 use App\Http\Controllers\ProvinsiController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -131,6 +132,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/indas/data', [IndasController::class, 'storeData'])->name('indas.data.store');
         Route::post('/indas/calculate', [IndasController::class, 'calculateAll'])->name('indas.calculate');
     });
+
+    // Partai Politik Routes
+    Route::resource('partai-politik', PartaiPolitikController::class);
+    Route::post('/partai-politik/{partaiPolitik}/jumlah-suara', [PartaiPolitikController::class, 'storeJumlahSuara'])->name('partai-politik.jumlah-suara.store');
+    Route::delete('/jumlah-suara/{jumlahSuara}', [PartaiPolitikController::class, 'destroyJumlahSuara'])->name('jumlah-suara.destroy');
 
     // Categories Routes (Admin only)
     Route::middleware(['role:admin'])->group(function () {

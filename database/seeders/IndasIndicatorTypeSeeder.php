@@ -13,10 +13,16 @@ class IndasIndicatorTypeSeeder extends Seeder
     public function run(): void
     {
         // Clear existing data safely (handle foreign key constraints)
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        IndasMonthlyData::truncate();
-        IndasIndicatorType::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        if (config('database.default') === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            IndasMonthlyData::truncate();
+            IndasIndicatorType::truncate();
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        } else {
+            // For SQLite and other databases, use delete instead of truncate
+            IndasMonthlyData::query()->delete();
+            IndasIndicatorType::query()->delete();
+        }
         
         $indicators = [
             // Economic Indicators

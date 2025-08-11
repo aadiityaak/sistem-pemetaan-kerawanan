@@ -13,6 +13,7 @@ import {
     Database,
     DollarSign,
     FileText,
+    Flag,
     Globe,
     Heart,
     Landmark,
@@ -103,6 +104,11 @@ const mainNavItems = computed<NavItem[]>(() => {
             title: 'Data Monitoring',
             href: '/monitoring-data',
             icon: Database,
+        },
+        {
+            title: 'Partai Politik',
+            href: '/partai-politik',
+            icon: Flag,
         },
     ];
 
