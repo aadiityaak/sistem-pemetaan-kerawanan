@@ -25,6 +25,7 @@ import {
     Shield,
     ShieldAlert,
     Tags,
+    TrendingUp,
     Users,
 } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
@@ -109,6 +110,33 @@ const mainNavItems = computed<NavItem[]>(() => {
             title: 'Partai Politik',
             href: '/partai-politik',
             icon: Flag,
+        },
+        {
+            title: 'Pasar Saham',
+            href: '/pasar-saham/screener',
+            icon: TrendingUp,
+            items: [
+                {
+                    title: 'Stock Screener',
+                    href: '/pasar-saham/screener',
+                    icon: Settings,
+                },
+                {
+                    title: 'Market Heatmap',
+                    href: '/pasar-saham/heatmap',
+                    icon: Map,
+                },
+                {
+                    title: 'Advanced Chart',
+                    href: '/pasar-saham/chart',
+                    icon: TrendingUp,
+                },
+                {
+                    title: 'Watchlist',
+                    href: '/pasar-saham/watchlist',
+                    icon: Tags,
+                },
+            ],
         },
     ];
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\KabupatenKotaController;
 use App\Http\Controllers\KecamatanController;
 use App\Http\Controllers\MonitoringDataController;
 use App\Http\Controllers\PartaiPolitikController;
+use App\Http\Controllers\PasarSahamController;
 use App\Http\Controllers\ProvinsiController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -137,6 +138,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('partai-politik', PartaiPolitikController::class);
     Route::post('/partai-politik/{partaiPolitik}/jumlah-suara', [PartaiPolitikController::class, 'storeJumlahSuara'])->name('partai-politik.jumlah-suara.store');
     Route::delete('/jumlah-suara/{jumlahSuara}', [PartaiPolitikController::class, 'destroyJumlahSuara'])->name('jumlah-suara.destroy');
+
+    // Pasar Saham Routes
+    Route::get('/pasar-saham', [PasarSahamController::class, 'index'])->name('pasar-saham.index');
+    Route::get('/pasar-saham/screener', [PasarSahamController::class, 'screener'])->name('pasar-saham.screener');
+    Route::get('/pasar-saham/heatmap', [PasarSahamController::class, 'heatmap'])->name('pasar-saham.heatmap');
+    Route::get('/pasar-saham/chart', [PasarSahamController::class, 'chart'])->name('pasar-saham.chart');
+    Route::get('/pasar-saham/watchlist', [PasarSahamController::class, 'watchlist'])->name('pasar-saham.watchlist');
 
     // Categories Routes (Admin only)
     Route::middleware(['role:admin'])->group(function () {
