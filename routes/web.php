@@ -138,6 +138,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Partai Politik Routes
     Route::resource('partai-politik', PartaiPolitikController::class);
     Route::post('/partai-politik/{partaiPolitik}/jumlah-suara', [PartaiPolitikController::class, 'storeJumlahSuara'])->name('partai-politik.jumlah-suara.store');
+    Route::put('/jumlah-suara/{jumlahSuara}', [PartaiPolitikController::class, 'updateJumlahSuara'])->name('jumlah-suara.update');
     Route::delete('/jumlah-suara/{jumlahSuara}', [PartaiPolitikController::class, 'destroyJumlahSuara'])->name('jumlah-suara.destroy');
 
     // Pasar Saham Routes

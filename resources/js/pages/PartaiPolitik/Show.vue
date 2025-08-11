@@ -159,12 +159,20 @@
                                             {{ suara.jumlah_suara.toLocaleString('id-ID') }} suara
                                         </td>
                                         <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                                            <button
-                                                @click="deleteVoteData(suara)"
-                                                class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                            >
-                                                Hapus
-                                            </button>
+                                            <div class="flex justify-end gap-3">
+                                                <button
+                                                    @click="editVoteData(suara)"
+                                                    class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    @click="deleteVoteData(suara)"
+                                                    class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                                >
+                                                    Hapus
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -196,18 +204,21 @@
         </div>
 
         <!-- Add Vote Modal -->
-        <div v-if="showAddVoteModal" class="fixed inset-0 z-50 overflow-y-auto">
-            <div class="flex min-h-screen items-end justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 bg-gray-500/75 transition-opacity" @click="showAddVoteModal = false"></div>
+        <Teleport to="body">
+            <div v-if="showAddVoteModal || showEditVoteModal" class="fixed inset-0 z-50 flex items-center justify-center">
+                <!-- Background overlay -->
+                <div class="fixed inset-0 bg-black/50" @click="closeModal"></div>
                 
-                <span class="hidden sm:inline-block sm:h-screen sm:align-middle">&#8203;</span>
-                
-                <div class="inline-block transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 sm:align-middle dark:bg-gray-800">
+                <!-- Modal panel -->
+                <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full mx-4 z-10">
+                    <div class="p-6">
                     <form @submit.prevent="submitVoteData">
                         <div>
-                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Tambah Data Jumlah Suara</h3>
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
+                                {{ showEditVoteModal ? 'Edit Data Jumlah Suara' : 'Tambah Data Jumlah Suara' }}
+                            </h3>
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                Tambahkan data jumlah suara untuk tahun pemilu tertentu
+                                {{ showEditVoteModal ? 'Ubah data jumlah suara untuk tahun pemilu' : 'Tambahkan data jumlah suara untuk tahun pemilu tertentu' }}
                             </p>
                         </div>
                         
@@ -251,7 +262,7 @@
                         <div class="mt-6 flex justify-end gap-3">
                             <button
                                 type="button"
-                                @click="showAddVoteModal = false"
+                                @click="closeModal"
                                 class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                             >
                                 Batal
@@ -265,13 +276,14 @@
                                     <circle class="stroke-current/25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="fill-current/75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                {{ voteForm.processing ? 'Menyimpan...' : 'Simpan Data' }}
+                                {{ voteForm.processing ? (showEditVoteModal ? 'Mengupdate...' : 'Menyimpan...') : (showEditVoteModal ? 'Update Data' : 'Simpan Data') }}
                             </button>
                         </div>
                     </form>
+                    </div>
                 </div>
             </div>
-        </div>
+        </Teleport>
     </AppLayout>
 </template>
 
@@ -307,21 +319,47 @@ interface Props {
 const props = defineProps<Props>()
 
 const showAddVoteModal = ref(false)
+const showEditVoteModal = ref(false)
+const editingVoteData = ref<JumlahSuara | null>(null)
 
 const voteForm = useForm({
     tahun_pemilu: null as number | null,
     jumlah_suara: null as number | null
 })
 
+const editVoteData = (suara: JumlahSuara) => {
+    editingVoteData.value = suara
+    voteForm.tahun_pemilu = suara.tahun_pemilu
+    voteForm.jumlah_suara = suara.jumlah_suara
+    showEditVoteModal.value = true
+}
+
+const closeModal = () => {
+    showAddVoteModal.value = false
+    showEditVoteModal.value = false
+    editingVoteData.value = null
+    voteForm.reset()
+    voteForm.clearErrors()
+}
+
 const submitVoteData = () => {
-    voteForm.post(route('partai-politik.jumlah-suara.store', props.partaiPolitik.id), {
-        preserveScroll: true,
-        onSuccess: () => {
-            showAddVoteModal.value = false
-            voteForm.tahun_pemilu = null
-            voteForm.jumlah_suara = null
-        }
-    })
+    if (showEditVoteModal.value && editingVoteData.value) {
+        // Update existing vote data
+        voteForm.put(route('jumlah-suara.update', editingVoteData.value.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                closeModal()
+            }
+        })
+    } else {
+        // Create new vote data
+        voteForm.post(route('partai-politik.jumlah-suara.store', props.partaiPolitik.id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                closeModal()
+            }
+        })
+    }
 }
 
 const deleteVoteData = (suara: JumlahSuara) => {

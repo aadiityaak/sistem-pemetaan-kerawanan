@@ -172,6 +172,19 @@ class PartaiPolitikController extends Controller
             ->with('success', 'Data jumlah suara berhasil disimpan.');
     }
 
+    public function updateJumlahSuara(Request $request, JumlahSuara $jumlahSuara)
+    {
+        $validated = $request->validate([
+            'tahun_pemilu' => 'required|integer|digits:4',
+            'jumlah_suara' => 'required|integer|min:0'
+        ]);
+
+        $jumlahSuara->update($validated);
+
+        return redirect()->back()
+            ->with('success', 'Data jumlah suara berhasil diperbarui.');
+    }
+
     public function destroyJumlahSuara(JumlahSuara $jumlahSuara)
     {
         $jumlahSuara->delete();

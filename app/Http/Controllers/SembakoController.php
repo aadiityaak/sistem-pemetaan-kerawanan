@@ -10,20 +10,104 @@ use Illuminate\Support\Facades\Redirect;
 
 class SembakoController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $sembako = Sembako::with(['kabupatenKota.provinsi'])
-            ->orderBy('tanggal_pencatatan', 'desc')
-            ->orderBy('nama_komoditas')
-            ->paginate(20);
+        $query = Sembako::with(['kabupatenKota.provinsi']);
+
+        // Filter by commodity name
+        if ($request->filled('nama_komoditas')) {
+            $query->where('nama_komoditas', 'like', '%' . $request->nama_komoditas . '%');
+        }
+
+        // Filter by region
+        if ($request->filled('kabupaten_kota_id')) {
+            $query->where('kabupaten_kota_id', $request->kabupaten_kota_id);
+        }
+
+        // Filter by province via relationship
+        if ($request->filled('provinsi_id')) {
+            $query->whereHas('kabupatenKota', function ($q) use ($request) {
+                $q->where('provinsi_id', $request->provinsi_id);
+            });
+        }
+
+        // Filter by date range
+        if ($request->filled('tanggal_mulai')) {
+            $query->where('tanggal_pencatatan', '>=', $request->tanggal_mulai);
+        }
+
+        if ($request->filled('tanggal_selesai')) {
+            $query->where('tanggal_pencatatan', '<=', $request->tanggal_selesai);
+        }
+
+        // Filter by price range
+        if ($request->filled('harga_min')) {
+            $query->where('harga', '>=', $request->harga_min);
+        }
+
+        if ($request->filled('harga_max')) {
+            $query->where('harga', '<=', $request->harga_max);
+        }
+
+        // Search in notes/keterangan
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('nama_komoditas', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('keterangan', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('satuan', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        // Sort options
+        $sortField = $request->get('sort_field', 'tanggal_pencatatan');
+        $sortDirection = $request->get('sort_direction', 'desc');
+        
+        // Validate sort fields for security
+        $allowedSortFields = ['tanggal_pencatatan', 'nama_komoditas', 'harga', 'created_at'];
+        if (!in_array($sortField, $allowedSortFields)) {
+            $sortField = 'tanggal_pencatatan';
+        }
+        
+        $query->orderBy($sortField, $sortDirection);
+        
+        // Secondary sort for consistency
+        if ($sortField !== 'nama_komoditas') {
+            $query->orderBy('nama_komoditas');
+        }
+
+        $sembako = $query->paginate(20)->withQueryString();
 
         $kabupatenKota = KabupatenKota::with('provinsi')
             ->orderBy('nama')
             ->get();
 
+        // Get unique commodity names for filter dropdown
+        $commodities = Sembako::select('nama_komoditas')
+            ->distinct()
+            ->orderBy('nama_komoditas')
+            ->pluck('nama_komoditas');
+
+        // Get provinces for filter dropdown
+        $provinces = \App\Models\Provinsi::orderBy('nama')->get();
+
         return Inertia::render('Sembako/Index', [
             'sembako' => $sembako,
             'kabupatenKota' => $kabupatenKota,
+            'commodities' => $commodities,
+            'provinces' => $provinces,
+            'filters' => $request->only([
+                'nama_komoditas', 
+                'kabupaten_kota_id', 
+                'provinsi_id',
+                'tanggal_mulai', 
+                'tanggal_selesai', 
+                'harga_min', 
+                'harga_max', 
+                'search',
+                'sort_field',
+                'sort_direction'
+            ]),
         ]);
     }
 

@@ -49,7 +49,7 @@ const mainNavItems = computed<NavItem[]>(() => {
     },
     {
         title: 'ISU NEGATIF ANGGOTA BRIMOB',
-        href: '/dashboard?category=keamanan&subcategory=isu-negatif-anggota-brimob',
+        href: '/dashboard?category=isu-negatif-anggota-brimob',
         icon: ShieldAlert,
     },
     {

@@ -440,236 +440,262 @@ const showRegionDetails = (kabupatenKotaId: number) => {
           </div>
         </div>
 
-        <!-- Regional Information Details -->
-        <div v-if="selectedRegion && regionalInfo[selectedRegion]" class="mt-8 bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
-          <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-              Regional Information - {{ regionalInfo[selectedRegion].kabupaten_kota.nama }}
-            </h3>
-            <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-              Comprehensive regional data including character of society, vital objects, demo points, and infrastructure
-            </p>
-          </div>
+        <!-- Regional Information Modal -->
+        <div v-if="selectedRegion && regionalInfo[selectedRegion]" class="fixed inset-0 z-50">
+          <!-- Background overlay -->
+          <div class="fixed inset-0 bg-black/50" @click="selectedRegion = null"></div>
           
-          <div class="px-4 py-5 sm:p-6">
-            <!-- Summary Stats -->
-            <div class="grid grid-cols-1 gap-5 sm:grid-cols-5 mb-8">
-              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                <div class="flex items-center">
-                  <ShieldExclamationIcon class="h-6 w-6 text-red-500" />
-                  <div class="ml-3">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Demo Points</p>
-                    <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                      {{ regionalInfo[selectedRegion].summary_stats.total_demo_points }}
-                    </p>
-                  </div>
+          <!-- Modal container -->
+          <div class="fixed inset-0 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+              <!-- Modal panel -->
+              <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-7xl">
+                <div class="p-6">
+                  <!-- Modal Header -->
+                  <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+                <div>
+                  <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                    Regional Information - {{ regionalInfo[selectedRegion].kabupaten_kota.nama }}
+                  </h3>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    {{ regionalInfo[selectedRegion].kabupaten_kota.provinsi.nama }}
+                  </p>
                 </div>
+                <button 
+                  @click="selectedRegion = null"
+                  class="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <span class="sr-only">Close</span>
+                  <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
               
-              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                <div class="flex items-center">
-                  <BuildingOffice2Icon class="h-6 w-6 text-blue-500" />
-                  <div class="ml-3">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Tourist Attractions</p>
-                    <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                      {{ regionalInfo[selectedRegion].summary_stats.total_tourist_attractions }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                <div class="flex items-center">
-                  <BuildingStorefrontIcon class="h-6 w-6 text-green-500" />
-                  <div class="ml-3">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Hotels</p>
-                    <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                      {{ regionalInfo[selectedRegion].summary_stats.total_hotels }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                <div class="flex items-center">
-                  <UsersIcon class="h-6 w-6 text-purple-500" />
-                  <div class="ml-3">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Public Facilities</p>
-                    <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                      {{ regionalInfo[selectedRegion].summary_stats.total_public_facilities }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                <div class="flex items-center">
-                  <ExclamationTriangleIcon class="h-6 w-6 text-orange-500" />
-                  <div class="ml-3">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Critical Demos</p>
-                    <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                      {{ regionalInfo[selectedRegion].summary_stats.critical_demo_points }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Regional Information Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <!-- Character of Society -->
-              <div class="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-6">
-                <div class="flex items-center mb-4">
-                  <UsersIcon class="h-6 w-6 text-purple-600" />
-                  <h4 class="ml-2 text-lg font-medium text-gray-900 dark:text-white">Karakter Masyarakat</h4>
-                </div>
-                <div class="space-y-3">
-                  <div v-for="indicator in regionalInfo[selectedRegion].karakter_masyarakat.social_indicators" :key="indicator.name">
-                    <div class="flex justify-between items-center">
-                      <span class="text-sm text-gray-700 dark:text-gray-300">{{ indicator.name }}</span>
-                      <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                        {{ indicator.value }} {{ indicator.unit }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- National Vital Objects -->
-              <div class="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-6">
-                <div class="flex items-center mb-4">
-                  <BuildingStorefrontIcon class="h-6 w-6 text-green-600" />
-                  <h4 class="ml-2 text-lg font-medium text-gray-900 dark:text-white">Objek Vital Nasional</h4>
-                </div>
-                <div class="space-y-3">
-                  <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-700 dark:text-gray-300">Banks</span>
-                    <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                      {{ regionalInfo[selectedRegion].objek_vital_nasional.banks }} unit
-                    </span>
-                  </div>
-                  <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-700 dark:text-gray-300">Markets</span>
-                    <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                      {{ regionalInfo[selectedRegion].objek_vital_nasional.markets }} unit
-                    </span>
-                  </div>
-                  <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-700 dark:text-gray-300">Shops</span>
-                    <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                      {{ regionalInfo[selectedRegion].objek_vital_nasional.shops }} unit
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Tourism -->
-              <div class="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-6">
-                <div class="flex items-center mb-4">
-                  <BuildingOffice2Icon class="h-6 w-6 text-blue-600" />
-                  <h4 class="ml-2 text-lg font-medium text-gray-900 dark:text-white">Pariwisata</h4>
-                </div>
-                <div class="space-y-3">
-                  <div v-for="indicator in regionalInfo[selectedRegion].pariwisata.tourism_indicators" :key="indicator.name">
-                    <div class="flex justify-between items-center">
-                      <span class="text-sm text-gray-700 dark:text-gray-300">{{ indicator.name }}</span>
-                      <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                        {{ indicator.value }} {{ indicator.unit }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Infrastructure Services -->
-              <div class="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-lg p-6">
-                <div class="flex items-center mb-4">
-                  <TruckIcon class="h-6 w-6 text-orange-600" />
-                  <h4 class="ml-2 text-lg font-medium text-gray-900 dark:text-white">Infrastruktur & Layanan</h4>
-                </div>
-                <div class="space-y-3">
-                  <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-700 dark:text-gray-300 flex items-center">
-                      <AcademicCapIcon class="h-4 w-4 mr-1" /> Schools
-                    </span>
-                    <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                      ~{{ regionalInfo[selectedRegion].sekolah.estimated_schools }}
-                    </span>
-                  </div>
-                  <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-700 dark:text-gray-300 flex items-center">
-                      <HeartIcon class="h-4 w-4 mr-1" /> Hospitals
-                    </span>
-                    <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                      ~{{ regionalInfo[selectedRegion].rumah_sakit.estimated_hospitals }}
-                    </span>
-                  </div>
-                  <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-700 dark:text-gray-300 flex items-center">
-                      <TruckIcon class="h-4 w-4 mr-1" /> Transport Facilities
-                    </span>
-                    <span class="text-sm font-semibold text-gray-900 dark:text-white">
-                      ~{{ regionalInfo[selectedRegion].infrastruktur_transportasi.estimated_transport_facilities }}
-                    </span>
-                  </div>
-                  <div class="mt-2">
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                      <InformationCircleIcon class="h-3 w-3 inline mr-1" />
-                      Estimates based on public facilities data
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Demo Points Section -->
-            <div v-if="regionalInfo[selectedRegion].titik_demo.length > 0" class="mt-8">
-              <div class="flex items-center mb-4">
-                <ShieldExclamationIcon class="h-6 w-6 text-red-600" />
-                <h4 class="ml-2 text-lg font-medium text-gray-900 dark:text-white">Titik-titik Demo (Security Category)</h4>
-              </div>
-              <div class="bg-red-50 dark:bg-red-900/10 rounded-lg p-4">
-                <div class="space-y-4">
-                  <div v-for="demoPoint in regionalInfo[selectedRegion].titik_demo.slice(0, 5)" :key="demoPoint.title" 
-                       class="border-l-4 border-red-400 bg-white dark:bg-gray-800 pl-4 py-3 rounded-r-lg">
-                    <div class="flex items-start justify-between">
-                      <div class="flex-1">
-                        <h5 class="text-sm font-medium text-gray-900 dark:text-white">{{ demoPoint.title }}</h5>
-                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ demoPoint.description }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">{{ formatDate(demoPoint.incident_date) }}</p>
+              <!-- Modal Content -->
+              <div class="mt-6 max-h-[70vh] overflow-y-auto">
+                <!-- Summary Stats -->
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-5 mb-6">
+                  <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                    <div class="flex items-center">
+                      <ShieldExclamationIcon class="h-5 w-5 text-red-500" />
+                      <div class="ml-2">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Demo Points</p>
+                        <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                          {{ regionalInfo[selectedRegion].summary_stats.total_demo_points }}
+                        </p>
                       </div>
-                      <span :class="['px-2 py-1 text-xs rounded-full font-medium', getSeverityClass(demoPoint.severity_level)]">
-                        {{ demoPoint.severity_level.toUpperCase() }}
-                      </span>
                     </div>
                   </div>
-                  <div v-if="regionalInfo[selectedRegion].titik_demo.length > 5" class="text-center">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                      Showing 5 of {{ regionalInfo[selectedRegion].titik_demo.length }} demo points
-                    </p>
+                  
+                  <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                    <div class="flex items-center">
+                      <BuildingOffice2Icon class="h-5 w-5 text-blue-500" />
+                      <div class="ml-2">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Tourist Attractions</p>
+                        <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                          {{ regionalInfo[selectedRegion].summary_stats.total_tourist_attractions }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                    <div class="flex items-center">
+                      <BuildingStorefrontIcon class="h-5 w-5 text-green-500" />
+                      <div class="ml-2">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Hotels</p>
+                        <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                          {{ regionalInfo[selectedRegion].summary_stats.total_hotels }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                    <div class="flex items-center">
+                      <UsersIcon class="h-5 w-5 text-purple-500" />
+                      <div class="ml-2">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Public Facilities</p>
+                        <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                          {{ regionalInfo[selectedRegion].summary_stats.total_public_facilities }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                    <div class="flex items-center">
+                      <ExclamationTriangleIcon class="h-5 w-5 text-orange-500" />
+                      <div class="ml-2">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Critical Demos</p>
+                        <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                          {{ regionalInfo[selectedRegion].summary_stats.critical_demo_points }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Regional Information Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <!-- Character of Society -->
+                  <div class="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-4">
+                    <div class="flex items-center mb-3">
+                      <UsersIcon class="h-5 w-5 text-purple-600" />
+                      <h4 class="ml-2 text-base font-medium text-gray-900 dark:text-white">Karakter Masyarakat</h4>
+                    </div>
+                    <div class="space-y-2">
+                      <div v-for="indicator in regionalInfo[selectedRegion].karakter_masyarakat.social_indicators" :key="indicator.name">
+                        <div class="flex justify-between items-center">
+                          <span class="text-sm text-gray-700 dark:text-gray-300">{{ indicator.name }}</span>
+                          <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                            {{ indicator.value }} {{ indicator.unit }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- National Vital Objects -->
+                  <div class="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-4">
+                    <div class="flex items-center mb-3">
+                      <BuildingStorefrontIcon class="h-5 w-5 text-green-600" />
+                      <h4 class="ml-2 text-base font-medium text-gray-900 dark:text-white">Objek Vital Nasional</h4>
+                    </div>
+                    <div class="space-y-2">
+                      <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Banks</span>
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                          {{ regionalInfo[selectedRegion].objek_vital_nasional.banks }} unit
+                        </span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Markets</span>
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                          {{ regionalInfo[selectedRegion].objek_vital_nasional.markets }} unit
+                        </span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Shops</span>
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                          {{ regionalInfo[selectedRegion].objek_vital_nasional.shops }} unit
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Tourism -->
+                  <div class="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4">
+                    <div class="flex items-center mb-3">
+                      <BuildingOffice2Icon class="h-5 w-5 text-blue-600" />
+                      <h4 class="ml-2 text-base font-medium text-gray-900 dark:text-white">Pariwisata</h4>
+                    </div>
+                    <div class="space-y-2">
+                      <div v-for="indicator in regionalInfo[selectedRegion].pariwisata.tourism_indicators" :key="indicator.name">
+                        <div class="flex justify-between items-center">
+                          <span class="text-sm text-gray-700 dark:text-gray-300">{{ indicator.name }}</span>
+                          <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                            {{ indicator.value }} {{ indicator.unit }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Infrastructure Services -->
+                  <div class="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-lg p-4">
+                    <div class="flex items-center mb-3">
+                      <TruckIcon class="h-5 w-5 text-orange-600" />
+                      <h4 class="ml-2 text-base font-medium text-gray-900 dark:text-white">Infrastruktur & Layanan</h4>
+                    </div>
+                    <div class="space-y-2">
+                      <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700 dark:text-gray-300 flex items-center">
+                          <AcademicCapIcon class="h-4 w-4 mr-1" /> Schools
+                        </span>
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                          ~{{ regionalInfo[selectedRegion].sekolah.estimated_schools }}
+                        </span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700 dark:text-gray-300 flex items-center">
+                          <HeartIcon class="h-4 w-4 mr-1" /> Hospitals
+                        </span>
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                          ~{{ regionalInfo[selectedRegion].rumah_sakit.estimated_hospitals }}
+                        </span>
+                      </div>
+                      <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700 dark:text-gray-300 flex items-center">
+                          <TruckIcon class="h-4 w-4 mr-1" /> Transport Facilities
+                        </span>
+                        <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                          ~{{ regionalInfo[selectedRegion].infrastruktur_transportasi.estimated_transport_facilities }}
+                        </span>
+                      </div>
+                      <div class="mt-2">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                          <InformationCircleIcon class="h-3 w-3 inline mr-1" />
+                          Estimates based on public facilities data
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Demo Points Section -->
+                <div v-if="regionalInfo[selectedRegion].titik_demo.length > 0" class="mt-6">
+                  <div class="flex items-center mb-3">
+                    <ShieldExclamationIcon class="h-5 w-5 text-red-600" />
+                    <h4 class="ml-2 text-base font-medium text-gray-900 dark:text-white">Titik-titik Demo (Security Category)</h4>
+                  </div>
+                  <div class="bg-red-50 dark:bg-red-900/10 rounded-lg p-4">
+                    <div class="space-y-3">
+                      <div v-for="demoPoint in regionalInfo[selectedRegion].titik_demo.slice(0, 5)" :key="demoPoint.title" 
+                           class="border-l-4 border-red-400 bg-white dark:bg-gray-800 pl-3 py-2 rounded-r-lg">
+                        <div class="flex items-start justify-between">
+                          <div class="flex-1">
+                            <h5 class="text-sm font-medium text-gray-900 dark:text-white">{{ demoPoint.title }}</h5>
+                            <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ demoPoint.description }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">{{ formatDate(demoPoint.incident_date) }}</p>
+                          </div>
+                          <span :class="['px-2 py-1 text-xs rounded-full font-medium', getSeverityClass(demoPoint.severity_level)]">
+                            {{ demoPoint.severity_level.toUpperCase() }}
+                          </span>
+                        </div>
+                      </div>
+                      <div v-if="regionalInfo[selectedRegion].titik_demo.length > 5" class="text-center">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                          Showing 5 of {{ regionalInfo[selectedRegion].titik_demo.length }} demo points
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div v-else class="mt-6">
+                  <div class="flex items-center mb-3">
+                    <ShieldExclamationIcon class="h-5 w-5 text-gray-400" />
+                    <h4 class="ml-2 text-base font-medium text-gray-500 dark:text-gray-400">Titik-titik Demo</h4>
+                  </div>
+                  <div class="bg-green-50 dark:bg-green-900/10 rounded-lg p-4 text-center">
+                    <p class="text-sm text-green-700 dark:text-green-400">No demo points recorded for this region</p>
                   </div>
                 </div>
               </div>
-            </div>
-            
-            <div v-else class="mt-8">
-              <div class="flex items-center mb-4">
-                <ShieldExclamationIcon class="h-6 w-6 text-gray-400" />
-                <h4 class="ml-2 text-lg font-medium text-gray-500 dark:text-gray-400">Titik-titik Demo</h4>
+              
+                  <!-- Modal Footer -->
+                  <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                    <button 
+                      @click="selectedRegion = null"
+                      class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      Close Details
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div class="bg-green-50 dark:bg-green-900/10 rounded-lg p-4 text-center">
-                <p class="text-sm text-green-700 dark:text-green-400">No demo points recorded for this region</p>
-              </div>
-            </div>
-
-            <!-- Close Button -->
-            <div class="mt-6 text-center">
-              <button 
-                @click="selectedRegion = null"
-                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Close Details
-              </button>
             </div>
           </div>
         </div>

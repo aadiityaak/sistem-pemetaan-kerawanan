@@ -25,10 +25,10 @@
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">🔍 Filter & Pencarian</h3>
                 </div>
                 <div class="p-6">
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         <!-- Search -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pencarian Komoditas</label>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pencarian</label>
                             <div class="relative">
                                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,10 +38,38 @@
                                 <input
                                     v-model="searchQuery"
                                     type="text"
-                                    placeholder="Cari nama komoditas..."
+                                    placeholder="Cari komoditas, satuan, keterangan..."
                                     class="block w-full rounded-md border border-gray-300 bg-white py-2 pr-3 pl-10 leading-5 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
                                 />
                             </div>
+                        </div>
+
+                        <!-- Filter Komoditas -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Komoditas</label>
+                            <select
+                                v-model="selectedKomoditas"
+                                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            >
+                                <option value="">📦 Semua Komoditas</option>
+                                <option v-for="commodity in commodities" :key="commodity" :value="commodity">
+                                    {{ commodity }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Filter Provinsi -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Provinsi</label>
+                            <select
+                                v-model="selectedProvinsi"
+                                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            >
+                                <option value="">🏞️ Semua Provinsi</option>
+                                <option v-for="provinsi in provinces" :key="provinsi.id" :value="provinsi.id">
+                                    {{ provinsi.nama }}
+                                </option>
+                            </select>
                         </div>
 
                         <!-- Filter Kabupaten/Kota -->
@@ -49,16 +77,17 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kabupaten/Kota</label>
                             <select
                                 v-model="selectedKabupaten"
-                                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                :disabled="!selectedProvinsi"
+                                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:bg-gray-600"
                             >
                                 <option value="">🌍 Semua Kabupaten/Kota</option>
-                                <option v-for="kabupaten in kabupatenKota" :key="kabupaten.id" :value="kabupaten.id">
-                                    {{ kabupaten.nama }} - {{ kabupaten.provinsi.nama }}
+                                <option v-for="kabupaten in filteredKabupaten" :key="kabupaten.id" :value="kabupaten.id">
+                                    {{ kabupaten.nama }}
                                 </option>
                             </select>
                         </div>
 
-                        <!-- Filter Tanggal Awal -->
+                        <!-- Filter Tanggal Mulai -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanggal Mulai</label>
                             <input
@@ -76,6 +105,41 @@
                                 type="date"
                                 class="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 leading-5 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                             />
+                        </div>
+
+                        <!-- Filter Harga Minimum -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Harga Minimum</label>
+                            <input
+                                v-model="minPrice"
+                                type="number"
+                                placeholder="0"
+                                class="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 leading-5 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                            />
+                        </div>
+
+                        <!-- Filter Harga Maximum -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Harga Maximum</label>
+                            <input
+                                v-model="maxPrice"
+                                type="number"
+                                placeholder="999999999"
+                                class="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 leading-5 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                            />
+                        </div>
+                    </div>
+                    
+                    <!-- Clear Filters Button -->
+                    <div class="mt-4 flex justify-between items-center">
+                        <button
+                            @click="clearFilters"
+                            class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                        >
+                            🗑️ Clear Filters
+                        </button>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                            Showing {{ sembako.total }} results
                         </div>
                     </div>
                 </div>
@@ -111,7 +175,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-                            <tr v-for="item in filteredSembako" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <tr v-for="item in sembako.data" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {{ item.nama_komoditas }}
                                 </td>
@@ -198,10 +262,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
 import { Plus, Eye, Edit, Trash } from 'lucide-vue-next'
 import AppLayout from '@/layouts/AppLayout.vue'
+import { debounce } from 'lodash-es'
 
 interface KabupatenKota {
     id: number
@@ -239,47 +304,95 @@ interface PaginatedSembako {
     }>
 }
 
+interface Commodity {
+    value: string
+    label: string
+}
+
+interface Provinsi {
+    id: number
+    nama: string
+}
+
 const props = defineProps<{
     sembako: PaginatedSembako
     kabupatenKota: KabupatenKota[]
+    commodities: string[]
+    provinces: Provinsi[]
+    filters: {
+        nama_komoditas?: string
+        kabupaten_kota_id?: number
+        provinsi_id?: number
+        tanggal_mulai?: string
+        tanggal_selesai?: string
+        harga_min?: number
+        harga_max?: number
+        search?: string
+        sort_field?: string
+        sort_direction?: string
+    }
 }>()
 
-// Filters
-const searchQuery = ref('')
-const selectedKabupaten = ref('')
-const startDate = ref('')
-const endDate = ref('')
+// Filters - initialize from server-side filters
+const searchQuery = ref(props.filters.search || '')
+const selectedKomoditas = ref(props.filters.nama_komoditas || '')
+const selectedProvinsi = ref(props.filters.provinsi_id?.toString() || '')
+const selectedKabupaten = ref(props.filters.kabupaten_kota_id?.toString() || '')
+const startDate = ref(props.filters.tanggal_mulai || '')
+const endDate = ref(props.filters.tanggal_selesai || '')
+const minPrice = ref(props.filters.harga_min?.toString() || '')
+const maxPrice = ref(props.filters.harga_max?.toString() || '')
+const sortField = ref(props.filters.sort_field || 'tanggal_pencatatan')
+const sortDirection = ref(props.filters.sort_direction || 'desc')
 
-// Computed filtered data
-const filteredSembako = computed(() => {
-    let filtered = props.sembako.data
+// Filtered kabupaten based on selected provinsi
+const filteredKabupaten = computed(() => {
+    if (!selectedProvinsi.value) return props.kabupatenKota
+    return props.kabupatenKota.filter(k => k.provinsi.id.toString() === selectedProvinsi.value)
+})
 
-    if (searchQuery.value) {
-        const query = searchQuery.value.toLowerCase()
-        filtered = filtered.filter(item => 
-            item.nama_komoditas.toLowerCase().includes(query)
-        )
-    }
+// Database filtering function
+const applyFilters = debounce(() => {
+    const params: Record<string, any> = {}
+    
+    if (searchQuery.value) params.search = searchQuery.value
+    if (selectedKomoditas.value) params.nama_komoditas = selectedKomoditas.value
+    if (selectedProvinsi.value) params.provinsi_id = selectedProvinsi.value
+    if (selectedKabupaten.value) params.kabupaten_kota_id = selectedKabupaten.value
+    if (startDate.value) params.tanggal_mulai = startDate.value
+    if (endDate.value) params.tanggal_selesai = endDate.value
+    if (minPrice.value) params.harga_min = minPrice.value
+    if (maxPrice.value) params.harga_max = maxPrice.value
+    if (sortField.value) params.sort_field = sortField.value
+    if (sortDirection.value) params.sort_direction = sortDirection.value
+    
+    router.get(route('sembako.index'), params, {
+        preserveState: true,
+        replace: true
+    })
+}, 500)
 
-    if (selectedKabupaten.value) {
-        filtered = filtered.filter(item => 
-            item.kabupaten_kota_id == parseInt(selectedKabupaten.value)
-        )
-    }
+// Clear all filters
+const clearFilters = () => {
+    searchQuery.value = ''
+    selectedKomoditas.value = ''
+    selectedProvinsi.value = ''
+    selectedKabupaten.value = ''
+    startDate.value = ''
+    endDate.value = ''
+    minPrice.value = ''
+    maxPrice.value = ''
+    applyFilters()
+}
 
-    if (startDate.value) {
-        filtered = filtered.filter(item => 
-            item.tanggal_pencatatan >= startDate.value
-        )
-    }
+// Watch filters and apply debounced filtering
+watch([searchQuery, selectedKomoditas, selectedProvinsi, selectedKabupaten, startDate, endDate, minPrice, maxPrice], () => {
+    applyFilters()
+})
 
-    if (endDate.value) {
-        filtered = filtered.filter(item => 
-            item.tanggal_pencatatan <= endDate.value
-        )
-    }
-
-    return filtered
+// Watch provinsi change to reset kabupaten selection
+watch(selectedProvinsi, () => {
+    selectedKabupaten.value = ''
 })
 
 const formatDate = (dateString: string) => {
