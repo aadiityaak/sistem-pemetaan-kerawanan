@@ -24,6 +24,7 @@ class InjectAppSettings
             'footer_text' => 'Peta Kriminal Indonesia © 2024',
             'app_favicon' => '/favicon.ico',
             'app_logo' => '',
+            'login_logo' => '',
         ];
 
         $settings = [];

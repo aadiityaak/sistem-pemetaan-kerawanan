@@ -15,7 +15,8 @@
       "Bash(bun run:*)",
       "Bash(cp:*)",
       "WebFetch(domain:tiptap.dev)",
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Bash(composer:*)"
     ],
     "deny": []
   }

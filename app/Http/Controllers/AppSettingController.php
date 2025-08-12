@@ -59,6 +59,13 @@ class AppSettingController extends Controller
                     'type' => 'image',
                     'value' => $this->settingsService->getSetting('app_logo', ''),
                 ],
+                [
+                    'key' => 'login_logo',
+                    'label' => 'Logo Login',
+                    'description' => 'Logo yang ditampilkan di halaman login',
+                    'type' => 'image',
+                    'value' => $this->settingsService->getSetting('login_logo', ''),
+                ],
             ],
             'ai' => [
                 [
@@ -113,6 +120,7 @@ class AppSettingController extends Controller
             'footer_text',
             'app_favicon',
             'app_logo',
+            'login_logo',
             'gemini_enabled',
             'gemini_api_endpoint',
             'gemini_api_key'
@@ -127,7 +135,7 @@ class AppSettingController extends Controller
         $rules = ['value' => 'nullable|string'];
 
         // Add file validation for image types
-        if (in_array($key, ['app_favicon', 'app_logo'])) {
+        if (in_array($key, ['app_favicon', 'app_logo', 'login_logo'])) {
             $rules['file'] = 'nullable|file|max:2048|mimes:jpg,jpeg,png,gif,ico,svg';
         }
 
@@ -140,6 +148,7 @@ class AppSettingController extends Controller
             'footer_text' => 'Teks Footer',
             'app_favicon' => 'Favicon',
             'app_logo' => 'Logo Aplikasi',
+            'login_logo' => 'Logo Login',
             'gemini_enabled' => 'Aktifkan Gemini AI',
             'gemini_api_endpoint' => 'Gemini API Endpoint',
             'gemini_api_key' => 'Gemini API Key',
@@ -147,7 +156,7 @@ class AppSettingController extends Controller
 
         // Determine setting type
         $settingType = 'text';
-        if (in_array($key, ['app_favicon', 'app_logo'])) {
+        if (in_array($key, ['app_favicon', 'app_logo', 'login_logo'])) {
             $settingType = 'image';
         } elseif ($key === 'gemini_enabled') {
             $settingType = 'boolean';
@@ -157,7 +166,7 @@ class AppSettingController extends Controller
 
         // Determine setting group
         $settingGroup = 'general';
-        if (in_array($key, ['app_favicon', 'app_logo'])) {
+        if (in_array($key, ['app_favicon', 'app_logo', 'login_logo'])) {
             $settingGroup = 'appearance';
         } elseif (in_array($key, ['gemini_enabled', 'gemini_api_endpoint', 'gemini_api_key'])) {
             $settingGroup = 'ai';

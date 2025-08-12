@@ -149,6 +149,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Sembako Routes
     Route::delete('sembako/bulk-destroy', [SembakoController::class, 'bulkDestroy'])->name('sembako.bulk-destroy');
+    Route::get('sembako/export-csv', [SembakoController::class, 'exportCsv'])->name('sembako.export-csv');
+    Route::get('sembako/download-sample', [SembakoController::class, 'downloadSample'])->name('sembako.download-sample');
+    Route::post('sembako/import-csv', [SembakoController::class, 'importCsv'])->name('sembako.import-csv');
     Route::resource('sembako', SembakoController::class);
 
     // Categories Routes (Admin only)

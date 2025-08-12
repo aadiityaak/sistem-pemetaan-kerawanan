@@ -23,6 +23,7 @@ export interface AppSettings {
     app_description?: string;
     app_favicon?: string;
     app_logo?: string;
+    login_logo?: string;
     dashboard_title?: string;
     footer_text?: string;
 }

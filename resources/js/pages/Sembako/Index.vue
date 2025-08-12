@@ -26,6 +26,47 @@
                         class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out hover:bg-gray-50 focus:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
                         {{ isAllSelected ? 'Batalkan Pilihan' : 'Pilih Semua' }}
                     </button>
+                    
+                    <!-- Import/Export Dropdown -->
+                    <div class="relative">
+                        <button
+                            @click="showImportExportMenu = !showImportExportMenu"
+                            class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out hover:bg-gray-50 focus:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+                            <Download class="mr-2 h-4 w-4" />
+                            Import/Export
+                            <ChevronDown class="ml-2 h-3 w-3" />
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div 
+                            v-if="showImportExportMenu"
+                            class="absolute left-0 top-full z-10 mt-1 w-64 rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800"
+                        >
+                            <div class="py-1">
+                                <button
+                                    @click="exportCsv"
+                                    class="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    <Download class="mr-3 h-4 w-4" />
+                                    Export Data (CSV)
+                                </button>
+                                <button
+                                    @click="downloadSample"
+                                    class="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    <FileText class="mr-3 h-4 w-4" />
+                                    Download Sample CSV
+                                </button>
+                                <button
+                                    @click="showImportModal = true; showImportExportMenu = false"
+                                    class="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    <Upload class="mr-3 h-4 w-4" />
+                                    Import Data (CSV)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div>
                     <Link :href="route('sembako.create')"
@@ -292,13 +333,89 @@
                 </div>
             </div>
         </div>
+
+        <!-- Import Modal -->
+        <div 
+            v-if="showImportModal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
+        >
+            <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
+                <div class="mb-4 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Import Data CSV</h3>
+                    <button
+                        @click="showImportModal = false"
+                        class="rounded-full p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <form @submit.prevent="submitImport">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Pilih File CSV
+                        </label>
+                        <input
+                            ref="csvFileInput"
+                            type="file"
+                            accept=".csv,.txt"
+                            @change="handleFileSelect"
+                            class="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        />
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            Format: CSV dengan delimiter titik koma (;). Maksimal 5MB.
+                        </p>
+                    </div>
+
+                    <div class="mb-4 rounded-md bg-blue-50 p-3 dark:bg-blue-900/20">
+                        <div class="flex">
+                            <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div class="ml-3">
+                                <p class="text-sm text-blue-700 dark:text-blue-300">
+                                    Format CSV harus sesuai dengan template. 
+                                    <button
+                                        type="button"
+                                        @click="downloadSample"
+                                        class="font-medium underline hover:no-underline"
+                                    >
+                                        Download sample CSV
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-3">
+                        <button
+                            type="button"
+                            @click="showImportModal = false"
+                            class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="!selectedFile || importLoading"
+                            class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <span v-if="importLoading">Mengimport...</span>
+                            <span v-else>Import Data</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </AppLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { Link, router } from '@inertiajs/vue3'
-import { Plus, Eye, Edit, Trash } from 'lucide-vue-next'
+import { Plus, Eye, Edit, Trash, Download, Upload, FileText, ChevronDown } from 'lucide-vue-next'
 import AppLayout from '@/layouts/AppLayout.vue'
 
 // Simple debounce function
@@ -398,6 +515,13 @@ const isAllSelected = computed(() => {
     return props.sembako.data.length > 0 && selectedItems.value.length === props.sembako.data.length
 })
 
+// Import/Export functionality
+const showImportExportMenu = ref(false)
+const showImportModal = ref(false)
+const selectedFile = ref<File | null>(null)
+const importLoading = ref(false)
+const csvFileInput = ref<HTMLInputElement>()
+
 // Filtered kabupaten based on selected provinsi
 const filteredKabupaten = computed(() => {
     if (!selectedProvinsi.value) return props.kabupatenKota
@@ -493,5 +617,68 @@ const confirmBulkDelete = () => {
             }
         })
     }
+}
+
+// Import/Export functions
+const exportCsv = () => {
+    // Build URL with current filters
+    const params = new URLSearchParams()
+    
+    if (searchQuery.value) params.append('search', searchQuery.value)
+    if (selectedKomoditas.value) params.append('nama_komoditas', selectedKomoditas.value)
+    if (selectedProvinsi.value) params.append('provinsi_id', selectedProvinsi.value)
+    if (selectedKabupaten.value) params.append('kabupaten_kota_id', selectedKabupaten.value)
+    if (startDate.value) params.append('tanggal_mulai', startDate.value)
+    if (endDate.value) params.append('tanggal_selesai', endDate.value)
+    if (minPrice.value) params.append('harga_min', minPrice.value)
+    if (maxPrice.value) params.append('harga_max', maxPrice.value)
+    
+    const url = route('sembako.export-csv') + '?' + params.toString()
+    window.open(url, '_blank')
+    showImportExportMenu.value = false
+}
+
+const downloadSample = () => {
+    window.open(route('sembako.download-sample'), '_blank')
+    showImportExportMenu.value = false
+}
+
+const handleFileSelect = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+    selectedFile.value = file || null
+}
+
+const submitImport = () => {
+    if (!selectedFile.value) return
+    
+    importLoading.value = true
+    const formData = new FormData()
+    formData.append('csv_file', selectedFile.value)
+    
+    router.post(route('sembako.import-csv'), formData, {
+        onSuccess: () => {
+            showImportModal.value = false
+            selectedFile.value = null
+            if (csvFileInput.value) {
+                csvFileInput.value.value = ''
+            }
+        },
+        onFinish: () => {
+            importLoading.value = false
+        }
+    })
+}
+
+// Close dropdown when clicking outside
+const handleClickOutside = (event: Event) => {
+    if (!(event.target as Element).closest('.relative')) {
+        showImportExportMenu.value = false
+    }
+}
+
+// Add click outside listener
+if (typeof window !== 'undefined') {
+    document.addEventListener('click', handleClickOutside)
 }
 </script>
