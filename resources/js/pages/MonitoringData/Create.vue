@@ -75,6 +75,7 @@ const form = useForm({
     longitude: '',
     title: '',
     description: '',
+    sumber_berita: '',
     jumlah_terdampak: '',
     severity_level: 'medium',
     status: 'active',
@@ -236,6 +237,26 @@ onMounted(() => {
                                     :error="form.errors.description"
                                     help-text="Berikan deskripsi lengkap mengenai kejadian yang terjadi"
                                 />
+
+                                <!-- Sumber Berita -->
+                                <div>
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> 
+                                        Sumber Berita 
+                                        <span class="text-xs text-gray-500">(Opsional)</span>
+                                    </label>
+                                    <input
+                                        v-model="form.sumber_berita"
+                                        type="text"
+                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                        placeholder="Masukkan sumber berita atau referensi"
+                                    />
+                                    <div v-if="form.errors.sumber_berita" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.sumber_berita }}
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Contoh: Detik.com, Kompas.com, atau sumber informasi lainnya
+                                    </p>
+                                </div>
 
                                 <!-- Jumlah Terdampak -->
                                 <div>

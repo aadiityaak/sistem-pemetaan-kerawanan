@@ -21,6 +21,7 @@ interface MonitoringData {
     longitude: number;
     title: string;
     description: string;
+    sumber_berita?: string;
     jumlah_terdampak: number | null;
     severity_level: string;
     status: string;
@@ -293,7 +294,21 @@ onMounted(async () => {
                             <!-- Description -->
                             <div v-if="monitoringData.description">
                                 <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Deskripsi</label>
-                                <div class="whitespace-pre-wrap text-gray-900 dark:text-white">{{ monitoringData.description }}</div>
+                                <div 
+                                    class="prose prose-sm max-w-none text-gray-900 dark:text-white dark:prose-invert"
+                                    v-html="monitoringData.description"
+                                ></div>
+                            </div>
+
+                            <!-- Sumber Berita -->
+                            <div v-if="monitoringData.sumber_berita">
+                                <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Sumber Berita</label>
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15"></path>
+                                    </svg>
+                                    <span class="text-gray-900 dark:text-white">{{ monitoringData.sumber_berita }}</span>
+                                </div>
                             </div>
 
                             <!-- Jumlah Terdampak -->

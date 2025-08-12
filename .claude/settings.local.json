@@ -12,7 +12,9 @@
       "Bash(sed:*)",
       "Bash(timeout:*)",
       "Bash(curl:*)",
-      "Bash(bun run:*)"
+      "Bash(bun run:*)",
+      "Bash(cp:*)",
+      "WebFetch(domain:tiptap.dev)"
     ],
     "deny": []
   }

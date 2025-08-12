@@ -223,6 +223,12 @@
                                     scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
                                 >
+                                    Sumber
+                                </th>
+                                <th
+                                    scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
+                                >
                                     Status
                                 </th>
                                 <th
@@ -238,7 +244,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                             <tr v-if="monitoringData.data.length === 0">
-                                <td colspan="8" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">Tidak ada data yang ditemukan</td>
+                                <td colspan="9" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">Tidak ada data yang ditemukan</td>
                             </tr>
                             <tr v-else v-for="data in monitoringData.data" :key="data.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <td class="px-6 py-4">
@@ -269,6 +275,15 @@
                                     >
                                         {{ data.level_kejadian }}
                                     </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 max-w-xs">
+                                    <div v-if="data.sumber_berita" class="flex items-center gap-1">
+                                        <svg class="w-3 h-3 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15"></path>
+                                        </svg>
+                                        <span class="truncate">{{ data.sumber_berita }}</span>
+                                    </div>
+                                    <span v-else class="text-gray-400 italic text-xs">-</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span :class="getStatusBadgeClass(data.status)" class="inline-flex rounded-full px-2 py-1 text-xs font-semibold">
