@@ -169,7 +169,7 @@ class MonitoringDataController extends Controller
         });
         
         // Filter provinces based on user's permission
-        $provinsiQuery = Provinsi::orderBy('nama');
+        $provinsiQuery = Provinsi::select('id', 'nama', 'latitude', 'longitude')->orderBy('nama');
         if ($request->has('province_filter')) {
             $provinsiQuery->where('id', $request->input('province_filter'));
         }
@@ -307,7 +307,7 @@ class MonitoringDataController extends Controller
         });
         
         // Filter provinces based on user's permission
-        $provinsiQuery = Provinsi::orderBy('nama');
+        $provinsiQuery = Provinsi::select('id', 'nama', 'latitude', 'longitude')->orderBy('nama');
         if ($request->has('province_filter')) {
             $provinsiQuery->where('id', $request->input('province_filter'));
         }

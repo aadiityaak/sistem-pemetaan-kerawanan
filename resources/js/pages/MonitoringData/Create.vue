@@ -10,6 +10,8 @@ import { computed, ref, watch } from 'vue';
 interface Provinsi {
     id: number;
     nama: string;
+    latitude?: number | null;
+    longitude?: number | null;
 }
 
 interface KabupatenKota {
@@ -123,9 +125,20 @@ const statusOptions = [
 ];
 
 // Watch for location changes
-watch(() => form.provinsi_id, () => {
+watch(() => form.provinsi_id, (newProvinsiId) => {
     form.kabupaten_kota_id = '';
     form.kecamatan_id = '';
+    
+    // Auto-pan map to selected province if coordinates are available
+    if (map && newProvinsiId) {
+        const selectedProvinsi = props.provinsiList.find(p => p.id === parseInt(newProvinsiId));
+        if (selectedProvinsi && selectedProvinsi.latitude && selectedProvinsi.longitude) {
+            map.setView([selectedProvinsi.latitude, selectedProvinsi.longitude], 8, {
+                animate: true,
+                duration: 1.0
+            });
+        }
+    }
 });
 
 watch(
