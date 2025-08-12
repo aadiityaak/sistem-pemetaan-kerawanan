@@ -64,6 +64,7 @@ interface MonitoringData {
     created_at: string;
     updated_at: string;
     additional_data: Record<string, any>;
+    video_path?: string;
     provinsi: { id: number; nama: string };
     kabupaten_kota: { id: number; nama: string; provinsi_id: number };
     kecamatan: { id: number; nama: string; kabupaten_kota_id: number };
@@ -126,6 +127,7 @@ const form = useForm({
     incident_date: formatDateForInput(props.monitoringData.incident_date),
     additional_data: props.monitoringData.additional_data || {},
     gallery: [] as File[],
+    video: null as File | null,
     _method: 'PUT',
 });
 
@@ -142,6 +144,10 @@ const galleryImages = ref<GalleryImage[]>([])
 const galleryErrors = ref<string[]>([])
 const isDragOver = ref(false)
 
+// Video related refs
+const videoPreview = ref<string | null>(null);
+const videoFile = ref<File | null>(null);
+
 // Initialize existing gallery images
 const initializeExistingGallery = () => {
     if (props.monitoringData.gallery && Array.isArray(props.monitoringData.gallery)) {
@@ -150,6 +156,13 @@ const initializeExistingGallery = () => {
             existing: true,
             path: item.path || item
         }))
+    }
+}
+
+// Initialize existing video
+const initializeExistingVideo = () => {
+    if (props.monitoringData.video_path) {
+        videoPreview.value = `/storage/${props.monitoringData.video_path}`;
     }
 }
 
@@ -347,6 +360,43 @@ const updateGalleryFormData = () => {
     form.gallery = galleryImages.value.filter(img => img.file).map(img => img.file!)
 }
 
+// Video upload functions
+const handleVideoUpload = (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    
+    if (file) {
+        // Check file size (100MB limit)
+        if (file.size > 100 * 1024 * 1024) {
+            alert('Ukuran file video terlalu besar. Maksimal 100MB.');
+            return;
+        }
+        
+        // Check file type
+        if (!file.type.startsWith('video/')) {
+            alert('File harus berupa video.');
+            return;
+        }
+        
+        videoFile.value = file;
+        form.video = file;
+        
+        // Create preview URL
+        const url = URL.createObjectURL(file);
+        videoPreview.value = url;
+    }
+};
+
+const removeVideo = () => {
+    if (videoPreview.value && videoFile.value) {
+        // Only revoke object URL if it's a new file (created with URL.createObjectURL)
+        URL.revokeObjectURL(videoPreview.value);
+    }
+    videoPreview.value = null;
+    videoFile.value = null;
+    form.video = null;
+};
+
 // Initialize map
 const initializeMap = async () => {
     if (typeof window !== 'undefined') {
@@ -409,6 +459,7 @@ const submit = () => {
 onMounted(() => {
     initializeMap();
     initializeExistingGallery();
+    initializeExistingVideo();
 });
 </script>
 
@@ -705,6 +756,14 @@ onMounted(() => {
                             </div>
                         </div>
 
+                        <!-- Map -->
+                        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Edit Lokasi di Peta</h3>
+                            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Klik pada peta untuk mengubah koordinat lokasi kejadian</p>
+                            <div ref="mapContainer" class="h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
+                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Lokasi saat ini: {{ currentLocationText }}</p>
+                        </div>
+
                         <!-- Gallery -->
                         <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                             <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Galeri</h3>
@@ -785,12 +844,57 @@ onMounted(() => {
                             </div>
                         </div>
 
-                        <!-- Map -->
+                        <!-- Video -->
                         <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Edit Lokasi di Peta</h3>
-                            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Klik pada peta untuk mengubah koordinat lokasi kejadian</p>
-                            <div ref="mapContainer" class="h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
-                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Lokasi saat ini: {{ currentLocationText }}</p>
+                            <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Video</h3>
+                            <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Upload video yang berkaitan dengan kejadian ini (Opsional)</p>
+                            
+                            <!-- Video Upload Area -->
+                            <div class="relative cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-6 transition-colors hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500">
+                                <div class="text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <div class="mt-4">
+                                        <label class="cursor-pointer">
+                                            <span class="mt-2 block text-sm font-medium text-gray-900 dark:text-white">
+                                                Klik untuk upload video
+                                            </span>
+                                            <span class="mt-1 block text-sm text-gray-500 dark:text-gray-400">
+                                                MP4, MOV, AVI hingga 100MB
+                                            </span>
+                                            <input
+                                                type="file"
+                                                accept="video/*"
+                                                class="sr-only"
+                                                @change="handleVideoUpload"
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Video Preview -->
+                            <div v-if="videoPreview" class="mt-4">
+                                <div class="relative rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+                                    <video 
+                                        :src="videoPreview"
+                                        controls
+                                        class="w-full aspect-video object-cover"
+                                    ></video>
+                                    <button
+                                        type="button"
+                                        @click="removeVideo"
+                                        class="absolute right-2 top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
+                                        title="Hapus video"
+                                    >
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ videoFile?.name }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>

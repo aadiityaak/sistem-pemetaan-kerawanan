@@ -148,6 +148,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/pasar-saham/watchlist', [PasarSahamController::class, 'watchlist'])->name('pasar-saham.watchlist');
 
     // Sembako Routes
+    Route::delete('sembako/bulk-destroy', [SembakoController::class, 'bulkDestroy'])->name('sembako.bulk-destroy');
     Route::resource('sembako', SembakoController::class);
 
     // Categories Routes (Admin only)

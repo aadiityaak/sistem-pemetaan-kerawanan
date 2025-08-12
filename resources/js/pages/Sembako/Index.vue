@@ -7,9 +7,26 @@
                 <p class="mt-1 text-gray-600 dark:text-gray-400">Kelola data harga sembako di seluruh kabupaten/kota</p>
             </div>
 
-            <!-- Action Button -->
+            <!-- Action Buttons -->
             <div class="mb-6 flex justify-between items-center">
-                <div></div>
+                <div class="flex items-center gap-3">
+                    <!-- Bulk Delete Button -->
+                    <button
+                        v-if="selectedItems.length > 0"
+                        @click="confirmBulkDelete"
+                        class="inline-flex items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition duration-150 ease-in-out hover:bg-red-700 focus:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none active:bg-red-900 leading-5 whitespace-nowrap">
+                        <Trash class="mr-2 h-4 w-4" />
+                        Hapus Terpilih ({{ selectedItems.length }})
+                    </button>
+                    
+                    <!-- Select All Button -->
+                    <button
+                        v-if="sembako.data.length > 0"
+                        @click="toggleSelectAll"
+                        class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out hover:bg-gray-50 focus:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+                        {{ isAllSelected ? 'Batalkan Pilihan' : 'Pilih Semua' }}
+                    </button>
+                </div>
                 <div>
                     <Link :href="route('sembako.create')"
                           class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-xs font-semibold tracking-widest text-white uppercase transition duration-150 ease-in-out hover:bg-blue-700 focus:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:bg-blue-900 leading-5 whitespace-nowrap">
@@ -155,6 +172,14 @@
                         <thead class="bg-gray-50 dark:bg-gray-900">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                                    <input 
+                                        type="checkbox" 
+                                        :checked="isAllSelected"
+                                        @change="toggleSelectAll"
+                                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200/50 dark:bg-gray-700 dark:border-gray-600"
+                                    />
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
                                     Komoditas
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
@@ -176,6 +201,15 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                             <tr v-for="item in sembako.data" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <input 
+                                        type="checkbox" 
+                                        :value="item.id"
+                                        :checked="selectedItems.includes(item.id)"
+                                        @change="toggleItemSelection(item.id)"
+                                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200/50 dark:bg-gray-700 dark:border-gray-600"
+                                    />
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                     {{ item.nama_komoditas }}
                                 </td>
@@ -357,6 +391,13 @@ const maxPrice = ref(props.filters.harga_max?.toString() || '')
 const sortField = ref(props.filters.sort_field || 'tanggal_pencatatan')
 const sortDirection = ref(props.filters.sort_direction || 'desc')
 
+// Bulk delete functionality
+const selectedItems = ref<number[]>([])
+
+const isAllSelected = computed(() => {
+    return props.sembako.data.length > 0 && selectedItems.value.length === props.sembako.data.length
+})
+
 // Filtered kabupaten based on selected provinsi
 const filteredKabupaten = computed(() => {
     if (!selectedProvinsi.value) return props.kabupatenKota
@@ -418,6 +459,39 @@ const formatDate = (dateString: string) => {
 const confirmDelete = (item: SembakoItem) => {
     if (confirm(`Apakah Anda yakin ingin menghapus data ${item.nama_komoditas} di ${item.kabupaten_kota.nama}?`)) {
         router.delete(route('sembako.destroy', item.id))
+    }
+}
+
+// Bulk delete functions
+const toggleItemSelection = (itemId: number) => {
+    const index = selectedItems.value.indexOf(itemId)
+    if (index > -1) {
+        selectedItems.value.splice(index, 1)
+    } else {
+        selectedItems.value.push(itemId)
+    }
+}
+
+const toggleSelectAll = () => {
+    if (isAllSelected.value) {
+        selectedItems.value = []
+    } else {
+        selectedItems.value = props.sembako.data.map(item => item.id)
+    }
+}
+
+const confirmBulkDelete = () => {
+    if (selectedItems.value.length === 0) return
+    
+    if (confirm(`Apakah Anda yakin ingin menghapus ${selectedItems.value.length} data sembako yang dipilih?`)) {
+        router.delete(route('sembako.bulk-destroy'), {
+            data: {
+                ids: selectedItems.value
+            },
+            onSuccess: () => {
+                selectedItems.value = []
+            }
+        })
     }
 }
 </script>

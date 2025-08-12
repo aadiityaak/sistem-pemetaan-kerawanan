@@ -225,6 +225,7 @@ class MonitoringDataController extends Controller
             'additional_data' => 'nullable|array',
             'gallery' => 'nullable|array',
             'gallery.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max per image
+            'video' => 'nullable|file|mimes:mp4,mov,avi,wmv,flv,webm|max:102400', // 100MB max for video
         ]);
 
         // Handle gallery upload
@@ -235,8 +236,15 @@ class MonitoringDataController extends Controller
                 $galleryPaths[] = $path;
             }
         }
+        
+        // Handle video upload
+        $videoPath = null;
+        if ($request->hasFile('video')) {
+            $videoPath = $request->file('video')->store('monitoring-data/videos', 'public');
+        }
 
         $validated['gallery'] = $galleryPaths;
+        $validated['video_path'] = $videoPath;
         MonitoringData::create($validated);
 
         return redirect()->route('monitoring-data.index')
@@ -286,6 +294,11 @@ class MonitoringDataController extends Controller
             })->toArray();
         } else {
             $monitoringData->gallery = [];
+        }
+        
+        // Process video data
+        if ($monitoringData->video_path) {
+            $monitoringData->video_url = asset('storage/' . $monitoringData->video_path);
         }
 
         return Inertia::render('MonitoringData/Show', [
@@ -361,6 +374,7 @@ class MonitoringDataController extends Controller
             'additional_data' => 'nullable|array',
             'gallery' => 'nullable|array',
             'gallery.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max per image
+            'video' => 'nullable|file|mimes:mp4,mov,avi,wmv,flv,webm|max:102400', // 100MB max for video
         ]);
 
         // Handle gallery upload
@@ -371,6 +385,15 @@ class MonitoringDataController extends Controller
                 $path = $file->store('monitoring-data/gallery', 'public');
                 $galleryPaths[] = $path;
             }
+        }
+        
+        // Handle video upload
+        if ($request->hasFile('video')) {
+            // Delete existing video if present
+            if (!empty($monitoringData->video_path)) {
+                Storage::disk('public')->delete($monitoringData->video_path);
+            }
+            $validated['video_path'] = $request->file('video')->store('monitoring-data/videos', 'public');
         }
 
         $validated['gallery'] = $galleryPaths;
@@ -389,6 +412,11 @@ class MonitoringDataController extends Controller
             foreach ($monitoringData->gallery as $filePath) {
                 Storage::disk('public')->delete($filePath);
             }
+        }
+        
+        // Delete video file from storage
+        if (!empty($monitoringData->video_path)) {
+            Storage::disk('public')->delete($monitoringData->video_path);
         }
         
         $monitoringData->delete();

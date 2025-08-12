@@ -30,6 +30,8 @@ interface MonitoringData {
     updated_at: string;
     additional_data: Record<string, any>;
     gallery?: GalleryItem[];
+    video_path?: string;
+    video_url?: string;
     provinsi: { id: number; nama: string };
     kabupaten_kota: { id: number; nama: string; provinsi_id: number };
     kecamatan: { id: number; nama: string; kabupaten_kota_id: number };
@@ -63,6 +65,7 @@ const mapContainer = ref();
 // Gallery carousel refs
 const currentImageIndex = ref(0);
 const showImageModal = ref(false);
+const currentCarouselIndex = ref(0);
 
 // Severity mapping
 const severityConfig: Record<string, { label: string; color: string; bgColor: string; icon: string }> = {
@@ -178,6 +181,23 @@ const prevImage = () => {
 
 const goToImage = (index: number) => {
     currentImageIndex.value = index;
+};
+
+// Carousel navigation functions
+const nextCarouselImage = () => {
+    if (props.monitoringData.gallery && currentCarouselIndex.value < props.monitoringData.gallery.length - 1) {
+        currentCarouselIndex.value++;
+    }
+};
+
+const prevCarouselImage = () => {
+    if (currentCarouselIndex.value > 0) {
+        currentCarouselIndex.value--;
+    }
+};
+
+const goToCarouselImage = (index: number) => {
+    currentCarouselIndex.value = index;
 };
 
 // Initialize map
@@ -356,31 +376,23 @@ onMounted(async () => {
                         </div>
                     </div>
 
-                    <!-- Gallery -->
-                    <div
-                        v-if="monitoringData.gallery && monitoringData.gallery.length > 0"
+
+                    <!-- Video -->
+                    <div 
+                        v-if="monitoringData.video_path"
                         class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
                     >
-                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Galeri Foto</h3>
+                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Video</h3>
                         
-                        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-                            <div 
-                                v-for="(image, index) in monitoringData.gallery" 
-                                :key="index"
-                                class="group relative aspect-square cursor-pointer overflow-hidden rounded-lg border border-gray-200 hover:border-blue-500 dark:border-gray-600 dark:hover:border-blue-400"
-                                @click="openImageModal(index)"
+                        <div class="rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+                            <video 
+                                :src="monitoringData.video_url"
+                                controls
+                                class="w-full aspect-video object-cover"
+                                preload="metadata"
                             >
-                                <img 
-                                    :src="image.url" 
-                                    :alt="`Gallery image ${index + 1}`"
-                                    class="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
-                                />
-                                <div class="absolute inset-0 transition-all duration-200 group-hover:bg-opacity-40 flex items-center justify-center">
-                                    <svg class="h-8 w-8 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </div>
-                            </div>
+                                Browser Anda tidak mendukung tag video.
+                            </video>
                         </div>
                     </div>
 
@@ -459,6 +471,79 @@ onMounted(async () => {
                         <div ref="mapContainer" class="h-64 rounded-lg border border-gray-200 dark:border-gray-700"></div>
                     </div>
 
+                    <!-- Gallery Carousel -->
+                    <div 
+                        v-if="monitoringData.gallery && monitoringData.gallery.length > 0"
+                        class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                    >
+                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Galeri Foto</h3>
+                        
+                        <!-- Main Image Display -->
+                        <div class="relative rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden mb-4">
+                            <img 
+                                :src="monitoringData.gallery[currentCarouselIndex].url" 
+                                :alt="`Gallery image ${currentCarouselIndex + 1}`"
+                                class="w-full aspect-4/3 object-cover cursor-pointer"
+                                @click="openImageModal(currentCarouselIndex)"
+                            />
+                            
+                            <!-- Navigation Arrows -->
+                            <button 
+                                v-if="monitoringData.gallery.length > 1 && currentCarouselIndex > 0"
+                                @click="prevCarouselImage"
+                                class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            
+                            <button 
+                                v-if="monitoringData.gallery.length > 1 && currentCarouselIndex < monitoringData.gallery.length - 1"
+                                @click="nextCarouselImage"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                            
+                            <!-- Image Counter -->
+                            <div class="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                                {{ currentCarouselIndex + 1 }} / {{ monitoringData.gallery.length }}
+                            </div>
+                            
+                            <!-- Click to enlarge indicator -->
+                            <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                Klik untuk perbesar
+                            </div>
+                        </div>
+                        
+                        <!-- Thumbnail Navigation -->
+                        <div v-if="monitoringData.gallery.length > 1" class="flex gap-2 overflow-x-auto pb-2">
+                            <div 
+                                v-for="(image, index) in monitoringData.gallery"
+                                :key="index"
+                                class="flex-shrink-0 w-16 h-16 rounded cursor-pointer border-2 transition-all duration-200"
+                                :class="[
+                                    currentCarouselIndex === index 
+                                        ? 'border-blue-500' 
+                                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500'
+                                ]"
+                                @click="goToCarouselImage(index)"
+                            >
+                                <img 
+                                    :src="image.url" 
+                                    :alt="`Thumbnail ${index + 1}`"
+                                    class="w-full h-full object-cover rounded"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Quick Info -->
                     <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Informasi Cepat</h3>
@@ -518,14 +603,14 @@ onMounted(async () => {
         <!-- Image Modal/Carousel -->
         <div
             v-if="showImageModal && monitoringData.gallery && monitoringData.gallery.length > 0"
-            class="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-75 p-4"
+            class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 p-4"
             @click="closeImageModal"
         >
             <div class="relative bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden dark:bg-gray-800" @click.stop>
                 <!-- Close Button -->
                 <button
                     @click="closeImageModal"
-                    class="absolute top-4 right-4 z-10 rounded-full bg-black bg-opacity-50 p-2 text-white hover:bg-opacity-75 transition-all"
+                    class="absolute top-4 right-4 z-10 rounded-full bg-black/50 p-2 text-white hover:bg-black/75 transition-all"
                 >
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -546,7 +631,7 @@ onMounted(async () => {
                     <button
                         v-if="currentImageIndex > 0"
                         @click="prevImage"
-                        class="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white bg-opacity-80 p-3 text-gray-800 shadow-lg hover:bg-opacity-100 transition-all dark:bg-gray-800 dark:text-white"
+                        class="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-3 text-gray-800 shadow-lg hover:bg-white/100 transition-all dark:bg-gray-800 dark:text-white"
                     >
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -556,7 +641,7 @@ onMounted(async () => {
                     <button
                         v-if="currentImageIndex < monitoringData.gallery.length - 1"
                         @click="nextImage"
-                        class="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white bg-opacity-80 p-3 text-gray-800 shadow-lg hover:bg-opacity-100 transition-all dark:bg-gray-800 dark:text-white"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-3 text-gray-800 shadow-lg hover:bg-white/100 transition-all dark:bg-gray-800 dark:text-white"
                     >
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />

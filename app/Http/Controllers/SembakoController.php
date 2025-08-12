@@ -183,4 +183,17 @@ class SembakoController extends Controller
 
         return Redirect::route('sembako.index')->with('success', 'Data sembako berhasil dihapus.');
     }
+
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'exists:sembako,id'
+        ]);
+
+        $count = Sembako::whereIn('id', $validated['ids'])->count();
+        Sembako::whereIn('id', $validated['ids'])->delete();
+
+        return Redirect::route('sembako.index')->with('success', "Berhasil menghapus {$count} data sembako.");
+    }
 }

@@ -28,6 +28,7 @@ class MonitoringData extends Model
         'incident_date',
         'source',
         'gallery',
+        'video_path',
     ];
 
     protected $casts = [
