@@ -548,7 +548,7 @@ onMounted(async () => {
             </div>
 
             <!-- Statistics Cards -->
-            <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+            <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-3">
                 <!-- Total Data -->
                 <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                     <div class="flex flex-col items-center text-center">
@@ -611,62 +611,6 @@ onMounted(async () => {
                         <p class="text-xs text-gray-600 dark:text-gray-400">{{ selectedCategory ? 'Sub Kategori' : 'Kategori' }}</p>
                     </div>
                 </div>
-
-                <!-- Total Provinsi -->
-                <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                    <div class="flex flex-col items-center text-center">
-                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900">
-                            <svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                        </div>
-                        <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalProvinsi }}</p>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">Provinsi</p>
-                    </div>
-                </div>
-
-                <!-- Total Kabupaten/Kota -->
-                <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                    <div class="flex flex-col items-center text-center">
-                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-100 dark:bg-yellow-900">
-                            <svg class="h-5 w-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                                />
-                            </svg>
-                        </div>
-                        <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalKabupatenKota }}</p>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">Kab/Kota</p>
-                    </div>
-                </div>
-
-                <!-- Total Kecamatan -->
-                <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                    <div class="flex flex-col items-center text-center">
-                        <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900">
-                            <svg class="h-5 w-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                        </div>
-                        <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalKecamatan }}</p>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">Kecamatan</p>
-                    </div>
-                </div>
             </div>
 
             <!-- Main Content Grid -->
@@ -695,6 +639,65 @@ onMounted(async () => {
                             </div>
                         </div>
                         <div ref="mapContainer" class="h-96 rounded-lg border border-gray-200 dark:border-gray-700 relative z-0"></div>
+                    </div>
+
+                    <!-- Location Statistics Cards -->
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3 mb-6">
+                        <!-- Total Provinsi -->
+                        <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <div class="flex flex-col items-center text-center">
+                                <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900">
+                                    <svg class="h-5 w-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                        />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalProvinsi }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">Provinsi</p>
+                            </div>
+                        </div>
+
+                        <!-- Total Kabupaten/Kota -->
+                        <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <div class="flex flex-col items-center text-center">
+                                <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-100 dark:bg-yellow-900">
+                                    <svg class="h-5 w-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                                        />
+                                    </svg>
+                                </div>
+                                <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalKabupatenKota }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">Kab/Kota</p>
+                            </div>
+                        </div>
+
+                        <!-- Total Kecamatan -->
+                        <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <div class="flex flex-col items-center text-center">
+                                <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900">
+                                    <svg class="h-5 w-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                        />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalKecamatan }}</p>
+                                <p class="text-xs text-gray-600 dark:text-gray-400">Kecamatan</p>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Monitoring Data Table -->

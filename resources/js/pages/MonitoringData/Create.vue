@@ -393,6 +393,32 @@ onMounted(() => {
                             </div>
                         </div>
 
+
+                        <!-- Submit Buttons -->
+                        <div class="flex justify-end gap-3">
+                            <Button type="button" variant="outline" @click="$inertia.visit('/monitoring-data')"> Batal </Button>
+                            <Button type="submit" :disabled="form.processing">
+                                <svg v-if="form.processing" class="mr-3 -ml-1 h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path
+                                        class="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    ></path>
+                                </svg>
+                                {{ form.processing ? 'Menyimpan...' : 'Simpan Data' }}
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Gallery -->
+                        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                            <GalleryInput
+                                v-model="form.gallery"
+                            />
+                        </div>
+
                         <!-- Location Selection -->
                         <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                             <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Lokasi</h3>
@@ -490,35 +516,8 @@ onMounted(() => {
                             </div>
                         </div>
 
-                        <!-- Submit Buttons -->
-                        <div class="flex justify-end gap-3">
-                            <Button type="button" variant="outline" @click="$inertia.visit('/monitoring-data')"> Batal </Button>
-                            <Button type="submit" :disabled="form.processing">
-                                <svg v-if="form.processing" class="mr-3 -ml-1 h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path
-                                        class="opacity-75"
-                                        fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                    ></path>
-                                </svg>
-                                {{ form.processing ? 'Menyimpan...' : 'Simpan Data' }}
-                            </Button>
-                        </div>
-                    </div>
-
-                    <!-- Gallery & Map -->
-                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                        <!-- Gallery Section -->
-                        <GalleryInput
-                            v-model="form.gallery"
-                        />
-
-                        <!-- Separator -->
-                        <div class="border-t border-gray-200 dark:border-gray-600 my-8"></div>
-
-                        <!-- Map Section -->
-                        <div>
+                        <!-- Map -->
+                        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                             <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Pilih Lokasi di Peta</h3>
                             <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Klik pada peta untuk menentukan koordinat lokasi kejadian</p>
                             <div ref="mapContainer" class="h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
