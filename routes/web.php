@@ -99,6 +99,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/provinsi', [ProvinsiController::class, 'index'])->name('provinsi.index');
     Route::get('/provinsi/{id}', [ProvinsiController::class, 'show'])->name('provinsi.show');
+    Route::get('/provinsi/{id}/edit', [ProvinsiController::class, 'edit'])->name('provinsi.edit');
+    Route::put('/provinsi/{id}', [ProvinsiController::class, 'update'])->name('provinsi.update');
 
     Route::get('/kabupaten-kota', [KabupatenKotaController::class, 'index'])->name('kabupaten_kota.index');
     Route::get('/kabupaten-kota/{id}', [KabupatenKotaController::class, 'show'])->name('kabupaten_kota.show');

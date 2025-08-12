@@ -130,7 +130,13 @@
                                 Kecamatan
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                Koordinat
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
                                 Data Monitoring
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                Aksi
                             </th>
                         </tr>
                     </thead>
@@ -142,6 +148,20 @@
                                 {{ item.jumlah_kabupaten_kota || 0 }}
                             </td>
                             <td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100">{{ item.jumlah_kecamatan || 0 }}</td>
+                            <td class="px-6 py-4 text-sm whitespace-nowrap">
+                                <span v-if="item.latitude && item.longitude" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Tersedia
+                                </span>
+                                <span v-else class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    Belum Ada
+                                </span>
+                            </td>
                             <td class="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-100">
                                 <span
                                     class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
@@ -153,6 +173,17 @@
                                 >
                                     {{ item.crime_data?.length || 0 }}
                                 </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm whitespace-nowrap">
+                                <Link
+                                    :href="route('provinsi.edit', item.id)"
+                                    class="inline-flex items-center px-2 py-1 text-xs font-medium rounded border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-600 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                                >
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                    </svg>
+                                    Edit Koordinat
+                                </Link>
                             </td>
                         </tr>
                     </tbody>
@@ -248,6 +279,8 @@ import { ref, watch } from 'vue';
 interface ProvinsiData {
     id: number;
     nama: string;
+    latitude?: number | null;
+    longitude?: number | null;
     jumlah_kabupaten_kota?: number;
     jumlah_kecamatan?: number;
     crime_data?: any[];

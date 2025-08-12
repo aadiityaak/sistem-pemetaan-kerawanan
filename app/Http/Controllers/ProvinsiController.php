@@ -82,10 +82,21 @@ class ProvinsiController extends Controller
         ]);
     }
 
+    public function edit($id)
+    {
+        $provinsi = Provinsi::findOrFail($id);
+        
+        return Inertia::render('Provinsi/Edit', [
+            'provinsi' => $provinsi
+        ]);
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
             'nama' => 'required|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ]);
         $provinsi = Provinsi::create($data);
 
@@ -101,14 +112,13 @@ class ProvinsiController extends Controller
         $provinsi = Provinsi::findOrFail($id);
         $data = $request->validate([
             'nama' => 'required|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ]);
         $provinsi->update($data);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Provinsi berhasil diupdate',
-            'data' => $provinsi,
-        ]);
+        return redirect()->route('provinsi.index')
+            ->with('success', 'Provinsi berhasil diperbarui.');
     }
 
     public function destroy($id)

@@ -9,7 +9,12 @@ class Provinsi extends Model
 {
     protected $table = 'provinsi';
 
-    protected $fillable = ['nama'];
+    protected $fillable = ['nama', 'latitude', 'longitude'];
+    
+    protected $casts = [
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
+    ];
 
     public function kabupatenKota(): HasMany
     {
