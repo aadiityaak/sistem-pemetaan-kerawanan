@@ -14,7 +14,8 @@
       "Bash(curl:*)",
       "Bash(bun run:*)",
       "Bash(cp:*)",
-      "WebFetch(domain:tiptap.dev)"
+      "WebFetch(domain:tiptap.dev)",
+      "Bash(npm run test:*)"
     ],
     "deny": []
   }

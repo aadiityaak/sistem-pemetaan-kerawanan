@@ -181,6 +181,13 @@ class DashboardController extends Controller
             $subCategory->append(['image_url']);
         });
 
+        // Get user's province information for map centering
+        $userProvinsi = null;
+        if ($request->has('province_filter')) {
+            $userProvinsi = Provinsi::select('id', 'nama', 'latitude', 'longitude')
+                ->find($request->input('province_filter'));
+        }
+
         return Inertia::render('Dashboard', [
             'monitoringData' => $monitoringData,
             'selectedCategory' => $selectedCategory,
@@ -189,6 +196,7 @@ class DashboardController extends Controller
             'endDate' => $endDate,
             'categories' => $categories,
             'subCategories' => $subCategories,
+            'userProvinsi' => $userProvinsi,
             'statistics' => [
                 'totalData' => $totalData,
                 'totalProvinsi' => $totalProvinsi,

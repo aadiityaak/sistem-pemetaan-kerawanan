@@ -161,7 +161,17 @@ const initializeMap = async () => {
         const L = await import('leaflet');
 
         if (mapContainer.value) {
-            map = L.map(mapContainer.value).setView([-2.5489, 118.0149], 5);
+            // Use user's province coordinates if available (non-admin users have filtered province list)
+            let mapCenter: [number, number] = [-2.5489, 118.0149]; // Default: Indonesia center
+            let zoomLevel = 5; // Default zoom for Indonesia
+            
+            if (props.provinsiList.length === 1 && props.provinsiList[0].latitude && props.provinsiList[0].longitude) {
+                // Single province means user is filtered to their province
+                mapCenter = [props.provinsiList[0].latitude, props.provinsiList[0].longitude];
+                zoomLevel = 8; // Closer zoom for province view
+            }
+            
+            map = L.map(mapContainer.value).setView(mapCenter, zoomLevel);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',

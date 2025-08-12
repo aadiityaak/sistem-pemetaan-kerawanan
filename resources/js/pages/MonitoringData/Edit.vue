@@ -353,10 +353,26 @@ const initializeMap = async () => {
         const L = await import('leaflet');
 
         if (mapContainer.value) {
-            const initialLat = typeof props.monitoringData.latitude === 'number' ? props.monitoringData.latitude : -6.2;
-            const initialLng = typeof props.monitoringData.longitude === 'number' ? props.monitoringData.longitude : 106.8;
+            // Use existing monitoring data coordinates if available
+            let initialLat = typeof props.monitoringData.latitude === 'number' ? props.monitoringData.latitude : null;
+            let initialLng = typeof props.monitoringData.longitude === 'number' ? props.monitoringData.longitude : null;
+            let zoomLevel = 15;
+            
+            // If no existing coordinates, fall back to user's province center (for non-admin users)
+            if (initialLat === null || initialLng === null) {
+                if (props.provinsi.length === 1 && props.provinsi[0].latitude && props.provinsi[0].longitude) {
+                    initialLat = props.provinsi[0].latitude;
+                    initialLng = props.provinsi[0].longitude;
+                    zoomLevel = 8; // Province-level zoom
+                } else {
+                    // Final fallback: Jakarta coordinates
+                    initialLat = -6.2;
+                    initialLng = 106.8;
+                    zoomLevel = 10;
+                }
+            }
 
-            map = L.map(mapContainer.value).setView([initialLat, initialLng], 15);
+            map = L.map(mapContainer.value).setView([initialLat, initialLng], zoomLevel);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',

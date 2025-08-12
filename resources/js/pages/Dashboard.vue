@@ -46,6 +46,13 @@ interface SubCategory {
     image_url?: string;
 }
 
+interface UserProvinsi {
+    id: number;
+    nama: string;
+    latitude?: number | null;
+    longitude?: number | null;
+}
+
 interface Statistics {
     totalData: number;
     totalProvinsi: number;
@@ -68,6 +75,7 @@ const props = defineProps<{
     endDate?: string | null;
     categories: Category[];
     subCategories: SubCategory[];
+    userProvinsi?: UserProvinsi | null;
     statistics: Statistics;
     recentActivities: MonitoringData[];
 }>();
@@ -264,7 +272,16 @@ onMounted(async () => {
 
         // Initialize map
         if (mapContainer.value) {
-            map = L.map(mapContainer.value).setView([-2.5489, 118.0149], 5); // Indonesia center
+            // Use user's province coordinates if available, otherwise use Indonesia center
+            let mapCenter: [number, number] = [-2.5489, 118.0149]; // Default: Indonesia center
+            let zoomLevel = 5; // Default zoom for Indonesia
+            
+            if (props.userProvinsi && props.userProvinsi.latitude && props.userProvinsi.longitude) {
+                mapCenter = [props.userProvinsi.latitude, props.userProvinsi.longitude];
+                zoomLevel = 8; // Closer zoom for province view
+            }
+            
+            map = L.map(mapContainer.value).setView(mapCenter, zoomLevel);
 
             // Add tile layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
