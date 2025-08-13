@@ -168,14 +168,10 @@ const initializeExistingGallery = () => {
 
 // Initialize existing video
 const initializeExistingVideo = () => {
-    console.log('Initializing existing video:', props.monitoringData.video_path);
     if (props.monitoringData.video_path) {
         // Use video_url if available (already processed), otherwise construct URL
         videoPreview.value = props.monitoringData.video_url || `/storage/${props.monitoringData.video_path}`;
         uploadedVideoPath.value = props.monitoringData.video_path; // Set as already uploaded
-        console.log('Existing video initialized:', uploadedVideoPath.value);
-    } else {
-        console.log('No existing video found, uploadedVideoPath remains null');
     }
 }
 
@@ -445,14 +441,9 @@ const uploadVideoChunked = async (file: File) => {
             
             // If this is the last chunk and upload is complete
             if (chunkIndex === totalChunks - 1 && result.videoPath) {
-                console.log('Chunked upload completed:', result.videoPath);
                 uploadedVideoPath.value = result.videoPath;
                 form.video = null; // Clear the file from form since it's already uploaded
                 form.uploaded_video_path = result.videoPath;
-                console.log('Video path assigned:', {
-                    uploadedVideoPath: uploadedVideoPath.value,
-                    formUploadedVideoPath: form.uploaded_video_path
-                });
             }
         }
     } catch (error) {
@@ -553,34 +544,24 @@ const submit = () => {
         return;
     }
     
-    // TEMPORARY TEST: Force set uploaded_video_path untuk test backend
-    form.uploaded_video_path = 'monitoring-data/videos/E5OzV8P6nGz1VHtf1zdmoO1A4BUQb9dXcVXUs2WM.mp4';
-    
-    // Debug logging (uploadedVideoPath should already be set in form)
-    console.log('Form data being submitted:', {
-        video: form.video,
-        uploaded_video_path: form.uploaded_video_path,
-        uploadedVideoPath: uploadedVideoPath.value
-    });
+    // Ensure uploaded video path is set in form if available
+    if (uploadedVideoPath.value && !form.uploaded_video_path) {
+        form.uploaded_video_path = uploadedVideoPath.value;
+    }
     
     form.post(`/monitoring-data/${props.monitoringData.id}`, {
         onSuccess: (page) => {
-            console.log('Form submitted successfully');
             // Show success message
             alert('✅ Data monitoring berhasil diperbarui!');
             // Redirect will be handled by Inertia
         },
         onError: (errors) => {
-            console.error('Form submission errors:', errors);
             // Show error message with details
             let errorMessage = '❌ Gagal menyimpan data:\n';
             Object.keys(errors).forEach(key => {
                 errorMessage += `• ${key}: ${errors[key]}\n`;
             });
             alert(errorMessage);
-        },
-        onFinish: () => {
-            console.log('Form submission finished');
         }
     });
 };

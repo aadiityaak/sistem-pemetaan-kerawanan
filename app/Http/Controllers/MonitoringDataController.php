@@ -225,13 +225,6 @@ class MonitoringDataController extends Controller
 
     public function store(Request $request)
     {
-        // Debug logging
-        \Log::info('Create request data', [
-            'has_video_file' => $request->hasFile('video'),
-            'uploaded_video_path' => $request->input('uploaded_video_path'),
-            'video_file_size' => $request->hasFile('video') ? $request->file('video')->getSize() : null
-        ]);
-        
         // Check if user can access this province
         if ($request->has('province_filter')) {
             $request->validate([
@@ -278,12 +271,6 @@ class MonitoringDataController extends Controller
         } elseif ($request->filled('uploaded_video_path')) {
             $videoPath = $request->input('uploaded_video_path');
         }
-        
-        // Debug logging video path assignment
-        \Log::info('Create video path assignment', [
-            'final_video_path' => $videoPath,
-            'uploaded_video_path_input' => $request->input('uploaded_video_path')
-        ]);
 
         // Convert empty kecamatan_id to null
         if (empty($validated['kecamatan_id'])) {
@@ -419,13 +406,6 @@ class MonitoringDataController extends Controller
     {
         $monitoringData = MonitoringData::findOrFail($id);
 
-        // Debug logging
-        \Log::info('Update request data', [
-            'has_video_file' => $request->hasFile('video'),
-            'uploaded_video_path' => $request->input('uploaded_video_path'),
-            'all_request_data' => $request->all()
-        ]);
-
         $validated = $request->validate([
             'provinsi_id' => 'required|exists:provinsi,id',
             'kabupaten_kota_id' => 'required|exists:kabupaten_kota,id',
@@ -477,13 +457,6 @@ class MonitoringDataController extends Controller
             // Preserve existing video if no new video is uploaded
             $validated['video_path'] = $monitoringData->video_path;
         }
-        
-        // Debug logging video path assignment
-        \Log::info('Video path assignment', [
-            'final_video_path' => $validated['video_path'],
-            'uploaded_video_path_input' => $request->input('uploaded_video_path'),
-            'existing_video_path' => $monitoringData->video_path
-        ]);
         
         // Remove uploaded_video_path from validated data as it's not a database field
         if (isset($validated['uploaded_video_path'])) {

@@ -332,17 +332,30 @@ const removeVideo = async () => {
 
 // Submit form
 const submit = () => {
+    // Check if video upload is still in progress
+    if (isVideoUploading.value) {
+        alert('⚠️ Upload video masih berlangsung. Harap tunggu hingga upload selesai sebelum menyimpan data.');
+        return;
+    }
+    
     // Include uploaded video path if available
     if (uploadedVideoPath.value) {
         form.uploaded_video_path = uploadedVideoPath.value;
     }
     
     form.post('/monitoring-data', {
-        onSuccess: () => {
+        onSuccess: (page) => {
+            // Show success message
+            alert('✅ Data monitoring berhasil ditambahkan!');
             // Redirect will be handled by Inertia
         },
         onError: (errors) => {
-            console.error('Form submission errors:', errors);
+            // Show error message with details
+            let errorMessage = '❌ Gagal menyimpan data:\n';
+            Object.keys(errors).forEach(key => {
+                errorMessage += `• ${key}: ${errors[key]}\n`;
+            });
+            alert(errorMessage);
         }
     });
 };
@@ -534,7 +547,7 @@ onMounted(() => {
                         <!-- Submit Buttons -->
                         <div class="flex justify-end gap-3">
                             <Button type="button" variant="outline" @click="$inertia.visit('/monitoring-data')"> Batal </Button>
-                            <Button type="submit" :disabled="form.processing">
+                            <Button type="submit" :disabled="form.processing || isVideoUploading">
                                 <svg v-if="form.processing" class="mr-3 -ml-1 h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path
@@ -543,7 +556,14 @@ onMounted(() => {
                                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                     ></path>
                                 </svg>
-                                {{ form.processing ? 'Menyimpan...' : 'Simpan Data' }}
+                                <svg v-else-if="isVideoUploading" class="mr-3 -ml-1 h-4 w-4 animate-pulse text-white" fill="none" viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                {{ 
+                                    form.processing ? 'Menyimpan...' : 
+                                    isVideoUploading ? `Menunggu Upload Video (${videoUploadProgress}%)` : 
+                                    'Simpan Data' 
+                                }}
                             </Button>
                         </div>
                     </div>
