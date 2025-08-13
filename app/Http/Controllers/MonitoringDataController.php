@@ -225,6 +225,13 @@ class MonitoringDataController extends Controller
 
     public function store(Request $request)
     {
+        // Debug logging
+        \Log::info('Create request data', [
+            'has_video_file' => $request->hasFile('video'),
+            'uploaded_video_path' => $request->input('uploaded_video_path'),
+            'video_file_size' => $request->hasFile('video') ? $request->file('video')->getSize() : null
+        ]);
+        
         // Check if user can access this province
         if ($request->has('province_filter')) {
             $request->validate([
@@ -252,6 +259,7 @@ class MonitoringDataController extends Controller
             'gallery' => 'nullable|array',
             'gallery.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max per image
             'video' => 'nullable|file|mimes:mp4,mov,avi,wmv,flv,webm|max:102400', // 100MB max for video
+            'uploaded_video_path' => 'nullable|string', // For chunked uploaded video
         ]);
 
         // Handle gallery upload
@@ -267,7 +275,15 @@ class MonitoringDataController extends Controller
         $videoPath = null;
         if ($request->hasFile('video')) {
             $videoPath = $request->file('video')->store('monitoring-data/videos', 'public');
+        } elseif ($request->filled('uploaded_video_path')) {
+            $videoPath = $request->input('uploaded_video_path');
         }
+        
+        // Debug logging video path assignment
+        \Log::info('Create video path assignment', [
+            'final_video_path' => $videoPath,
+            'uploaded_video_path_input' => $request->input('uploaded_video_path')
+        ]);
 
         // Convert empty kecamatan_id to null
         if (empty($validated['kecamatan_id'])) {
@@ -350,6 +366,23 @@ class MonitoringDataController extends Controller
             });
         });
         
+        // Process gallery data
+        if ($monitoringData->gallery && is_array($monitoringData->gallery)) {
+            $monitoringData->gallery = collect($monitoringData->gallery)->map(function ($path) {
+                return [
+                    'path' => $path,
+                    'url' => asset('storage/' . $path)
+                ];
+            })->toArray();
+        } else {
+            $monitoringData->gallery = [];
+        }
+        
+        // Process video data
+        if ($monitoringData->video_path) {
+            $monitoringData->video_url = asset('storage/' . $monitoringData->video_path);
+        }
+        
         // Filter provinces based on user's permission
         $provinsiQuery = Provinsi::select('id', 'nama', 'latitude', 'longitude')->orderBy('nama');
         if ($request->has('province_filter')) {
@@ -385,6 +418,13 @@ class MonitoringDataController extends Controller
     public function update(Request $request, $id)
     {
         $monitoringData = MonitoringData::findOrFail($id);
+
+        // Debug logging
+        \Log::info('Update request data', [
+            'has_video_file' => $request->hasFile('video'),
+            'uploaded_video_path' => $request->input('uploaded_video_path'),
+            'all_request_data' => $request->all()
+        ]);
 
         $validated = $request->validate([
             'provinsi_id' => 'required|exists:provinsi,id',
@@ -429,14 +469,26 @@ class MonitoringDataController extends Controller
         } elseif ($request->filled('uploaded_video_path')) {
             // Handle chunked uploaded video
             // Delete existing video if present and different from uploaded one
-            if (!empty($monitoringData->video_path) && $monitoringData->video_path !== $validated['uploaded_video_path']) {
+            if (!empty($monitoringData->video_path) && $monitoringData->video_path !== $request->input('uploaded_video_path')) {
                 Storage::disk('public')->delete($monitoringData->video_path);
             }
-            $validated['video_path'] = $validated['uploaded_video_path'];
+            $validated['video_path'] = $request->input('uploaded_video_path');
+        } else {
+            // Preserve existing video if no new video is uploaded
+            $validated['video_path'] = $monitoringData->video_path;
         }
         
+        // Debug logging video path assignment
+        \Log::info('Video path assignment', [
+            'final_video_path' => $validated['video_path'],
+            'uploaded_video_path_input' => $request->input('uploaded_video_path'),
+            'existing_video_path' => $monitoringData->video_path
+        ]);
+        
         // Remove uploaded_video_path from validated data as it's not a database field
-        unset($validated['uploaded_video_path']);
+        if (isset($validated['uploaded_video_path'])) {
+            unset($validated['uploaded_video_path']);
+        }
         
         // Convert empty kecamatan_id to null
         if (empty($validated['kecamatan_id'])) {

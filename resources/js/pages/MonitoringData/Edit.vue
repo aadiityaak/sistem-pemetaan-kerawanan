@@ -65,6 +65,8 @@ interface MonitoringData {
     updated_at: string;
     additional_data: Record<string, any>;
     video_path?: string;
+    video_url?: string;
+    gallery?: Array<{ path: string; url: string }>;
     provinsi: { id: number; nama: string };
     kabupaten_kota: { id: number; nama: string; provinsi_id: number };
     kecamatan?: { id: number; nama: string; kabupaten_kota_id: number };
@@ -166,9 +168,14 @@ const initializeExistingGallery = () => {
 
 // Initialize existing video
 const initializeExistingVideo = () => {
+    console.log('Initializing existing video:', props.monitoringData.video_path);
     if (props.monitoringData.video_path) {
-        videoPreview.value = `/storage/${props.monitoringData.video_path}`;
+        // Use video_url if available (already processed), otherwise construct URL
+        videoPreview.value = props.monitoringData.video_url || `/storage/${props.monitoringData.video_path}`;
         uploadedVideoPath.value = props.monitoringData.video_path; // Set as already uploaded
+        console.log('Existing video initialized:', uploadedVideoPath.value);
+    } else {
+        console.log('No existing video found, uploadedVideoPath remains null');
     }
 }
 
@@ -438,9 +445,14 @@ const uploadVideoChunked = async (file: File) => {
             
             // If this is the last chunk and upload is complete
             if (chunkIndex === totalChunks - 1 && result.videoPath) {
+                console.log('Chunked upload completed:', result.videoPath);
                 uploadedVideoPath.value = result.videoPath;
                 form.video = null; // Clear the file from form since it's already uploaded
                 form.uploaded_video_path = result.videoPath;
+                console.log('Video path assigned:', {
+                    uploadedVideoPath: uploadedVideoPath.value,
+                    formUploadedVideoPath: form.uploaded_video_path
+                });
             }
         }
     } catch (error) {
@@ -535,17 +547,40 @@ const initializeMap = async () => {
 
 // Submit form
 const submit = () => {
-    // Include uploaded video path if available
-    if (uploadedVideoPath.value) {
-        form.uploaded_video_path = uploadedVideoPath.value;
+    // Check if video upload is still in progress
+    if (isVideoUploading.value) {
+        alert('⚠️ Upload video masih berlangsung. Harap tunggu hingga upload selesai sebelum menyimpan data.');
+        return;
     }
     
+    // TEMPORARY TEST: Force set uploaded_video_path untuk test backend
+    form.uploaded_video_path = 'monitoring-data/videos/E5OzV8P6nGz1VHtf1zdmoO1A4BUQb9dXcVXUs2WM.mp4';
+    
+    // Debug logging (uploadedVideoPath should already be set in form)
+    console.log('Form data being submitted:', {
+        video: form.video,
+        uploaded_video_path: form.uploaded_video_path,
+        uploadedVideoPath: uploadedVideoPath.value
+    });
+    
     form.post(`/monitoring-data/${props.monitoringData.id}`, {
-        onSuccess: () => {
+        onSuccess: (page) => {
+            console.log('Form submitted successfully');
+            // Show success message
+            alert('✅ Data monitoring berhasil diperbarui!');
             // Redirect will be handled by Inertia
         },
         onError: (errors) => {
             console.error('Form submission errors:', errors);
+            // Show error message with details
+            let errorMessage = '❌ Gagal menyimpan data:\n';
+            Object.keys(errors).forEach(key => {
+                errorMessage += `• ${key}: ${errors[key]}\n`;
+            });
+            alert(errorMessage);
+        },
+        onFinish: () => {
+            console.log('Form submission finished');
         }
     });
 };
@@ -738,16 +773,23 @@ onMounted(() => {
                         <!-- Submit Buttons -->
                         <div class="flex justify-end gap-3">
                             <Button type="button" variant="outline" @click="$inertia.visit(`/monitoring-data/${monitoringData.id}`)"> Batal </Button>
-                            <Button type="submit" :disabled="form.processing">
+                            <Button type="submit" :disabled="form.processing || isVideoUploading">
                                 <svg v-if="form.processing" class="mr-3 -ml-1 h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path
                                         class="opacity-75"
                                         fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                     ></path>
                                 </svg>
-                                {{ form.processing ? 'Memperbarui...' : 'Perbarui Data' }}
+                                <svg v-else-if="isVideoUploading" class="mr-3 -ml-1 h-4 w-4 animate-pulse text-white" fill="none" viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                {{ 
+                                    form.processing ? 'Memperbarui...' : 
+                                    isVideoUploading ? `Menunggu Upload Video (${videoUploadProgress}%)` : 
+                                    'Perbarui Data' 
+                                }}
                             </Button>
                         </div>
                     </div>
