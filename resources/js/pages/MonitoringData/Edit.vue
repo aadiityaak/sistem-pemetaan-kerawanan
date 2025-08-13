@@ -49,7 +49,7 @@ interface MonitoringData {
     id: number;
     provinsi_id: number;
     kabupaten_kota_id: number;
-    kecamatan_id: number;
+    kecamatan_id: number | null;
     category_id: number;
     sub_category_id: number;
     latitude: number;
@@ -67,7 +67,7 @@ interface MonitoringData {
     video_path?: string;
     provinsi: { id: number; nama: string };
     kabupaten_kota: { id: number; nama: string; provinsi_id: number };
-    kecamatan: { id: number; nama: string; kabupaten_kota_id: number };
+    kecamatan?: { id: number; nama: string; kabupaten_kota_id: number };
     category: { id: number; name: string; slug: string; color: string };
     sub_category: { id: number; name: string; slug: string };
 }
@@ -113,7 +113,7 @@ const formatDateForInput = (dateString: string): string => {
 const form = useForm({
     provinsi_id: props.monitoringData.provinsi_id.toString(),
     kabupaten_kota_id: props.monitoringData.kabupaten_kota_id.toString(),
-    kecamatan_id: props.monitoringData.kecamatan_id.toString(),
+    kecamatan_id: props.monitoringData.kecamatan_id?.toString() || '',
     category_id: props.monitoringData.category_id.toString(),
     sub_category_id: props.monitoringData.sub_category_id.toString(),
     latitude: props.monitoringData.latitude.toString(),
@@ -801,11 +801,10 @@ onMounted(() => {
                                 <!-- Kecamatan -->
                                 <div>
                                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Kecamatan <span class="text-red-500">*</span>
+                                        Kecamatan <span class="text-gray-400 text-xs">(Opsional)</span>
                                     </label>
                                     <select
                                         v-model="form.kecamatan_id"
-                                        required
                                         :disabled="!form.kabupaten_kota_id"
                                         class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     >

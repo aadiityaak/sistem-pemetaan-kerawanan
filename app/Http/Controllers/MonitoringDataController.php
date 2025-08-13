@@ -235,7 +235,7 @@ class MonitoringDataController extends Controller
         $validated = $request->validate([
             'provinsi_id' => 'required|exists:provinsi,id',
             'kabupaten_kota_id' => 'required|exists:kabupaten_kota,id',
-            'kecamatan_id' => 'required|exists:kecamatan,id',
+            'kecamatan_id' => 'nullable|exists:kecamatan,id',
             'category_id' => 'required|exists:categories,id',
             'sub_category_id' => 'required|exists:sub_categories,id',
             'latitude' => 'required|numeric|between:-90,90',
@@ -269,6 +269,11 @@ class MonitoringDataController extends Controller
             $videoPath = $request->file('video')->store('monitoring-data/videos', 'public');
         }
 
+        // Convert empty kecamatan_id to null
+        if (empty($validated['kecamatan_id'])) {
+            $validated['kecamatan_id'] = null;
+        }
+        
         $validated['gallery'] = $galleryPaths;
         $validated['video_path'] = $videoPath;
         MonitoringData::create($validated);
@@ -384,7 +389,7 @@ class MonitoringDataController extends Controller
         $validated = $request->validate([
             'provinsi_id' => 'required|exists:provinsi,id',
             'kabupaten_kota_id' => 'required|exists:kabupaten_kota,id',
-            'kecamatan_id' => 'required|exists:kecamatan,id',
+            'kecamatan_id' => 'nullable|exists:kecamatan,id',
             'category_id' => 'required|exists:categories,id',
             'sub_category_id' => 'required|exists:sub_categories,id',
             'latitude' => 'required|numeric|between:-90,90',
@@ -432,6 +437,11 @@ class MonitoringDataController extends Controller
         
         // Remove uploaded_video_path from validated data as it's not a database field
         unset($validated['uploaded_video_path']);
+        
+        // Convert empty kecamatan_id to null
+        if (empty($validated['kecamatan_id'])) {
+            $validated['kecamatan_id'] = null;
+        }
 
         $validated['gallery'] = $galleryPaths;
         $monitoringData->update($validated);
