@@ -49,12 +49,16 @@ class IndasController extends Controller
             'avg_total_score' => $analysisResults->avg('total_score') ?? 0,
         ];
         
+        // Get unjuk rasa (protest) data
+        $unjukRasaStats = $this->getUnjukRasaStats($user);
+        
         return Inertia::render('Indas/Index', [
             'analysisResults' => $analysisResults,
             'regionalInfo' => $regionalInfo,
             'currentMonth' => $month,
             'currentYear' => $year,
             'stats' => $stats,
+            'unjukRasaStats' => $unjukRasaStats,
         ]);
     }
 
@@ -532,6 +536,89 @@ class IndasController extends Controller
         return [
             'estimated_transport_facilities' => round($publicFacilities * 0.3),
             'note' => 'Estimated from public facilities data. Add specific transportation indicators for accurate count.',
+        ];
+    }
+
+    /**
+     * Get unjuk rasa (protest) statistics
+     */
+    private function getUnjukRasaStats($user)
+    {
+        // Get the "Sosial Budaya" category and "Unjuk rasa" subcategory
+        $sosialBudayaCategory = Category::where('slug', 'sosial-budaya')->first();
+        $unjukRasaSubCategory = null;
+        
+        if ($sosialBudayaCategory) {
+            $unjukRasaSubCategory = $sosialBudayaCategory->subCategories()
+                ->where('slug', 'sosial-budaya-unjuk-rasa')
+                ->first();
+        }
+        
+        if (!$unjukRasaSubCategory) {
+            return [
+                'total_count' => 0,
+                'active_count' => 0,
+                'this_month_count' => 0,
+                'high_severity_count' => 0,
+                'recent_incidents' => [],
+                'by_province' => [],
+                'subcategory_info' => null,
+            ];
+        }
+        
+        // Base query for unjuk rasa data
+        $query = MonitoringData::where('category_id', $sosialBudayaCategory->id)
+            ->where('sub_category_id', $unjukRasaSubCategory->id);
+        
+        // Apply province filter for non-admin users
+        if (!$user->isAdmin() && $user->provinsi_id) {
+            $query->where('provinsi_id', $user->provinsi_id);
+        }
+        
+        $unjukRasaData = $query->with(['provinsi', 'kabupatenKota', 'kecamatan'])
+            ->orderBy('incident_date', 'desc')
+            ->get();
+        
+        // Calculate statistics
+        $totalCount = $unjukRasaData->count();
+        $activeCount = $unjukRasaData->where('status', 'active')->count();
+        $thisMonthCount = $unjukRasaData->where('incident_date', '>=', now()->startOfMonth())->count();
+        $highSeverityCount = $unjukRasaData->whereIn('severity_level', ['high', 'critical'])->count();
+        
+        // Get recent incidents (last 5)
+        $recentIncidents = $unjukRasaData->take(5)->map(function ($incident) {
+            return [
+                'title' => $incident->title,
+                'description' => $incident->description,
+                'location' => $incident->kabupatenKota->nama . ', ' . $incident->provinsi->nama,
+                'incident_date' => $incident->incident_date,
+                'severity_level' => $incident->severity_level,
+                'status' => $incident->status,
+            ];
+        });
+        
+        // Group by province
+        $byProvince = $unjukRasaData->groupBy(function ($item) {
+            return $item->provinsi->nama;
+        })->map(function ($provinceData, $provinceName) {
+            return [
+                'province' => $provinceName,
+                'count' => $provinceData->count(),
+                'active_count' => $provinceData->where('status', 'active')->count(),
+            ];
+        })->values();
+        
+        // Add subcategory info with image
+        $unjukRasaSubCategory->append(['image_url']);
+        
+        return [
+            'total_count' => $totalCount,
+            'active_count' => $activeCount,
+            'this_month_count' => $thisMonthCount,
+            'high_severity_count' => $highSeverityCount,
+            'recent_incidents' => $recentIncidents,
+            'by_province' => $byProvince,
+            'subcategory_info' => $unjukRasaSubCategory,
         ];
     }
 }

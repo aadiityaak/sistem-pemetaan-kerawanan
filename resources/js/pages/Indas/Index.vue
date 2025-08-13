@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { router, Link } from '@inertiajs/vue3'
 import { 
   MapPinIcon, 
@@ -15,7 +15,10 @@ import {
   TruckIcon,
   ShieldExclamationIcon,
   InformationCircleIcon,
-  EyeIcon
+  EyeIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  ArrowTopRightOnSquareIcon
 } from '@heroicons/vue/24/outline'
 import AppLayout from '@/layouts/AppLayout.vue'
 import TrendIcon from '@/components/indas/TrendIcon.vue'
@@ -46,6 +49,34 @@ interface Stats {
   avg_tourism_score: number | string | null
   avg_social_score: number | string | null
   avg_total_score: number | string | null
+}
+
+interface UnjukRasaStats {
+  total_count: number
+  active_count: number
+  this_month_count: number
+  high_severity_count: number
+  recent_incidents: Array<{
+    title: string
+    description: string
+    location: string
+    incident_date: string
+    severity_level: string
+    status: string
+  }>
+  by_province: Array<{
+    province: string
+    count: number
+    active_count: number
+  }>
+  subcategory_info: {
+    id: number
+    name: string
+    slug: string
+    icon: string
+    image_url?: string
+    color?: string
+  } | null
 }
 
 interface DemoPoint {
@@ -115,6 +146,7 @@ const props = defineProps<{
   currentMonth: number
   currentYear: number
   stats: Stats
+  unjukRasaStats: UnjukRasaStats
 }>()
 
 const selectedMonth = ref(props.currentMonth)
@@ -182,10 +214,34 @@ const formatDate = (dateString: string) => {
 }
 
 const selectedRegion = ref<number | null>(null)
+const showUnjukRasaModal = ref(false)
 
 const showRegionDetails = (kabupatenKotaId: number) => {
   selectedRegion.value = selectedRegion.value === kabupatenKotaId ? null : kabupatenKotaId
 }
+
+const openUnjukRasaModal = () => {
+  showUnjukRasaModal.value = true
+}
+
+const closeUnjukRasaModal = () => {
+  showUnjukRasaModal.value = false
+}
+
+// Handle ESC key to close modal
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && showUnjukRasaModal.value) {
+    closeUnjukRasaModal()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
+})
 </script>
 
 <template>
@@ -315,6 +371,100 @@ const showRegionDetails = (kabupatenKotaId: number) => {
                       {{ formatScore(stats.avg_total_score) }}
                     </dd>
                   </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Unjuk Rasa Card - Special Section -->
+        <div class="mb-8">
+          <div 
+            class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/10 dark:to-orange-900/10 overflow-hidden shadow-lg rounded-lg cursor-pointer hover:shadow-xl transition-all duration-300 hover:from-red-100 hover:to-orange-100 dark:hover:from-red-900/20 dark:hover:to-orange-900/20 border border-red-100 dark:border-red-800/30" 
+            @click="openUnjukRasaModal"
+          >
+            <div class="p-6">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 bg-white dark:bg-gray-800 p-3 rounded-full shadow-md">
+                    <div v-if="unjukRasaStats.subcategory_info?.image_url" class="h-8 w-8 rounded">
+                      <img :src="unjukRasaStats.subcategory_info.image_url" :alt="unjukRasaStats.subcategory_info.name" class="h-8 w-8 object-contain rounded" />
+                    </div>
+                    <div v-else class="h-8 w-8 text-2xl flex items-center justify-center">
+                      {{ unjukRasaStats.subcategory_info?.icon || '📢' }}
+                    </div>
+                  </div>
+                  <div class="ml-6">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Monitoring Unjuk Rasa</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      Data kejadian demonstrasi dan unjuk rasa terkini
+                    </p>
+                  </div>
+                </div>
+                
+                <div class="flex items-center space-x-6">
+                  <!-- Total Count -->
+                  <div class="text-center">
+                    <div class="text-3xl font-bold text-red-600 dark:text-red-400">
+                      {{ unjukRasaStats.total_count }}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      Total Kejadian
+                    </div>
+                  </div>
+                  
+                  <!-- Active Count -->
+                  <div class="text-center">
+                    <div class="text-2xl font-semibold text-orange-600 dark:text-orange-400">
+                      {{ unjukRasaStats.active_count }}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      Masih Aktif
+                    </div>
+                  </div>
+                  
+                  <!-- This Month -->
+                  <div class="text-center">
+                    <div class="text-2xl font-semibold text-yellow-600 dark:text-yellow-400">
+                      {{ unjukRasaStats.this_month_count }}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      Bulan Ini
+                    </div>
+                  </div>
+                  
+                  <!-- High Severity -->
+                  <div class="text-center">
+                    <div class="text-2xl font-semibold text-red-700 dark:text-red-300">
+                      {{ unjukRasaStats.high_severity_count }}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      Tingkat Tinggi
+                    </div>
+                  </div>
+                  
+                  <!-- Action Button -->
+                  <div class="flex items-center">
+                    <div class="bg-white dark:bg-gray-800 p-2 rounded-full shadow-md hover:shadow-lg transition-shadow">
+                      <EyeIcon class="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Quick Summary -->
+              <div class="mt-4 pt-4 border-t border-red-200 dark:border-red-800/30">
+                <div class="flex items-center justify-between text-sm">
+                  <div class="flex items-center text-gray-600 dark:text-gray-400">
+                    <InformationCircleIcon class="h-4 w-4 mr-1" />
+                    Klik untuk melihat detail lengkap dan daftar kejadian terbaru
+                  </div>
+                  <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                    <span>{{ unjukRasaStats.by_province.length }} Provinsi Terdampak</span>
+                    <span>•</span>
+                    <span>Diperbarui Real-time</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -692,6 +842,226 @@ const showRegionDetails = (kabupatenKotaId: number) => {
                       class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     >
                       Close Details
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unjuk Rasa Modal -->
+        <div v-if="showUnjukRasaModal" class="fixed inset-0 z-50">
+          <!-- Background overlay -->
+          <div class="fixed inset-0 bg-black/50" @click="closeUnjukRasaModal"></div>
+          
+          <!-- Modal container -->
+          <div class="fixed inset-0 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+              <!-- Modal panel -->
+              <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl">
+                <div class="p-6">
+                  <!-- Modal Header -->
+                  <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center">
+                      <div v-if="unjukRasaStats.subcategory_info?.image_url" class="h-8 w-8 mr-3 rounded">
+                        <img :src="unjukRasaStats.subcategory_info.image_url" :alt="unjukRasaStats.subcategory_info.name" class="h-8 w-8 object-contain rounded" />
+                      </div>
+                      <div v-else class="h-8 w-8 mr-3 text-2xl flex items-center justify-center">
+                        {{ unjukRasaStats.subcategory_info?.icon || '📢' }}
+                      </div>
+                      <div>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                          Data Unjuk Rasa Terbaru
+                        </h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                          Total {{ unjukRasaStats.total_count }} kejadian, {{ unjukRasaStats.active_count }} masih aktif
+                        </p>
+                      </div>
+                    </div>
+                    <button 
+                      @click="closeUnjukRasaModal"
+                      class="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      <span class="sr-only">Close</span>
+                      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  
+                  <!-- Modal Content -->
+                  <div class="mt-6 max-h-[70vh] overflow-y-auto">
+                    <!-- Summary Stats -->
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-4 mb-6">
+                      <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                        <div class="flex items-center">
+                          <ShieldExclamationIcon class="h-5 w-5 text-blue-600" />
+                          <div class="ml-2">
+                            <p class="text-xs text-blue-600 dark:text-blue-400">Total Kejadian</p>
+                            <p class="text-2xl font-bold text-blue-900 dark:text-blue-300">
+                              {{ unjukRasaStats.total_count }}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                        <div class="flex items-center">
+                          <CheckCircleIcon class="h-5 w-5 text-green-600" />
+                          <div class="ml-2">
+                            <p class="text-xs text-green-600 dark:text-green-400">Masih Aktif</p>
+                            <p class="text-2xl font-bold text-green-900 dark:text-green-300">
+                              {{ unjukRasaStats.active_count }}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4">
+                        <div class="flex items-center">
+                          <ClockIcon class="h-5 w-5 text-orange-600" />
+                          <div class="ml-2">
+                            <p class="text-xs text-orange-600 dark:text-orange-400">Bulan Ini</p>
+                            <p class="text-2xl font-bold text-orange-900 dark:text-orange-300">
+                              {{ unjukRasaStats.this_month_count }}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
+                        <div class="flex items-center">
+                          <ExclamationTriangleIcon class="h-5 w-5 text-red-600" />
+                          <div class="ml-2">
+                            <p class="text-xs text-red-600 dark:text-red-400">Tingkat Tinggi</p>
+                            <p class="text-2xl font-bold text-red-900 dark:text-red-300">
+                              {{ unjukRasaStats.high_severity_count }}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Recent Incidents List -->
+                    <div>
+                      <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                        <InformationCircleIcon class="h-5 w-5 mr-2 text-blue-500" />
+                        Kejadian Terbaru
+                      </h4>
+                      
+                      <div v-if="unjukRasaStats.recent_incidents.length > 0" class="space-y-4">
+                        <div 
+                          v-for="(incident, index) in unjukRasaStats.recent_incidents" 
+                          :key="index"
+                          class="border-l-4 bg-white dark:bg-gray-700 pl-4 py-3 rounded-r-lg shadow-sm"
+                          :class="{
+                            'border-red-400': incident.severity_level === 'critical' || incident.severity_level === 'high',
+                            'border-yellow-400': incident.severity_level === 'medium',
+                            'border-green-400': incident.severity_level === 'low',
+                            'border-gray-400': !incident.severity_level
+                          }"
+                        >
+                          <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                              <h5 class="text-sm font-semibold text-gray-900 dark:text-white">
+                                {{ incident.title }}
+                              </h5>
+                              <p class="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">
+                                {{ incident.description }}
+                              </p>
+                              <div class="flex items-center mt-2 text-xs text-gray-500 dark:text-gray-400 space-x-4">
+                                <span class="flex items-center">
+                                  <MapPinIcon class="h-3 w-3 mr-1" />
+                                  {{ incident.location }}
+                                </span>
+                                <span class="flex items-center">
+                                  <ClockIcon class="h-3 w-3 mr-1" />
+                                  {{ formatDate(incident.incident_date) }}
+                                </span>
+                              </div>
+                            </div>
+                            <div class="ml-4 flex flex-col items-end space-y-1">
+                              <span 
+                                :class="{
+                                  'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400': incident.severity_level === 'critical',
+                                  'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400': incident.severity_level === 'high',
+                                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400': incident.severity_level === 'medium',
+                                  'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': incident.severity_level === 'low',
+                                  'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400': !incident.severity_level
+                                }"
+                                class="px-2 py-1 text-xs rounded-full font-medium"
+                              >
+                                {{ incident.severity_level?.toUpperCase() || 'UNKNOWN' }}
+                              </span>
+                              <span 
+                                :class="{
+                                  'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400': incident.status === 'active',
+                                  'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400': incident.status === 'monitoring',
+                                  'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400': incident.status === 'resolved'
+                                }"
+                                class="px-2 py-1 text-xs rounded-full font-medium"
+                              >
+                                {{ incident.status?.toUpperCase() || 'UNKNOWN' }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div v-else class="text-center py-8">
+                        <ShieldExclamationIcon class="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                          Tidak ada data unjuk rasa terbaru
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Province Breakdown -->
+                    <div v-if="unjukRasaStats.by_province.length > 0" class="mt-6">
+                      <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                        <MapPinIcon class="h-5 w-5 mr-2 text-green-500" />
+                        Distribusi per Provinsi
+                      </h4>
+                      
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div 
+                          v-for="province in unjukRasaStats.by_province" 
+                          :key="province.province"
+                          class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3"
+                        >
+                          <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-900 dark:text-white">
+                              {{ province.province }}
+                            </span>
+                            <div class="text-right">
+                              <span class="text-lg font-bold text-gray-900 dark:text-white">
+                                {{ province.count }}
+                              </span>
+                              <p class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ province.active_count }} aktif
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Modal Footer -->
+                  <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                    <Link 
+                      :href="route('dashboard') + '?category=sosial-budaya&subcategory=sosial-budaya-unjuk-rasa'"
+                      class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                    >
+                      <ArrowTopRightOnSquareIcon class="h-4 w-4 mr-2" />
+                      Lihat Detail Dashboard
+                    </Link>
+                    <button 
+                      @click="closeUnjukRasaModal"
+                      class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      Tutup
                     </button>
                   </div>
                 </div>
