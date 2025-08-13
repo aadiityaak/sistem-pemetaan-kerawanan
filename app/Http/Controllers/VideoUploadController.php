@@ -53,7 +53,7 @@ class VideoUploadController extends Controller
             if ($uploadedChunks === $totalChunks) {
                 $fileExtension = pathinfo($originalFileName, PATHINFO_EXTENSION);
                 $safeFileName = Str::slug(pathinfo($originalFileName, PATHINFO_FILENAME)) . '_' . time() . '.' . $fileExtension;
-                $finalPath = 'videos/' . $safeFileName;
+                $finalPath = 'monitoring-data/videos/' . $safeFileName;
                 $fullPath = storage_path('app/public/' . $finalPath);
 
                 // Create videos directory if it doesn't exist
@@ -72,8 +72,8 @@ class VideoUploadController extends Controller
                 }
                 fclose($finalFile);
 
-                // Remove temporary directory
-                rmdir($tempDir);
+                // Remove temporary directory (ensure it's empty first)
+                $this->removeDirectory($tempDir);
 
                 // Verify file size
                 $combinedFileSize = filesize($fullPath);
@@ -144,5 +144,30 @@ class VideoUploadController extends Controller
                 'message' => 'Delete failed: ' . $e->getMessage(),
             ], 500);
         }
+    }
+    
+    /**
+     * Recursively remove directory and all contents
+     */
+    private function removeDirectory($dir) {
+        if (!is_dir($dir)) {
+            return false;
+        }
+        
+        $files = scandir($dir);
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+            
+            $filePath = $dir . '/' . $file;
+            if (is_dir($filePath)) {
+                $this->removeDirectory($filePath);
+            } else {
+                unlink($filePath);
+            }
+        }
+        
+        return rmdir($dir);
     }
 }

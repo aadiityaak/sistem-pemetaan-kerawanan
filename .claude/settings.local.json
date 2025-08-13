@@ -22,7 +22,9 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(pkill:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(ls:*)",
+      "Bash(dir:*)"
     ],
     "deny": []
   }
