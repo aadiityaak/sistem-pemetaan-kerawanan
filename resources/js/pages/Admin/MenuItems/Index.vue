@@ -5,7 +5,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold tracking-tight">Menu Items</h1>
-                    <p class="text-muted-foreground">Kelola menu navigasi sistem dengan hierarki seperti WordPress</p>
+                    <p class="text-muted-foreground">Kelola menu navigasi dengan drag & drop seperti WordPress</p>
                 </div>
                 <Button as-child>
                     <Link :href="route('admin.menu-items.create')">
@@ -20,102 +20,118 @@
                 <CardHeader>
                     <CardTitle>Daftar Menu Items</CardTitle>
                     <CardDescription>
-                        Sub menu ditampilkan dengan indentasi dan garis penghubung seperti WordPress Admin.
+                        Seret menu untuk mengatur urutan. Sub menu menjorok seperti WordPress Admin.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div class="space-y-1">
-                        <!-- WordPress-style Menu Tree -->
-                        <div v-for="item in flatMenuItems" :key="item.id" 
-                             :class="[
-                                 'group border-l-4 bg-background hover:bg-muted/30 transition-colors',
-                                 getMenuItemClasses(item)
-                             ]">
-                            <div class="flex items-center justify-between p-3">
-                                <div class="flex items-center space-x-3 flex-1">
-                                    <!-- WordPress-style Hierarchy Lines -->
-                                    <div class="flex items-center">
-                                        <!-- Indentation spacer -->
-                                        <div v-if="item.level > 0" class="flex items-center">
-                                            <div 
-                                                v-for="i in item.level" 
-                                                :key="i" 
-                                                class="w-6 flex justify-center"
+                        <!-- Draggable Menu Tree -->
+                        <div 
+                            ref="sortableContainer" 
+                            class="space-y-1"
+                        >
+                            <div 
+                                v-for="(item, index) in flatMenuItems" 
+                                :key="item.id" 
+                                :data-id="item.id"
+                                :data-index="index"
+                                :class="[
+                                    'group border-l-4 bg-background hover:bg-muted/30 transition-colors cursor-move',
+                                    getMenuItemClasses(item),
+                                    'sortable-item'
+                                ]"
+                            >
+                                <div class="flex items-center justify-between p-3">
+                                    <div class="flex items-center space-x-3 flex-1">
+                                        <!-- Drag Handle -->
+                                        <div class="drag-handle text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
+                                            <GripVertical class="w-4 h-4" />
+                                        </div>
+
+                                        <!-- WordPress-style Hierarchy Lines -->
+                                        <div class="flex items-center">
+                                            <!-- Indentation spacer -->
+                                            <div v-if="item.level > 0" class="flex items-center">
+                                                <div 
+                                                    v-for="i in item.level" 
+                                                    :key="i" 
+                                                    class="w-6 flex justify-center"
+                                                >
+                                                    <div class="w-px h-8 bg-gray-300"></div>
+                                                </div>
+                                                <div class="w-4 h-px bg-gray-300 relative">
+                                                    <div class="absolute -top-4 right-0 w-px h-4 bg-gray-300"></div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Status Badge -->
+                                            <span 
+                                                :class="[
+                                                    'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ml-2',
+                                                    item.is_active 
+                                                        ? 'bg-green-100 text-green-800 border border-green-200' 
+                                                        : 'bg-gray-100 text-gray-800 border border-gray-200'
+                                                ]"
                                             >
-                                                <div class="w-px h-8 bg-gray-300"></div>
-                                            </div>
-                                            <div class="w-4 h-px bg-gray-300 relative">
-                                                <div class="absolute -top-4 right-0 w-px h-4 bg-gray-300"></div>
-                                            </div>
+                                                {{ item.is_active ? 'Active' : 'Inactive' }}
+                                            </span>
                                         </div>
                                         
-                                        <!-- Status Badge -->
-                                        <span 
-                                            :class="[
-                                                'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ml-2',
-                                                item.is_active 
-                                                    ? 'bg-green-100 text-green-800 border border-green-200' 
-                                                    : 'bg-gray-100 text-gray-800 border border-gray-200'
-                                            ]"
-                                        >
-                                            {{ item.is_active ? 'Active' : 'Inactive' }}
-                                        </span>
-                                    </div>
-                                    
-                                    <!-- Menu Info -->
-                                    <div class="flex-1 min-w-0">
-                                        <h3 :class="[
-                                            'font-medium truncate',
-                                            item.level === 0 ? 'text-base text-gray-900' : 'text-sm text-gray-700',
-                                            item.admin_only ? 'text-orange-700' : ''
-                                        ]">
-                                            {{ item.title }}
-                                            <span v-if="item.admin_only" class="text-xs text-orange-600 ml-1 font-normal">(Admin Only)</span>
-                                        </h3>
-                                        <div class="mt-1 space-y-1">
-                                            <p class="text-xs text-gray-500 truncate">
-                                                <strong>Path:</strong> 
-                                                <code class="bg-gray-100 px-1 rounded text-xs">{{ item.path || 'No path set' }}</code>
-                                            </p>
-                                            <div class="flex items-center space-x-4 text-xs text-gray-500">
-                                                <span v-if="item.icon">
-                                                    <strong>Icon:</strong> {{ item.icon }}
-                                                </span>
-                                                <span>
-                                                    <strong>Order:</strong> {{ item.sort_order }}
-                                                </span>
-                                                <span v-if="item.parent_id">
-                                                    <strong>Parent ID:</strong> {{ item.parent_id }}
-                                                </span>
+                                        <!-- Menu Info -->
+                                        <div class="flex-1 min-w-0">
+                                            <h3 :class="[
+                                                'font-medium truncate',
+                                                item.level === 0 ? 'text-base text-gray-900' : 'text-sm text-gray-700',
+                                                item.admin_only ? 'text-orange-700' : ''
+                                            ]">
+                                                {{ item.title }}
+                                                <span v-if="item.admin_only" class="text-xs text-orange-600 ml-1 font-normal">(Admin Only)</span>
+                                            </h3>
+                                            <div class="mt-1 space-y-1">
+                                                <p class="text-xs text-gray-500 truncate">
+                                                    <strong>Path:</strong> 
+                                                    <code class="bg-gray-100 px-1 rounded text-xs">{{ item.path || 'No path set' }}</code>
+                                                </p>
+                                                <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                                    <span v-if="item.icon">
+                                                        <strong>Icon:</strong> {{ item.icon }}
+                                                    </span>
+                                                    <span>
+                                                        <strong>Order:</strong> {{ item.sort_order }}
+                                                    </span>
+                                                    <span v-if="item.parent_id">
+                                                        <strong>Parent ID:</strong> {{ item.parent_id }}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                
-                                <!-- Action Buttons -->
-                                <div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button 
-                                        size="sm" 
-                                        variant="outline"
-                                        @click="toggleStatus(item)"
-                                        :disabled="loading"
-                                        class="text-xs"
-                                    >
-                                        {{ item.is_active ? 'OFF' : 'ON' }}
-                                    </Button>
-                                    <Button size="sm" variant="outline" as-child>
-                                        <Link :href="route('admin.menu-items.edit', item.id)">
-                                            <Edit class="w-3 h-3" />
-                                        </Link>
-                                    </Button>
-                                    <Button 
-                                        size="sm" 
-                                        variant="destructive"
-                                        @click="deleteItem(item)"
-                                        :disabled="loading"
-                                    >
-                                        <Trash class="w-3 h-3" />
-                                    </Button>
+                                    
+                                    <!-- Action Buttons -->
+                                    <div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button 
+                                            size="sm" 
+                                            variant="outline"
+                                            @click="toggleStatus(item)"
+                                            :disabled="loading"
+                                            class="text-xs"
+                                        >
+                                            {{ item.is_active ? 'OFF' : 'ON' }}
+                                        </Button>
+                                        <Button size="sm" variant="outline" as-child>
+                                            <Link :href="route('admin.menu-items.edit', item.id)">
+                                                <Edit class="w-3 h-3" />
+                                            </Link>
+                                        </Button>
+                                        <Button 
+                                            size="sm" 
+                                            variant="destructive"
+                                            @click="deleteItem(item)"
+                                            :disabled="loading"
+                                        >
+                                            <Trash class="w-3 h-3" />
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -123,20 +139,23 @@
                 </CardContent>
             </Card>
 
-            <!-- WordPress-style Info -->
+            <!-- Drag & Drop Instructions -->
             <Card class="bg-blue-50 border-blue-200">
                 <CardContent class="pt-6">
                     <div class="flex items-start space-x-3">
                         <Info class="w-5 h-5 text-blue-600 mt-0.5" />
                         <div class="text-sm text-blue-800">
-                            <h4 class="font-medium mb-2">Tampilan Hierarki WordPress-Style:</h4>
+                            <h4 class="font-medium mb-2">Cara Menggunakan Interface:</h4>
                             <ul class="space-y-1 text-xs">
-                                <li>• <strong>Level 0 (Main Menu):</strong> Border biru, text besar, font bold</li>
-                                <li>• <strong>Level 1 (Sub Menu):</strong> Border hijau, indentasi dengan garis vertikal</li>
-                                <li>• <strong>Level 2+ (Sub-Sub Menu):</strong> Border kuning/abu, indentasi bertingkat</li>
-                                <li>• <strong>Admin Only:</strong> Ditandai dengan label oranye (Admin Only)</li>
-                                <li>• <strong>Custom Path:</strong> Ditampilkan dalam format code dengan background abu</li>
+                                <li>• <strong>Drag & Drop:</strong> Seret handle <GripVertical class="w-3 h-3 inline mx-1" /> untuk mengatur urutan menu</li>
+                                <li>• <strong>Hierarki WordPress:</strong> Level 0 (border biru), Level 1 (border hijau + indentasi)</li>
+                                <li>• <strong>Toggle Status:</strong> Gunakan tombol ON/OFF untuk mengatur visibilitas menu</li>
+                                <li>• <strong>Admin Only:</strong> Menu dengan label oranye hanya tampil untuk administrator</li>
+                                <li>• <strong>Custom Path:</strong> Path redirect ditampilkan dalam format code</li>
                             </ul>
+                            <div v-if="dragStatus" class="mt-2 p-2 bg-blue-100 rounded text-xs">
+                                <strong>Status:</strong> {{ dragStatus }}
+                            </div>
                         </div>
                     </div>
                 </CardContent>
@@ -150,8 +169,9 @@ import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link, router } from '@inertiajs/vue3';
-import { Edit, Plus, Trash, Info } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { Edit, Plus, Trash, Info, GripVertical } from 'lucide-vue-next';
+import { computed, ref, onMounted, nextTick } from 'vue';
+import Sortable from 'sortablejs';
 
 interface MenuItem {
     id: number;
@@ -173,6 +193,8 @@ interface Props {
 
 const props = defineProps<Props>();
 const loading = ref(false);
+const sortableContainer = ref<HTMLElement>();
+const dragStatus = ref('');
 
 const breadcrumbs = [
     { label: 'Admin', href: '#' },
@@ -180,7 +202,9 @@ const breadcrumbs = [
 ];
 
 // Convert hierarchical menu to flat list with level indicators (WordPress style)
-const flatMenuItems = computed(() => {
+const flatMenuItems = ref<MenuItem[]>([]);
+
+const updateFlatMenuItems = () => {
     const flattenMenu = (items: MenuItem[], level = 0): MenuItem[] => {
         const result: MenuItem[] = [];
         
@@ -205,8 +229,11 @@ const flatMenuItems = computed(() => {
     
     // Get main menu items (no parent) with their children
     const mainItems = props.menuItems.filter(item => !item.parent_id);
-    return flattenMenu(mainItems);
-});
+    flatMenuItems.value = flattenMenu(mainItems);
+};
+
+// Initialize flat menu items
+updateFlatMenuItems();
 
 // Get menu item classes based on level (WordPress style)
 const getMenuItemClasses = (item: MenuItem) => {
@@ -247,6 +274,77 @@ const getMenuItemClasses = (item: MenuItem) => {
     return classes;
 };
 
+// Initialize Sortable drag & drop
+onMounted(() => {
+    nextTick(() => {
+        if (sortableContainer.value) {
+            const sortable = Sortable.create(sortableContainer.value, {
+                handle: '.drag-handle',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                
+                onStart: (evt) => {
+                    dragStatus.value = 'Sedang menyeret menu...';
+                },
+                
+                onEnd: async (evt) => {
+                    const { oldIndex, newIndex } = evt;
+                    
+                    if (oldIndex === newIndex) {
+                        dragStatus.value = '';
+                        return;
+                    }
+                    
+                    dragStatus.value = 'Menyimpan urutan baru...';
+                    
+                    try {
+                        // Reorder items in local state
+                        const items = [...flatMenuItems.value];
+                        const [movedItem] = items.splice(oldIndex!, 1);
+                        items.splice(newIndex!, 0, movedItem);
+                        
+                        // Update sort orders based on new positions
+                        const updateData = items.map((item, index) => ({
+                            id: item.id,
+                            sort_order: index + 1,
+                            parent_id: item.parent_id
+                        }));
+                        
+                        // Send update to backend
+                        await router.post(route('admin.menu-items.reorder'), {
+                            items: updateData
+                        }, {
+                            preserveScroll: true,
+                            onSuccess: () => {
+                                dragStatus.value = 'Urutan berhasil disimpan!';
+                                setTimeout(() => {
+                                    dragStatus.value = '';
+                                }, 2000);
+                                // Update local state
+                                flatMenuItems.value = items;
+                            },
+                            onError: () => {
+                                dragStatus.value = 'Gagal menyimpan urutan';
+                                setTimeout(() => {
+                                    dragStatus.value = '';
+                                }, 3000);
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Failed to reorder menu items:', error);
+                        dragStatus.value = 'Terjadi kesalahan';
+                        setTimeout(() => {
+                            dragStatus.value = '';
+                        }, 3000);
+                    }
+                }
+            });
+        }
+    });
+});
+
 const toggleStatus = async (item: MenuItem) => {
     if (loading.value) return;
     
@@ -278,3 +376,31 @@ const deleteItem = async (item: MenuItem) => {
     }
 };
 </script>
+
+<style scoped>
+/* Sortable.js styling */
+.sortable-ghost {
+    opacity: 0.4;
+    background: #e3f2fd;
+    border: 2px dashed #2196f3;
+}
+
+.sortable-chosen {
+    background: #f3e5f5;
+    border-color: #9c27b0;
+    transform: rotate(2deg);
+}
+
+.sortable-drag {
+    transform: rotate(5deg);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.drag-handle:hover {
+    color: #2196f3;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+</style>
