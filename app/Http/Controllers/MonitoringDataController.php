@@ -78,6 +78,17 @@ class MonitoringDataController extends Controller
             $query->where('severity_level', $dbLevel);
         }
 
+        // Filter by provinsi
+        if ($request->has('provinsi_id') && $request->provinsi_id != '') {
+            $query->where('provinsi_id', $request->provinsi_id);
+        }
+
+        // Filter by kabupaten/kota
+        if ($request->has('kabupaten_kota_id') && $request->kabupaten_kota_id != '') {
+            $query->where('kabupaten_kota_id', $request->kabupaten_kota_id);
+        }
+
+
         $monitoringData = $query->latest()->paginate(15);
 
         // Transform data untuk Vue component
@@ -138,6 +149,19 @@ class MonitoringDataController extends Controller
         $completedData = (clone $statsQuery)->where('status', 'resolved')->count();
         $criticalData = (clone $statsQuery)->where('severity_level', 'critical')->count();
 
+        // Get regional data for filters
+        $provinsiQuery = Provinsi::select('id', 'nama')->orderBy('nama');
+        $kabupatenKotaQuery = KabupatenKota::select('id', 'nama', 'provinsi_id')->orderBy('nama');
+
+        // Apply province filter if user is restricted
+        if ($request->has('province_filter')) {
+            $provinsiQuery->where('id', $request->input('province_filter'));
+            $kabupatenKotaQuery->where('provinsi_id', $request->input('province_filter'));
+        }
+
+        $provinsiList = $provinsiQuery->get();
+        $kabupatenKotaList = $kabupatenKotaQuery->get();
+
         return Inertia::render('MonitoringData/Index', [
             'monitoringData' => $monitoringData,
             'statistics' => [
@@ -147,12 +171,14 @@ class MonitoringDataController extends Controller
                 'critical' => $criticalData,
             ],
             'filters' => array_merge(
-                $request->only(['search', 'status', 'level']),
+                $request->only(['search', 'status', 'level', 'provinsi_id', 'kabupaten_kota_id']),
                 [
                     'start_date' => $startDate,
                     'end_date' => $endDate,
                 ]
             ),
+            'provinsiList' => $provinsiList,
+            'kabupatenKotaList' => $kabupatenKotaList,
         ]);
     }
 

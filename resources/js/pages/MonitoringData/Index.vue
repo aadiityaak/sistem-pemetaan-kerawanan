@@ -102,10 +102,30 @@
                 <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">🔍 Filter & Pencarian</h3>
                 </div>
-                <div class="p-6">
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
-                        <!-- Search -->
+
+                <!-- Debug Panel (Always visible for troubleshooting) -->
+                <div class="border-b border-gray-200 px-6 py-3 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+                    <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">🐛 Debug Filter Status:</h4>
+                    <div class="grid grid-cols-2 gap-4 text-xs text-gray-600 dark:text-gray-400">
                         <div>
+                            <strong>Provinsi:</strong> {{ selectedProvinsi || 'None' }}<br>
+                            <strong>Available:</strong> {{ provinsiList.length }}<br>
+                            <strong>First:</strong> {{ provinsiList[0]?.nama || 'N/A' }}
+                        </div>
+                        <div>
+                            <strong>Kabupaten:</strong> {{ selectedKabupaten || 'None' }}<br>
+                            <strong>Total Available:</strong> {{ kabupatenKotaList.length }}<br>
+                            <strong>Filtered:</strong> {{ filteredKabupaten.length }}<br>
+                            <strong>First Filtered:</strong> {{ filteredKabupaten[0]?.nama || 'N/A' }}<br>
+                            <strong>First Available:</strong> {{ kabupatenKotaList[0]?.nama || 'N/A' }} (ProvinsiID: {{ kabupatenKotaList[0]?.provinsi_id || 'N/A' }})
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-8">
+                        <!-- Search -->
+                        <div class="lg:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pencarian</label>
                             <div class="relative">
                                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -126,6 +146,46 @@
                                 />
                             </div>
                         </div>
+
+                        <!-- Filter Provinsi -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Provinsi</label>
+                            <select
+                                v-model="selectedProvinsi"
+                                @change="onProvinsiChange"
+                                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            >
+                                <option value="">🏞️ Semua Provinsi</option>
+                                <option v-for="provinsi in provinsiList" :key="provinsi.id" :value="provinsi.id">
+                                    {{ provinsi.nama }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Filter Kabupaten/Kota -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kabupaten/Kota</label>
+                            <select
+                                v-model="selectedKabupaten"
+                                @change="onKabupatenChange"
+                                :disabled="!selectedProvinsi"
+                                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:bg-gray-600"
+                            >
+                                <option value="">
+                                    {{ !selectedProvinsi ? 'Pilih Provinsi dulu' : 
+                                       (filteredKabupaten && filteredKabupaten.length === 0) ? `Loading... (Total: ${kabupatenKotaList.length})` : 
+                                       `🌍 Semua Kabupaten/Kota (${filteredKabupaten.length})` }}
+                                </option>
+                                <option v-for="kabupaten in filteredKabupaten" :key="kabupaten.id" :value="kabupaten.id">
+                                    {{ kabupaten.nama }}
+                                </option>
+                                <!-- Debug option to show all kabupaten when provinsi selected -->
+                                <option v-if="selectedProvinsi && filteredKabupaten.length === 0" disabled>
+                                    DEBUG: Total available kabupaten = {{ kabupatenKotaList.length }}
+                                </option>
+                            </select>
+                        </div>
+
 
                         <!-- Filter Status -->
                         <div>
@@ -504,7 +564,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 
 // Define types
 interface Category {
@@ -565,6 +625,23 @@ interface Statistics {
     critical: number;
 }
 
+interface Provinsi {
+    id: number;
+    nama: string;
+}
+
+interface KabupatenKotaItem {
+    id: number;
+    nama: string;
+    provinsi_id: number;
+}
+
+interface KecamatanItem {
+    id: number;
+    nama: string;
+    kabupaten_kota_id: number;
+}
+
 // Props
 const props = defineProps<{
     monitoringData: PaginatedData;
@@ -575,7 +652,11 @@ const props = defineProps<{
         level?: string;
         start_date?: string;
         end_date?: string;
+        provinsi_id?: string;
+        kabupaten_kota_id?: string;
     };
+    provinsiList: Provinsi[];
+    kabupatenKotaList: KabupatenKotaItem[];
 }>();
 
 // Reactive data
@@ -584,12 +665,83 @@ const selectedStatus = ref(props.filters.status || '');
 const selectedLevel = ref(props.filters.level || '');
 const startDate = ref(props.filters.start_date || '');
 const endDate = ref(props.filters.end_date || '');
+const selectedProvinsi = ref(props.filters.provinsi_id || '');
+const selectedKabupaten = ref(props.filters.kabupaten_kota_id || '');
 const showDeleteModal = ref(false);
 const dataToDelete = ref<MonitoringDataItem | null>(null);
 const searchTimeout = ref<number | null>(null);
 
-// Watch for filter changes with debounce
-watch([searchQuery, selectedStatus, selectedLevel, startDate, endDate], () => {
+// Debug props on load
+console.log('=== PROPS DEBUG ON LOAD ===');
+console.log('provinsiList:', props.provinsiList?.length || 0);
+console.log('kabupatenKotaList:', props.kabupatenKotaList?.length || 0);
+console.log('kecamatanList:', props.kecamatanList?.length || 0);
+console.log('Sample provinsi:', props.provinsiList?.[0]);
+console.log('Sample kabupaten:', props.kabupatenKotaList?.[0]);
+
+// Computed properties for regional filtering
+const filteredKabupaten = computed(() => {
+    console.log('=== FILTERED KABUPATEN COMPUTED ===');
+    console.log('selectedProvinsi.value:', selectedProvinsi.value);
+    console.log('typeof selectedProvinsi.value:', typeof selectedProvinsi.value);
+    console.log('props.kabupatenKotaList length:', props.kabupatenKotaList?.length || 0);
+    
+    if (!selectedProvinsi.value || selectedProvinsi.value === '' || selectedProvinsi.value === '0') {
+        console.log('No provinsi selected, returning empty array');
+        return [];
+    }
+    
+    console.log('Filtering kabupaten for provinsi:', selectedProvinsi.value);
+    console.log('First 3 available kabupaten:', props.kabupatenKotaList?.slice(0, 3) || []);
+    
+    if (!props.kabupatenKotaList || props.kabupatenKotaList.length === 0) {
+        console.log('No kabupaten data available');
+        return [];
+    }
+    
+    const selectedProvinsiStr = selectedProvinsi.value.toString();
+    const filtered = props.kabupatenKotaList.filter(k => {
+        if (!k || !k.provinsi_id) return false;
+        
+        const kProvinsiId = k.provinsi_id.toString();
+        const match = kProvinsiId === selectedProvinsiStr;
+        
+        if (props.kabupatenKotaList.indexOf(k) < 3) { // Only log first 3 for brevity
+            console.log(`Kabupaten ${k.nama}: provinsi_id=${k.provinsi_id}, selected=${selectedProvinsi.value}, match=${match}`);
+        }
+        return match;
+    });
+    
+    console.log('Filtered kabupaten result length:', filtered.length);
+    console.log('First 3 filtered results:', filtered.slice(0, 3));
+    console.log('=== END FILTERED KABUPATEN ===');
+    
+    return filtered;
+});
+
+
+// onChange handlers for regional filters
+const onProvinsiChange = () => {
+    console.log('=== PROVINSI CHANGE DEBUG ===');
+    console.log('Provinsi changed to:', selectedProvinsi.value);
+    console.log('Available kabupaten:', props.kabupatenKotaList.length);
+    console.log('Sample kabupaten:', props.kabupatenKotaList.slice(0, 3));
+    selectedKabupaten.value = '';
+    // Force reactive update
+    setTimeout(() => {
+        console.log('After timeout - filtered kabupaten:', filteredKabupaten.value.length);
+        console.log('Sample filtered:', filteredKabupaten.value.slice(0, 3));
+    }, 100);
+    applyFilters();
+};
+
+const onKabupatenChange = () => {
+    console.log('Kabupaten changed to:', selectedKabupaten.value);
+    applyFilters();
+};
+
+// Helper function to apply filters
+const applyFilters = () => {
     if (searchTimeout.value) {
         clearTimeout(searchTimeout.value);
     }
@@ -602,13 +754,23 @@ watch([searchQuery, selectedStatus, selectedLevel, startDate, endDate], () => {
         if (selectedLevel.value) params.level = selectedLevel.value;
         if (startDate.value) params.start_date = startDate.value;
         if (endDate.value) params.end_date = endDate.value;
+        if (selectedProvinsi.value) params.provinsi_id = selectedProvinsi.value;
+        if (selectedKabupaten.value) params.kabupaten_kota_id = selectedKabupaten.value;
+
+        console.log('Applying filters:', params);
 
         router.get(route('monitoring-data.index'), params, {
             preserveState: true,
             replace: true,
         });
     }, 300);
+};
+
+// Watch for filter changes with debounce (non-regional filters)
+watch([searchQuery, selectedStatus, selectedLevel, startDate, endDate], () => {
+    applyFilters();
 });
+
 
 // Methods
 const formatDate = (dateString: string) => {
