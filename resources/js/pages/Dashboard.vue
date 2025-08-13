@@ -147,6 +147,17 @@ const topDataByProvinsi = computed(() => {
         .slice(0, 5);
 });
 
+// Create mapping from provinsi name to ID
+const provinsiNameToId = computed(() => {
+    const mapping: Record<string, number> = {};
+    props.monitoringData.forEach(data => {
+        if (data.provinsi && data.provinsi.nama && data.provinsi.id) {
+            mapping[data.provinsi.nama] = data.provinsi.id;
+        }
+    });
+    return mapping;
+});
+
 // Computed untuk top 3 isu menonjol (berdasarkan jumlah terdampak)
 const topIssues = computed(() => {
     return props.monitoringData
@@ -259,6 +270,15 @@ const selectEndDate = (endDate: string | null) => {
     }));
 };
 
+// Function to navigate to monitoring data with provinsi filter
+const goToMonitoringDataByProvinsi = (provinsiName: string) => {
+    const provinsiId = provinsiNameToId.value[provinsiName];
+    if (provinsiId) {
+        router.get(route('monitoring-data.index'), {
+            provinsi_id: provinsiId
+        });
+    }
+};
 
 // Custom dropdown state
 const categoryDropdownOpen = ref(false);
@@ -979,7 +999,9 @@ onMounted(async () => {
                     <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">🏛️ Top Provinsi</h3>
                         <div class="space-y-2">
-                            <div v-for="[provinsi, count] in topDataByProvinsi" :key="provinsi" class="flex items-center justify-between text-sm">
+                            <div v-for="[provinsi, count] in topDataByProvinsi" :key="provinsi" 
+                                 @click="goToMonitoringDataByProvinsi(provinsi)"
+                                 class="flex items-center justify-between text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded transition-colors">
                                 <span class="text-gray-900 dark:text-white">{{ provinsi }}</span>
                                 <span
                                     class="rounded px-2 py-1 text-xs text-white"
