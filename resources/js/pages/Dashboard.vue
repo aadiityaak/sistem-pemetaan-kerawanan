@@ -765,9 +765,17 @@ onMounted(async () => {
                                     </tr>
                                     <tr v-else v-for="data in monitoringData.slice(0, 10)" :key="data.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                         <td class="px-6 py-4">
-                                            <div class="text-sm">
-                                                <div class="font-semibold text-gray-900 dark:text-white">{{ data.title }}</div>
-                                                <div class="text-gray-500 dark:text-gray-400">
+                                            <div class="text-sm overflow-hidden">
+                                                <div class="font-semibold text-gray-900 dark:text-white max-w-xs">
+                                                    <Link 
+                                                        :href="`/monitoring-data/${data.id}`"
+                                                        class="truncate block hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors duration-200 overflow-hidden"
+                                                        :title="data.title"
+                                                    >
+                                                        {{ data.title }}
+                                                    </Link>
+                                                </div>
+                                                <div class="text-gray-500 dark:text-gray-400 truncate">
                                                     {{ data.kecamatan?.nama || 'N/A' }}, {{ data.kabupaten_kota?.nama || 'N/A' }}
                                                 </div>
                                             </div>
@@ -801,8 +809,8 @@ onMounted(async () => {
                                                 {{ getStatusLabel(data.status) }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
-                                            {{ data.jumlah_terdampak?.toLocaleString() || '-' }}
+                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                                            <span class="truncate block overflow-hidden">{{ data.jumlah_terdampak?.toLocaleString() || '-' }}</span>
                                         </td>
                                         <td class="px-6 py-4 text-right text-sm font-medium">
                                             <div class="flex items-center justify-end space-x-2">
@@ -919,31 +927,27 @@ onMounted(async () => {
                                     {{ index + 1 }}
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <div class="flex items-start justify-between">
-                                        <div class="flex-1">
-                                            <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                                {{ issue.title }}
-                                            </p>
-                                            <div class="flex items-center gap-2 mt-1">
-                                                <div class="flex items-center justify-center w-4 h-4">
-                                                    <img v-if="issue.sub_category.image_url" :src="issue.sub_category.image_url" alt="Subcategory" class="w-3 h-3 object-contain rounded" />
-                                                    <span v-else-if="issue.sub_category.icon" class="text-xs">{{ issue.sub_category.icon }}</span>
-                                                </div>
-                                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ issue.sub_category.name }}</span>
+                                    <div class="w-full overflow-hidden">
+                                        <p class="text-sm font-medium text-gray-900 dark:text-white truncate overflow-hidden" :title="issue.title">
+                                            {{ issue.title }}
+                                        </p>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <div class="flex items-center justify-center w-4 h-4 flex-shrink-0">
+                                                <img v-if="issue.sub_category.image_url" :src="issue.sub_category.image_url" alt="Subcategory" class="w-3 h-3 object-contain rounded" />
+                                                <span v-else-if="issue.sub_category.icon" class="text-xs">{{ issue.sub_category.icon }}</span>
                                             </div>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                {{ issue.provinsi.nama }}, {{ issue.kabupaten_kota.nama }}
-                                            </p>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ issue.sub_category.name }}</span>
                                         </div>
-                                        <div class="text-right ml-2">
-                                            <div class="flex items-center gap-1">
-                                                <svg class="w-3 h-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                                </svg>
-                                                <span class="text-sm font-semibold text-orange-600 dark:text-orange-400">
-                                                    {{ issue.jumlah_terdampak?.toLocaleString() }}
-                                                </span>
-                                            </div>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+                                            {{ issue.provinsi.nama }}, {{ issue.kabupaten_kota.nama }}
+                                        </p>
+                                        <div class="flex items-center gap-1 mt-2">
+                                            <svg class="w-3 h-3 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                            </svg>
+                                            <span class="text-sm font-semibold text-orange-600 dark:text-orange-400">
+                                                {{ issue.jumlah_terdampak?.toLocaleString() }}
+                                            </span>
                                             <span class="text-xs text-gray-500 dark:text-gray-400">terdampak</span>
                                         </div>
                                     </div>
