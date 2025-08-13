@@ -18,6 +18,7 @@ Route::get('/', function () {
     return redirect('/login');
 })->name('home');
 
+
 Route::get('/api/provinsi', function () {
     return \App\Models\Provinsi::select('id', 'nama')->get();
 });
