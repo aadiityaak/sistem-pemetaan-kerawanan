@@ -16,7 +16,10 @@
       "Bash(cp:*)",
       "WebFetch(domain:tiptap.dev)",
       "Bash(npm run test:*)",
-      "Bash(composer:*)"
+      "Bash(composer:*)",
+      "Bash(git pull:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
