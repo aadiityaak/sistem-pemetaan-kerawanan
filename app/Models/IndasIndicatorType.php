@@ -11,13 +11,11 @@ class IndasIndicatorType extends Model
         'name',
         'category',
         'unit',
-        'weight_factor',
         'description',
         'is_active',
     ];
 
     protected $casts = [
-        'weight_factor' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 

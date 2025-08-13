@@ -179,9 +179,9 @@ const updatePeriod = () => {
 }
 
 const formatScore = (score: number | string | null | undefined) => {
-  if (score === null || score === undefined || score === '') return '0.0'
+  if (score === null || score === undefined || score === '') return '0'
   const numScore = typeof score === 'string' ? parseFloat(score) : score
-  return isNaN(numScore) ? '0.0' : numScore.toFixed(1)
+  return isNaN(numScore) ? '0' : Math.round(numScore).toLocaleString('id-ID')
 }
 
 const formatTrend = (trend: number | string | null | undefined) => {
@@ -289,7 +289,7 @@ onUnmounted(() => {
             <div>
               <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Dashboard INDAS</h1>
               <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Sistem Analisis Data Intelijen - Indikator Ekonomi, Pariwisata & Sosial
+                Sistem Analisis Data Intelijen - Nilai Langsung Indikator Ekonomi, Pariwisata & Sosial
               </p>
             </div>
             <div class="mt-4 flex space-x-3 sm:mt-0 sm:ml-4">
@@ -347,7 +347,7 @@ onUnmounted(() => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Rata-rata Ekonomi</dt>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Ekonomi</dt>
                     <dd class="text-lg font-medium text-gray-900 dark:text-white">
                       {{ formatScore(stats.avg_economic_score) }}
                     </dd>
@@ -365,7 +365,7 @@ onUnmounted(() => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Rata-rata Pariwisata</dt>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Pariwisata</dt>
                     <dd class="text-lg font-medium text-gray-900 dark:text-white">
                       {{ formatScore(stats.avg_tourism_score) }}
                     </dd>
@@ -383,7 +383,7 @@ onUnmounted(() => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Rata-rata Sosial</dt>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Sosial</dt>
                     <dd class="text-lg font-medium text-gray-900 dark:text-white">
                       {{ formatScore(stats.avg_social_score) }}
                     </dd>
@@ -401,7 +401,7 @@ onUnmounted(() => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Rata-rata Total</dt>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Keseluruhan</dt>
                     <dd class="text-lg font-medium text-gray-900 dark:text-white">
                       {{ formatScore(stats.avg_total_score) }}
                     </dd>
@@ -513,7 +513,7 @@ onUnmounted(() => {
               Hasil Analisis Regional - {{ months[selectedMonth - 1] }} {{ selectedYear }}
             </h3>
             <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-              Hasil analisis untuk semua wilayah dengan skor dan tren
+              Hasil analisis untuk semua wilayah dengan nilai total dan tren
             </p>
           </div>
           
@@ -534,7 +534,7 @@ onUnmounted(() => {
                     Sosial
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Skor Total
+                    Total Nilai
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Tren
@@ -1209,7 +1209,7 @@ onUnmounted(() => {
                 Jenis Indikator
               </h3>
               <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Konfigurasi indikator ekonomi, pariwisata, dan sosial dengan bobot
+                Konfigurasi indikator ekonomi, pariwisata, dan sosial
               </p>
             </div>
           </Link>
@@ -1228,7 +1228,7 @@ onUnmounted(() => {
                 Input Data
               </h3>
               <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Masukkan data indikator bulanan dan jalankan kalkulasi otomatis
+                Masukkan data indikator bulanan dengan nilai langsung
               </p>
             </div>
           </Link>

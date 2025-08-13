@@ -27,43 +27,38 @@ class IndasIndicatorTypeSeeder extends Seeder
         $indicators = [
             // Economic Indicators
             [
-                'name' => 'Jumlah Toko',
+                'name' => 'Sekolah',
                 'category' => 'ekonomi',
                 'unit' => 'unit',
-                'weight_factor' => 0.25,
-                'description' => 'Total jumlah toko dan usaha retail yang terdaftar',
+                'description' => 'Jumlah sekolah (SD, SMP, SMA, SMK)',
                 'is_active' => true,
             ],
             [
-                'name' => 'Jumlah Pasar',
+                'name' => 'Toko',
                 'category' => 'ekonomi',
                 'unit' => 'unit',
-                'weight_factor' => 0.20,
-                'description' => 'Total jumlah pasar tradisional dan modern',
+                'description' => 'Jumlah toko dan usaha retail',
                 'is_active' => true,
             ],
             [
-                'name' => 'Jumlah Bank',
+                'name' => 'UMR',
                 'category' => 'ekonomi',
-                'unit' => 'unit',
-                'weight_factor' => 0.15,
-                'description' => 'Total jumlah bank dan lembaga keuangan',
+                'unit' => 'rupiah',
+                'description' => 'Upah Minimum Regional dalam rupiah',
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Miskin',
+                'category' => 'ekonomi',
+                'unit' => 'orang',
+                'description' => 'Jumlah penduduk miskin',
                 'is_active' => true,
             ],
             [
                 'name' => 'UMKM Aktif',
                 'category' => 'ekonomi',
                 'unit' => 'unit',
-                'weight_factor' => 0.25,
-                'description' => 'Jumlah Usaha Mikro Kecil Menengah yang aktif beroperasi',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Investasi Daerah',
-                'category' => 'ekonomi',
-                'unit' => 'miliar',
-                'weight_factor' => 0.15,
-                'description' => 'Total investasi yang masuk ke daerah (dalam miliar rupiah)',
+                'description' => 'Jumlah Usaha Mikro Kecil Menengah yang aktif',
                 'is_active' => true,
             ],
 
@@ -72,74 +67,58 @@ class IndasIndicatorTypeSeeder extends Seeder
                 'name' => 'Objek Wisata',
                 'category' => 'pariwisata',
                 'unit' => 'unit',
-                'weight_factor' => 0.30,
-                'description' => 'Total jumlah destinasi dan objek wisata',
+                'description' => 'Jumlah destinasi dan objek wisata',
                 'is_active' => true,
             ],
             [
-                'name' => 'Jumlah Hotel',
+                'name' => 'Hotel',
                 'category' => 'pariwisata',
                 'unit' => 'unit',
-                'weight_factor' => 0.25,
-                'description' => 'Total jumlah hotel dan fasilitas akomodasi',
+                'description' => 'Jumlah hotel dan fasilitas akomodasi',
                 'is_active' => true,
             ],
             [
                 'name' => 'Kunjungan Wisatawan',
                 'category' => 'pariwisata',
-                'unit' => 'ribu orang',
-                'weight_factor' => 0.35,
-                'description' => 'Jumlah kunjungan wisatawan per bulan (dalam ribuan)',
+                'unit' => 'orang',
+                'description' => 'Jumlah kunjungan wisatawan per bulan',
                 'is_active' => true,
             ],
             [
-                'name' => 'Pendapatan Sektor Pariwisata',
+                'name' => 'Pendapatan Pariwisata',
                 'category' => 'pariwisata',
-                'unit' => 'miliar',
-                'weight_factor' => 0.10,
-                'description' => 'Pendapatan dari sektor pariwisata (dalam miliar rupiah)',
+                'unit' => 'rupiah',
+                'description' => 'Pendapatan dari sektor pariwisata',
                 'is_active' => true,
             ],
 
             // Social Indicators
             [
-                'name' => 'Fasilitas Kesehatan',
+                'name' => 'Rumah Sakit',
                 'category' => 'sosial',
                 'unit' => 'unit',
-                'weight_factor' => 0.25,
-                'description' => 'Jumlah rumah sakit, puskesmas, dan klinik kesehatan',
+                'description' => 'Jumlah rumah sakit dan puskesmas',
                 'is_active' => true,
             ],
             [
-                'name' => 'Fasilitas Pendidikan',
+                'name' => 'Pengangguran',
                 'category' => 'sosial',
-                'unit' => 'unit',
-                'weight_factor' => 0.25,
-                'description' => 'Jumlah sekolah, universitas, dan lembaga pendidikan',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Tingkat Pengangguran',
-                'category' => 'sosial',
-                'unit' => 'persen',
-                'weight_factor' => 0.20,
-                'description' => 'Persentase tingkat pengangguran di daerah',
+                'unit' => 'orang',
+                'description' => 'Jumlah pengangguran',
                 'is_active' => true,
             ],
             [
                 'name' => 'Program Bantuan Sosial',
                 'category' => 'sosial',
                 'unit' => 'program',
-                'weight_factor' => 0.15,
-                'description' => 'Jumlah program bantuan sosial yang berjalan',
+                'description' => 'Jumlah program bantuan sosial aktif',
                 'is_active' => true,
             ],
             [
-                'name' => 'Infrastruktur Transportasi',
+                'name' => 'Jalan',
                 'category' => 'sosial',
                 'unit' => 'km',
-                'weight_factor' => 0.15,
-                'description' => 'Panjang jalan dan infrastruktur transportasi (dalam kilometer)',
+                'description' => 'Panjang jalan dalam kondisi baik',
                 'is_active' => true,
             ],
         ];
@@ -200,34 +179,32 @@ class IndasIndicatorTypeSeeder extends Seeder
     {
         // Generate realistic sample values based on indicator type
         switch ($indicator->name) {
-            case 'Jumlah Toko':
-                return rand(50, 500);
-            case 'Jumlah Pasar':
-                return rand(2, 15);
-            case 'Jumlah Bank':
-                return rand(3, 25);
+            case 'Sekolah':
+                return rand(50, 300); // jumlah sekolah
+            case 'Toko':
+                return rand(100, 1500); // jumlah toko
+            case 'UMR':
+                return rand(3000000, 5000000); // UMR dalam rupiah (3-5 juta)
+            case 'Miskin':
+                return rand(1000, 15000); // jumlah orang miskin
             case 'UMKM Aktif':
-                return rand(100, 1000);
-            case 'Investasi Daerah':
-                return rand(5, 100); // dalam miliar
+                return rand(200, 2000); // jumlah UMKM
             case 'Objek Wisata':
-                return rand(5, 50);
-            case 'Jumlah Hotel':
-                return rand(3, 30);
+                return rand(10, 80); // jumlah objek wisata
+            case 'Hotel':
+                return rand(5, 50); // jumlah hotel
             case 'Kunjungan Wisatawan':
-                return rand(10, 200); // dalam ribuan
-            case 'Pendapatan Sektor Pariwisata':
-                return rand(2, 50); // dalam miliar
-            case 'Fasilitas Kesehatan':
-                return rand(10, 100);
-            case 'Fasilitas Pendidikan':
-                return rand(20, 200);
-            case 'Tingkat Pengangguran':
-                return rand(3, 15); // persentase
+                return rand(5000, 100000); // jumlah wisatawan per bulan
+            case 'Pendapatan Pariwisata':
+                return rand(500000000, 10000000000); // pendapatan dalam rupiah (500 juta - 10 miliar)
+            case 'Rumah Sakit':
+                return rand(5, 25); // jumlah rumah sakit
+            case 'Pengangguran':
+                return rand(500, 8000); // jumlah pengangguran
             case 'Program Bantuan Sosial':
-                return rand(5, 25);
-            case 'Infrastruktur Transportasi':
-                return rand(100, 2000); // dalam km
+                return rand(3, 20); // jumlah program
+            case 'Jalan':
+                return rand(50, 500); // panjang jalan dalam km
             default:
                 return rand(10, 100);
         }

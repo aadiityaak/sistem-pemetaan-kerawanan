@@ -80,12 +80,11 @@ class CalculateIndasScores extends Command
                 $categoryData = $monthlyData->get($category, collect());
                 
                 if (!$categoryData->isEmpty()) {
-                    $weightedSum = 0;
-                    $totalWeight = 0;
+                    // Jumlah total nilai langsung tanpa bobot
+                    $totalValue = 0;
                     
                     foreach ($categoryData as $data) {
-                        $weightedSum += $data->value * $data->indicatorType->weight_factor;
-                        $totalWeight += $data->indicatorType->weight_factor;
+                        $totalValue += $data->value;
                     }
                     
                     $scoreField = match($category) {
@@ -94,14 +93,13 @@ class CalculateIndasScores extends Command
                         'sosial' => 'social_score',
                     };
                     
-                    $scores[$scoreField] = $totalWeight > 0 ? ($weightedSum / $totalWeight) : 0;
+                    // Menggunakan total nilai langsung sebagai skor
+                    $scores[$scoreField] = $totalValue;
                 }
             }
             
-            // Calculate total score with weights: Economic 40%, Tourism 35%, Social 25%
-            $totalScore = ($scores['economic_score'] * 0.4) + 
-                         ($scores['tourism_score'] * 0.35) + 
-                         ($scores['social_score'] * 0.25);
+            // Calculate total score as sum of all category scores
+            $totalScore = $scores['economic_score'] + $scores['tourism_score'] + $scores['social_score'];
             
             $scores['total_score'] = $totalScore;
             
