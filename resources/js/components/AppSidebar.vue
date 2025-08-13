@@ -118,21 +118,9 @@ const mainNavItems = computed<NavItem[]>(() => {
             icon: ShoppingCart,
         },
         {
-            title: 'Pasar Saham',
-            href: '/pasar-saham/chart',
-            icon: TrendingUp,
-            items: [
-                {
-                    title: 'Advanced Chart',
-                    href: '/pasar-saham/chart',
-                    icon: TrendingUp,
-                },
-                {
-                    title: 'Watchlist',
-                    href: '/pasar-saham/watchlist',
-                    icon: Tags,
-                },
-            ],
+            title: 'Kurs Mata Uang',
+            href: '/pasar-saham',
+            icon: DollarSign,
         },
     ];
 

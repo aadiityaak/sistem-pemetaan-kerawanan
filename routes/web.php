@@ -144,6 +144,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/jumlah-suara/{jumlahSuara}', [PartaiPolitikController::class, 'destroyJumlahSuara'])->name('jumlah-suara.destroy');
 
     // Pasar Saham Routes
+    Route::get('/pasar-saham', [PasarSahamController::class, 'index'])->name('pasar-saham.index');
     Route::get('/pasar-saham/chart', [PasarSahamController::class, 'chart'])->name('pasar-saham.chart');
     Route::get('/pasar-saham/watchlist', [PasarSahamController::class, 'watchlist'])->name('pasar-saham.watchlist');
 
