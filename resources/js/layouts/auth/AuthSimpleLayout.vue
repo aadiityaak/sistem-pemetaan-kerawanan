@@ -103,8 +103,8 @@ onUnmounted(() => {
                 <Link :href="route('home')" class="flex flex-col items-center gap-3 hacker-logo">
                     <div class="relative">
                         <!-- Show login_logo if available, fallback to app_favicon, then default icon -->
-                        <div v-if="appSettings.login_logo" class="h-24 w-24 rounded-lg bg-black/80 backdrop-blur-sm border border-green-500/30 flex items-center justify-center shadow-lg shadow-green-500/10 glow-box">
-                            <img :src="appSettings.login_logo" :alt="appSettings.app_name + ' - Login'" class="h-20 w-20 object-contain" />
+                        <div v-if="appSettings.login_logo" class="h-[120px] w-[120px] rounded-lg bg-black/80 backdrop-blur-sm border border-green-500/30 flex items-center justify-center shadow-lg shadow-green-500/10 glow-box">
+                            <img :src="appSettings.login_logo" :alt="appSettings.app_name + ' - Login'" class="h-[110px] w-[110px] object-contain" />
                         </div>
                         <div v-else-if="appSettings.app_favicon && appSettings.app_favicon !== '/favicon.ico'" class="h-20 w-20 rounded-lg bg-black/80 backdrop-blur-sm border border-green-500/30 flex items-center justify-center shadow-lg shadow-green-500/10 glow-box">
                             <img :src="appSettings.app_favicon" :alt="appSettings.app_name" class="h-12 w-12 object-contain filter brightness-0 invert opacity-80" />

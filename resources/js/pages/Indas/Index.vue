@@ -154,8 +154,8 @@ const selectedMonth = ref(props.currentMonth)
 const selectedYear = ref(props.currentYear)
 
 const months = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
 ]
 
 const years = computed(() => {
@@ -287,9 +287,9 @@ onUnmounted(() => {
         <div class="mb-8">
           <div class="sm:flex sm:items-center sm:justify-between">
             <div>
-              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">INDAS Dashboard</h1>
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Dashboard INDAS</h1>
               <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Intelligence Data Analysis System - Economic, Tourism & Social Indicators
+                Sistem Analisis Data Intelijen - Indikator Ekonomi, Pariwisata & Sosial
               </p>
             </div>
             <div class="mt-4 flex space-x-3 sm:mt-0 sm:ml-4">
@@ -331,7 +331,7 @@ onUnmounted(() => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Regions</dt>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Wilayah</dt>
                     <dd class="text-lg font-medium text-gray-900 dark:text-white">{{ stats.total_regions }}</dd>
                   </dl>
                 </div>
@@ -347,7 +347,7 @@ onUnmounted(() => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Avg Economic</dt>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Rata-rata Ekonomi</dt>
                     <dd class="text-lg font-medium text-gray-900 dark:text-white">
                       {{ formatScore(stats.avg_economic_score) }}
                     </dd>
@@ -365,7 +365,7 @@ onUnmounted(() => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Avg Tourism</dt>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Rata-rata Pariwisata</dt>
                     <dd class="text-lg font-medium text-gray-900 dark:text-white">
                       {{ formatScore(stats.avg_tourism_score) }}
                     </dd>
@@ -383,7 +383,7 @@ onUnmounted(() => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Avg Social</dt>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Rata-rata Sosial</dt>
                     <dd class="text-lg font-medium text-gray-900 dark:text-white">
                       {{ formatScore(stats.avg_social_score) }}
                     </dd>
@@ -401,7 +401,7 @@ onUnmounted(() => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Avg Total</dt>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Rata-rata Total</dt>
                     <dd class="text-lg font-medium text-gray-900 dark:text-white">
                       {{ formatScore(stats.avg_total_score) }}
                     </dd>
@@ -510,10 +510,10 @@ onUnmounted(() => {
         <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
           <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
             <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-              Regional Analysis Results - {{ months[selectedMonth - 1] }} {{ selectedYear }}
+              Hasil Analisis Regional - {{ months[selectedMonth - 1] }} {{ selectedYear }}
             </h3>
             <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-              Analysis results for all regions with scores and trends
+              Hasil analisis untuk semua wilayah dengan skor dan tren
             </p>
           </div>
           
@@ -522,34 +522,34 @@ onUnmounted(() => {
               <thead class="bg-gray-50 dark:bg-gray-900">
                 <tr>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Region
+                    Wilayah
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Economic
+                    Ekonomi
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Tourism
+                    Pariwisata
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Social
+                    Sosial
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Total Score
+                    Skor Total
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Trend
+                    Tren
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    Details
+                    Detail
                   </th>
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 <tr v-if="analysisResults.length === 0">
                   <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
-                    No analysis results found for this period. 
+                    Tidak ada hasil analisis untuk periode ini. 
                     <Link :href="route('indas.data-entry')" class="text-indigo-600 hover:text-indigo-900">
-                      Start by entering indicator data
+                      Mulai dengan memasukkan data indikator
                     </Link>
                   </td>
                 </tr>
@@ -640,7 +640,7 @@ onUnmounted(() => {
                   <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
                 <div>
                   <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                    Regional Information - {{ regionalInfo[selectedRegion].kabupaten_kota.nama }}
+                    Informasi Regional - {{ regionalInfo[selectedRegion].kabupaten_kota.nama }}
                   </h3>
                   <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     {{ regionalInfo[selectedRegion].kabupaten_kota.provinsi.nama }}
@@ -665,7 +665,7 @@ onUnmounted(() => {
                     <div class="flex items-center">
                       <ShieldExclamationIcon class="h-5 w-5 text-red-500" />
                       <div class="ml-2">
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Demo Points</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Titik Demo</p>
                         <p class="text-lg font-semibold text-gray-900 dark:text-white">
                           {{ regionalInfo[selectedRegion].summary_stats.total_demo_points }}
                         </p>
@@ -677,7 +677,7 @@ onUnmounted(() => {
                     <div class="flex items-center">
                       <BuildingOffice2Icon class="h-5 w-5 text-blue-500" />
                       <div class="ml-2">
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Tourist Attractions</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Objek Wisata</p>
                         <p class="text-lg font-semibold text-gray-900 dark:text-white">
                           {{ regionalInfo[selectedRegion].summary_stats.total_tourist_attractions }}
                         </p>
@@ -689,7 +689,7 @@ onUnmounted(() => {
                     <div class="flex items-center">
                       <BuildingStorefrontIcon class="h-5 w-5 text-green-500" />
                       <div class="ml-2">
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Hotels</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Hotel</p>
                         <p class="text-lg font-semibold text-gray-900 dark:text-white">
                           {{ regionalInfo[selectedRegion].summary_stats.total_hotels }}
                         </p>
@@ -701,7 +701,7 @@ onUnmounted(() => {
                     <div class="flex items-center">
                       <UsersIcon class="h-5 w-5 text-purple-500" />
                       <div class="ml-2">
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Public Facilities</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Fasilitas Umum</p>
                         <p class="text-lg font-semibold text-gray-900 dark:text-white">
                           {{ regionalInfo[selectedRegion].summary_stats.total_public_facilities }}
                         </p>
@@ -713,7 +713,7 @@ onUnmounted(() => {
                     <div class="flex items-center">
                       <ExclamationTriangleIcon class="h-5 w-5 text-orange-500" />
                       <div class="ml-2">
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Critical Demos</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Demo Kritis</p>
                         <p class="text-lg font-semibold text-gray-900 dark:text-white">
                           {{ regionalInfo[selectedRegion].summary_stats.critical_demo_points }}
                         </p>
@@ -750,19 +750,19 @@ onUnmounted(() => {
                     </div>
                     <div class="space-y-2">
                       <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-700 dark:text-gray-300">Banks</span>
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Bank</span>
                         <span class="text-sm font-semibold text-gray-900 dark:text-white">
                           {{ regionalInfo[selectedRegion].objek_vital_nasional.banks }} unit
                         </span>
                       </div>
                       <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-700 dark:text-gray-300">Markets</span>
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Pasar</span>
                         <span class="text-sm font-semibold text-gray-900 dark:text-white">
                           {{ regionalInfo[selectedRegion].objek_vital_nasional.markets }} unit
                         </span>
                       </div>
                       <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-700 dark:text-gray-300">Shops</span>
+                        <span class="text-sm text-gray-700 dark:text-gray-300">Toko</span>
                         <span class="text-sm font-semibold text-gray-900 dark:text-white">
                           {{ regionalInfo[selectedRegion].objek_vital_nasional.shops }} unit
                         </span>
@@ -797,7 +797,7 @@ onUnmounted(() => {
                     <div class="space-y-2">
                       <div class="flex justify-between items-center">
                         <span class="text-sm text-gray-700 dark:text-gray-300 flex items-center">
-                          <AcademicCapIcon class="h-4 w-4 mr-1" /> Schools
+                          <AcademicCapIcon class="h-4 w-4 mr-1" /> Sekolah
                         </span>
                         <span class="text-sm font-semibold text-gray-900 dark:text-white">
                           ~{{ regionalInfo[selectedRegion].sekolah.estimated_schools }}
@@ -805,7 +805,7 @@ onUnmounted(() => {
                       </div>
                       <div class="flex justify-between items-center">
                         <span class="text-sm text-gray-700 dark:text-gray-300 flex items-center">
-                          <HeartIcon class="h-4 w-4 mr-1" /> Hospitals
+                          <HeartIcon class="h-4 w-4 mr-1" /> Rumah Sakit
                         </span>
                         <span class="text-sm font-semibold text-gray-900 dark:text-white">
                           ~{{ regionalInfo[selectedRegion].rumah_sakit.estimated_hospitals }}
@@ -813,7 +813,7 @@ onUnmounted(() => {
                       </div>
                       <div class="flex justify-between items-center">
                         <span class="text-sm text-gray-700 dark:text-gray-300 flex items-center">
-                          <TruckIcon class="h-4 w-4 mr-1" /> Transport Facilities
+                          <TruckIcon class="h-4 w-4 mr-1" /> Fasilitas Transportasi
                         </span>
                         <span class="text-sm font-semibold text-gray-900 dark:text-white">
                           ~{{ regionalInfo[selectedRegion].infrastruktur_transportasi.estimated_transport_facilities }}
@@ -822,7 +822,7 @@ onUnmounted(() => {
                       <div class="mt-2">
                         <p class="text-xs text-gray-500 dark:text-gray-400">
                           <InformationCircleIcon class="h-3 w-3 inline mr-1" />
-                          Estimates based on public facilities data
+                          Estimasi berdasarkan data fasilitas umum
                         </p>
                       </div>
                     </div>
@@ -833,7 +833,7 @@ onUnmounted(() => {
                 <div v-if="regionalInfo[selectedRegion].titik_demo.length > 0" class="mt-6">
                   <div class="flex items-center mb-3">
                     <ShieldExclamationIcon class="h-5 w-5 text-red-600" />
-                    <h4 class="ml-2 text-base font-medium text-gray-900 dark:text-white">Titik-titik Demo (Security Category)</h4>
+                    <h4 class="ml-2 text-base font-medium text-gray-900 dark:text-white">Titik-titik Demo (Kategori Keamanan)</h4>
                   </div>
                   <div class="bg-red-50 dark:bg-red-900/10 rounded-lg p-4">
                     <div class="space-y-3">
@@ -852,7 +852,7 @@ onUnmounted(() => {
                       </div>
                       <div v-if="regionalInfo[selectedRegion].titik_demo.length > 5" class="text-center">
                         <p class="text-sm text-gray-500 dark:text-gray-400">
-                          Showing 5 of {{ regionalInfo[selectedRegion].titik_demo.length }} demo points
+                          Menampilkan 5 dari {{ regionalInfo[selectedRegion].titik_demo.length }} titik demo
                         </p>
                       </div>
                     </div>
@@ -925,7 +925,7 @@ onUnmounted(() => {
                   
                   <!-- No demo points message -->
                   <div v-else class="bg-green-50 dark:bg-green-900/10 rounded-lg p-4 text-center">
-                    <p class="text-sm text-green-700 dark:text-green-400">No demo points recorded for this region</p>
+                    <p class="text-sm text-green-700 dark:text-green-400">Tidak ada titik demo yang tercatat untuk wilayah ini</p>
                   </div>
                 </div>
               </div>
@@ -936,7 +936,7 @@ onUnmounted(() => {
                       @click="selectedRegion = null"
                       class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                     >
-                      Close Details
+                      Tutup Detail
                     </button>
                   </div>
                 </div>
@@ -1187,10 +1187,10 @@ onUnmounted(() => {
             </div>
             <div class="mt-8">
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                Browse Regions
+                Jelajah Wilayah
               </h3>
               <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                View kabupaten/kota data for INDAS analysis
+                Lihat data kabupaten/kota untuk analisis INDAS
               </p>
             </div>
           </Link>
@@ -1206,10 +1206,10 @@ onUnmounted(() => {
             </div>
             <div class="mt-8">
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                Indicator Types
+                Jenis Indikator
               </h3>
               <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Configure economic, tourism, and social indicators with weights
+                Konfigurasi indikator ekonomi, pariwisata, dan sosial dengan bobot
               </p>
             </div>
           </Link>

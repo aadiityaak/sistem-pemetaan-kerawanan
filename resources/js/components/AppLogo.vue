@@ -20,7 +20,7 @@ const appLogo = computed(() => {
 <template>
     <div class="flex w-full items-center justify-center rounded-md bg-zinc-900 p-2text-sidebar-primary-foreground">
         <!-- Custom logo if available -->
-        <img v-if="appLogo" :src="appLogo" :alt="appName + ' Logo'" class="h-12 w-full object-contain" />
+        <img v-if="appLogo" :src="appLogo" :alt="appName + ' Logo'" class="h-[120px] w-full object-contain" />
 
         <!-- Default SVG icon if no custom logo -->
         <svg

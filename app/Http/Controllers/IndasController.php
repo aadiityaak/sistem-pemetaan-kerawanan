@@ -105,7 +105,7 @@ class IndasController extends Controller
         
         IndasIndicatorType::create($request->validated());
         
-        return redirect()->back()->with('success', 'Indicator added successfully');
+        return redirect()->back()->with('success', 'Indikator berhasil ditambahkan');
     }
 
     public function deleteIndicator(Request $request, $id)
@@ -116,12 +116,12 @@ class IndasController extends Controller
         $hasData = IndasMonthlyData::where('indicator_type_id', $id)->exists();
         
         if ($hasData) {
-            return redirect()->back()->with('error', 'Cannot delete indicator that has associated data. Delete the data first.');
+            return redirect()->back()->with('error', 'Tidak dapat menghapus indikator yang memiliki data terkait. Hapus data terlebih dahulu.');
         }
         
         $indicator->delete();
         
-        return redirect()->back()->with('success', 'Indicator deleted successfully');
+        return redirect()->back()->with('success', 'Indikator berhasil dihapus');
     }
 
     public function dataEntry(Request $request)
@@ -191,7 +191,7 @@ class IndasController extends Controller
         if (!$user->isAdmin() && $user->provinsi_id) {
             $kabupatenKota = KabupatenKota::find($request->kabupaten_kota_id);
             if (!$kabupatenKota || $kabupatenKota->provinsi_id !== $user->provinsi_id) {
-                abort(403, 'Unauthorized access to this region');
+                abort(403, 'Akses tidak diizinkan ke wilayah ini');
             }
         }
         
@@ -213,7 +213,7 @@ class IndasController extends Controller
         // Trigger recalculation for this kabupaten/kota and period
         $this->calculateScores($request->kabupaten_kota_id, $request->month, $request->year);
         
-        return redirect()->back()->with('success', 'Data saved successfully');
+        return redirect()->back()->with('success', 'Data berhasil disimpan');
     }
 
     public function calculateAll(Request $request)
