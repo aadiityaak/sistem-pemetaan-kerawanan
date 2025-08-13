@@ -99,7 +99,6 @@ class IndasController extends Controller
             'name' => 'required|string|max:255',
             'category' => 'required|in:ekonomi,pariwisata,sosial',
             'unit' => 'required|string|max:50',
-            'weight_factor' => 'required|numeric|min:0|max:1',
             'description' => 'nullable|string',
         ]);
         
@@ -155,11 +154,19 @@ class IndasController extends Controller
             
             if ($selectedKabupatenKota) {
                 // Get existing data for the selected kabupaten/kota and period
-                $existingData = IndasMonthlyData::with(['indicatorType'])
+                $monthlyData = IndasMonthlyData::with(['indicatorType'])
                     ->where('kabupaten_kota_id', $selectedKabupatenKotaId)
                     ->forPeriod($month, $year)
-                    ->get()
-                    ->groupBy(['kabupaten_kota_id', 'indicator_type_id']);
+                    ->get();
+                
+                // Structure data for frontend consumption
+                $existingData = [];
+                foreach ($monthlyData as $data) {
+                    $existingData[$data->kabupaten_kota_id][$data->indicator_type_id] = [
+                        'value' => $data->value,
+                        'notes' => $data->notes,
+                    ];
+                }
             }
         }
         
@@ -277,25 +284,20 @@ class IndasController extends Controller
                 continue;
             }
             
-            $weightedSum = 0;
-            $totalWeight = 0;
+            $totalValue = 0;
             $details = [];
             
             foreach ($categoryData as $data) {
-                $weight = $data->indicatorType->weight_factor;
                 $value = $data->value;
-                $weightedSum += $value * $weight;
-                $totalWeight += $weight;
+                $totalValue += $value;
                 
                 $details[] = [
                     'indicator' => $data->indicatorType->name,
                     'value' => $value,
-                    'weight' => $weight,
-                    'weighted_value' => $value * $weight,
                 ];
             }
             
-            $categoryScore = $totalWeight > 0 ? ($weightedSum / $totalWeight) : 0;
+            $categoryScore = $totalValue;
             
             // Map category to score field
             $scoreField = match($category) {
@@ -306,24 +308,17 @@ class IndasController extends Controller
             
             $scores[$scoreField] = $categoryScore;
             $calculationDetails[$category] = [
-                'weighted_sum' => $weightedSum,
-                'total_weight' => $totalWeight,
+                'total_value' => $totalValue,
                 'score' => $categoryScore,
                 'details' => $details,
             ];
         }
         
-        // Calculate total score with agreed weights
-        // Economic: 40%, Tourism: 35%, Social: 25%
-        $totalScore = ($scores['economic_score'] * 0.4) + 
-                     ($scores['tourism_score'] * 0.35) + 
-                     ($scores['social_score'] * 0.25);
+        // Calculate total score as sum of all category scores
+        $totalScore = $scores['economic_score'] + $scores['tourism_score'] + $scores['social_score'];
         
         $scores['total_score'] = $totalScore;
         $calculationDetails['total'] = [
-            'economic_weight' => 0.4,
-            'tourism_weight' => 0.35,
-            'social_weight' => 0.25,
             'total_score' => $totalScore,
         ];
         
@@ -431,8 +426,8 @@ class IndasController extends Controller
                     'total_demo_points' => $demoPoints->count(),
                     'critical_demo_points' => $demoPoints->where('severity_level', 'critical')->count(),
                     'total_tourist_attractions' => $latestIndasData->get('pariwisata', collect())->where('indicatorType.name', 'Objek Wisata')->sum('value') ?? 0,
-                    'total_hotels' => $latestIndasData->get('pariwisata', collect())->where('indicatorType.name', 'Jumlah Hotel')->sum('value') ?? 0,
-                    'total_public_facilities' => $latestIndasData->get('sosial', collect())->where('indicatorType.name', 'Fasilitas Umum')->sum('value') ?? 0,
+                    'total_hotels' => $latestIndasData->get('pariwisata', collect())->where('indicatorType.name', 'Hotel')->sum('value') ?? 0,
+                    'total_public_facilities' => $latestIndasData->get('sosial', collect())->where('indicatorType.name', 'Program Bantuan Sosial')->sum('value') ?? 0,
                 ]
             ];
         }
@@ -622,4 +617,5 @@ class IndasController extends Controller
             'subcategory_info' => $unjukRasaSubCategory,
         ];
     }
+
 }

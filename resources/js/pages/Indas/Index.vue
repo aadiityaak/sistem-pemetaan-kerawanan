@@ -263,6 +263,17 @@ const getUnjukRasaForRegion = (kabupatenKotaId: number | null) => {
   )
 }
 
+// Navigate to data entry page
+const goToDataEntry = () => {
+  if (!selectedRegion.value) return
+  
+  router.get(route('indas.data-entry'), {
+    kabupaten_kota_id: selectedRegion.value,
+    month: selectedMonth.value,
+    year: selectedYear.value
+  })
+}
+
 // Handle ESC key to close modal
 const handleKeydown = (event: KeyboardEvent) => {
   if (event.key === 'Escape' && showUnjukRasaModal.value) {
@@ -646,15 +657,26 @@ onUnmounted(() => {
                     {{ regionalInfo[selectedRegion].kabupaten_kota.provinsi.nama }}
                   </p>
                 </div>
-                <button 
-                  @click="selectedRegion = null"
-                  class="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <span class="sr-only">Close</span>
-                  <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+                <div class="flex items-center space-x-2">
+                  <button 
+                    @click="goToDataEntry"
+                    class="inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit Data
+                  </button>
+                  <button 
+                    @click="selectedRegion = null"
+                    class="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <span class="sr-only">Close</span>
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
               </div>
               
               <!-- Modal Content -->

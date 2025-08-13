@@ -128,20 +128,15 @@
                 </select>
               </div>
 
-              <!-- Calculate Button -->
+              <!-- Info -->
               <div class="space-y-1">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Aksi
+                  Info
                 </label>
-                <button
-                  @click="calculateAll"
-                  :disabled="isCalculating || !selectedKabupatenKotaId"
-                  class="w-full inline-flex items-center justify-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50"
-                >
-                  <CalculatorIcon v-if="!isCalculating" class="h-4 w-4 mr-2" />
-                  <ArrowPathIcon v-else class="h-4 w-4 mr-2 animate-spin" />
-                  {{ isCalculating ? 'Menghitung...' : 'Hitung' }}
-                </button>
+                <div class="w-full px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md text-xs text-blue-700 dark:text-blue-300">
+                  <p class="font-medium">📊 Auto-calculation</p>
+                  <p class="mt-1">Skor INDAS akan dihitung otomatis setelah data disimpan</p>
+                </div>
               </div>
             </div>
 
@@ -188,7 +183,6 @@
                     <label :for="`${selectedKabupatenKota.id}-${indicator.id}`" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       {{ indicator.name }}
                       <span class="text-gray-500">{{ indicator.unit ? `(${indicator.unit})` : '' }}</span>
-                      <span class="text-xs text-gray-400 ml-1">Weight: {{ indicator.weight_factor }}</span>
                     </label>
                     <div class="mt-1 relative">
                       <input
@@ -198,7 +192,6 @@
                         min="0"
                         :value="getExistingValue(selectedKabupatenKota.id, indicator.id)"
                         @input="updateValue(selectedKabupatenKota.id, indicator.id, ($event.target as HTMLInputElement).value)"
-                        @blur="saveValue(selectedKabupatenKota.id, indicator.id)"
                         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
                         :placeholder="`Enter ${indicator.name.toLowerCase()}`"
                       />
@@ -221,7 +214,6 @@
                     <label :for="`${selectedKabupatenKota.id}-${indicator.id}`" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       {{ indicator.name }}
                       <span class="text-gray-500">{{ indicator.unit ? `(${indicator.unit})` : '' }}</span>
-                      <span class="text-xs text-gray-400 ml-1">Weight: {{ indicator.weight_factor }}</span>
                     </label>
                     <div class="mt-1 relative">
                       <input
@@ -231,7 +223,6 @@
                         min="0"
                         :value="getExistingValue(selectedKabupatenKota.id, indicator.id)"
                         @input="updateValue(selectedKabupatenKota.id, indicator.id, ($event.target as HTMLInputElement).value)"
-                        @blur="saveValue(selectedKabupatenKota.id, indicator.id)"
                         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
                         :placeholder="`Enter ${indicator.name.toLowerCase()}`"
                       />
@@ -254,7 +245,6 @@
                     <label :for="`${selectedKabupatenKota.id}-${indicator.id}`" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       {{ indicator.name }}
                       <span class="text-gray-500">{{ indicator.unit ? `(${indicator.unit})` : '' }}</span>
-                      <span class="text-xs text-gray-400 ml-1">Weight: {{ indicator.weight_factor }}</span>
                     </label>
                     <div class="mt-1 relative">
                       <input
@@ -264,7 +254,6 @@
                         min="0"
                         :value="getExistingValue(selectedKabupatenKota.id, indicator.id)"
                         @input="updateValue(selectedKabupatenKota.id, indicator.id, ($event.target as HTMLInputElement).value)"
-                        @blur="saveValue(selectedKabupatenKota.id, indicator.id)"
                         class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm"
                         :placeholder="`Enter ${indicator.name.toLowerCase()}`"
                       />
@@ -272,6 +261,33 @@
                     <p v-if="indicator.description" class="mt-1 text-xs text-gray-500">
                       {{ indicator.description }}
                     </p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Save Button Section -->
+              <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                  <div class="text-sm text-gray-600 dark:text-gray-400">
+                    <p class="mb-1">Pastikan semua data sudah diisi dengan benar</p>
+                    <p class="text-xs">Data akan disimpan dan skor INDAS akan dihitung ulang secara otomatis</p>
+                  </div>
+                  <div class="flex items-center space-x-3">
+                    <Link 
+                      :href="route('indas.index')"
+                      class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                    >
+                      Batal
+                    </Link>
+                    <button
+                      @click="saveAllData"
+                      :disabled="isSaving || !selectedKabupatenKota || !hasChanges"
+                      class="inline-flex items-center px-6 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50"
+                    >
+                      <ArrowPathIcon v-if="isSaving" class="h-4 w-4 mr-2 animate-spin" />
+                      <CheckIcon v-else class="h-4 w-4 mr-2" />
+                      {{ isSaving ? 'Menyimpan...' : 'Simpan Data' }}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -314,7 +330,8 @@ import {
   ArrowPathIcon,
   MagnifyingGlassIcon,
   ChevronDownIcon,
-  XMarkIcon
+  XMarkIcon,
+  CheckIcon
 } from '@heroicons/vue/24/outline'
 import AppLayout from '@/layouts/AppLayout.vue'
 
@@ -331,7 +348,6 @@ interface Indicator {
   name: string
   category: string
   unit: string
-  weight_factor: number
   description?: string
 }
 
@@ -362,11 +378,17 @@ const selectedMonth = ref(props.currentMonth)
 const selectedYear = ref(props.currentYear)
 const selectedKabupatenKotaId = ref(props.selectedKabupatenKotaId)
 const isCalculating = ref(false)
+const isSaving = ref(false)
 const searchQuery = ref('')
 const showDropdown = ref(false)
 
 // Local state for form values
 const formData = reactive<{[key: string]: string}>({})
+
+// Track if there are unsaved changes
+const hasChanges = computed(() => {
+  return Object.keys(formData).length > 0
+})
 
 // Filtered kabupaten/kota based on search
 const filteredKabupatenKota = computed(() => {
@@ -468,8 +490,19 @@ const getExistingValue = (kabupatenKotaId: number, indicatorId: number) => {
   }
   
   // Check existing data from server
-  const existing = props.existingData[kabupatenKotaId]?.[indicatorId]
-  return existing ? existing.value.toString() : ''
+  try {
+    const existing = props.existingData[kabupatenKotaId]?.[indicatorId]
+    if (existing && typeof existing === 'object' && 'value' in existing) {
+      const value = existing.value
+      if (value !== null && value !== undefined) {
+        return value.toString()
+      }
+    }
+  } catch (error) {
+    console.warn('Error accessing existing data:', error)
+  }
+  
+  return ''
 }
 
 const updateValue = (kabupatenKotaId: number, indicatorId: number, value: string) => {
@@ -477,30 +510,59 @@ const updateValue = (kabupatenKotaId: number, indicatorId: number, value: string
   formData[key] = value
 }
 
-const saveValue = async (kabupatenKotaId: number, indicatorId: number) => {
-  const key = getDataKey(kabupatenKotaId, indicatorId)
-  const value = formData[key]
-  
-  if (!value || parseFloat(value) < 0) {
+const saveAllData = async () => {
+  if (!selectedKabupatenKotaId.value || !hasChanges.value) {
     return
   }
   
+  isSaving.value = true
+  
   try {
-    await router.post(route('indas.data.store'), {
-      kabupaten_kota_id: kabupatenKotaId,
-      indicator_type_id: indicatorId,
-      value: parseFloat(value),
-      month: selectedMonth.value,
-      year: selectedYear.value,
-    }, {
-      preserveState: true,
-      preserveScroll: true,
-      onSuccess: () => {
-        // Data saved successfully - the backend will trigger recalculation
+    // Prepare batch data to save
+    const dataToSave = []
+    
+    for (const [key, value] of Object.entries(formData)) {
+      if (value && value.trim() !== '') {
+        const [kabupatenKotaId, indicatorId] = key.split('-').map(Number)
+        const numericValue = parseFloat(value)
+        
+        if (numericValue >= 0) {
+          dataToSave.push({
+            kabupaten_kota_id: kabupatenKotaId,
+            indicator_type_id: indicatorId,
+            value: numericValue,
+            month: selectedMonth.value,
+            year: selectedYear.value,
+          })
+        }
       }
-    })
+    }
+    
+    if (dataToSave.length === 0) {
+      alert('Tidak ada data valid untuk disimpan')
+      return
+    }
+    
+    // Save each data point
+    for (const data of dataToSave) {
+      await router.post(route('indas.data.store'), data, {
+        preserveState: true,
+        preserveScroll: true,
+      })
+    }
+    
+    // Trigger calculation after all data is saved
+    await calculateAll()
+    
+    // Clear form data and show success
+    Object.keys(formData).forEach(key => delete formData[key])
+    alert('✅ Data berhasil disimpan dan skor INDAS telah dihitung ulang!')
+    
   } catch (error) {
     console.error('Error saving data:', error)
+    alert('❌ Terjadi kesalahan saat menyimpan data')
+  } finally {
+    isSaving.value = false
   }
 }
 
