@@ -20,6 +20,7 @@ import {
     LayoutGrid,
     Map,
     MapPin,
+    Menu,
     ScrollText,
     Settings,
     Shield,
@@ -31,6 +32,19 @@ import {
 } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
+// Interface for database menu items
+interface MenuItem {
+    id: number;
+    title: string;
+    icon?: string;
+    path?: string;
+    is_active: boolean;
+    sort_order: number;
+    parent_id?: number;
+    admin_only: boolean;
+    children?: MenuItem[];
+}
+
 const page = usePage<AppPageProps>();
 
 // Check if current user is admin
@@ -38,120 +52,111 @@ const isAdmin = computed(() => {
     return page.props.auth?.user?.role === 'admin';
 });
 
-// Main nav items (computed to handle admin-only items)
-const mainNavItems = computed<NavItem[]>(() => {
-    const baseItems: NavItem[] = [
-    {
-        title: 'IPOLEKSOSBUDKAM',
-        href: '/dashboard',
-        icon: LayoutGrid,
-        items: dashboardItems.value, // Use computed dashboard items
-    },
-    {
-        title: 'ISU NEGATIF ANGGOTA BRIMOB',
-        href: '/dashboard?category=isu-negatif-anggota-brimob',
-        icon: ShieldAlert,
-    },
-    {
-        title: 'KALENDER KAMTIBMAS',
-        href: '/event?event=kamtibmas',
-        icon: Calendar,
-    },
-    {
-        title: 'AGENDA',
-        href: '/event?event=agenda',
-        icon: CalendarDays,
-    },
-    {
-        title: 'AGENDA INTERNAL KORP BRIMOB POLRI',
-        href: '/agenda-internal-korp-brimob',
-        icon: Calendar,
-    },
-    {
-        title: 'INDAS',
-        href: '/indas',
-        icon: ScrollText,
-        items: [
-            {
-                title: 'Dashboard',
-                href: '/indas',
-                icon: LayoutGrid,
-            },
-            {
-                title: 'Input Data',
-                href: '/indas/data-entry',
-                icon: Database,
-            },
-            {
-                title: 'Indicator Types',
-                href: '/indas/indicators',
-                icon: Settings,
-            },
-        ],
-    },
-    ];
+// Reactive menu items from database
+const dbMenuItems = ref<MenuItem[]>([]);
+const isLoading = ref(true);
 
-    // Add admin-only PREDIKSI AI menu
-    if (isAdmin.value) {
-        baseItems.push({
-            title: 'PREDIKSI AI',
-            href: '/ai-prediction',
-            icon: Brain,
-        });
-    }
-
-    // Add DATA CENTER menu with role-based items
-    const dataCenterItems = [
-        {
-            title: 'Data Monitoring',
-            href: '/monitoring-data',
-            icon: Database,
-        },
-        {
-            title: 'Partai Politik',
-            href: '/partai-politik',
-            icon: Flag,
-        },
-        {
-            title: 'Sembako',
-            href: '/sembako',
-            icon: ShoppingCart,
-        },
-        {
-            title: 'Kurs Mata Uang',
-            href: '/pasar-saham',
-            icon: DollarSign,
-        },
-    ];
-
-    // Add admin-only category management items
-    if (isAdmin.value) {
-        dataCenterItems.push(
-            {
-                title: 'Kategori',
-                href: '/categories',
-                icon: Tags,
-            },
-            {
-                title: 'Sub Kategori',
-                href: '/sub-categories',
-                icon: FileText,
-            }
-        );
-    }
-
-    baseItems.push({
-        title: 'DATA CENTER',
-        href: '/monitoring-data',
-        icon: ShieldAlert,
-        items: dataCenterItems,
+// Convert database menu items to NavItem format
+const convertMenuItemsToNavItems = (menuItems: MenuItem[]): NavItem[] => {
+    return menuItems.map(item => {
+        const navItem: NavItem = {
+            title: item.title,
+            href: item.path || '#',
+            icon: getIconComponent(item.icon),
+        };
+        
+        if (item.children && item.children.length > 0) {
+            navItem.items = convertMenuItemsToNavItems(item.children);
+        }
+        
+        return navItem;
     });
+};
 
-    return baseItems;
+// Get icon component from icon name
+const getIconComponent = (iconName?: string) => {
+    const iconMap: Record<string, any> = {
+        'LayoutGrid': LayoutGrid,
+        'ShieldAlert': ShieldAlert,
+        'Calendar': Calendar,
+        'CalendarDays': CalendarDays,
+        'ScrollText': ScrollText,
+        'Database': Database,
+        'Settings': Settings,
+        'Brain': Brain,
+        'Flag': Flag,
+        'ShoppingCart': ShoppingCart,
+        'DollarSign': DollarSign,
+        'Tags': Tags,
+        'FileText': FileText,
+        'Map': Map,
+        'Building2': Building2,
+        'MapPin': MapPin,
+        'Menu': Menu,
+        'Users': Users,
+        'Heart': Heart,
+        'Shield': Shield,
+        'Landmark': Landmark,
+        'Globe': Globe,
+        'TrendingUp': TrendingUp,
+    };
+    return iconMap[iconName || ''] || Tags;
+};
+
+// Load menu items from database
+const loadMenuItems = async () => {
+    try {
+        isLoading.value = true;
+        const response = await fetch('/api/menu-items');
+        if (!response.ok) {
+            throw new Error('Failed to load menu items');
+        }
+        dbMenuItems.value = await response.json();
+    } catch (error) {
+        console.error('Error loading menu items:', error);
+        // Set fallback menu items in case of error
+        dbMenuItems.value = [];
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+// Main nav items from database
+const mainNavItems = computed<NavItem[]>(() => {
+    if (isLoading.value || !dbMenuItems.value.length) {
+        return [];
+    }
+    
+    // Get main menu items (excluding PENGATURAN which goes to footer)
+    const mainItems = dbMenuItems.value.filter(item => 
+        item.title !== 'PENGATURAN'
+    );
+    
+    let navItems = convertMenuItemsToNavItems(mainItems);
+    
+    // Add dynamic dashboard items for IPOLEKSOSBUDKAM
+    const ipoleksosbudkamIndex = navItems.findIndex(item => item.title === 'IPOLEKSOSBUDKAM');
+    if (ipoleksosbudkamIndex !== -1) {
+        navItems[ipoleksosbudkamIndex].items = dashboardItems.value;
+    }
+    
+    return navItems;
 });
 
-// Settings nav items for sidebar footer (computed to include admin-only items)
+// Settings nav items for sidebar footer
 const settingsNavItems = computed<NavItem[]>(() => {
+    if (isLoading.value || !dbMenuItems.value.length) {
+        return [];
+    }
+    
+    // Get PENGATURAN menu item from database
+    const pengaturanMenu = dbMenuItems.value.find(item => item.title === 'PENGATURAN');
+    
+    if (pengaturanMenu) {
+        return convertMenuItemsToNavItems([pengaturanMenu]);
+    }
+    
+    // Fallback if PENGATURAN not found in database
     const baseItems = [
         {
             title: 'Provinsi',
@@ -255,9 +260,10 @@ const getIconForCategory = (slug: string) => {
     return iconMap[slug] || Tags;
 };
 
-// Load categories on component mount
+// Load data on component mount
 onMounted(() => {
     loadCategoriesMenu();
+    loadMenuItems();
 });
 </script>
 

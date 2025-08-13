@@ -6,6 +6,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\IndasController;
 use App\Http\Controllers\KabupatenKotaController;
 use App\Http\Controllers\KecamatanController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\MonitoringDataController;
 use App\Http\Controllers\PartaiPolitikController;
 use App\Http\Controllers\PasarSahamController;
@@ -75,6 +76,8 @@ Route::get('/api/sub-categories/{category_id}', function ($category_id) {
     });
     return $subCategories;
 });
+
+Route::get('/api/menu-items', [MenuController::class, 'getMenuItems'])->name('api.menu-items');
 
 // Video upload API routes (require authentication)
 Route::middleware('auth')->group(function () {
@@ -215,6 +218,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:admin'])->group(function () {
         Route::get('/settings', [AppSettingController::class, 'index'])->name('settings.index');
         Route::match(['POST', 'PUT'], '/settings/{key}', [AppSettingController::class, 'update'])->name('settings.update');
+        
+        // Menu Management Routes
+        Route::resource('admin/menu-items', \App\Http\Controllers\Admin\MenuItemController::class, [
+            'names' => [
+                'index' => 'admin.menu-items.index',
+                'create' => 'admin.menu-items.create',
+                'store' => 'admin.menu-items.store',
+                'show' => 'admin.menu-items.show',
+                'edit' => 'admin.menu-items.edit',
+                'update' => 'admin.menu-items.update',
+                'destroy' => 'admin.menu-items.destroy',
+            ]
+        ]);
+        Route::post('/admin/menu-items/{menuItem}/toggle-status', [\App\Http\Controllers\Admin\MenuItemController::class, 'toggleStatus'])
+            ->name('admin.menu-items.toggle-status');
     });
 });
 
