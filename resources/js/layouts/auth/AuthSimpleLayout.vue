@@ -103,21 +103,20 @@ onUnmounted(() => {
                 <Link :href="route('home')" class="flex flex-col items-center gap-3 hacker-logo">
                     <div class="relative">
                         <!-- Show login_logo if available, fallback to app_favicon, then default icon -->
-                        <div v-if="appSettings.login_logo" class="h-20 w-20 rounded-lg bg-black/80 backdrop-blur-sm border border-green-500/30 flex items-center justify-center shadow-lg shadow-green-500/10 glow-box">
-                            <img :src="appSettings.login_logo" :alt="appSettings.app_name + ' - Login'" class="h-16 w-16 object-contain" />
+                        <div v-if="appSettings.login_logo" class="h-24 w-24 rounded-lg bg-black/80 backdrop-blur-sm border border-green-500/30 flex items-center justify-center shadow-lg shadow-green-500/10 glow-box">
+                            <img :src="appSettings.login_logo" :alt="appSettings.app_name + ' - Login'" class="h-20 w-20 object-contain" />
                         </div>
-                        <div v-else-if="appSettings.app_favicon && appSettings.app_favicon !== '/favicon.ico'" class="h-16 w-16 rounded-lg bg-black/80 backdrop-blur-sm border border-green-500/30 flex items-center justify-center shadow-lg shadow-green-500/10 glow-box">
-                            <img :src="appSettings.app_favicon" :alt="appSettings.app_name" class="h-10 w-10 object-contain filter brightness-0 invert opacity-80" />
+                        <div v-else-if="appSettings.app_favicon && appSettings.app_favicon !== '/favicon.ico'" class="h-20 w-20 rounded-lg bg-black/80 backdrop-blur-sm border border-green-500/30 flex items-center justify-center shadow-lg shadow-green-500/10 glow-box">
+                            <img :src="appSettings.app_favicon" :alt="appSettings.app_name" class="h-12 w-12 object-contain filter brightness-0 invert opacity-80" />
                         </div>
-                        <div v-else class="h-16 w-16 rounded-lg bg-black/80 backdrop-blur-sm border border-green-500/30 flex items-center justify-center shadow-lg shadow-green-500/10 glow-box">
-                            <AppLogoIcon class="h-10 w-10 text-green-400" />
+                        <div v-else class="h-20 w-20 rounded-lg bg-black/80 backdrop-blur-sm border border-green-500/30 flex items-center justify-center shadow-lg shadow-green-500/10 glow-box">
+                            <AppLogoIcon class="h-12 w-12 text-green-400" />
                         </div>
                         <!-- Scanning line effect -->
                         <div class="absolute inset-0 rounded-lg bg-gradient-to-b from-transparent via-green-400/20 to-transparent animate-scan"></div>
                     </div>
                     <div class="text-center">
                         <h1 class="text-3xl font-bold text-green-400 font-mono tracking-wider glitch-text">{{ appSettings.app_name || 'CRIME MAP' }}</h1>
-                        <p class="mt-2 text-sm text-green-300/70 font-mono">{{ appSettings.app_description || '> sistem_pemetaan_kriminal.exe' }}</p>
                     </div>
                 </Link>
             </div>
