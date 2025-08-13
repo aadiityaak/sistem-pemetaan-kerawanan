@@ -130,4 +130,27 @@ class MenuItemController extends Controller
         return redirect()->back()
             ->with('success', 'Menu item status updated successfully.');
     }
+
+    /**
+     * Reorder menu items based on drag and drop.
+     */
+    public function reorder(Request $request)
+    {
+        $request->validate([
+            'items' => 'required|array',
+            'items.*.id' => 'required|exists:menu_items,id',
+            'items.*.sort_order' => 'required|integer',
+            'items.*.parent_id' => 'nullable|exists:menu_items,id',
+        ]);
+
+        foreach ($request->items as $itemData) {
+            MenuItem::where('id', $itemData['id'])->update([
+                'sort_order' => $itemData['sort_order'],
+                'parent_id' => $itemData['parent_id']
+            ]);
+        }
+
+        return redirect()->back()
+            ->with('success', 'Menu order updated successfully.');
+    }
 }

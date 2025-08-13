@@ -24,7 +24,8 @@
       "Bash(pkill:*)",
       "Bash(sqlite3:*)",
       "Bash(ls:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": []
   }

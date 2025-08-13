@@ -233,6 +233,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
         Route::post('/admin/menu-items/{menuItem}/toggle-status', [\App\Http\Controllers\Admin\MenuItemController::class, 'toggleStatus'])
             ->name('admin.menu-items.toggle-status');
+        Route::post('/admin/menu-items/reorder', [\App\Http\Controllers\Admin\MenuItemController::class, 'reorder'])
+            ->name('admin.menu-items.reorder');
     });
 });
 
