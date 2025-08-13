@@ -588,6 +588,7 @@ class IndasController extends Controller
         // Get recent incidents (last 5)
         $recentIncidents = $unjukRasaData->take(5)->map(function ($incident) {
             return [
+                'id' => $incident->id,
                 'title' => $incident->title,
                 'description' => $incident->description,
                 'location' => $incident->kabupatenKota->nama . ', ' . $incident->provinsi->nama,

@@ -57,6 +57,7 @@ interface UnjukRasaStats {
   this_month_count: number
   high_severity_count: number
   recent_incidents: Array<{
+    id: number
     title: string
     description: string
     location: string
@@ -213,6 +214,25 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('id-ID')
 }
 
+// Helper function to strip HTML tags from text
+const stripHtml = (html: string | null | undefined) => {
+  if (!html) return ''
+  
+  // Create a temporary div element to parse HTML
+  const tempDiv = document.createElement('div')
+  tempDiv.innerHTML = html
+  
+  // Get text content and clean up extra whitespace
+  return tempDiv.textContent || tempDiv.innerText || ''
+}
+
+// Helper function to strip HTML and truncate text
+const stripHtmlAndTruncate = (html: string | null | undefined, maxLength: number) => {
+  const cleanText = stripHtml(html)
+  if (cleanText.length <= maxLength) return cleanText
+  return cleanText.substring(0, maxLength) + '...'
+}
+
 const selectedRegion = ref<number | null>(null)
 const showUnjukRasaModal = ref(false)
 
@@ -226,6 +246,21 @@ const openUnjukRasaModal = () => {
 
 const closeUnjukRasaModal = () => {
   showUnjukRasaModal.value = false
+}
+
+// Get unjuk rasa data for specific region
+const getUnjukRasaForRegion = (kabupatenKotaId: number | null) => {
+  if (!kabupatenKotaId || !props.unjukRasaStats.recent_incidents) return []
+  
+  const regionInfo = props.regionalInfo[kabupatenKotaId]
+  if (!regionInfo) return []
+  
+  const regionName = regionInfo.kabupaten_kota.nama
+  
+  // Filter unjuk rasa incidents that match this region
+  return props.unjukRasaStats.recent_incidents.filter(incident => 
+    incident.location.includes(regionName)
+  )
 }
 
 // Handle ESC key to close modal
@@ -388,11 +423,11 @@ onUnmounted(() => {
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
                   <div class="flex-shrink-0 bg-white dark:bg-gray-800 p-3 rounded-full shadow-md">
-                    <div v-if="unjukRasaStats.subcategory_info?.image_url" class="h-8 w-8 rounded">
-                      <img :src="unjukRasaStats.subcategory_info.image_url" :alt="unjukRasaStats.subcategory_info.name" class="h-8 w-8 object-contain rounded" />
+                    <div v-if="props.unjukRasaStats.subcategory_info?.image_url" class="h-8 w-8 rounded">
+                      <img :src="props.unjukRasaStats.subcategory_info.image_url" :alt="props.unjukRasaStats.subcategory_info.name" class="h-8 w-8 object-contain rounded" />
                     </div>
                     <div v-else class="h-8 w-8 text-2xl flex items-center justify-center">
-                      {{ unjukRasaStats.subcategory_info?.icon || '📢' }}
+                      {{ props.unjukRasaStats.subcategory_info?.icon || '📢' }}
                     </div>
                   </div>
                   <div class="ml-6">
@@ -407,7 +442,7 @@ onUnmounted(() => {
                   <!-- Total Count -->
                   <div class="text-center">
                     <div class="text-3xl font-bold text-red-600 dark:text-red-400">
-                      {{ unjukRasaStats.total_count }}
+                      {{ props.unjukRasaStats.total_count }}
                     </div>
                     <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                       Total Kejadian
@@ -417,7 +452,7 @@ onUnmounted(() => {
                   <!-- Active Count -->
                   <div class="text-center">
                     <div class="text-2xl font-semibold text-orange-600 dark:text-orange-400">
-                      {{ unjukRasaStats.active_count }}
+                      {{ props.unjukRasaStats.active_count }}
                     </div>
                     <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                       Masih Aktif
@@ -427,7 +462,7 @@ onUnmounted(() => {
                   <!-- This Month -->
                   <div class="text-center">
                     <div class="text-2xl font-semibold text-yellow-600 dark:text-yellow-400">
-                      {{ unjukRasaStats.this_month_count }}
+                      {{ props.unjukRasaStats.this_month_count }}
                     </div>
                     <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                       Bulan Ini
@@ -437,7 +472,7 @@ onUnmounted(() => {
                   <!-- High Severity -->
                   <div class="text-center">
                     <div class="text-2xl font-semibold text-red-700 dark:text-red-300">
-                      {{ unjukRasaStats.high_severity_count }}
+                      {{ props.unjukRasaStats.high_severity_count }}
                     </div>
                     <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                       Tingkat Tinggi
@@ -461,7 +496,7 @@ onUnmounted(() => {
                     Klik untuk melihat detail lengkap dan daftar kejadian terbaru
                   </div>
                   <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
-                    <span>{{ unjukRasaStats.by_province.length }} Provinsi Terdampak</span>
+                    <span>{{ props.unjukRasaStats.by_province.length }} Provinsi Terdampak</span>
                     <span>•</span>
                     <span>Diperbarui Real-time</span>
                   </div>
@@ -829,7 +864,67 @@ onUnmounted(() => {
                     <ShieldExclamationIcon class="h-5 w-5 text-gray-400" />
                     <h4 class="ml-2 text-base font-medium text-gray-500 dark:text-gray-400">Titik-titik Demo</h4>
                   </div>
-                  <div class="bg-green-50 dark:bg-green-900/10 rounded-lg p-4 text-center">
+                  
+                  <!-- Check for Unjuk Rasa data in this region -->
+                  <div v-if="getUnjukRasaForRegion(selectedRegion).length > 0" class="bg-orange-50 dark:bg-orange-900/10 rounded-lg p-4">
+                    <div class="flex items-center mb-3">
+                      <div class="flex items-center">
+                        <div v-if="props.unjukRasaStats.subcategory_info?.image_url" class="h-5 w-5 mr-2 rounded">
+                          <img :src="props.unjukRasaStats.subcategory_info.image_url" :alt="props.unjukRasaStats.subcategory_info.name" class="h-5 w-5 object-contain rounded" />
+                        </div>
+                        <div v-else class="h-5 w-5 mr-2 text-sm flex items-center justify-center">
+                          {{ props.unjukRasaStats.subcategory_info?.icon || '📢' }}
+                        </div>
+                        <span class="text-sm font-medium text-orange-700 dark:text-orange-400">
+                          Data Unjuk Rasa Tersedia ({{ getUnjukRasaForRegion(selectedRegion).length }} kejadian)
+                        </span>
+                      </div>
+                    </div>
+                    <div class="space-y-2">
+                      <div 
+                        v-for="(incident, index) in getUnjukRasaForRegion(selectedRegion).slice(0, 3)" 
+                        :key="index"
+                        class="border-l-3 border-orange-400 bg-white dark:bg-gray-800 pl-3 py-2 rounded-r-lg text-xs relative group"
+                      >
+                        <div class="flex justify-between items-start">
+                          <div class="flex-1">
+                            <h6 class="font-medium text-gray-900 dark:text-white">{{ incident.title }}</h6>
+                            <p class="text-gray-600 dark:text-gray-300 mt-1">
+                              {{ stripHtmlAndTruncate(incident.description, 80) }}
+                            </p>
+                            <div class="flex items-center mt-1 text-gray-500 dark:text-gray-400 space-x-2">
+                              <span>{{ formatDate(incident.incident_date) }}</span>
+                              <span class="px-1 py-0.5 rounded text-xs" :class="{
+                                'bg-red-100 text-red-700': incident.severity_level === 'high' || incident.severity_level === 'critical',
+                                'bg-yellow-100 text-yellow-700': incident.severity_level === 'medium',
+                                'bg-green-100 text-green-700': incident.severity_level === 'low'
+                              }">
+                                {{ incident.severity_level?.toUpperCase() }}
+                              </span>
+                            </div>
+                          </div>
+                          <Link 
+                            :href="route('monitoring-data.show', incident.id)"
+                            class="ml-2 p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100"
+                            :title="`Lihat detail: ${incident.title}`"
+                          >
+                            <ArrowTopRightOnSquareIcon class="h-3 w-3" />
+                          </Link>
+                        </div>
+                      </div>
+                      <div v-if="getUnjukRasaForRegion(selectedRegion).length > 3" class="text-center pt-2">
+                        <button 
+                          @click="openUnjukRasaModal" 
+                          class="text-xs text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300 underline"
+                        >
+                          Lihat {{ getUnjukRasaForRegion(selectedRegion).length - 3 }} kejadian lainnya
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- No demo points message -->
+                  <div v-else class="bg-green-50 dark:bg-green-900/10 rounded-lg p-4 text-center">
                     <p class="text-sm text-green-700 dark:text-green-400">No demo points recorded for this region</p>
                   </div>
                 </div>
@@ -864,18 +959,18 @@ onUnmounted(() => {
                   <!-- Modal Header -->
                   <div class="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
                     <div class="flex items-center">
-                      <div v-if="unjukRasaStats.subcategory_info?.image_url" class="h-8 w-8 mr-3 rounded">
-                        <img :src="unjukRasaStats.subcategory_info.image_url" :alt="unjukRasaStats.subcategory_info.name" class="h-8 w-8 object-contain rounded" />
+                      <div v-if="props.unjukRasaStats.subcategory_info?.image_url" class="h-8 w-8 mr-3 rounded">
+                        <img :src="props.unjukRasaStats.subcategory_info.image_url" :alt="props.unjukRasaStats.subcategory_info.name" class="h-8 w-8 object-contain rounded" />
                       </div>
                       <div v-else class="h-8 w-8 mr-3 text-2xl flex items-center justify-center">
-                        {{ unjukRasaStats.subcategory_info?.icon || '📢' }}
+                        {{ props.unjukRasaStats.subcategory_info?.icon || '📢' }}
                       </div>
                       <div>
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white">
                           Data Unjuk Rasa Terbaru
                         </h3>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                          Total {{ unjukRasaStats.total_count }} kejadian, {{ unjukRasaStats.active_count }} masih aktif
+                          Total {{ props.unjukRasaStats.total_count }} kejadian, {{ props.unjukRasaStats.active_count }} masih aktif
                         </p>
                       </div>
                     </div>
@@ -900,7 +995,7 @@ onUnmounted(() => {
                           <div class="ml-2">
                             <p class="text-xs text-blue-600 dark:text-blue-400">Total Kejadian</p>
                             <p class="text-2xl font-bold text-blue-900 dark:text-blue-300">
-                              {{ unjukRasaStats.total_count }}
+                              {{ props.unjukRasaStats.total_count }}
                             </p>
                           </div>
                         </div>
@@ -912,7 +1007,7 @@ onUnmounted(() => {
                           <div class="ml-2">
                             <p class="text-xs text-green-600 dark:text-green-400">Masih Aktif</p>
                             <p class="text-2xl font-bold text-green-900 dark:text-green-300">
-                              {{ unjukRasaStats.active_count }}
+                              {{ props.unjukRasaStats.active_count }}
                             </p>
                           </div>
                         </div>
@@ -924,7 +1019,7 @@ onUnmounted(() => {
                           <div class="ml-2">
                             <p class="text-xs text-orange-600 dark:text-orange-400">Bulan Ini</p>
                             <p class="text-2xl font-bold text-orange-900 dark:text-orange-300">
-                              {{ unjukRasaStats.this_month_count }}
+                              {{ props.unjukRasaStats.this_month_count }}
                             </p>
                           </div>
                         </div>
@@ -936,7 +1031,7 @@ onUnmounted(() => {
                           <div class="ml-2">
                             <p class="text-xs text-red-600 dark:text-red-400">Tingkat Tinggi</p>
                             <p class="text-2xl font-bold text-red-900 dark:text-red-300">
-                              {{ unjukRasaStats.high_severity_count }}
+                              {{ props.unjukRasaStats.high_severity_count }}
                             </p>
                           </div>
                         </div>
@@ -950,9 +1045,9 @@ onUnmounted(() => {
                         Kejadian Terbaru
                       </h4>
                       
-                      <div v-if="unjukRasaStats.recent_incidents.length > 0" class="space-y-4">
+                      <div v-if="props.unjukRasaStats.recent_incidents.length > 0" class="space-y-4">
                         <div 
-                          v-for="(incident, index) in unjukRasaStats.recent_incidents" 
+                          v-for="(incident, index) in props.unjukRasaStats.recent_incidents" 
                           :key="index"
                           class="border-l-4 bg-white dark:bg-gray-700 pl-4 py-3 rounded-r-lg shadow-sm"
                           :class="{
@@ -964,11 +1059,20 @@ onUnmounted(() => {
                         >
                           <div class="flex items-start justify-between">
                             <div class="flex-1">
-                              <h5 class="text-sm font-semibold text-gray-900 dark:text-white">
-                                {{ incident.title }}
-                              </h5>
+                              <div class="flex items-start justify-between">
+                                <h5 class="text-sm font-semibold text-gray-900 dark:text-white flex-1">
+                                  {{ incident.title }}
+                                </h5>
+                                <Link 
+                                  :href="route('monitoring-data.show', incident.id)"
+                                  class="ml-2 p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex-shrink-0"
+                                  :title="`Lihat detail: ${incident.title}`"
+                                >
+                                  <ArrowTopRightOnSquareIcon class="h-4 w-4" />
+                                </Link>
+                              </div>
                               <p class="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">
-                                {{ incident.description }}
+                                {{ stripHtml(incident.description) }}
                               </p>
                               <div class="flex items-center mt-2 text-xs text-gray-500 dark:text-gray-400 space-x-4">
                                 <span class="flex items-center">
@@ -1018,7 +1122,7 @@ onUnmounted(() => {
                     </div>
 
                     <!-- Province Breakdown -->
-                    <div v-if="unjukRasaStats.by_province.length > 0" class="mt-6">
+                    <div v-if="props.unjukRasaStats.by_province.length > 0" class="mt-6">
                       <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4 flex items-center">
                         <MapPinIcon class="h-5 w-5 mr-2 text-green-500" />
                         Distribusi per Provinsi
@@ -1026,7 +1130,7 @@ onUnmounted(() => {
                       
                       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div 
-                          v-for="province in unjukRasaStats.by_province" 
+                          v-for="province in props.unjukRasaStats.by_province" 
                           :key="province.province"
                           class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3"
                         >
