@@ -128,6 +128,7 @@ const form = useForm({
     additional_data: props.monitoringData.additional_data || {},
     gallery: [] as File[],
     video: null as File | null,
+    uploaded_video_path: null as string | null, // For storing uploaded video path
     _method: 'PUT',
 });
 
@@ -147,6 +148,10 @@ const isDragOver = ref(false)
 // Video related refs
 const videoPreview = ref<string | null>(null);
 const videoFile = ref<File | null>(null);
+const videoUploadProgress = ref(0);
+const isVideoUploading = ref(false);
+const videoUploadError = ref<string | null>(null);
+const uploadedVideoPath = ref<string | null>(null);
 
 // Initialize existing gallery images
 const initializeExistingGallery = () => {
@@ -163,6 +168,7 @@ const initializeExistingGallery = () => {
 const initializeExistingVideo = () => {
     if (props.monitoringData.video_path) {
         videoPreview.value = `/storage/${props.monitoringData.video_path}`;
+        uploadedVideoPath.value = props.monitoringData.video_path; // Set as already uploaded
     }
 }
 
@@ -361,14 +367,14 @@ const updateGalleryFormData = () => {
 }
 
 // Video upload functions
-const handleVideoUpload = (event: Event) => {
+const handleVideoUpload = async (event: Event) => {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
     
     if (file) {
-        // Check file size (100MB limit)
-        if (file.size > 100 * 1024 * 1024) {
-            alert('Ukuran file video terlalu besar. Maksimal 100MB.');
+        // Check file size (200MB limit - increased for chunked upload)
+        if (file.size > 200 * 1024 * 1024) {
+            alert('Ukuran file video terlalu besar. Maksimal 200MB.');
             return;
         }
         
@@ -379,21 +385,102 @@ const handleVideoUpload = (event: Event) => {
         }
         
         videoFile.value = file;
-        form.video = file;
+        videoUploadError.value = null;
         
         // Create preview URL
         const url = URL.createObjectURL(file);
         videoPreview.value = url;
+        
+        // Start auto upload
+        await uploadVideoChunked(file);
     }
 };
 
-const removeVideo = () => {
+// Chunked video upload function
+const uploadVideoChunked = async (file: File) => {
+    const chunkSize = 1024 * 1024; // 1MB chunks
+    const totalChunks = Math.ceil(file.size / chunkSize);
+    const uploadId = Date.now().toString();
+    
+    isVideoUploading.value = true;
+    videoUploadProgress.value = 0;
+    
+    try {
+        for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+            const start = chunkIndex * chunkSize;
+            const end = Math.min(start + chunkSize, file.size);
+            const chunk = file.slice(start, end);
+            
+            const formData = new FormData();
+            formData.append('chunk', chunk);
+            formData.append('chunkIndex', chunkIndex.toString());
+            formData.append('totalChunks', totalChunks.toString());
+            formData.append('uploadId', uploadId);
+            formData.append('fileName', file.name);
+            formData.append('fileSize', file.size.toString());
+            
+            const response = await fetch('/api/upload-video-chunk', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Upload failed: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            
+            // Update progress
+            videoUploadProgress.value = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+            
+            // If this is the last chunk and upload is complete
+            if (chunkIndex === totalChunks - 1 && result.videoPath) {
+                uploadedVideoPath.value = result.videoPath;
+                form.video = null; // Clear the file from form since it's already uploaded
+                form.uploaded_video_path = result.videoPath;
+            }
+        }
+    } catch (error) {
+        console.error('Video upload error:', error);
+        videoUploadError.value = error instanceof Error ? error.message : 'Upload gagal';
+    } finally {
+        isVideoUploading.value = false;
+    }
+};
+
+const removeVideo = async () => {
     if (videoPreview.value && videoFile.value) {
         // Only revoke object URL if it's a new file (created with URL.createObjectURL)
         URL.revokeObjectURL(videoPreview.value);
     }
+    
+    // If video was uploaded, delete it from server
+    if (uploadedVideoPath.value) {
+        try {
+            await fetch('/api/delete-video', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+                body: JSON.stringify({
+                    videoPath: uploadedVideoPath.value,
+                }),
+            });
+        } catch (error) {
+            console.error('Failed to delete video:', error);
+        }
+    }
+    
     videoPreview.value = null;
     videoFile.value = null;
+    uploadedVideoPath.value = null;
+    videoUploadProgress.value = 0;
+    videoUploadError.value = null;
+    isVideoUploading.value = false;
     form.video = null;
 };
 
@@ -448,10 +535,18 @@ const initializeMap = async () => {
 
 // Submit form
 const submit = () => {
+    // Include uploaded video path if available
+    if (uploadedVideoPath.value) {
+        form.uploaded_video_path = uploadedVideoPath.value;
+    }
+    
     form.post(`/monitoring-data/${props.monitoringData.id}`, {
         onSuccess: () => {
             // Redirect will be handled by Inertia
         },
+        onError: (errors) => {
+            console.error('Form submission errors:', errors);
+        }
     });
 };
 
@@ -850,28 +945,61 @@ onMounted(() => {
                             <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Upload video yang berkaitan dengan kejadian ini (Opsional)</p>
                             
                             <!-- Video Upload Area -->
-                            <div class="relative cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-6 transition-colors hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500">
+                            <div class="relative cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-6 transition-colors hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500"
+                                 :class="{ 'pointer-events-none opacity-50': isVideoUploading }">
                                 <div class="text-center">
                                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                                     </svg>
                                     <div class="mt-4">
-                                        <label class="cursor-pointer">
+                                        <label class="cursor-pointer" :class="{ 'pointer-events-none': isVideoUploading }">
                                             <span class="mt-2 block text-sm font-medium text-gray-900 dark:text-white">
-                                                Klik untuk upload video
+                                                {{ isVideoUploading ? 'Mengupload video...' : 'Klik untuk upload video' }}
                                             </span>
                                             <span class="mt-1 block text-sm text-gray-500 dark:text-gray-400">
-                                                MP4, MOV, AVI hingga 100MB
+                                                MP4, MOV, AVI hingga 200MB (Auto upload)
                                             </span>
                                             <input
                                                 type="file"
                                                 accept="video/*"
                                                 class="sr-only"
+                                                :disabled="isVideoUploading"
                                                 @change="handleVideoUpload"
                                             />
                                         </label>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <!-- Upload Progress -->
+                            <div v-if="isVideoUploading" class="mt-4">
+                                <div class="mb-2 flex justify-between text-sm">
+                                    <span class="text-gray-700 dark:text-gray-300">Mengupload video...</span>
+                                    <span class="text-gray-700 dark:text-gray-300">{{ videoUploadProgress }}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                                         :style="{ width: videoUploadProgress + '%' }"></div>
+                                </div>
+                                <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                    {{ videoFile?.name }} - Upload otomatis sedang berlangsung
+                                </p>
+                            </div>
+                            
+                            <!-- Upload Error -->
+                            <div v-if="videoUploadError" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/20 dark:border-red-800">
+                                <p class="text-sm text-red-600 dark:text-red-400">
+                                    <svg class="inline h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    Upload Error: {{ videoUploadError }}
+                                </p>
+                                <button 
+                                    @click="videoUploadError = null" 
+                                    class="mt-2 text-xs text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 underline"
+                                >
+                                    Tutup
+                                </button>
                             </div>
                             
                             <!-- Video Preview -->
@@ -885,15 +1013,30 @@ onMounted(() => {
                                     <button
                                         type="button"
                                         @click="removeVideo"
-                                        class="absolute right-2 top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
+                                        :disabled="isVideoUploading"
+                                        class="absolute right-2 top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                                         title="Hapus video"
                                     >
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
+                                    
+                                    <!-- Upload Success Badge -->
+                                    <div v-if="uploadedVideoPath && !isVideoUploading" 
+                                         class="absolute left-2 top-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                                        <svg class="inline h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        Terupload
+                                    </div>
                                 </div>
-                                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">{{ videoFile?.name }}</p>
+                                <div class="mt-2 flex items-center justify-between">
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ videoFile?.name }}</p>
+                                    <div v-if="uploadedVideoPath" class="text-xs text-green-600 dark:text-green-400">
+                                        ✓ Upload berhasil
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

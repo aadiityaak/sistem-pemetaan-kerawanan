@@ -401,6 +401,7 @@ class MonitoringDataController extends Controller
             'gallery' => 'nullable|array',
             'gallery.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max per image
             'video' => 'nullable|file|mimes:mp4,mov,avi,wmv,flv,webm|max:102400', // 100MB max for video
+            'uploaded_video_path' => 'nullable|string', // For chunked uploaded video
         ]);
 
         // Handle gallery upload
@@ -420,7 +421,17 @@ class MonitoringDataController extends Controller
                 Storage::disk('public')->delete($monitoringData->video_path);
             }
             $validated['video_path'] = $request->file('video')->store('monitoring-data/videos', 'public');
+        } elseif ($request->filled('uploaded_video_path')) {
+            // Handle chunked uploaded video
+            // Delete existing video if present and different from uploaded one
+            if (!empty($monitoringData->video_path) && $monitoringData->video_path !== $validated['uploaded_video_path']) {
+                Storage::disk('public')->delete($monitoringData->video_path);
+            }
+            $validated['video_path'] = $validated['uploaded_video_path'];
         }
+        
+        // Remove uploaded_video_path from validated data as it's not a database field
+        unset($validated['uploaded_video_path']);
 
         $validated['gallery'] = $galleryPaths;
         $monitoringData->update($validated);

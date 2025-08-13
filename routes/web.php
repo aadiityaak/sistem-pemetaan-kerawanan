@@ -11,6 +11,7 @@ use App\Http\Controllers\PartaiPolitikController;
 use App\Http\Controllers\PasarSahamController;
 use App\Http\Controllers\ProvinsiController;
 use App\Http\Controllers\SembakoController;
+use App\Http\Controllers\VideoUploadController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -73,6 +74,12 @@ Route::get('/api/sub-categories/{category_id}', function ($category_id) {
         $subCategory->append(['image_url']);
     });
     return $subCategories;
+});
+
+// Video upload API routes (require authentication)
+Route::middleware('auth')->group(function () {
+    Route::post('/api/upload-video-chunk', [VideoUploadController::class, 'uploadChunk'])->name('api.upload-video-chunk');
+    Route::post('/api/delete-video', [VideoUploadController::class, 'deleteVideo'])->name('api.delete-video');
 });
 
 Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified', 'province.filter'])->name('dashboard');
