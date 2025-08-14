@@ -26,6 +26,62 @@ class MenuItemSeeder extends Seeder
             'description' => 'Dashboard utama sistem monitoring',
         ]);
 
+        // IPOLEKSOSBUDKAM submenus berdasarkan kategori
+        \App\Models\MenuItem::create([
+            'title' => 'Ideologi',
+            'icon' => 'Users',
+            'path' => '/dashboard?category=ideologi',
+            'is_active' => true,
+            'sort_order' => 1,
+            'parent_id' => $ipoleksosbudkam->id,
+            'admin_only' => false,
+            'description' => 'Monitoring aspek ideologi',
+        ]);
+
+        \App\Models\MenuItem::create([
+            'title' => 'Politik',
+            'icon' => 'Landmark',
+            'path' => '/dashboard?category=politik',
+            'is_active' => true,
+            'sort_order' => 2,
+            'parent_id' => $ipoleksosbudkam->id,
+            'admin_only' => false,
+            'description' => 'Monitoring aspek politik',
+        ]);
+
+        \App\Models\MenuItem::create([
+            'title' => 'Ekonomi',
+            'icon' => 'DollarSign',
+            'path' => '/dashboard?category=ekonomi',
+            'is_active' => true,
+            'sort_order' => 3,
+            'parent_id' => $ipoleksosbudkam->id,
+            'admin_only' => false,
+            'description' => 'Monitoring aspek ekonomi',
+        ]);
+
+        \App\Models\MenuItem::create([
+            'title' => 'Sosial Budaya',
+            'icon' => 'Heart',
+            'path' => '/dashboard?category=sosial-budaya',
+            'is_active' => true,
+            'sort_order' => 4,
+            'parent_id' => $ipoleksosbudkam->id,
+            'admin_only' => false,
+            'description' => 'Monitoring aspek sosial budaya',
+        ]);
+
+        \App\Models\MenuItem::create([
+            'title' => 'Keamanan',
+            'icon' => 'Shield',
+            'path' => '/dashboard?category=keamanan',
+            'is_active' => true,
+            'sort_order' => 5,
+            'parent_id' => $ipoleksosbudkam->id,
+            'admin_only' => false,
+            'description' => 'Monitoring aspek keamanan',
+        ]);
+
         \App\Models\MenuItem::create([
             'title' => 'ISU NEGATIF ANGGOTA BRIMOB',
             'icon' => 'ShieldAlert',

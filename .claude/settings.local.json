@@ -27,6 +27,7 @@
       "Bash(dir:*)",
       "Bash(npm uninstall:*)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }

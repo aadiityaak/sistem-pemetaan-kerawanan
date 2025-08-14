@@ -235,6 +235,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('admin.menu-items.toggle-status');
         Route::post('/admin/menu-items/reorder', [\App\Http\Controllers\Admin\MenuItemController::class, 'reorder'])
             ->name('admin.menu-items.reorder');
+        Route::post('/admin/menu-items/{menuItem}/indent', [\App\Http\Controllers\Admin\MenuItemController::class, 'indent'])
+            ->name('admin.menu-items.indent');
+        Route::post('/admin/menu-items/{menuItem}/outdent', [\App\Http\Controllers\Admin\MenuItemController::class, 'outdent'])
+            ->name('admin.menu-items.outdent');
+        Route::post('/admin/menu-items/reset', [\App\Http\Controllers\Admin\MenuItemController::class, 'reset'])
+            ->name('admin.menu-items.reset');
     });
 });
 

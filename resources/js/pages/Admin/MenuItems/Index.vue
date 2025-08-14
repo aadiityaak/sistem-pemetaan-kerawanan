@@ -7,12 +7,23 @@
                     <h1 class="text-2xl font-bold tracking-tight">Menu Items</h1>
                     <p class="text-muted-foreground">Kelola menu navigasi dengan drag & drop seperti WordPress</p>
                 </div>
-                <Button as-child>
-                    <Link :href="route('admin.menu-items.create')">
-                        <Plus class="w-4 h-4 mr-2" />
-                        Tambah Menu
-                    </Link>
-                </Button>
+                <div class="flex items-center space-x-3">
+                    <Button 
+                        variant="outline" 
+                        @click="resetMenu"
+                        :disabled="loading"
+                        class="text-orange-700 border-orange-300 hover:bg-orange-50"
+                    >
+                        <RotateCcw class="w-4 h-4 mr-2" />
+                        Reset Menu
+                    </Button>
+                    <Button as-child>
+                        <Link :href="route('admin.menu-items.create')">
+                            <Plus class="w-4 h-4 mr-2" />
+                            Tambah Menu
+                        </Link>
+                    </Button>
+                </div>
             </div>
 
             <!-- Menu Items Tree -->
@@ -44,16 +55,16 @@
                                 <div class="flex items-center justify-between p-3">
                                     <div class="flex items-center space-x-3 flex-1">
                                         <!-- Drag Handle -->
-                                        <div class="drag-handle text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing">
+                                        <div class="drag-handle text-gray-400 opacity-100 transition-opacity cursor-grab active:cursor-grabbing hover:text-blue-500">
                                             <GripVertical class="w-4 h-4" />
                                         </div>
 
                                         <!-- WordPress-style Hierarchy Lines -->
                                         <div class="flex items-center">
                                             <!-- Indentation spacer -->
-                                            <div v-if="item.level > 0" class="flex items-center">
+                                            <div v-if="(item.level || 0) > 0" class="flex items-center">
                                                 <div 
-                                                    v-for="i in item.level" 
+                                                    v-for="i in (item.level || 0)" 
                                                     :key="i" 
                                                     class="w-6 flex justify-center"
                                                 >
@@ -109,6 +120,31 @@
                                     
                                     <!-- Action Buttons -->
                                     <div class="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <!-- Hierarchy Controls -->
+                                        <div class="flex items-center space-x-1 border-r border-gray-300 pr-2">
+                                            <Button 
+                                                size="sm" 
+                                                variant="outline"
+                                                @click="outdentMenu(item)"
+                                                :disabled="loading || (item.level || 0) === 0"
+                                                :title="(item.level || 0) === 0 ? 'Sudah di level tertinggi' : 'Pindah ke kiri (kurangi level)'"
+                                                class="text-xs px-2 py-1"
+                                            >
+                                                <ChevronLeft class="w-3 h-3" />
+                                            </Button>
+                                            <Button 
+                                                size="sm" 
+                                                variant="outline"
+                                                @click="indentMenu(item)"
+                                                :disabled="loading || !canIndent(item)"
+                                                :title="!canIndent(item) ? 'Tidak ada menu sebelumnya untuk dijadikan parent' : 'Pindah ke kanan (jadi sub menu)'"
+                                                class="text-xs px-2 py-1"
+                                            >
+                                                <ChevronRight class="w-3 h-3" />
+                                            </Button>
+                                        </div>
+                                        
+                                        <!-- Status & Edit Controls -->
                                         <Button 
                                             size="sm" 
                                             variant="outline"
@@ -147,16 +183,17 @@
                         <div class="text-sm text-blue-800">
                             <h4 class="font-medium mb-2">Cara Menggunakan Interface:</h4>
                             <ul class="space-y-1 text-xs">
-                                <li>• <strong>Drag & Drop Urutan:</strong> Seret handle <GripVertical class="w-3 h-3 inline mx-1" /> untuk mengatur urutan menu</li>
-                                <li>• <strong>Drag & Drop Hierarki:</strong> Seret menu ke posisi yang berbeda untuk mengubah parent-child relationship</li>
-                                <li>• <strong>Auto-Hierarchy Detection:</strong> Menu otomatis menjadi sub-menu jika ditempatkan setelah menu lain dengan sub-menu</li>
+                                <li>• <strong>Drag & Drop:</strong> Seret handle <GripVertical class="w-3 h-3 inline mx-1" /> untuk mengatur urutan menu (parent menu akan membawa semua sub-menu)</li>
+                                <li>• <strong>Tombol Panah Kanan <ChevronRight class="w-3 h-3 inline mx-1" />:</strong> Jadikan sub-menu dari menu sebelumnya</li>
+                                <li>• <strong>Tombol Panah Kiri <ChevronLeft class="w-3 h-3 inline mx-1" />:</strong> Pindahkan ke level yang lebih tinggi</li>
                                 <li>• <strong>Visual Hierarki:</strong> Level 0 (border biru), Level 1 (border hijau + indentasi)</li>
                                 <li>• <strong>Toggle Status:</strong> Gunakan tombol ON/OFF untuk mengatur visibilitas menu</li>
                                 <li>• <strong>Admin Only:</strong> Menu dengan label oranye hanya tampil untuk administrator</li>
-                                <li>• <strong>Custom Path:</strong> Path redirect ditampilkan dalam format code</li>
+                                <li>• <strong>Kontrol Terpisah:</strong> Drag untuk urutan, tombol panah untuk hierarki</li>
+                                <li>• <strong>Reset Menu:</strong> Tombol "Reset Menu" untuk mengembalikan ke pengaturan default sistem</li>
                             </ul>
-                            <div v-if="dragStatus" class="mt-2 p-2 bg-blue-100 rounded text-xs">
-                                <strong>Status:</strong> {{ dragStatus }}
+                            <div v-if="dragStatus || hierarchyStatus" class="mt-2 p-2 bg-blue-100 rounded text-xs">
+                                <strong>Status:</strong> {{ dragStatus || hierarchyStatus }}
                             </div>
                         </div>
                     </div>
@@ -171,8 +208,8 @@ import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link, router } from '@inertiajs/vue3';
-import { Edit, Plus, Trash, Info, GripVertical } from 'lucide-vue-next';
-import { computed, ref, onMounted, nextTick } from 'vue';
+import { Edit, Plus, Trash, Info, GripVertical, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-vue-next';
+import { computed, ref, onMounted, nextTick, watch } from 'vue';
 import Sortable from 'sortablejs';
 
 interface MenuItem {
@@ -197,6 +234,7 @@ const props = defineProps<Props>();
 const loading = ref(false);
 const sortableContainer = ref<HTMLElement>();
 const dragStatus = ref('');
+const hierarchyStatus = ref('');
 
 // Expose debug function to window for console testing
 if (typeof window !== 'undefined') {
@@ -247,6 +285,11 @@ const updateFlatMenuItems = () => {
 // Initialize flat menu items
 updateFlatMenuItems();
 
+// Watch for changes in props to update flat menu items
+watch(() => props.menuItems, () => {
+    updateFlatMenuItems();
+}, { deep: true });
+
 // Get menu item classes based on level (WordPress style)
 const getMenuItemClasses = (item: MenuItem) => {
     const level = item.level || 0;
@@ -290,6 +333,7 @@ const getMenuItemClasses = (item: MenuItem) => {
 onMounted(() => {
     nextTick(() => {
         if (sortableContainer.value) {
+            console.log('Initializing Sortable on:', sortableContainer.value);
             const sortable = Sortable.create(sortableContainer.value, {
                 handle: '.drag-handle',
                 animation: 200,
@@ -301,11 +345,26 @@ onMounted(() => {
                 scrollSensitivity: 100,
                 scrollSpeed: 10,
                 
-                onStart: (evt) => {
-                    dragStatus.value = 'Sedang menyeret menu...';
+                onStart: (evt: any) => {
+                    console.log('Drag started:', evt);
+                    const draggedElement = evt.item;
+                    const draggedIndex = parseInt(draggedElement.dataset.index);
+                    const draggedItem = flatMenuItems.value[draggedIndex];
+                    
+                    // Check if dragging a parent with children
+                    if (draggedItem.level === 0) {
+                        const children = flatMenuItems.value.filter(item => item.parent_id === draggedItem.id);
+                        if (children.length > 0) {
+                            dragStatus.value = `Menyeret "${draggedItem.title}" dengan ${children.length} sub-menu...`;
+                        } else {
+                            dragStatus.value = `Menyeret menu "${draggedItem.title}"...`;
+                        }
+                    } else {
+                        dragStatus.value = `Menyeret menu "${draggedItem.title}"...`;
+                    }
                 },
                 
-                onEnd: async (evt) => {
+                onEnd: async (evt: any) => {
                     const { oldIndex, newIndex } = evt;
                     
                     if (oldIndex === newIndex) {
@@ -313,60 +372,59 @@ onMounted(() => {
                         return;
                     }
                     
-                    dragStatus.value = 'Menyimpan urutan dan hierarki baru...';
+                    dragStatus.value = 'Menyimpan urutan menu...';
                     
                     try {
-                        // Reorder items in local state
                         const items = [...flatMenuItems.value];
-                        const [movedItem] = items.splice(oldIndex!, 1);
-                        items.splice(newIndex!, 0, movedItem);
+                        const movedItem = items[oldIndex!];
                         
-                        // Balanced hierarchy detection with debugging
-                        console.log('Original items:', items.map(i => ({ id: i.id, title: i.title, level: i.level, parent_id: i.parent_id })));
-                        
-                        const updateData = items.map((item, index) => {
-                            // Start with current values
-                            let newParentId = item.parent_id;
-                            let newLevel = item.level || 0;
-                            
-                            const prevItem = index > 0 ? items[index - 1] : null;
-                            const nextItem = index < items.length - 1 ? items[index + 1] : null;
-                            
-                            // Only change hierarchy for the moved item
-                            if (item.id === movedItem.id) {
-                                console.log(`Processing moved item: ${item.title} at index ${index}`);
-                                console.log(`Previous item:`, prevItem ? `${prevItem.title} (level ${prevItem.level})` : 'none');
+                        // Find all children that belong to this parent (recursive)
+                        const childrenToMove = [];
+                        const findChildren = (parentId: number, startIndex: number) => {
+                            for (let i = startIndex; i < items.length; i++) {
+                                const item = items[i];
+                                // Stop when we hit another top-level menu
+                                if (item.level === 0 && i !== oldIndex!) break;
                                 
-                                // This is the item that was actually dragged
-                                if (index === 0) {
-                                    // First position - always main menu
-                                    newParentId = null;
-                                    newLevel = 0;
-                                    console.log(`Making ${item.title} a main menu (first position)`);
-                                } else if (prevItem && prevItem.level === 0) {
-                                    // Dropped after a main menu - become its sub-menu
-                                    newParentId = prevItem.id;
-                                    newLevel = 1;
-                                    console.log(`Making ${item.title} a sub-menu of ${prevItem.title}`);
-                                } else if (prevItem && prevItem.level === 1) {
-                                    // Dropped after a sub-menu - join its group
-                                    newParentId = prevItem.parent_id;
-                                    newLevel = 1;
-                                    console.log(`Making ${item.title} join sub-menu group with parent ID ${prevItem.parent_id}`);
-                                } else {
-                                    // Default to main menu
-                                    newParentId = null;
-                                    newLevel = 0;
-                                    console.log(`Making ${item.title} a main menu (default)`);
+                                // If this item belongs to our parent hierarchy
+                                if (item.parent_id === parentId) {
+                                    childrenToMove.push(item);
+                                    // Recursively find children of this child
+                                    findChildren(item.id, i + 1);
                                 }
                             }
-                            
-                            return {
-                                id: item.id,
-                                sort_order: index + 1,
-                                parent_id: newParentId
-                            };
-                        });
+                        };
+                        
+                        // Only find children if this is a parent menu
+                        if (movedItem.level === 0) {
+                            findChildren(movedItem.id, oldIndex! + 1);
+                        }
+                        
+                        console.log('Moving parent:', movedItem.title, 'with children:', childrenToMove.map(c => c.title));
+                        
+                        // Remove parent and all its children from original positions
+                        const itemsToMove = [movedItem, ...childrenToMove];
+                        const remainingItems = items.filter(item => !itemsToMove.some(moved => moved.id === item.id));
+                        
+                        // Calculate new position considering the group size
+                        let insertIndex = newIndex!;
+                        if (newIndex! > oldIndex!) {
+                            // Moving down, adjust for removed items
+                            insertIndex = Math.max(0, newIndex! - itemsToMove.length + 1);
+                        }
+                        
+                        // Insert parent and children at new position
+                        const newItems = [
+                            ...remainingItems.slice(0, insertIndex),
+                            ...itemsToMove,
+                            ...remainingItems.slice(insertIndex)
+                        ];
+                        
+                        // Update only sort order (no hierarchy changes during drag)
+                        const updateData = newItems.map((item, index) => ({
+                            id: item.id,
+                            sort_order: index + 1
+                        }));
                         
                         console.log('Update data:', updateData);
                         
@@ -376,12 +434,14 @@ onMounted(() => {
                         }, {
                             preserveScroll: true,
                             onSuccess: () => {
-                                dragStatus.value = 'Urutan dan hierarki berhasil disimpan!';
+                                dragStatus.value = itemsToMove.length > 1 
+                                    ? `Menu "${movedItem.title}" dan ${childrenToMove.length} sub-menu berhasil dipindahkan!`
+                                    : `Menu "${movedItem.title}" berhasil dipindahkan!`;
                                 setTimeout(() => {
                                     dragStatus.value = '';
                                 }, 2000);
-                                // Reload to get fresh hierarchy data
-                                router.reload({ only: ['menuItems'] });
+                                // Update local state
+                                flatMenuItems.value = newItems;
                             },
                             onError: () => {
                                 dragStatus.value = 'Gagal menyimpan urutan';
@@ -434,6 +494,170 @@ const deleteItem = async (item: MenuItem) => {
         } finally {
             loading.value = false;
         }
+    }
+};
+
+// Check if menu item can be indented (needs previous sibling)
+const canIndent = (item: MenuItem): boolean => {
+    const currentIndex = flatMenuItems.value.findIndex(m => m.id === item.id);
+    if (currentIndex <= 0) return false;
+    
+    const prevItem = flatMenuItems.value[currentIndex - 1];
+    // Can indent if previous item is at same or higher level
+    return prevItem && prevItem.level !== undefined && prevItem.level >= (item.level || 0);
+};
+
+// Indent menu (move to right, become sub-menu)
+const indentMenu = async (item: MenuItem) => {
+    if (loading.value || !canIndent(item)) return;
+    
+    loading.value = true;
+    hierarchyStatus.value = `Mengindent menu "${item.title}"...`;
+    
+    try {
+        await router.post(route('admin.menu-items.indent', item.id), {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Update local state reactively
+                updateMenuHierarchy(item.id, 'indent');
+                hierarchyStatus.value = `Menu "${item.title}" berhasil dijadikan sub-menu!`;
+                setTimeout(() => {
+                    hierarchyStatus.value = '';
+                }, 2000);
+            },
+            onError: () => {
+                hierarchyStatus.value = 'Gagal mengindent menu';
+                setTimeout(() => {
+                    hierarchyStatus.value = '';
+                }, 3000);
+            }
+        });
+    } finally {
+        loading.value = false;
+    }
+};
+
+// Outdent menu (move to left, reduce level)
+const outdentMenu = async (item: MenuItem) => {
+    if (loading.value || (item.level || 0) === 0) return;
+    
+    loading.value = true;
+    hierarchyStatus.value = `Mengoutdent menu "${item.title}"...`;
+    
+    try {
+        await router.post(route('admin.menu-items.outdent', item.id), {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Update local state reactively
+                updateMenuHierarchy(item.id, 'outdent');
+                hierarchyStatus.value = `Menu "${item.title}" berhasil dipindahkan ke level tinggi!`;
+                setTimeout(() => {
+                    hierarchyStatus.value = '';
+                }, 2000);
+            },
+            onError: () => {
+                hierarchyStatus.value = 'Gagal mengoutdent menu';
+                setTimeout(() => {
+                    hierarchyStatus.value = '';
+                }, 3000);
+            }
+        });
+    } finally {
+        loading.value = false;
+    }
+};
+
+// Update menu hierarchy in local state for immediate UI feedback
+const updateMenuHierarchy = (menuId: number, action: 'indent' | 'outdent') => {
+    const currentIndex = flatMenuItems.value.findIndex(m => m.id === menuId);
+    if (currentIndex === -1) return;
+    
+    const item = flatMenuItems.value[currentIndex];
+    let newItems = [...flatMenuItems.value];
+    
+    if (action === 'indent') {
+        // Find previous sibling to become parent
+        const prevItem = currentIndex > 0 ? newItems[currentIndex - 1] : null;
+        if (prevItem) {
+            newItems[currentIndex] = {
+                ...item,
+                parent_id: prevItem.id,
+                level: (prevItem.level || 0) + 1
+            };
+        }
+    } else if (action === 'outdent') {
+        // Move up one level and position after parent
+        const currentParent = newItems.find(m => m.id === item.parent_id);
+        if (currentParent) {
+            // Remove item from current position
+            const movedItem = newItems.splice(currentIndex, 1)[0];
+            
+            // Find parent's position in flat list
+            const parentIndex = newItems.findIndex(m => m.id === currentParent.id);
+            
+            // Insert right after parent
+            const updatedItem = {
+                ...movedItem,
+                parent_id: currentParent.parent_id || null,
+                level: Math.max(0, (movedItem.level || 0) - 1)
+            };
+            
+            newItems.splice(parentIndex + 1, 0, updatedItem);
+        }
+    }
+    
+    // Update the reactive state
+    flatMenuItems.value = newItems;
+};
+
+// Reset menu to default configuration
+const resetMenu = async () => {
+    if (loading.value) return;
+    
+    const confirmed = confirm(
+        '⚠️ PERINGATAN!\n\n' +
+        'Apakah Anda yakin ingin mereset semua menu ke pengaturan default?\n\n' +
+        '• Semua perubahan urutan menu akan hilang\n' +
+        '• Semua perubahan hierarki menu akan hilang\n' +
+        '• Menu akan kembali ke struktur awal sistem\n' +
+        '• Menu custom yang ditambahkan mungkin akan hilang\n\n' +
+        'Tindakan ini TIDAK DAPAT DIBATALKAN!'
+    );
+    
+    if (!confirmed) return;
+    
+    // Double confirmation for safety
+    const doubleConfirmed = confirm(
+        '🔴 KONFIRMASI TERAKHIR!\n\n' +
+        'Anda yakin 100% ingin mereset menu?\n' +
+        'Semua pengaturan menu saat ini akan hilang permanen!'
+    );
+    
+    if (!doubleConfirmed) return;
+    
+    loading.value = true;
+    hierarchyStatus.value = 'Sedang mereset menu ke pengaturan default...';
+    
+    try {
+        await router.post(route('admin.menu-items.reset'), {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                hierarchyStatus.value = 'Menu berhasil direset ke pengaturan default!';
+                setTimeout(() => {
+                    hierarchyStatus.value = '';
+                }, 3000);
+                // Reload to get fresh data
+                router.reload({ only: ['menuItems'] });
+            },
+            onError: () => {
+                hierarchyStatus.value = 'Gagal mereset menu. Silakan coba lagi.';
+                setTimeout(() => {
+                    hierarchyStatus.value = '';
+                }, 5000);
+            }
+        });
+    } finally {
+        loading.value = false;
     }
 };
 </script>

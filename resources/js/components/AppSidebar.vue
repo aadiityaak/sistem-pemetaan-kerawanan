@@ -132,15 +132,7 @@ const mainNavItems = computed<NavItem[]>(() => {
         item.title !== 'PENGATURAN'
     );
     
-    let navItems = convertMenuItemsToNavItems(mainItems);
-    
-    // Add dynamic dashboard items for IPOLEKSOSBUDKAM
-    const ipoleksosbudkamIndex = navItems.findIndex(item => item.title === 'IPOLEKSOSBUDKAM');
-    if (ipoleksosbudkamIndex !== -1) {
-        navItems[ipoleksosbudkamIndex].items = dashboardItems.value;
-    }
-    
-    return navItems;
+    return convertMenuItemsToNavItems(mainItems);
 });
 
 // Settings nav items for sidebar footer
@@ -197,72 +189,9 @@ const settingsNavItems = computed<NavItem[]>(() => {
     }];
 });
 
-// Interface for API response
-interface Category {
-    id: number;
-    name: string;
-    slug: string;
-    sub_categories: SubCategory[];
-}
-
-interface SubCategory {
-    id: number;
-    category_id: number;
-    name: string;
-    slug: string;
-}
-
-// Reactive categories data
-const categories = ref<Category[]>([]);
-
-// Load categories and subcategories dynamically
-const loadCategoriesMenu = async () => {
-    try {
-        const response = await fetch('/api/categories-with-subcategories');
-        categories.value = await response.json();
-    } catch (error) {
-        console.error('Failed to load categories menu:', error);
-        // Set fallback categories
-        categories.value = [
-            {
-                id: 1,
-                name: 'Keamanan',
-                slug: 'keamanan',
-                sub_categories: []
-            }
-        ];
-    }
-};
-
-// Computed dashboard items based on loaded categories
-const dashboardItems = computed<NavItem[]>(() => {
-    return categories.value.map(category => ({
-        title: category.name,
-        href: `/dashboard?category=${category.slug}`,
-        icon: getIconForCategory(category.slug),
-        items: category.sub_categories.map(subCategory => ({
-            title: subCategory.name,
-            href: `/dashboard?category=${category.slug}&subcategory=${subCategory.slug}`,
-            icon: Tags, // Default icon for subcategories
-        }))
-    }));
-});
-
-// Get appropriate icon for category based on slug
-const getIconForCategory = (slug: string) => {
-    const iconMap: Record<string, any> = {
-        'ideologi': Users,
-        'politik': Landmark,
-        'ekonomi': DollarSign,
-        'sosial-budaya': Heart,
-        'keamanan': Shield,
-    };
-    return iconMap[slug] || Tags;
-};
 
 // Load data on component mount
 onMounted(() => {
-    loadCategoriesMenu();
     loadMenuItems();
 });
 </script>
