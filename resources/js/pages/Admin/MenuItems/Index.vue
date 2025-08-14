@@ -186,7 +186,7 @@
                                 <li>• <strong>Drag & Drop:</strong> Seret handle <GripVertical class="w-3 h-3 inline mx-1" /> untuk mengatur urutan menu (parent menu akan membawa semua sub-menu)</li>
                                 <li>• <strong>Tombol Panah Kanan <ChevronRight class="w-3 h-3 inline mx-1" />:</strong> Jadikan sub-menu dari menu sebelumnya</li>
                                 <li>• <strong>Tombol Panah Kiri <ChevronLeft class="w-3 h-3 inline mx-1" />:</strong> Pindahkan ke level yang lebih tinggi</li>
-                                <li>• <strong>Visual Hierarki:</strong> Level 0 (border biru), Level 1 (border hijau + indentasi)</li>
+                                <li>• <strong>Visual Hierarki:</strong> Level 0 (border biru), Level 1 (border hijau), Level 2 (border kuning), Level 3+ (border abu-abu)</li>
                                 <li>• <strong>Toggle Status:</strong> Gunakan tombol ON/OFF untuk mengatur visibilitas menu</li>
                                 <li>• <strong>Admin Only:</strong> Menu dengan label oranye hanya tampil untuk administrator</li>
                                 <li>• <strong>Kontrol Terpisah:</strong> Drag untuk urutan, tombol panah untuk hierarki</li>

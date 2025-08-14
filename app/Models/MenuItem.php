@@ -65,7 +65,10 @@ class MenuItem extends Model
         return self::rootItems()
             ->forUser($user)
             ->with(['children' => function ($query) use ($user) {
-                $query->forUser($user);
+                $query->forUser($user)
+                      ->with(['children' => function ($subQuery) use ($user) {
+                          $subQuery->forUser($user);
+                      }]);
             }])
             ->orderBy('sort_order')
             ->get();

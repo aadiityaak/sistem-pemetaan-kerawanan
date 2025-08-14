@@ -26,61 +26,37 @@ class MenuItemSeeder extends Seeder
             'description' => 'Dashboard utama sistem monitoring',
         ]);
 
-        // IPOLEKSOSBUDKAM submenus berdasarkan kategori
-        \App\Models\MenuItem::create([
-            'title' => 'Ideologi',
-            'icon' => 'Users',
-            'path' => '/dashboard?category=ideologi',
-            'is_active' => true,
-            'sort_order' => 1,
-            'parent_id' => $ipoleksosbudkam->id,
-            'admin_only' => false,
-            'description' => 'Monitoring aspek ideologi',
-        ]);
-
-        \App\Models\MenuItem::create([
-            'title' => 'Politik',
-            'icon' => 'Landmark',
-            'path' => '/dashboard?category=politik',
-            'is_active' => true,
-            'sort_order' => 2,
-            'parent_id' => $ipoleksosbudkam->id,
-            'admin_only' => false,
-            'description' => 'Monitoring aspek politik',
-        ]);
-
-        \App\Models\MenuItem::create([
-            'title' => 'Ekonomi',
-            'icon' => 'DollarSign',
-            'path' => '/dashboard?category=ekonomi',
-            'is_active' => true,
-            'sort_order' => 3,
-            'parent_id' => $ipoleksosbudkam->id,
-            'admin_only' => false,
-            'description' => 'Monitoring aspek ekonomi',
-        ]);
-
-        \App\Models\MenuItem::create([
-            'title' => 'Sosial Budaya',
-            'icon' => 'Heart',
-            'path' => '/dashboard?category=sosial-budaya',
-            'is_active' => true,
-            'sort_order' => 4,
-            'parent_id' => $ipoleksosbudkam->id,
-            'admin_only' => false,
-            'description' => 'Monitoring aspek sosial budaya',
-        ]);
-
-        \App\Models\MenuItem::create([
-            'title' => 'Keamanan',
-            'icon' => 'Shield',
-            'path' => '/dashboard?category=keamanan',
-            'is_active' => true,
-            'sort_order' => 5,
-            'parent_id' => $ipoleksosbudkam->id,
-            'admin_only' => false,
-            'description' => 'Monitoring aspek keamanan',
-        ]);
+        // IPOLEKSOSBUDKAM submenus berdasarkan kategori dan sub kategori dari database
+        // Ambil data categories dengan sub categories
+        $categories = \App\Models\Category::with('subCategories')->orderBy('sort_order')->get();
+        
+        foreach ($categories as $index => $category) {
+            // Buat menu kategori sebagai sub menu dari IPOLEKSOSBUDKAM
+            $categoryMenu = \App\Models\MenuItem::create([
+                'title' => $category->name,
+                'icon' => $this->getCategoryIcon($category->slug),
+                'path' => "/dashboard?category={$category->slug}",
+                'is_active' => true,
+                'sort_order' => $index + 1,
+                'parent_id' => $ipoleksosbudkam->id,
+                'admin_only' => false,
+                'description' => $category->description,
+            ]);
+            
+            // Buat sub kategori sebagai sub menu dari kategori
+            foreach ($category->subCategories as $subIndex => $subCategory) {
+                \App\Models\MenuItem::create([
+                    'title' => $subCategory->name,
+                    'icon' => 'Tags', // Default icon untuk sub kategori
+                    'path' => "/dashboard?category={$category->slug}&subcategory={$subCategory->slug}",
+                    'is_active' => true,
+                    'sort_order' => $subIndex + 1,
+                    'parent_id' => $categoryMenu->id,
+                    'admin_only' => false,
+                    'description' => $subCategory->description,
+                ]);
+            }
+        }
 
         \App\Models\MenuItem::create([
             'title' => 'ISU NEGATIF ANGGOTA BRIMOB',
@@ -336,5 +312,21 @@ class MenuItemSeeder extends Seeder
         ]);
 
         $this->command->info('Menu items seeded successfully!');
+    }
+
+    /**
+     * Get appropriate icon for category based on slug.
+     */
+    private function getCategoryIcon(string $slug): string
+    {
+        $iconMap = [
+            'ideologi' => 'Users',
+            'politik' => 'Landmark', 
+            'ekonomi' => 'DollarSign',
+            'sosial-budaya' => 'Heart',
+            'keamanan' => 'Shield',
+        ];
+        
+        return $iconMap[$slug] ?? 'Tags';
     }
 }

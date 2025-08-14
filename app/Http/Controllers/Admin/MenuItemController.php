@@ -14,7 +14,10 @@ class MenuItemController extends Controller
      */
     public function index()
     {
-        $menuItems = MenuItem::with(['children', 'parent'])
+        $menuItems = MenuItem::with([
+                'children.children', // Load grandchildren (level 3)
+                'parent'
+            ])
             ->orderBy('sort_order')
             ->get();
 
