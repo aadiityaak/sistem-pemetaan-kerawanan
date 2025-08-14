@@ -144,6 +144,11 @@ class MenuItemController extends Controller
         ]);
 
         foreach ($request->items as $itemData) {
+            // Prevent circular hierarchy (menu cannot be parent of itself)
+            if (isset($itemData['parent_id']) && $itemData['parent_id'] == $itemData['id']) {
+                continue;
+            }
+            
             MenuItem::where('id', $itemData['id'])->update([
                 'sort_order' => $itemData['sort_order'],
                 'parent_id' => $itemData['parent_id']
@@ -151,6 +156,6 @@ class MenuItemController extends Controller
         }
 
         return redirect()->back()
-            ->with('success', 'Menu order updated successfully.');
+            ->with('success', 'Menu order and hierarchy updated successfully.');
     }
 }

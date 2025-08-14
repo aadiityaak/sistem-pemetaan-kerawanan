@@ -28,7 +28,7 @@
                         <!-- Draggable Menu Tree -->
                         <div 
                             ref="sortableContainer" 
-                            class="space-y-1"
+                            class="space-y-1 relative"
                         >
                             <div 
                                 v-for="(item, index) in flatMenuItems" 
@@ -147,8 +147,10 @@
                         <div class="text-sm text-blue-800">
                             <h4 class="font-medium mb-2">Cara Menggunakan Interface:</h4>
                             <ul class="space-y-1 text-xs">
-                                <li>• <strong>Drag & Drop:</strong> Seret handle <GripVertical class="w-3 h-3 inline mx-1" /> untuk mengatur urutan menu</li>
-                                <li>• <strong>Hierarki WordPress:</strong> Level 0 (border biru), Level 1 (border hijau + indentasi)</li>
+                                <li>• <strong>Drag & Drop Urutan:</strong> Seret handle <GripVertical class="w-3 h-3 inline mx-1" /> untuk mengatur urutan menu</li>
+                                <li>• <strong>Drag & Drop Hierarki:</strong> Seret menu ke posisi yang berbeda untuk mengubah parent-child relationship</li>
+                                <li>• <strong>Auto-Hierarchy Detection:</strong> Menu otomatis menjadi sub-menu jika ditempatkan setelah menu lain dengan sub-menu</li>
+                                <li>• <strong>Visual Hierarki:</strong> Level 0 (border biru), Level 1 (border hijau + indentasi)</li>
                                 <li>• <strong>Toggle Status:</strong> Gunakan tombol ON/OFF untuk mengatur visibilitas menu</li>
                                 <li>• <strong>Admin Only:</strong> Menu dengan label oranye hanya tampil untuk administrator</li>
                                 <li>• <strong>Custom Path:</strong> Path redirect ditampilkan dalam format code</li>
@@ -195,6 +197,16 @@ const props = defineProps<Props>();
 const loading = ref(false);
 const sortableContainer = ref<HTMLElement>();
 const dragStatus = ref('');
+
+// Expose debug function to window for console testing
+if (typeof window !== 'undefined') {
+    (window as any).debugMenuHierarchy = () => {
+        console.log('Current menu hierarchy:');
+        flatMenuItems.value.forEach((item, index) => {
+            console.log(`${index}: ${item.title} (level ${item.level}, parent: ${item.parent_id})`);
+        });
+    };
+}
 
 const breadcrumbs = [
     { label: 'Admin', href: '#' },
@@ -280,10 +292,14 @@ onMounted(() => {
         if (sortableContainer.value) {
             const sortable = Sortable.create(sortableContainer.value, {
                 handle: '.drag-handle',
-                animation: 150,
+                animation: 200,
                 ghostClass: 'sortable-ghost',
-                chosenClass: 'sortable-chosen',
+                chosenClass: 'sortable-chosen', 
                 dragClass: 'sortable-drag',
+                fallbackTolerance: 3,
+                forceFallback: false,
+                scrollSensitivity: 100,
+                scrollSpeed: 10,
                 
                 onStart: (evt) => {
                     dragStatus.value = 'Sedang menyeret menu...';
@@ -297,7 +313,7 @@ onMounted(() => {
                         return;
                     }
                     
-                    dragStatus.value = 'Menyimpan urutan baru...';
+                    dragStatus.value = 'Menyimpan urutan dan hierarki baru...';
                     
                     try {
                         // Reorder items in local state
@@ -305,12 +321,54 @@ onMounted(() => {
                         const [movedItem] = items.splice(oldIndex!, 1);
                         items.splice(newIndex!, 0, movedItem);
                         
-                        // Update sort orders based on new positions
-                        const updateData = items.map((item, index) => ({
-                            id: item.id,
-                            sort_order: index + 1,
-                            parent_id: item.parent_id
-                        }));
+                        // Balanced hierarchy detection with debugging
+                        console.log('Original items:', items.map(i => ({ id: i.id, title: i.title, level: i.level, parent_id: i.parent_id })));
+                        
+                        const updateData = items.map((item, index) => {
+                            // Start with current values
+                            let newParentId = item.parent_id;
+                            let newLevel = item.level || 0;
+                            
+                            const prevItem = index > 0 ? items[index - 1] : null;
+                            const nextItem = index < items.length - 1 ? items[index + 1] : null;
+                            
+                            // Only change hierarchy for the moved item
+                            if (item.id === movedItem.id) {
+                                console.log(`Processing moved item: ${item.title} at index ${index}`);
+                                console.log(`Previous item:`, prevItem ? `${prevItem.title} (level ${prevItem.level})` : 'none');
+                                
+                                // This is the item that was actually dragged
+                                if (index === 0) {
+                                    // First position - always main menu
+                                    newParentId = null;
+                                    newLevel = 0;
+                                    console.log(`Making ${item.title} a main menu (first position)`);
+                                } else if (prevItem && prevItem.level === 0) {
+                                    // Dropped after a main menu - become its sub-menu
+                                    newParentId = prevItem.id;
+                                    newLevel = 1;
+                                    console.log(`Making ${item.title} a sub-menu of ${prevItem.title}`);
+                                } else if (prevItem && prevItem.level === 1) {
+                                    // Dropped after a sub-menu - join its group
+                                    newParentId = prevItem.parent_id;
+                                    newLevel = 1;
+                                    console.log(`Making ${item.title} join sub-menu group with parent ID ${prevItem.parent_id}`);
+                                } else {
+                                    // Default to main menu
+                                    newParentId = null;
+                                    newLevel = 0;
+                                    console.log(`Making ${item.title} a main menu (default)`);
+                                }
+                            }
+                            
+                            return {
+                                id: item.id,
+                                sort_order: index + 1,
+                                parent_id: newParentId
+                            };
+                        });
+                        
+                        console.log('Update data:', updateData);
                         
                         // Send update to backend
                         await router.post(route('admin.menu-items.reorder'), {
@@ -318,18 +376,20 @@ onMounted(() => {
                         }, {
                             preserveScroll: true,
                             onSuccess: () => {
-                                dragStatus.value = 'Urutan berhasil disimpan!';
+                                dragStatus.value = 'Urutan dan hierarki berhasil disimpan!';
                                 setTimeout(() => {
                                     dragStatus.value = '';
                                 }, 2000);
-                                // Update local state
-                                flatMenuItems.value = items;
+                                // Reload to get fresh hierarchy data
+                                router.reload({ only: ['menuItems'] });
                             },
                             onError: () => {
                                 dragStatus.value = 'Gagal menyimpan urutan';
                                 setTimeout(() => {
                                     dragStatus.value = '';
                                 }, 3000);
+                                // Reload to revert changes
+                                router.reload({ only: ['menuItems'] });
                             }
                         });
                     } catch (error) {
@@ -338,6 +398,7 @@ onMounted(() => {
                         setTimeout(() => {
                             dragStatus.value = '';
                         }, 3000);
+                        router.reload({ only: ['menuItems'] });
                     }
                 }
             });
@@ -380,20 +441,77 @@ const deleteItem = async (item: MenuItem) => {
 <style scoped>
 /* Sortable.js styling */
 .sortable-ghost {
-    opacity: 0.4;
-    background: #e3f2fd;
+    opacity: 0.5;
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
     border: 2px dashed #2196f3;
+    border-radius: 8px;
+    transform: scale(1.02);
 }
 
 .sortable-chosen {
     background: #f3e5f5;
     border-color: #9c27b0;
-    transform: rotate(2deg);
+    transform: rotate(1deg) scale(1.01);
+    box-shadow: 0 4px 12px rgba(156, 39, 176, 0.2);
 }
 
 .sortable-drag {
-    transform: rotate(5deg);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    transform: rotate(3deg) scale(1.05);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    background: white;
+    border-radius: 8px;
+}
+
+/* Drop zone indicators */
+.drop-zone-indicator {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #2196f3;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.drop-zone-indicator.active {
+    opacity: 1;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* Hierarchy change indicators */
+.hierarchy-change-hint {
+    position: relative;
+}
+
+.hierarchy-change-hint::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    background: #ff9800;
+    border-radius: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.hierarchy-change-hint.will-indent::before {
+    opacity: 1;
+    animation: blink 0.8s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
 }
 
 .drag-handle:hover {

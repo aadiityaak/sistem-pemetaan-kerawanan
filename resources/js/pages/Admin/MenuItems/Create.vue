@@ -193,7 +193,7 @@ const props = defineProps<Props>();
 const breadcrumbs = [
     { label: 'Admin', href: '#' },
     { label: 'Menu Items', href: route('admin.menu-items.index') },
-    { label: 'Create', href: route('admin.menu-items.create') },
+    { label: 'Tambah Menu Baru', href: '#' },
 ];
 
 // Form with default values

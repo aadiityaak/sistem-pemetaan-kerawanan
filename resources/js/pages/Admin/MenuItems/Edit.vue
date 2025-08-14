@@ -194,7 +194,7 @@ const props = defineProps<Props>();
 const breadcrumbs = [
     { label: 'Admin', href: '#' },
     { label: 'Menu Items', href: route('admin.menu-items.index') },
-    { label: 'Edit', href: route('admin.menu-items.edit', props.menuItem.id) },
+    { label: 'Edit: ' + props.menuItem.title, href: '#' },
 ];
 
 // Form with all menu item fields
