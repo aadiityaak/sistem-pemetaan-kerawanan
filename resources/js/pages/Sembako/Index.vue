@@ -91,25 +91,6 @@
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">🔍 Filter & Pencarian</h3>
                 </div>
 
-                <!-- Debug Panel (Development) -->
-                <div class="border-b border-gray-200 bg-gray-50 px-6 py-3 dark:border-gray-700 dark:bg-gray-700">
-                    <h4 class="mb-2 text-sm font-semibold text-gray-900 dark:text-gray-100">🐛 Debug Sembako Filter Status:</h4>
-                    <div class="grid grid-cols-2 gap-4 text-xs text-gray-600 dark:text-gray-400">
-                        <div>
-                            <strong>Provinsi:</strong> {{ selectedProvinsi || 'None' }}<br />
-                            <strong>Available:</strong> {{ provinces.length }}<br />
-                            <strong>First:</strong> {{ provinces[0]?.nama || 'N/A' }}
-                        </div>
-                        <div>
-                            <strong>Kabupaten:</strong> {{ selectedKabupaten || 'None' }}<br />
-                            <strong>Total Available:</strong> {{ kabupatenKota.length }}<br />
-                            <strong>Filtered:</strong> {{ filteredKabupaten.length }}<br />
-                            <strong>First Filtered:</strong> {{ filteredKabupaten[0]?.nama || 'N/A' }}<br />
-                            <strong>First Available:</strong> {{ kabupatenKota[0]?.nama || 'N/A' }} (Provinsi:
-                            {{ kabupatenKota[0]?.provinsi?.id || 'N/A' }})
-                        </div>
-                    </div>
-                </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         <!-- Search -->
