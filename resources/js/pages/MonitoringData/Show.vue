@@ -314,8 +314,8 @@ onMounted(async () => {
                             <!-- Description -->
                             <div v-if="monitoringData.description">
                                 <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Deskripsi</label>
-                                <div 
-                                    class="prose prose-sm max-w-none text-gray-900 dark:text-white dark:prose-invert"
+                                <div
+                                    class="prose prose-sm dark:prose-invert max-w-none text-gray-900 dark:text-white"
                                     v-html="monitoringData.description"
                                 ></div>
                             </div>
@@ -324,8 +324,13 @@ onMounted(async () => {
                             <div v-if="monitoringData.sumber_berita">
                                 <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Sumber Berita</label>
                                 <div class="flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15"></path>
+                                    <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15"
+                                        ></path>
                                     </svg>
                                     <span class="text-gray-900 dark:text-white">{{ monitoringData.sumber_berita }}</span>
                                 </div>
@@ -376,21 +381,15 @@ onMounted(async () => {
                         </div>
                     </div>
 
-
                     <!-- Video -->
-                    <div 
+                    <div
                         v-if="monitoringData.video_path"
                         class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
                     >
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Video</h3>
-                        
-                        <div class="rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
-                            <video 
-                                :src="monitoringData.video_url"
-                                controls
-                                class="w-full aspect-video object-cover"
-                                preload="metadata"
-                            >
+
+                        <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600">
+                            <video :src="monitoringData.video_url" controls class="aspect-video w-full object-cover" preload="metadata">
                                 Browser Anda tidak mendukung tag video.
                             </video>
                         </div>
@@ -405,9 +404,18 @@ onMounted(async () => {
                                 <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Kategori Utama</label>
                                 <div class="flex items-center gap-2">
                                     <div class="flex h-8 w-8 items-center justify-center">
-                                        <img v-if="monitoringData.category.image_url" :src="monitoringData.category.image_url" alt="Category icon" class="h-6 w-6 object-contain rounded" />
+                                        <img
+                                            v-if="monitoringData.category.image_url"
+                                            :src="monitoringData.category.image_url"
+                                            alt="Category icon"
+                                            class="h-6 w-6 rounded object-contain"
+                                        />
                                         <span v-else-if="monitoringData.category.icon" class="text-sm">{{ monitoringData.category.icon }}</span>
-                                        <div v-else class="h-4 w-4 rounded-full border border-gray-200" :style="{ backgroundColor: monitoringData.category.color }"></div>
+                                        <div
+                                            v-else
+                                            class="h-4 w-4 rounded-full border border-gray-200"
+                                            :style="{ backgroundColor: monitoringData.category.color }"
+                                        ></div>
                                     </div>
                                     <span class="text-gray-900 dark:text-white">{{ monitoringData.category.name }}</span>
                                 </div>
@@ -416,8 +424,15 @@ onMounted(async () => {
                                 <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Sub Kategori</label>
                                 <div class="flex items-center gap-2">
                                     <div class="flex h-6 w-6 items-center justify-center">
-                                        <img v-if="monitoringData.sub_category.image_url" :src="monitoringData.sub_category.image_url" alt="Subcategory icon" class="h-5 w-5 object-contain rounded" />
-                                        <span v-else-if="monitoringData.sub_category.icon" class="text-xs">{{ monitoringData.sub_category.icon }}</span>
+                                        <img
+                                            v-if="monitoringData.sub_category.image_url"
+                                            :src="monitoringData.sub_category.image_url"
+                                            alt="Subcategory icon"
+                                            class="h-5 w-5 rounded object-contain"
+                                        />
+                                        <span v-else-if="monitoringData.sub_category.icon" class="text-xs">{{
+                                            monitoringData.sub_category.icon
+                                        }}</span>
                                     </div>
                                     <span class="text-gray-900 dark:text-white">{{ monitoringData.sub_category.name }}</span>
                                 </div>
@@ -472,74 +487,75 @@ onMounted(async () => {
                     </div>
 
                     <!-- Gallery Carousel -->
-                    <div 
+                    <div
                         v-if="monitoringData.gallery && monitoringData.gallery.length > 0"
                         class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
                     >
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Galeri Foto</h3>
-                        
+
                         <!-- Main Image Display -->
-                        <div class="relative rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden mb-4">
-                            <img 
-                                :src="monitoringData.gallery[currentCarouselIndex].url" 
+                        <div class="relative mb-4 overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600">
+                            <img
+                                :src="monitoringData.gallery[currentCarouselIndex].url"
                                 :alt="`Gallery image ${currentCarouselIndex + 1}`"
-                                class="w-full aspect-4/3 object-cover cursor-pointer"
+                                class="aspect-4/3 w-full cursor-pointer object-cover"
                                 @click="openImageModal(currentCarouselIndex)"
                             />
-                            
+
                             <!-- Navigation Arrows -->
-                            <button 
+                            <button
                                 v-if="monitoringData.gallery.length > 1 && currentCarouselIndex > 0"
                                 @click="prevCarouselImage"
-                                class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+                                class="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
                             >
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                                 </svg>
                             </button>
-                            
-                            <button 
+
+                            <button
                                 v-if="monitoringData.gallery.length > 1 && currentCarouselIndex < monitoringData.gallery.length - 1"
                                 @click="nextCarouselImage"
-                                class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+                                class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
                             >
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                 </svg>
                             </button>
-                            
+
                             <!-- Image Counter -->
-                            <div class="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                            <div class="absolute right-2 bottom-2 rounded bg-black/50 px-2 py-1 text-xs text-white">
                                 {{ currentCarouselIndex + 1 }} / {{ monitoringData.gallery.length }}
                             </div>
-                            
+
                             <!-- Click to enlarge indicator -->
-                            <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                                <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            <div class="absolute top-2 right-2 rounded bg-black/50 px-2 py-1 text-xs text-white">
+                                <svg class="mr-1 inline h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                    />
                                 </svg>
                                 Klik untuk perbesar
                             </div>
                         </div>
-                        
+
                         <!-- Thumbnail Navigation -->
                         <div v-if="monitoringData.gallery.length > 1" class="flex gap-2 overflow-x-auto pb-2">
-                            <div 
+                            <div
                                 v-for="(image, index) in monitoringData.gallery"
                                 :key="index"
-                                class="flex-shrink-0 w-16 h-16 rounded cursor-pointer border-2 transition-all duration-200"
+                                class="h-16 w-16 flex-shrink-0 cursor-pointer rounded border-2 transition-all duration-200"
                                 :class="[
-                                    currentCarouselIndex === index 
-                                        ? 'border-blue-500' 
-                                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500'
+                                    currentCarouselIndex === index
+                                        ? 'border-blue-500'
+                                        : 'border-gray-200 hover:border-gray-300 dark:border-gray-600 dark:hover:border-gray-500',
                                 ]"
                                 @click="goToCarouselImage(index)"
                             >
-                                <img 
-                                    :src="image.url" 
-                                    :alt="`Thumbnail ${index + 1}`"
-                                    class="w-full h-full object-cover rounded"
-                                />
+                                <img :src="image.url" :alt="`Thumbnail ${index + 1}`" class="h-full w-full rounded object-cover" />
                             </div>
                         </div>
                     </div>
@@ -606,11 +622,11 @@ onMounted(async () => {
             class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 p-4"
             @click="closeImageModal"
         >
-            <div class="relative bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden dark:bg-gray-800" @click.stop>
+            <div class="relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-lg bg-white shadow-2xl dark:bg-gray-800" @click.stop>
                 <!-- Close Button -->
                 <button
                     @click="closeImageModal"
-                    class="absolute top-4 right-4 z-10 rounded-full bg-black/50 p-2 text-white hover:bg-black/75 transition-all"
+                    class="absolute top-4 right-4 z-10 rounded-full bg-black/50 p-2 text-white transition-all hover:bg-black/75"
                 >
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -619,7 +635,7 @@ onMounted(async () => {
 
                 <!-- Main Image Container -->
                 <div class="relative bg-gray-100 dark:bg-gray-900">
-                    <div class="flex items-center justify-center min-h-[60vh] max-h-[70vh]">
+                    <div class="flex max-h-[70vh] min-h-[60vh] items-center justify-center">
                         <img
                             :src="monitoringData.gallery[currentImageIndex].url"
                             :alt="`Gallery image ${currentImageIndex + 1}`"
@@ -631,7 +647,7 @@ onMounted(async () => {
                     <button
                         v-if="currentImageIndex > 0"
                         @click="prevImage"
-                        class="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-3 text-gray-800 shadow-lg hover:bg-white/100 transition-all dark:bg-gray-800 dark:text-white"
+                        class="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-white/80 p-3 text-gray-800 shadow-lg transition-all hover:bg-white/100 dark:bg-gray-800 dark:text-white"
                     >
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -641,7 +657,7 @@ onMounted(async () => {
                     <button
                         v-if="currentImageIndex < monitoringData.gallery.length - 1"
                         @click="nextImage"
-                        class="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-3 text-gray-800 shadow-lg hover:bg-white/100 transition-all dark:bg-gray-800 dark:text-white"
+                        class="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-white/80 p-3 text-gray-800 shadow-lg transition-all hover:bg-white/100 dark:bg-gray-800 dark:text-white"
                     >
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -650,9 +666,9 @@ onMounted(async () => {
                 </div>
 
                 <!-- Bottom Section -->
-                <div class="p-4 bg-white dark:bg-gray-800">
+                <div class="bg-white p-4 dark:bg-gray-800">
                     <!-- Image Counter -->
-                    <div class="text-center text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    <div class="mb-3 text-center text-sm text-gray-600 dark:text-gray-400">
                         {{ currentImageIndex + 1 }} dari {{ monitoringData.gallery.length }}
                     </div>
 
@@ -662,18 +678,14 @@ onMounted(async () => {
                             v-for="(image, index) in monitoringData.gallery"
                             :key="index"
                             @click="goToImage(index)"
-                            class="flex-shrink-0 h-14 w-14 overflow-hidden rounded border-2 transition-all"
+                            class="h-14 w-14 flex-shrink-0 overflow-hidden rounded border-2 transition-all"
                             :class="[
-                                index === currentImageIndex 
-                                    ? 'border-blue-500 ring-2 ring-blue-300' 
-                                    : 'border-gray-300 hover:border-blue-300 dark:border-gray-600 dark:hover:border-blue-400'
+                                index === currentImageIndex
+                                    ? 'border-blue-500 ring-2 ring-blue-300'
+                                    : 'border-gray-300 hover:border-blue-300 dark:border-gray-600 dark:hover:border-blue-400',
                             ]"
                         >
-                            <img
-                                :src="image.url"
-                                :alt="`Thumbnail ${index + 1}`"
-                                class="h-full w-full object-cover"
-                            />
+                            <img :src="image.url" :alt="`Thumbnail ${index + 1}`" class="h-full w-full object-cover" />
                         </button>
                     </div>
                 </div>

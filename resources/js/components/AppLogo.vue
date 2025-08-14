@@ -18,7 +18,7 @@ const appLogo = computed(() => {
 </script>
 
 <template>
-    <div class="flex w-full items-center justify-center rounded-md bg-zinc-900 p-2text-sidebar-primary-foreground">
+    <div class="p-2text-sidebar-primary-foreground flex w-full items-center justify-center rounded-md bg-zinc-900">
         <!-- Custom logo if available -->
         <img v-if="appLogo" :src="appLogo" :alt="appName + ' Logo'" class="h-[120px] w-full object-contain" />
 

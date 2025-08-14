@@ -31,14 +31,17 @@ const submit = () => {
     <AuthBase title="> ACCESS_REQUIRED" description="> authenticate_user_credentials...">
         <Head title="Log in" />
 
-        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-400 font-mono bg-green-500/10 border border-green-500/30 rounded p-3">
+        <div
+            v-if="status"
+            class="mb-4 rounded border border-green-500/30 bg-green-500/10 p-3 text-center font-mono text-sm font-medium text-green-400"
+        >
             > {{ status }}
         </div>
 
         <form @submit.prevent="submit" class="flex flex-col gap-6 font-mono">
             <div class="grid gap-6">
                 <div class="grid gap-2">
-                    <Label for="email" class="text-green-400 font-mono text-sm">> user_id:</Label>
+                    <Label for="email" class="font-mono text-sm text-green-400">> user_id:</Label>
                     <Input
                         id="email"
                         type="email"
@@ -48,15 +51,20 @@ const submit = () => {
                         autocomplete="email"
                         v-model="form.email"
                         placeholder="user@system.local"
-                        class="bg-black/50 border-green-500/30 text-green-300 placeholder-green-500/50 focus:border-green-400 focus:ring-green-400/50 font-mono"
+                        class="border-green-500/30 bg-black/50 font-mono text-green-300 placeholder-green-500/50 focus:border-green-400 focus:ring-green-400/50"
                     />
-                    <InputError :message="form.errors.email" class="text-red-400 font-mono text-xs" />
+                    <InputError :message="form.errors.email" class="font-mono text-xs text-red-400" />
                 </div>
 
                 <div class="grid gap-2">
                     <div class="flex items-center justify-between">
-                        <Label for="password" class="text-green-400 font-mono text-sm">> password:</Label>
-                        <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-xs text-green-300/70 hover:text-green-300 font-mono" :tabindex="5">
+                        <Label for="password" class="font-mono text-sm text-green-400">> password:</Label>
+                        <TextLink
+                            v-if="canResetPassword"
+                            :href="route('password.request')"
+                            class="font-mono text-xs text-green-300/70 hover:text-green-300"
+                            :tabindex="5"
+                        >
                             > recovery_mode?
                         </TextLink>
                     </div>
@@ -68,27 +76,37 @@ const submit = () => {
                         autocomplete="current-password"
                         v-model="form.password"
                         placeholder="••••••••"
-                        class="bg-black/50 border-green-500/30 text-green-300 placeholder-green-500/50 focus:border-green-400 focus:ring-green-400/50 font-mono"
+                        class="border-green-500/30 bg-black/50 font-mono text-green-300 placeholder-green-500/50 focus:border-green-400 focus:ring-green-400/50"
                     />
-                    <InputError :message="form.errors.password" class="text-red-400 font-mono text-xs" />
+                    <InputError :message="form.errors.password" class="font-mono text-xs text-red-400" />
                 </div>
 
                 <div class="flex items-center justify-between">
-                    <Label for="remember" class="flex items-center space-x-3 text-green-300/70 font-mono text-sm">
-                        <Checkbox id="remember" v-model="form.remember" :tabindex="3" class="border-green-500/30 text-green-400 focus:ring-green-400/50" />
+                    <Label for="remember" class="flex items-center space-x-3 font-mono text-sm text-green-300/70">
+                        <Checkbox
+                            id="remember"
+                            v-model="form.remember"
+                            :tabindex="3"
+                            class="border-green-500/30 text-green-400 focus:ring-green-400/50"
+                        />
                         <span>> maintain_session</span>
                     </Label>
                 </div>
 
-                <Button type="submit" class="mt-4 w-full bg-green-600/20 border border-green-500/50 text-green-400 hover:bg-green-500/30 hover:border-green-400 font-mono tracking-wider transition-all duration-300 glow-button" :tabindex="4" :disabled="form.processing">
-                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin mr-2" />
+                <Button
+                    type="submit"
+                    class="glow-button mt-4 w-full border border-green-500/50 bg-green-600/20 font-mono tracking-wider text-green-400 transition-all duration-300 hover:border-green-400 hover:bg-green-500/30"
+                    :tabindex="4"
+                    :disabled="form.processing"
+                >
+                    <LoaderCircle v-if="form.processing" class="mr-2 h-4 w-4 animate-spin" />
                     {{ form.processing ? '> AUTHENTICATING...' : '> EXECUTE LOGIN' }}
                 </Button>
             </div>
 
-            <div class="text-center text-sm text-green-300/60 font-mono">
+            <div class="text-center font-mono text-sm text-green-300/60">
                 > need_access_token?
-                <TextLink :href="route('register')" :tabindex="5" class="text-green-400 hover:text-green-300 ml-1">register_user</TextLink>
+                <TextLink :href="route('register')" :tabindex="5" class="ml-1 text-green-400 hover:text-green-300">register_user</TextLink>
             </div>
         </form>
     </AuthBase>
@@ -96,14 +114,14 @@ const submit = () => {
 
 <style scoped>
 .glow-button {
-    box-shadow: 
+    box-shadow:
         0 0 10px rgba(0, 255, 65, 0.2),
         0 0 20px rgba(0, 255, 65, 0.1);
     transition: all 0.3s ease;
 }
 
 .glow-button:hover {
-    box-shadow: 
+    box-shadow:
         0 0 20px rgba(0, 255, 65, 0.4),
         0 0 40px rgba(0, 255, 65, 0.2),
         0 0 60px rgba(0, 255, 65, 0.1);

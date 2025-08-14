@@ -66,7 +66,7 @@ const submit = () => {
     // Use POST with _method spoofing for file uploads
     form.transform((data) => ({
         ...data,
-        _method: 'PUT'
+        _method: 'PUT',
     })).post(`/sub-categories/${props.subCategory.id}`, {
         onSuccess: () => {
             // Redirect handled by controller
@@ -84,7 +84,7 @@ const selectIcon = (icon: string) => {
 // Helper function to get effective color
 const getEffectiveColor = () => {
     if (form.color) return form.color;
-    const parentCategory = props.categories.find(c => c.id == form.category_id);
+    const parentCategory = props.categories.find((c) => c.id == form.category_id);
     return parentCategory?.color || '#3B82F6';
 };
 
@@ -95,10 +95,10 @@ const hasExistingImage = ref<boolean>(!!props.subCategory.image_path);
 const handleImageUpload = (event: Event) => {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
-    
+
     if (file) {
         form.image = file;
-        
+
         // Create preview URL
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -126,7 +126,7 @@ const deleteExistingImage = async () => {
                 method: 'DELETE',
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-                    'Accept': 'application/json',
+                    Accept: 'application/json',
                 },
             });
 
@@ -253,7 +253,9 @@ const deleteExistingImage = async () => {
                                         placeholder="#3B82F6 (kosongkan untuk warna kategori induk)"
                                     />
                                 </div>
-                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Jika dikosongkan, akan menggunakan warna dari kategori induk</p>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    Jika dikosongkan, akan menggunakan warna dari kategori induk
+                                </p>
                                 <div v-if="form.errors.color" class="mt-1 text-sm text-red-500">{{ form.errors.color }}</div>
                             </div>
 
@@ -310,9 +312,16 @@ const deleteExistingImage = async () => {
                                 <div class="space-y-3">
                                     <!-- Existing Image Display -->
                                     <div v-if="hasExistingImage && !imagePreview" class="relative">
-                                        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                                        <div
+                                            class="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-600 dark:bg-gray-700"
+                                        >
                                             <div class="flex items-center gap-3">
-                                                <img v-if="subCategory.image_url" :src="subCategory.image_url" alt="Current image" class="w-12 h-12 object-cover rounded" />
+                                                <img
+                                                    v-if="subCategory.image_url"
+                                                    :src="subCategory.image_url"
+                                                    alt="Current image"
+                                                    class="h-12 w-12 rounded object-cover"
+                                                />
                                                 <div>
                                                     <p class="text-sm font-medium text-gray-900 dark:text-white">Gambar saat ini</p>
                                                     <p class="text-xs text-gray-500 dark:text-gray-400">Upload gambar baru untuk mengganti</p>
@@ -321,7 +330,7 @@ const deleteExistingImage = async () => {
                                             <button
                                                 type="button"
                                                 @click="deleteExistingImage"
-                                                class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm"
+                                                class="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                                             >
                                                 Hapus
                                             </button>
@@ -330,32 +339,36 @@ const deleteExistingImage = async () => {
 
                                     <!-- Image Upload Area -->
                                     <div class="relative">
-                                        <input
-                                            id="image-upload"
-                                            type="file"
-                                            accept="image/*"
-                                            class="hidden"
-                                            @change="handleImageUpload"
-                                        />
+                                        <input id="image-upload" type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
                                         <label
                                             for="image-upload"
-                                            class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                                            class="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600"
                                         >
                                             <div v-if="!imagePreview" class="flex flex-col items-center justify-center pt-5 pb-6">
-                                                <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                                <svg
+                                                    class="mb-4 h-8 w-8 text-gray-500 dark:text-gray-400"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                                    ></path>
                                                 </svg>
                                                 <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
                                                     <span class="font-semibold">Klik untuk upload</span> atau drag & drop
                                                 </p>
                                                 <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF, SVG (MAX. 2MB)</p>
                                             </div>
-                                            <div v-else class="relative w-full h-full flex items-center justify-center">
-                                                <img :src="imagePreview" alt="Preview" class="max-w-full max-h-full object-contain rounded" />
+                                            <div v-else class="relative flex h-full w-full items-center justify-center">
+                                                <img :src="imagePreview" alt="Preview" class="max-h-full max-w-full rounded object-contain" />
                                             </div>
                                         </label>
                                     </div>
-                                    
+
                                     <!-- Remove New Image Button -->
                                     <div v-if="imagePreview && !hasExistingImage" class="flex justify-center">
                                         <button
@@ -366,7 +379,7 @@ const deleteExistingImage = async () => {
                                             Hapus Gambar Baru
                                         </button>
                                     </div>
-                                    
+
                                     <p class="text-xs text-gray-500 dark:text-gray-400">
                                         Gambar kustom akan digunakan sebagai prioritas utama. Jika tidak ada gambar, akan menggunakan emoji icon.
                                     </p>
@@ -381,13 +394,22 @@ const deleteExistingImage = async () => {
                                     <div class="flex items-center">
                                         <div
                                             class="mr-3 flex h-10 w-10 items-center justify-center rounded-lg"
-                                            :style="(imagePreview || (hasExistingImage && subCategory.image_url)) ? '' : {
-                                                backgroundColor: getEffectiveColor() + '20',
-                                                color: getEffectiveColor(),
-                                            }"
+                                            :style="
+                                                imagePreview || (hasExistingImage && subCategory.image_url)
+                                                    ? ''
+                                                    : {
+                                                          backgroundColor: getEffectiveColor() + '20',
+                                                          color: getEffectiveColor(),
+                                                      }
+                                            "
                                         >
-                                            <img v-if="imagePreview" :src="imagePreview" alt="Preview" class="h-10 w-10 object-cover rounded-lg" />
-                                            <img v-else-if="hasExistingImage && subCategory.image_url" :src="subCategory.image_url" alt="Current" class="h-10 w-10 object-cover rounded-lg" />
+                                            <img v-if="imagePreview" :src="imagePreview" alt="Preview" class="h-10 w-10 rounded-lg object-cover" />
+                                            <img
+                                                v-else-if="hasExistingImage && subCategory.image_url"
+                                                :src="subCategory.image_url"
+                                                alt="Current"
+                                                class="h-10 w-10 rounded-lg object-cover"
+                                            />
                                             <span v-else class="text-lg">{{ form.icon || '📄' }}</span>
                                         </div>
                                         <div>
@@ -397,12 +419,13 @@ const deleteExistingImage = async () => {
                                             <div class="text-sm text-gray-500 dark:text-gray-400">
                                                 {{ form.description || 'Deskripsi sub kategori' }}
                                             </div>
-                                            <div v-if="imagePreview || (hasExistingImage && subCategory.image_url)" class="text-xs text-blue-600 dark:text-blue-400">
+                                            <div
+                                                v-if="imagePreview || (hasExistingImage && subCategory.image_url)"
+                                                class="text-xs text-blue-600 dark:text-blue-400"
+                                            >
                                                 Menggunakan gambar kustom
                                             </div>
-                                            <div v-else-if="form.icon" class="text-xs text-green-600 dark:text-green-400">
-                                                Menggunakan emoji icon
-                                            </div>
+                                            <div v-else-if="form.icon" class="text-xs text-green-600 dark:text-green-400">Menggunakan emoji icon</div>
                                         </div>
                                     </div>
                                 </div>
@@ -411,13 +434,13 @@ const deleteExistingImage = async () => {
                             <!-- Parent Category Info -->
                             <div v-if="form.category_id" class="rounded-lg bg-gray-50 p-4 dark:bg-gray-700">
                                 <h4 class="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Kategori Induk:</h4>
-                                <div class="flex items-center" v-if="categories.find(c => c.id == form.category_id)">
+                                <div class="flex items-center" v-if="categories.find((c) => c.id == form.category_id)">
                                     <div
                                         class="mr-2 h-4 w-4 rounded"
-                                        :style="{ backgroundColor: categories.find(c => c.id == form.category_id)?.color }"
+                                        :style="{ backgroundColor: categories.find((c) => c.id == form.category_id)?.color }"
                                     ></div>
                                     <span class="text-sm text-gray-900 dark:text-white">
-                                        {{ categories.find(c => c.id == form.category_id)?.name }}
+                                        {{ categories.find((c) => c.id == form.category_id)?.name }}
                                     </span>
                                 </div>
                             </div>

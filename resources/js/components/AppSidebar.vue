@@ -58,17 +58,17 @@ const isLoading = ref(true);
 
 // Convert database menu items to NavItem format
 const convertMenuItemsToNavItems = (menuItems: MenuItem[]): NavItem[] => {
-    return menuItems.map(item => {
+    return menuItems.map((item) => {
         const navItem: NavItem = {
             title: item.title,
             href: item.path || '#',
             icon: getIconComponent(item.icon),
         };
-        
+
         if (item.children && item.children.length > 0) {
             navItem.items = convertMenuItemsToNavItems(item.children);
         }
-        
+
         return navItem;
     });
 };
@@ -76,29 +76,29 @@ const convertMenuItemsToNavItems = (menuItems: MenuItem[]): NavItem[] => {
 // Get icon component from icon name
 const getIconComponent = (iconName?: string) => {
     const iconMap: Record<string, any> = {
-        'LayoutGrid': LayoutGrid,
-        'ShieldAlert': ShieldAlert,
-        'Calendar': Calendar,
-        'CalendarDays': CalendarDays,
-        'ScrollText': ScrollText,
-        'Database': Database,
-        'Settings': Settings,
-        'Brain': Brain,
-        'Flag': Flag,
-        'ShoppingCart': ShoppingCart,
-        'DollarSign': DollarSign,
-        'Tags': Tags,
-        'FileText': FileText,
-        'Map': Map,
-        'Building2': Building2,
-        'MapPin': MapPin,
-        'Menu': Menu,
-        'Users': Users,
-        'Heart': Heart,
-        'Shield': Shield,
-        'Landmark': Landmark,
-        'Globe': Globe,
-        'TrendingUp': TrendingUp,
+        LayoutGrid: LayoutGrid,
+        ShieldAlert: ShieldAlert,
+        Calendar: Calendar,
+        CalendarDays: CalendarDays,
+        ScrollText: ScrollText,
+        Database: Database,
+        Settings: Settings,
+        Brain: Brain,
+        Flag: Flag,
+        ShoppingCart: ShoppingCart,
+        DollarSign: DollarSign,
+        Tags: Tags,
+        FileText: FileText,
+        Map: Map,
+        Building2: Building2,
+        MapPin: MapPin,
+        Menu: Menu,
+        Users: Users,
+        Heart: Heart,
+        Shield: Shield,
+        Landmark: Landmark,
+        Globe: Globe,
+        TrendingUp: TrendingUp,
     };
     return iconMap[iconName || ''] || Tags;
 };
@@ -126,12 +126,10 @@ const mainNavItems = computed<NavItem[]>(() => {
     if (isLoading.value || !dbMenuItems.value.length) {
         return [];
     }
-    
+
     // Get main menu items (excluding PENGATURAN which goes to footer)
-    const mainItems = dbMenuItems.value.filter(item => 
-        item.title !== 'PENGATURAN'
-    );
-    
+    const mainItems = dbMenuItems.value.filter((item) => item.title !== 'PENGATURAN');
+
     return convertMenuItemsToNavItems(mainItems);
 });
 
@@ -140,14 +138,14 @@ const settingsNavItems = computed<NavItem[]>(() => {
     if (isLoading.value || !dbMenuItems.value.length) {
         return [];
     }
-    
+
     // Get PENGATURAN menu item from database
-    const pengaturanMenu = dbMenuItems.value.find(item => item.title === 'PENGATURAN');
-    
+    const pengaturanMenu = dbMenuItems.value.find((item) => item.title === 'PENGATURAN');
+
     if (pengaturanMenu) {
         return convertMenuItemsToNavItems([pengaturanMenu]);
     }
-    
+
     // Fallback if PENGATURAN not found in database
     const baseItems = [
         {
@@ -181,14 +179,15 @@ const settingsNavItems = computed<NavItem[]>(() => {
         });
     }
 
-    return [{
-        title: 'PENGATURAN',
-        href: isAdmin.value ? '/settings' : '/provinsi',
-        icon: Settings,
-        items: baseItems,
-    }];
+    return [
+        {
+            title: 'PENGATURAN',
+            href: isAdmin.value ? '/settings' : '/provinsi',
+            icon: Settings,
+            items: baseItems,
+        },
+    ];
 });
-
 
 // Load data on component mount
 onMounted(() => {

@@ -65,7 +65,9 @@ const getStatusLabel = (isActive: boolean): string => {
 };
 
 const getStatusColor = (isActive: boolean): string => {
-    return isActive ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+    return isActive
+        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
 };
 
 const formatDateTime = (dateString: string): string => {
@@ -159,7 +161,12 @@ const printData = () => {
                                             class="flex h-12 w-12 items-center justify-center rounded-lg"
                                             :style="category.image_url ? '' : { backgroundColor: category.color + '20', color: category.color }"
                                         >
-                                            <img v-if="category.image_url" :src="category.image_url" alt="Category icon" class="h-12 w-12 object-contain rounded-lg" />
+                                            <img
+                                                v-if="category.image_url"
+                                                :src="category.image_url"
+                                                alt="Category icon"
+                                                class="h-12 w-12 rounded-lg object-contain"
+                                            />
                                             <span v-else class="text-2xl">{{ category.icon || '📁' }}</span>
                                         </div>
                                         <div>
@@ -221,7 +228,12 @@ const printData = () => {
                             <Link :href="`/monitoring-data?category=${category.slug}`">
                                 <Button variant="outline" size="sm">
                                     <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                        />
                                     </svg>
                                     Data Monitoring
                                 </Button>
@@ -229,7 +241,12 @@ const printData = () => {
                             <Link :href="`/sub-categories?category=${category.id}`">
                                 <Button variant="outline" size="sm">
                                     <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                        />
                                     </svg>
                                     Sub Kategori
                                 </Button>
@@ -238,27 +255,47 @@ const printData = () => {
                     </div>
 
                     <!-- Sub Categories -->
-                    <div v-if="category.sub_categories && category.sub_categories.length > 0" class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                    <div
+                        v-if="category.sub_categories && category.sub_categories.length > 0"
+                        class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                    >
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Daftar Sub Kategori</h3>
 
                         <div class="space-y-3">
-                            <div v-for="subCategory in category.sub_categories" :key="subCategory.id" class="rounded-lg border border-gray-100 p-3 dark:border-gray-600">
+                            <div
+                                v-for="subCategory in category.sub_categories"
+                                :key="subCategory.id"
+                                class="rounded-lg border border-gray-100 p-3 dark:border-gray-600"
+                            >
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center">
                                         <div
                                             class="mr-3 flex h-8 w-8 items-center justify-center rounded-lg"
-                                            :style="subCategory.image_url ? '' : {
-                                                backgroundColor: (subCategory.color || category.color) + '20',
-                                                color: subCategory.color || category.color,
-                                            }"
+                                            :style="
+                                                subCategory.image_url
+                                                    ? ''
+                                                    : {
+                                                          backgroundColor: (subCategory.color || category.color) + '20',
+                                                          color: subCategory.color || category.color,
+                                                      }
+                                            "
                                         >
-                                            <img v-if="subCategory.image_url" :src="subCategory.image_url" alt="Subcategory icon" class="h-8 w-8 object-contain rounded-lg" />
+                                            <img
+                                                v-if="subCategory.image_url"
+                                                :src="subCategory.image_url"
+                                                alt="Subcategory icon"
+                                                class="h-8 w-8 rounded-lg object-contain"
+                                            />
                                             <span v-else class="text-sm">{{ subCategory.icon || '📄' }}</span>
                                         </div>
                                         <div>
                                             <div class="text-sm font-medium text-gray-900 dark:text-white">{{ subCategory.name }}</div>
                                             <div class="text-xs text-gray-500 dark:text-gray-400" v-if="subCategory.description">
-                                                {{ subCategory.description.length > 50 ? subCategory.description.substring(0, 50) + '...' : subCategory.description }}
+                                                {{
+                                                    subCategory.description.length > 50
+                                                        ? subCategory.description.substring(0, 50) + '...'
+                                                        : subCategory.description
+                                                }}
                                             </div>
                                         </div>
                                     </div>
@@ -323,7 +360,12 @@ const printData = () => {
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Sub Kategori</h3>
                         <div class="py-8 text-center">
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                />
                             </svg>
                             <h4 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Belum ada sub kategori</h4>
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Kategori ini belum memiliki sub kategori</p>
@@ -373,7 +415,12 @@ const printData = () => {
                                     class="mr-3 flex h-10 w-10 items-center justify-center rounded-lg"
                                     :style="category.image_url ? '' : { backgroundColor: category.color + '20', color: category.color }"
                                 >
-                                    <img v-if="category.image_url" :src="category.image_url" alt="Category icon" class="h-10 w-10 object-contain rounded-lg" />
+                                    <img
+                                        v-if="category.image_url"
+                                        :src="category.image_url"
+                                        alt="Category icon"
+                                        class="h-10 w-10 rounded-lg object-contain"
+                                    />
                                     <span v-else class="text-lg">{{ category.icon || '📁' }}</span>
                                 </div>
                                 <div>

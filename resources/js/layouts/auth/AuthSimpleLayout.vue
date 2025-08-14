@@ -55,7 +55,7 @@ onMounted(() => {
         for (let i = 0; i < drops.length; i++) {
             // Random character
             const text = charArray[Math.floor(Math.random() * charArray.length)];
-            
+
             // Draw character
             ctx.fillStyle = i % 3 === 0 ? '#00FF41' : i % 5 === 0 ? '#00AA00' : '#008800';
             ctx.fillText(text, i * fontSize, drops[i] * fontSize);
@@ -72,7 +72,7 @@ onMounted(() => {
         drawMatrix();
         matrixAnimation = requestAnimationFrame(animate);
     };
-    
+
     animate();
 });
 
@@ -84,63 +84,80 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-black overflow-hidden flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative">
+    <div class="relative flex min-h-screen flex-col justify-center overflow-hidden bg-black py-12 sm:px-6 lg:px-8">
         <!-- Matrix rain background -->
         <div class="matrix-container absolute inset-0 opacity-20">
-            <canvas id="matrix-canvas" class="absolute inset-0 w-full h-full"></canvas>
+            <canvas id="matrix-canvas" class="absolute inset-0 h-full w-full"></canvas>
         </div>
-        
+
         <!-- Animated grid background -->
         <div class="absolute inset-0 opacity-10">
             <div class="grid-bg h-full w-full"></div>
         </div>
-        
+
         <!-- Glitch overlay -->
-        <div class="glitch-overlay absolute inset-0 pointer-events-none opacity-30"></div>
-        <div class="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        <div class="glitch-overlay pointer-events-none absolute inset-0 opacity-30"></div>
+        <div class="relative z-10 sm:mx-auto sm:w-full sm:max-w-md">
             <!-- Logo/Icon section with hacker theme -->
             <div class="flex justify-center">
-                <Link :href="route('home')" class="flex flex-col items-center gap-3 hacker-logo">
+                <Link :href="route('home')" class="hacker-logo flex flex-col items-center gap-3">
                     <div class="relative">
                         <!-- Show login_logo if available, fallback to app_favicon, then default icon -->
-                        <div v-if="appSettings.login_logo" class="h-[120px] w-[120px] rounded-lg bg-black/80 backdrop-blur-sm border border-green-500/30 flex items-center justify-center shadow-lg shadow-green-500/10 glow-box">
+                        <div
+                            v-if="appSettings.login_logo"
+                            class="glow-box flex h-[120px] w-[120px] items-center justify-center rounded-lg border border-green-500/30 bg-black/80 shadow-lg shadow-green-500/10 backdrop-blur-sm"
+                        >
                             <img :src="appSettings.login_logo" :alt="appSettings.app_name + ' - Login'" class="h-[110px] w-[110px] object-contain" />
                         </div>
-                        <div v-else-if="appSettings.app_favicon && appSettings.app_favicon !== '/favicon.ico'" class="h-20 w-20 rounded-lg bg-black/80 backdrop-blur-sm border border-green-500/30 flex items-center justify-center shadow-lg shadow-green-500/10 glow-box">
-                            <img :src="appSettings.app_favicon" :alt="appSettings.app_name" class="h-12 w-12 object-contain filter brightness-0 invert opacity-80" />
+                        <div
+                            v-else-if="appSettings.app_favicon && appSettings.app_favicon !== '/favicon.ico'"
+                            class="glow-box flex h-20 w-20 items-center justify-center rounded-lg border border-green-500/30 bg-black/80 shadow-lg shadow-green-500/10 backdrop-blur-sm"
+                        >
+                            <img
+                                :src="appSettings.app_favicon"
+                                :alt="appSettings.app_name"
+                                class="h-12 w-12 object-contain opacity-80 brightness-0 invert filter"
+                            />
                         </div>
-                        <div v-else class="h-20 w-20 rounded-lg bg-black/80 backdrop-blur-sm border border-green-500/30 flex items-center justify-center shadow-lg shadow-green-500/10 glow-box">
+                        <div
+                            v-else
+                            class="glow-box flex h-20 w-20 items-center justify-center rounded-lg border border-green-500/30 bg-black/80 shadow-lg shadow-green-500/10 backdrop-blur-sm"
+                        >
                             <AppLogoIcon class="h-12 w-12 text-green-400" />
                         </div>
                         <!-- Scanning line effect -->
-                        <div class="absolute inset-0 rounded-lg bg-gradient-to-b from-transparent via-green-400/20 to-transparent animate-scan"></div>
+                        <div class="animate-scan absolute inset-0 rounded-lg bg-gradient-to-b from-transparent via-green-400/20 to-transparent"></div>
                     </div>
                     <div class="text-center">
-                        <h1 class="text-3xl font-bold text-green-400 font-mono tracking-wider glitch-text">{{ appSettings.app_name || 'CRIME MAP' }}</h1>
+                        <h1 class="glitch-text font-mono text-3xl font-bold tracking-wider text-green-400">
+                            {{ appSettings.app_name || 'CRIME MAP' }}
+                        </h1>
                     </div>
                 </Link>
             </div>
 
             <!-- Auth card with cyberpunk design -->
             <div class="mt-8">
-                <div class="bg-black/60 backdrop-blur-md py-8 px-6 rounded-lg border border-green-500/20 shadow-xl shadow-green-500/5 relative overflow-hidden">
+                <div
+                    class="relative overflow-hidden rounded-lg border border-green-500/20 bg-black/60 px-6 py-8 shadow-xl shadow-green-500/5 backdrop-blur-md"
+                >
                     <!-- Card scanning lines -->
-                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-green-400/5 to-transparent animate-slide"></div>
-                    
-                    <div class="mb-6 text-center relative z-10">
-                        <h2 class="text-xl font-semibold text-green-400 font-mono">{{ title || '> ACCESS_TERMINAL' }}</h2>
-                        <p class="mt-2 text-sm text-green-300/70 font-mono">{{ description || '> enter_credentials_to_continue...' }}</p>
+                    <div class="animate-slide absolute inset-0 bg-gradient-to-r from-transparent via-green-400/5 to-transparent"></div>
+
+                    <div class="relative z-10 mb-6 text-center">
+                        <h2 class="font-mono text-xl font-semibold text-green-400">{{ title || '> ACCESS_TERMINAL' }}</h2>
+                        <p class="mt-2 font-mono text-sm text-green-300/70">{{ description || '> enter_credentials_to_continue...' }}</p>
                     </div>
-                    
+
                     <div class="relative z-10">
                         <slot />
                     </div>
-                    
+
                     <!-- Corner brackets -->
-                    <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-green-500/50"></div>
-                    <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-green-500/50"></div>
-                    <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-green-500/50"></div>
-                    <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-green-500/50"></div>
+                    <div class="absolute top-2 left-2 h-4 w-4 border-t-2 border-l-2 border-green-500/50"></div>
+                    <div class="absolute top-2 right-2 h-4 w-4 border-t-2 border-r-2 border-green-500/50"></div>
+                    <div class="absolute bottom-2 left-2 h-4 w-4 border-b-2 border-l-2 border-green-500/50"></div>
+                    <div class="absolute right-2 bottom-2 h-4 w-4 border-r-2 border-b-2 border-green-500/50"></div>
                 </div>
             </div>
         </div>
@@ -150,35 +167,50 @@ onUnmounted(() => {
 <style scoped>
 /* Grid background */
 .grid-bg {
-    background-image: 
-        linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(0, 255, 65, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 65, 0.1) 1px, transparent 1px);
     background-size: 50px 50px;
     animation: grid-move 20s linear infinite;
 }
 
 @keyframes grid-move {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(50px, 50px); }
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(50px, 50px);
+    }
 }
 
 /* Glitch overlay */
 .glitch-overlay {
-    background: 
+    background:
         linear-gradient(90deg, transparent 0%, rgba(0, 255, 65, 0.03) 50%, transparent 100%),
         linear-gradient(0deg, transparent 0%, rgba(0, 255, 65, 0.02) 50%, transparent 100%);
     animation: glitch 3s infinite;
 }
 
 @keyframes glitch {
-    0%, 90%, 100% { opacity: 0; }
-    1%, 3%, 5% { opacity: 0.3; transform: translateX(2px); }
-    2%, 4% { opacity: 0.3; transform: translateX(-2px); }
+    0%,
+    90%,
+    100% {
+        opacity: 0;
+    }
+    1%,
+    3%,
+    5% {
+        opacity: 0.3;
+        transform: translateX(2px);
+    }
+    2%,
+    4% {
+        opacity: 0.3;
+        transform: translateX(-2px);
+    }
 }
 
 /* Glow effects */
 .glow-box {
-    box-shadow: 
+    box-shadow:
         0 0 20px rgba(0, 255, 65, 0.2),
         0 0 40px rgba(0, 255, 65, 0.1),
         inset 0 0 10px rgba(0, 255, 65, 0.1);
@@ -186,16 +218,36 @@ onUnmounted(() => {
 }
 
 @keyframes pulse-glow {
-    from { box-shadow: 0 0 20px rgba(0, 255, 65, 0.2), 0 0 40px rgba(0, 255, 65, 0.1), inset 0 0 10px rgba(0, 255, 65, 0.1); }
-    to { box-shadow: 0 0 30px rgba(0, 255, 65, 0.4), 0 0 60px rgba(0, 255, 65, 0.2), inset 0 0 15px rgba(0, 255, 65, 0.2); }
+    from {
+        box-shadow:
+            0 0 20px rgba(0, 255, 65, 0.2),
+            0 0 40px rgba(0, 255, 65, 0.1),
+            inset 0 0 10px rgba(0, 255, 65, 0.1);
+    }
+    to {
+        box-shadow:
+            0 0 30px rgba(0, 255, 65, 0.4),
+            0 0 60px rgba(0, 255, 65, 0.2),
+            inset 0 0 15px rgba(0, 255, 65, 0.2);
+    }
 }
 
 /* Scanning line animation */
 @keyframes scan {
-    0% { transform: translateY(-100%); opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { transform: translateY(100%); opacity: 0; }
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100%);
+        opacity: 0;
+    }
 }
 
 .animate-scan {
@@ -204,8 +256,12 @@ onUnmounted(() => {
 
 /* Sliding animation for card */
 @keyframes slide {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
 }
 
 .animate-slide {
@@ -215,7 +271,7 @@ onUnmounted(() => {
 /* Glitch text effect */
 .glitch-text {
     position: relative;
-    text-shadow: 
+    text-shadow:
         0 0 10px rgba(0, 255, 65, 0.8),
         0 0 20px rgba(0, 255, 65, 0.6),
         0 0 30px rgba(0, 255, 65, 0.4);
@@ -223,10 +279,18 @@ onUnmounted(() => {
 }
 
 @keyframes text-flicker {
-    0% { opacity: 1; }
-    98% { opacity: 1; }
-    99% { opacity: 0.98; }
-    100% { opacity: 1; }
+    0% {
+        opacity: 1;
+    }
+    98% {
+        opacity: 1;
+    }
+    99% {
+        opacity: 0.98;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 
 .glitch-text::before,
@@ -253,17 +317,51 @@ onUnmounted(() => {
 }
 
 @keyframes glitch-1 {
-    0%, 14%, 15%, 49%, 50%, 99%, 100% { transform: translate(0); }
-    1%, 13% { transform: translate(-2px, 1px); }
-    16%, 48% { transform: translate(1px, -1px); }
-    51%, 98% { transform: translate(-1px, 2px); }
+    0%,
+    14%,
+    15%,
+    49%,
+    50%,
+    99%,
+    100% {
+        transform: translate(0);
+    }
+    1%,
+    13% {
+        transform: translate(-2px, 1px);
+    }
+    16%,
+    48% {
+        transform: translate(1px, -1px);
+    }
+    51%,
+    98% {
+        transform: translate(-1px, 2px);
+    }
 }
 
 @keyframes glitch-2 {
-    0%, 20%, 21%, 62%, 63%, 99%, 100% { transform: translate(0); }
-    1%, 19% { transform: translate(2px, -1px); }
-    22%, 61% { transform: translate(-1px, 1px); }
-    64%, 98% { transform: translate(1px, -2px); }
+    0%,
+    20%,
+    21%,
+    62%,
+    63%,
+    99%,
+    100% {
+        transform: translate(0);
+    }
+    1%,
+    19% {
+        transform: translate(2px, -1px);
+    }
+    22%,
+    61% {
+        transform: translate(-1px, 1px);
+    }
+    64%,
+    98% {
+        transform: translate(1px, -2px);
+    }
 }
 
 /* Hacker logo hover effect */
@@ -272,22 +370,38 @@ onUnmounted(() => {
 }
 
 @keyframes intense-flicker {
-    0% { opacity: 1; }
-    25% { opacity: 0.8; }
-    50% { opacity: 1; }
-    75% { opacity: 0.9; }
-    100% { opacity: 1; }
+    0% {
+        opacity: 1;
+    }
+    25% {
+        opacity: 0.8;
+    }
+    50% {
+        opacity: 1;
+    }
+    75% {
+        opacity: 0.9;
+    }
+    100% {
+        opacity: 1;
+    }
 }
 
 /* Terminal cursor effect */
 .terminal-cursor::after {
     content: '_';
-    color: #00FF41;
+    color: #00ff41;
     animation: cursor-blink 1s infinite;
 }
 
 @keyframes cursor-blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0; }
+    0%,
+    50% {
+        opacity: 1;
+    }
+    51%,
+    100% {
+        opacity: 0;
+    }
 }
 </style>

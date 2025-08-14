@@ -55,10 +55,10 @@ const imagePreview = ref<string | null>(null);
 const handleImageUpload = (event: Event) => {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
-    
+
     if (file) {
         form.image = file;
-        
+
         // Create preview URL
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -226,32 +226,36 @@ const removeImage = () => {
                                 <div class="space-y-3">
                                     <!-- Image Upload Area -->
                                     <div class="relative">
-                                        <input
-                                            id="image-upload"
-                                            type="file"
-                                            accept="image/*"
-                                            class="hidden"
-                                            @change="handleImageUpload"
-                                        />
+                                        <input id="image-upload" type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
                                         <label
                                             for="image-upload"
-                                            class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                                            class="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600"
                                         >
                                             <div v-if="!imagePreview" class="flex flex-col items-center justify-center pt-5 pb-6">
-                                                <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                                <svg
+                                                    class="mb-4 h-8 w-8 text-gray-500 dark:text-gray-400"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                                    ></path>
                                                 </svg>
                                                 <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">
                                                     <span class="font-semibold">Klik untuk upload</span> atau drag & drop
                                                 </p>
                                                 <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF, SVG (MAX. 2MB)</p>
                                             </div>
-                                            <div v-else class="relative w-full h-full flex items-center justify-center">
-                                                <img :src="imagePreview" alt="Preview" class="max-w-full max-h-full object-contain rounded" />
+                                            <div v-else class="relative flex h-full w-full items-center justify-center">
+                                                <img :src="imagePreview" alt="Preview" class="max-h-full max-w-full rounded object-contain" />
                                             </div>
                                         </label>
                                     </div>
-                                    
+
                                     <!-- Remove Image Button -->
                                     <div v-if="imagePreview" class="flex justify-center">
                                         <button
@@ -262,7 +266,7 @@ const removeImage = () => {
                                             Hapus Gambar
                                         </button>
                                     </div>
-                                    
+
                                     <p class="text-xs text-gray-500 dark:text-gray-400">
                                         Gambar kustom akan digunakan sebagai prioritas utama. Jika tidak ada gambar, akan menggunakan emoji icon.
                                     </p>
@@ -279,7 +283,7 @@ const removeImage = () => {
                                             class="mr-3 flex h-10 w-10 items-center justify-center rounded-lg"
                                             :style="imagePreview ? '' : { backgroundColor: form.color + '20', color: form.color }"
                                         >
-                                            <img v-if="imagePreview" :src="imagePreview" alt="Preview" class="h-10 w-10 object-cover rounded-lg" />
+                                            <img v-if="imagePreview" :src="imagePreview" alt="Preview" class="h-10 w-10 rounded-lg object-cover" />
                                             <span v-else class="text-lg">{{ form.icon || '📁' }}</span>
                                         </div>
                                         <div>
@@ -289,12 +293,8 @@ const removeImage = () => {
                                             <div class="text-sm text-gray-500 dark:text-gray-400">
                                                 {{ form.description || 'Deskripsi kategori' }}
                                             </div>
-                                            <div v-if="imagePreview" class="text-xs text-blue-600 dark:text-blue-400">
-                                                Menggunakan gambar kustom
-                                            </div>
-                                            <div v-else-if="form.icon" class="text-xs text-green-600 dark:text-green-400">
-                                                Menggunakan emoji icon
-                                            </div>
+                                            <div v-if="imagePreview" class="text-xs text-blue-600 dark:text-blue-400">Menggunakan gambar kustom</div>
+                                            <div v-else-if="form.icon" class="text-xs text-green-600 dark:text-green-400">Menggunakan emoji icon</div>
                                         </div>
                                     </div>
                                 </div>

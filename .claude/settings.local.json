@@ -25,7 +25,13 @@
       "Bash(sqlite3:*)",
       "Bash(ls:*)",
       "Bash(dir:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run fix:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run format:check:*)",
+      "Bash(npm run format:*)",
+      "Bash(mysql:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

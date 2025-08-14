@@ -117,10 +117,12 @@ const clearFilters = () => {
 
 const deleteSubCategory = (id: number, monitoringDataCount: number = 0) => {
     if (monitoringDataCount > 0) {
-        alert(`Sub kategori ini tidak dapat dihapus karena masih digunakan dalam ${monitoringDataCount} data monitoring. Silakan hapus data monitoring terkait terlebih dahulu atau nonaktifkan sub kategori ini.`);
+        alert(
+            `Sub kategori ini tidak dapat dihapus karena masih digunakan dalam ${monitoringDataCount} data monitoring. Silakan hapus data monitoring terkait terlebih dahulu atau nonaktifkan sub kategori ini.`,
+        );
         return;
     }
-    
+
     if (confirm('Apakah Anda yakin ingin menghapus sub kategori ini?')) {
         router.delete(`/sub-categories/${id}`, {
             preserveScroll: true,
@@ -264,12 +266,21 @@ const hasActiveFilters = computed(() => {
                                     <div class="flex items-center">
                                         <div
                                             class="mr-3 flex h-10 w-10 items-center justify-center rounded-lg"
-                                            :style="subCategory.image_url ? '' : {
-                                                backgroundColor: (subCategory.color || subCategory.category.color) + '20',
-                                                color: subCategory.color || subCategory.category.color,
-                                            }"
+                                            :style="
+                                                subCategory.image_url
+                                                    ? ''
+                                                    : {
+                                                          backgroundColor: (subCategory.color || subCategory.category.color) + '20',
+                                                          color: subCategory.color || subCategory.category.color,
+                                                      }
+                                            "
                                         >
-                                            <img v-if="subCategory.image_url" :src="subCategory.image_url" alt="SubCategory icon" class="h-10 w-10 object-contain rounded-lg" />
+                                            <img
+                                                v-if="subCategory.image_url"
+                                                :src="subCategory.image_url"
+                                                alt="SubCategory icon"
+                                                class="h-10 w-10 rounded-lg object-contain"
+                                            />
                                             <span v-else class="text-lg">{{ subCategory.icon || '📄' }}</span>
                                         </div>
                                         <div>
@@ -299,15 +310,17 @@ const hasActiveFilters = computed(() => {
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <span 
+                                    <span
                                         class="text-sm font-medium"
-                                        :class="(subCategory.monitoring_data_count || 0) > 0 
-                                            ? 'text-blue-600 dark:text-blue-400' 
-                                            : 'text-gray-900 dark:text-white'"
+                                        :class="
+                                            (subCategory.monitoring_data_count || 0) > 0
+                                                ? 'text-blue-600 dark:text-blue-400'
+                                                : 'text-gray-900 dark:text-white'
+                                        "
                                     >
                                         {{ subCategory.monitoring_data_count || 0 }}
                                     </span>
-                                    <div v-if="(subCategory.monitoring_data_count || 0) > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    <div v-if="(subCategory.monitoring_data_count || 0) > 0" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                         📌 Ada data
                                     </div>
                                 </td>
@@ -380,13 +393,17 @@ const hasActiveFilters = computed(() => {
                                             @click="deleteSubCategory(subCategory.id, subCategory.monitoring_data_count || 0)"
                                             variant="outline"
                                             size="sm"
-                                            :class="(subCategory.monitoring_data_count || 0) > 0 
-                                                ? 'text-gray-400 cursor-not-allowed' 
-                                                : 'text-red-600 hover:text-red-800'"
+                                            :class="
+                                                (subCategory.monitoring_data_count || 0) > 0
+                                                    ? 'cursor-not-allowed text-gray-400'
+                                                    : 'text-red-600 hover:text-red-800'
+                                            "
                                             :disabled="(subCategory.monitoring_data_count || 0) > 0"
-                                            :title="(subCategory.monitoring_data_count || 0) > 0 
-                                                ? `Tidak dapat dihapus - masih digunakan dalam ${subCategory.monitoring_data_count} data monitoring` 
-                                                : 'Hapus sub kategori'"
+                                            :title="
+                                                (subCategory.monitoring_data_count || 0) > 0
+                                                    ? `Tidak dapat dihapus - masih digunakan dalam ${subCategory.monitoring_data_count} data monitoring`
+                                                    : 'Hapus sub kategori'
+                                            "
                                         >
                                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path

@@ -68,7 +68,9 @@ const getStatusLabel = (isActive: boolean): string => {
 };
 
 const getStatusColor = (isActive: boolean): string => {
-    return isActive ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+    return isActive
+        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
 };
 
 const formatDateTime = (dateString: string): string => {
@@ -160,12 +162,21 @@ const printData = () => {
                                     <div class="flex items-center gap-3">
                                         <div
                                             class="flex h-12 w-12 items-center justify-center rounded-lg"
-                                            :style="subCategory.image_url ? '' : {
-                                                backgroundColor: (subCategory.color || subCategory.category.color) + '20',
-                                                color: subCategory.color || subCategory.category.color,
-                                            }"
+                                            :style="
+                                                subCategory.image_url
+                                                    ? ''
+                                                    : {
+                                                          backgroundColor: (subCategory.color || subCategory.category.color) + '20',
+                                                          color: subCategory.color || subCategory.category.color,
+                                                      }
+                                            "
                                         >
-                                            <img v-if="subCategory.image_url" :src="subCategory.image_url" alt="Subcategory icon" class="h-12 w-12 object-contain rounded-lg" />
+                                            <img
+                                                v-if="subCategory.image_url"
+                                                :src="subCategory.image_url"
+                                                alt="Subcategory icon"
+                                                class="h-12 w-12 rounded-lg object-contain"
+                                            />
                                             <span v-else class="text-2xl">{{ subCategory.icon || '📄' }}</span>
                                         </div>
                                         <div>
@@ -208,9 +219,18 @@ const printData = () => {
                             <div class="flex items-center">
                                 <div
                                     class="mr-3 flex h-12 w-12 items-center justify-center rounded-lg"
-                                    :style="subCategory.category.image_url ? '' : { backgroundColor: subCategory.category.color + '20', color: subCategory.category.color }"
+                                    :style="
+                                        subCategory.category.image_url
+                                            ? ''
+                                            : { backgroundColor: subCategory.category.color + '20', color: subCategory.category.color }
+                                    "
                                 >
-                                    <img v-if="subCategory.category.image_url" :src="subCategory.category.image_url" alt="Category icon" class="h-12 w-12 object-contain rounded-lg" />
+                                    <img
+                                        v-if="subCategory.category.image_url"
+                                        :src="subCategory.category.image_url"
+                                        alt="Category icon"
+                                        class="h-12 w-12 rounded-lg object-contain"
+                                    />
                                     <span v-else class="text-xl">{{ subCategory.category.icon || '📁' }}</span>
                                 </div>
                                 <div>
@@ -222,7 +242,10 @@ const printData = () => {
                                 </div>
                             </div>
                             <div class="text-right">
-                                <Link :href="`/categories/${subCategory.category.id}`" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200">
+                                <Link
+                                    :href="`/categories/${subCategory.category.id}`"
+                                    class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                                >
                                     <Button variant="outline" size="sm">
                                         <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path
@@ -271,7 +294,12 @@ const printData = () => {
                             <Link :href="`/monitoring-data?category=${subCategory.category.slug}&subcategory=${subCategory.slug}`">
                                 <Button variant="outline" size="sm">
                                     <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                        />
                                     </svg>
                                     Lihat Data Monitoring
                                 </Button>
@@ -310,12 +338,21 @@ const printData = () => {
                             <div class="flex items-center">
                                 <div
                                     class="mr-3 flex h-10 w-10 items-center justify-center rounded-lg"
-                                    :style="subCategory.image_url ? '' : {
-                                        backgroundColor: (subCategory.color || subCategory.category.color) + '20',
-                                        color: subCategory.color || subCategory.category.color,
-                                    }"
+                                    :style="
+                                        subCategory.image_url
+                                            ? ''
+                                            : {
+                                                  backgroundColor: (subCategory.color || subCategory.category.color) + '20',
+                                                  color: subCategory.color || subCategory.category.color,
+                                              }
+                                    "
                                 >
-                                    <img v-if="subCategory.image_url" :src="subCategory.image_url" alt="Subcategory icon" class="h-10 w-10 object-contain rounded-lg" />
+                                    <img
+                                        v-if="subCategory.image_url"
+                                        :src="subCategory.image_url"
+                                        alt="Subcategory icon"
+                                        class="h-10 w-10 rounded-lg object-contain"
+                                    />
                                     <span v-else class="text-lg">{{ subCategory.icon || '📄' }}</span>
                                 </div>
                                 <div>

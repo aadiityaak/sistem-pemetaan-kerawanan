@@ -234,7 +234,12 @@ const hasActiveFilters = computed(() => {
                                             class="mr-3 flex h-10 w-10 items-center justify-center rounded-lg"
                                             :style="category.image_url ? '' : { backgroundColor: category.color + '20', color: category.color }"
                                         >
-                                            <img v-if="category.image_url" :src="category.image_url" alt="Category icon" class="h-10 w-10 object-contain rounded-lg" />
+                                            <img
+                                                v-if="category.image_url"
+                                                :src="category.image_url"
+                                                alt="Category icon"
+                                                class="h-10 w-10 rounded-lg object-contain"
+                                            />
                                             <span v-else class="text-lg">{{ category.icon || '📁' }}</span>
                                         </div>
                                         <div>

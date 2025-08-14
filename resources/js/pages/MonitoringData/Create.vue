@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { GalleryInput } from '@/components/ui/gallery-input';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
@@ -135,21 +135,24 @@ const statusOptions = [
 ];
 
 // Watch for location changes
-watch(() => form.provinsi_id, (newProvinsiId) => {
-    form.kabupaten_kota_id = '';
-    form.kecamatan_id = '';
-    
-    // Auto-pan map to selected province if coordinates are available
-    if (map && newProvinsiId) {
-        const selectedProvinsi = props.provinsiList.find(p => p.id === parseInt(newProvinsiId));
-        if (selectedProvinsi && selectedProvinsi.latitude && selectedProvinsi.longitude) {
-            map.setView([selectedProvinsi.latitude, selectedProvinsi.longitude], 8, {
-                animate: true,
-                duration: 1.0
-            });
+watch(
+    () => form.provinsi_id,
+    (newProvinsiId) => {
+        form.kabupaten_kota_id = '';
+        form.kecamatan_id = '';
+
+        // Auto-pan map to selected province if coordinates are available
+        if (map && newProvinsiId) {
+            const selectedProvinsi = props.provinsiList.find((p) => p.id === parseInt(newProvinsiId));
+            if (selectedProvinsi && selectedProvinsi.latitude && selectedProvinsi.longitude) {
+                map.setView([selectedProvinsi.latitude, selectedProvinsi.longitude], 8, {
+                    animate: true,
+                    duration: 1.0,
+                });
+            }
         }
-    }
-});
+    },
+);
 
 watch(
     () => form.kabupaten_kota_id,
@@ -174,13 +177,13 @@ const initializeMap = async () => {
             // Use user's province coordinates if available (non-admin users have filtered province list)
             let mapCenter: [number, number] = [-2.5489, 118.0149]; // Default: Indonesia center
             let zoomLevel = 5; // Default zoom for Indonesia
-            
+
             if (props.provinsiList.length === 1 && props.provinsiList[0].latitude && props.provinsiList[0].longitude) {
                 // Single province means user is filtered to their province
                 mapCenter = [props.provinsiList[0].latitude, props.provinsiList[0].longitude];
                 zoomLevel = 8; // Closer zoom for province view
             }
-            
+
             map = L.map(mapContainer.value).setView(mapCenter, zoomLevel);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -215,27 +218,27 @@ const initializeMap = async () => {
 const handleVideoUpload = async (event: Event) => {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
-    
+
     if (file) {
         // Check file size (200MB limit - increased for chunked upload)
         if (file.size > 200 * 1024 * 1024) {
             alert('Ukuran file video terlalu besar. Maksimal 200MB.');
             return;
         }
-        
+
         // Check file type
         if (!file.type.startsWith('video/')) {
             alert('File harus berupa video.');
             return;
         }
-        
+
         videoFile.value = file;
         videoUploadError.value = null;
-        
+
         // Create preview URL
         const url = URL.createObjectURL(file);
         videoPreview.value = url;
-        
+
         // Start auto upload
         await uploadVideoChunked(file);
     }
@@ -246,16 +249,16 @@ const uploadVideoChunked = async (file: File) => {
     const chunkSize = 1024 * 1024; // 1MB chunks
     const totalChunks = Math.ceil(file.size / chunkSize);
     const uploadId = Date.now().toString();
-    
+
     isVideoUploading.value = true;
     videoUploadProgress.value = 0;
-    
+
     try {
         for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
             const start = chunkIndex * chunkSize;
             const end = Math.min(start + chunkSize, file.size);
             const chunk = file.slice(start, end);
-            
+
             const formData = new FormData();
             formData.append('chunk', chunk);
             formData.append('chunkIndex', chunkIndex.toString());
@@ -263,7 +266,7 @@ const uploadVideoChunked = async (file: File) => {
             formData.append('uploadId', uploadId);
             formData.append('fileName', file.name);
             formData.append('fileSize', file.size.toString());
-            
+
             const response = await fetch('/api/upload-video-chunk', {
                 method: 'POST',
                 body: formData,
@@ -271,16 +274,16 @@ const uploadVideoChunked = async (file: File) => {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 },
             });
-            
+
             if (!response.ok) {
                 throw new Error(`Upload failed: ${response.statusText}`);
             }
-            
+
             const result = await response.json();
-            
+
             // Update progress
             videoUploadProgress.value = Math.round(((chunkIndex + 1) / totalChunks) * 100);
-            
+
             // If this is the last chunk and upload is complete
             if (chunkIndex === totalChunks - 1 && result.videoPath) {
                 uploadedVideoPath.value = result.videoPath;
@@ -301,7 +304,7 @@ const removeVideo = async () => {
         // Only revoke object URL if it's a new file (created with URL.createObjectURL)
         URL.revokeObjectURL(videoPreview.value);
     }
-    
+
     // If video was uploaded, delete it from server
     if (uploadedVideoPath.value) {
         try {
@@ -319,7 +322,7 @@ const removeVideo = async () => {
             console.error('Failed to delete video:', error);
         }
     }
-    
+
     videoPreview.value = null;
     videoFile.value = null;
     uploadedVideoPath.value = null;
@@ -337,12 +340,12 @@ const submit = () => {
         alert('⚠️ Upload video masih berlangsung. Harap tunggu hingga upload selesai sebelum menyimpan data.');
         return;
     }
-    
+
     // Include uploaded video path if available
     if (uploadedVideoPath.value) {
         form.uploaded_video_path = uploadedVideoPath.value;
     }
-    
+
     form.post('/monitoring-data', {
         onSuccess: (page) => {
             // Show success message
@@ -352,11 +355,11 @@ const submit = () => {
         onError: (errors) => {
             // Show error message with details
             let errorMessage = '❌ Gagal menyimpan data:\n';
-            Object.keys(errors).forEach(key => {
+            Object.keys(errors).forEach((key) => {
                 errorMessage += `• ${key}: ${errors[key]}\n`;
             });
             alert(errorMessage);
-        }
+        },
     });
 };
 
@@ -413,8 +416,8 @@ onMounted(() => {
 
                                 <!-- Sumber Berita -->
                                 <div>
-                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> 
-                                        Sumber Berita 
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Sumber Berita
                                         <span class="text-xs text-gray-500">(Opsional)</span>
                                     </label>
                                     <input
@@ -482,7 +485,7 @@ onMounted(() => {
                                     >
                                         <option value="">Pilih Kategori</option>
                                         <option v-for="category in categories" :key="category.id" :value="category.id">
-                                            {{ category.image_url ? '🖼️ ' : (category.icon ? category.icon + ' ' : '') }}{{ category.name }}
+                                            {{ category.image_url ? '🖼️ ' : category.icon ? category.icon + ' ' : '' }}{{ category.name }}
                                         </option>
                                     </select>
                                     <div v-if="form.errors.category_id" class="mt-1 text-sm text-red-500">{{ form.errors.category_id }}</div>
@@ -501,7 +504,7 @@ onMounted(() => {
                                     >
                                         <option value="">Pilih Sub Kategori</option>
                                         <option v-for="subCategory in filteredSubCategories" :key="subCategory.id" :value="subCategory.id">
-                                            {{ subCategory.image_url ? '🖼️ ' : (subCategory.icon ? subCategory.icon + ' ' : '') }}{{ subCategory.name }}
+                                            {{ subCategory.image_url ? '🖼️ ' : subCategory.icon ? subCategory.icon + ' ' : '' }}{{ subCategory.name }}
                                         </option>
                                     </select>
                                     <div v-if="form.errors.sub_category_id" class="mt-1 text-sm text-red-500">{{ form.errors.sub_category_id }}</div>
@@ -543,7 +546,6 @@ onMounted(() => {
                             </div>
                         </div>
 
-
                         <!-- Submit Buttons -->
                         <div class="flex justify-end gap-3">
                             <Button type="button" variant="outline" @click="$inertia.visit('/monitoring-data')"> Batal </Button>
@@ -557,12 +559,20 @@ onMounted(() => {
                                     ></path>
                                 </svg>
                                 <svg v-else-if="isVideoUploading" class="mr-3 -ml-1 h-4 w-4 animate-pulse text-white" fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                    <path
+                                        stroke="currentColor"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                    ></path>
                                 </svg>
-                                {{ 
-                                    form.processing ? 'Menyimpan...' : 
-                                    isVideoUploading ? `Menunggu Upload Video (${videoUploadProgress}%)` : 
-                                    'Simpan Data' 
+                                {{
+                                    form.processing
+                                        ? 'Menyimpan...'
+                                        : isVideoUploading
+                                          ? `Menunggu Upload Video (${videoUploadProgress}%)`
+                                          : 'Simpan Data'
                                 }}
                             </Button>
                         </div>
@@ -616,7 +626,7 @@ onMounted(() => {
                                 <!-- Kecamatan -->
                                 <div>
                                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Kecamatan <span class="text-gray-400 text-xs">(Opsional)</span>
+                                        Kecamatan <span class="text-xs text-gray-400">(Opsional)</span>
                                     </label>
                                     <select
                                         v-model="form.kecamatan_id"
@@ -677,22 +687,27 @@ onMounted(() => {
 
                         <!-- Gallery -->
                         <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                            <GalleryInput
-                                v-model="form.gallery"
-                            />
+                            <GalleryInput v-model="form.gallery" />
                         </div>
 
                         <!-- Video -->
                         <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                             <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Video</h3>
                             <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Upload video yang berkaitan dengan kejadian ini (Opsional)</p>
-                            
+
                             <!-- Video Upload Area -->
-                            <div class="relative cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-6 transition-colors hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500"
-                                 :class="{ 'pointer-events-none opacity-50': isVideoUploading }">
+                            <div
+                                class="relative cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-6 transition-colors hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500"
+                                :class="{ 'pointer-events-none opacity-50': isVideoUploading }"
+                            >
                                 <div class="text-center">
                                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                                        ></path>
                                     </svg>
                                     <div class="mt-4">
                                         <label class="cursor-pointer" :class="{ 'pointer-events-none': isVideoUploading }">
@@ -713,62 +728,70 @@ onMounted(() => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Upload Progress -->
                             <div v-if="isVideoUploading" class="mt-4">
                                 <div class="mb-2 flex justify-between text-sm">
                                     <span class="text-gray-700 dark:text-gray-300">Mengupload video...</span>
                                     <span class="text-gray-700 dark:text-gray-300">{{ videoUploadProgress }}%</span>
                                 </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                                         :style="{ width: videoUploadProgress + '%' }"></div>
+                                <div class="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+                                    <div
+                                        class="h-2 rounded-full bg-blue-600 transition-all duration-300"
+                                        :style="{ width: videoUploadProgress + '%' }"
+                                    ></div>
                                 </div>
                                 <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
                                     {{ videoFile?.name }} - Upload otomatis sedang berlangsung
                                 </p>
                             </div>
-                            
+
                             <!-- Upload Error -->
-                            <div v-if="videoUploadError" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/20 dark:border-red-800">
+                            <div
+                                v-if="videoUploadError"
+                                class="mt-4 rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20"
+                            >
                                 <p class="text-sm text-red-600 dark:text-red-400">
-                                    <svg class="inline h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    <svg class="mr-1 inline h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"
+                                        ></path>
                                     </svg>
                                     Upload Error: {{ videoUploadError }}
                                 </p>
-                                <button 
-                                    @click="videoUploadError = null" 
-                                    class="mt-2 text-xs text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 underline"
+                                <button
+                                    @click="videoUploadError = null"
+                                    class="mt-2 text-xs text-red-600 underline hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                                 >
                                     Tutup
                                 </button>
                             </div>
-                            
+
                             <!-- Video Preview -->
                             <div v-if="videoPreview" class="mt-4">
-                                <div class="relative rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
-                                    <video 
-                                        :src="videoPreview"
-                                        controls
-                                        class="w-full aspect-video object-cover"
-                                    ></video>
+                                <div class="relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-600">
+                                    <video :src="videoPreview" controls class="aspect-video w-full object-cover"></video>
                                     <button
                                         type="button"
                                         @click="removeVideo"
                                         :disabled="isVideoUploading"
-                                        class="absolute right-2 top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        class="absolute top-2 right-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
                                         title="Hapus video"
                                     >
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
                                     </button>
-                                    
+
                                     <!-- Upload Success Badge -->
-                                    <div v-if="uploadedVideoPath && !isVideoUploading" 
-                                         class="absolute left-2 top-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                                        <svg class="inline h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div
+                                        v-if="uploadedVideoPath && !isVideoUploading"
+                                        class="absolute top-2 left-2 rounded-full bg-green-500 px-2 py-1 text-xs font-medium text-white"
+                                    >
+                                        <svg class="mr-1 inline h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                         </svg>
                                         Terupload
@@ -776,9 +799,7 @@ onMounted(() => {
                                 </div>
                                 <div class="mt-2 flex items-center justify-between">
                                     <p class="text-sm text-gray-600 dark:text-gray-400">{{ videoFile?.name }}</p>
-                                    <div v-if="uploadedVideoPath" class="text-xs text-green-600 dark:text-green-400">
-                                        ✓ Upload berhasil
-                                    </div>
+                                    <div v-if="uploadedVideoPath" class="text-xs text-green-600 dark:text-green-400">✓ Upload berhasil</div>
                                 </div>
                             </div>
                         </div>

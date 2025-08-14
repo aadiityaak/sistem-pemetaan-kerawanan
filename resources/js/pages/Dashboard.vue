@@ -150,7 +150,7 @@ const topDataByProvinsi = computed(() => {
 // Create mapping from provinsi name to ID
 const provinsiNameToId = computed(() => {
     const mapping: Record<string, number> = {};
-    props.monitoringData.forEach(data => {
+    props.monitoringData.forEach((data) => {
         if (data.provinsi && data.provinsi.nama && data.provinsi.id) {
             mapping[data.provinsi.nama] = data.provinsi.id;
         }
@@ -161,7 +161,7 @@ const provinsiNameToId = computed(() => {
 // Computed untuk top 3 isu menonjol (berdasarkan jumlah terdampak)
 const topIssues = computed(() => {
     return props.monitoringData
-        .filter(data => data.jumlah_terdampak && data.jumlah_terdampak > 0)
+        .filter((data) => data.jumlah_terdampak && data.jumlah_terdampak > 0)
         .sort((a, b) => (b.jumlah_terdampak || 0) - (a.jumlah_terdampak || 0))
         .slice(0, 3);
 });
@@ -219,55 +219,63 @@ const getStatusLabel = (status: string): string => {
 // Helper function to build URL with all filters
 const buildFilterUrl = (params: Record<string, string | null>) => {
     const urlParams = new URLSearchParams();
-    
+
     Object.entries(params).forEach(([key, value]) => {
         if (value) {
             urlParams.append(key, value);
         }
     });
-    
+
     const queryString = urlParams.toString();
     return `/dashboard${queryString ? `?${queryString}` : ''}`;
 };
 
 // Function to change category filter
 const selectCategory = (categorySlug: string | null) => {
-    router.get(buildFilterUrl({
-        category: categorySlug,
-        subcategory: categorySlug ? props.selectedSubCategory?.slug || null : null,
-        start_date: props.startDate || null,
-        end_date: props.endDate || null,
-    }));
+    router.get(
+        buildFilterUrl({
+            category: categorySlug,
+            subcategory: categorySlug ? props.selectedSubCategory?.slug || null : null,
+            start_date: props.startDate || null,
+            end_date: props.endDate || null,
+        }),
+    );
 };
 
 // Function to change subcategory filter
 const selectSubCategory = (subCategorySlug: string | null) => {
-    router.get(buildFilterUrl({
-        category: props.selectedCategory?.slug || null,
-        subcategory: subCategorySlug,
-        start_date: props.startDate || null,
-        end_date: props.endDate || null,
-    }));
+    router.get(
+        buildFilterUrl({
+            category: props.selectedCategory?.slug || null,
+            subcategory: subCategorySlug,
+            start_date: props.startDate || null,
+            end_date: props.endDate || null,
+        }),
+    );
 };
 
 // Function to change start date filter
 const selectStartDate = (startDate: string | null) => {
-    router.get(buildFilterUrl({
-        category: props.selectedCategory?.slug || null,
-        subcategory: props.selectedSubCategory?.slug || null,
-        start_date: startDate,
-        end_date: props.endDate || null,
-    }));
+    router.get(
+        buildFilterUrl({
+            category: props.selectedCategory?.slug || null,
+            subcategory: props.selectedSubCategory?.slug || null,
+            start_date: startDate,
+            end_date: props.endDate || null,
+        }),
+    );
 };
 
 // Function to change end date filter
 const selectEndDate = (endDate: string | null) => {
-    router.get(buildFilterUrl({
-        category: props.selectedCategory?.slug || null,
-        subcategory: props.selectedSubCategory?.slug || null,
-        start_date: props.startDate || null,
-        end_date: endDate,
-    }));
+    router.get(
+        buildFilterUrl({
+            category: props.selectedCategory?.slug || null,
+            subcategory: props.selectedSubCategory?.slug || null,
+            start_date: props.startDate || null,
+            end_date: endDate,
+        }),
+    );
 };
 
 // Function to navigate to monitoring data with provinsi filter
@@ -275,7 +283,7 @@ const goToMonitoringDataByProvinsi = (provinsiName: string) => {
     const provinsiId = provinsiNameToId.value[provinsiName];
     if (provinsiId) {
         router.get(route('monitoring-data.index'), {
-            provinsi_id: provinsiId
+            provinsi_id: provinsiId,
         });
     }
 };
@@ -295,12 +303,12 @@ onMounted(async () => {
             // Use user's province coordinates if available, otherwise use Indonesia center
             let mapCenter: [number, number] = [-2.5489, 118.0149]; // Default: Indonesia center
             let zoomLevel = 5; // Default zoom for Indonesia
-            
+
             if (props.userProvinsi && props.userProvinsi.latitude && props.userProvinsi.longitude) {
                 mapCenter = [props.userProvinsi.latitude, props.userProvinsi.longitude];
                 zoomLevel = 8; // Closer zoom for province view
             }
-            
+
             map = L.map(mapContainer.value).setView(mapCenter, zoomLevel);
 
             // Add tile layer
@@ -318,7 +326,7 @@ onMounted(async () => {
                 // Determine marker icon: sub category image > sub category icon > category theme icon > severity icon
                 let markerContent = '';
                 let hasCustomImage = false;
-                
+
                 if (data.sub_category.image_url) {
                     // Use actual custom image in marker
                     markerContent = `<img src="${data.sub_category.image_url}" style="width: 16px; height: 16px; object-fit: contain; border-radius: 2px;">`;
@@ -354,9 +362,9 @@ onMounted(async () => {
                     icon: customIcon,
                 }).addTo(map);
 
-                // Add popup with sub category icon or image if available  
-                const popupIcon = data.sub_category.image_url 
-                    ? `<img src="${data.sub_category.image_url}" alt="Subcategory" style="width: 16px; height: 16px; object-fit: contain; border-radius: 2px;">` 
+                // Add popup with sub category icon or image if available
+                const popupIcon = data.sub_category.image_url
+                    ? `<img src="${data.sub_category.image_url}" alt="Subcategory" style="width: 16px; height: 16px; object-fit: contain; border-radius: 2px;">`
                     : `<span style="font-size: 16px;">${data.sub_category.icon || '📊'}</span>`;
                 marker.bindPopup(`
                     <div class="p-3">
@@ -404,11 +412,15 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Head :title="selectedSubCategory 
-        ? `Dashboard ${selectedCategory?.name} - ${selectedSubCategory.name}` 
-        : selectedCategory 
-        ? `Dashboard ${selectedCategory.name}` 
-        : 'Dashboard'" />
+    <Head
+        :title="
+            selectedSubCategory
+                ? `Dashboard ${selectedCategory?.name} - ${selectedSubCategory.name}`
+                : selectedCategory
+                  ? `Dashboard ${selectedCategory.name}`
+                  : 'Dashboard'
+        "
+    />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-1 flex-col gap-6 rounded-xl p-6">
@@ -417,28 +429,45 @@ onMounted(async () => {
                 <div class="flex items-center">
                     <div
                         class="mr-4 flex h-12 w-12 items-center justify-center rounded-lg"
-                        :class="selectedCategory?.image_url ? 'bg-gray-50 dark:bg-gray-800' : (selectedCategory ? currentTheme.bgColor : 'bg-gray-100 dark:bg-gray-900')"
+                        :class="
+                            selectedCategory?.image_url
+                                ? 'bg-gray-50 dark:bg-gray-800'
+                                : selectedCategory
+                                  ? currentTheme.bgColor
+                                  : 'bg-gray-100 dark:bg-gray-900'
+                        "
                     >
-                        <img v-if="selectedCategory?.image_url" :src="selectedCategory.image_url" alt="Category icon" class="h-10 w-10 object-contain rounded" />
-                        <span v-else class="text-2xl">{{ selectedCategory ? (selectedCategory.icon || currentTheme.icon) : '📊' }}</span>
+                        <img
+                            v-if="selectedCategory?.image_url"
+                            :src="selectedCategory.image_url"
+                            alt="Category icon"
+                            class="h-10 w-10 rounded object-contain"
+                        />
+                        <span v-else class="text-2xl">{{ selectedCategory ? selectedCategory.icon || currentTheme.icon : '📊' }}</span>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <h1 class="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">
                             <span>Dashboard</span>
                             <span v-if="selectedCategory">{{ selectedCategory.name }}</span>
                             <template v-if="selectedSubCategory">
                                 <span>/</span>
-                                <img v-if="selectedSubCategory.image_url" :src="selectedSubCategory.image_url" alt="Subcategory icon" class="h-6 w-6 object-contain rounded" />
+                                <img
+                                    v-if="selectedSubCategory.image_url"
+                                    :src="selectedSubCategory.image_url"
+                                    alt="Subcategory icon"
+                                    class="h-6 w-6 rounded object-contain"
+                                />
                                 <span>{{ selectedSubCategory.name }}</span>
                             </template>
                             <span v-if="!selectedCategory">Monitoring</span>
                         </h1>
                         <p class="text-gray-600 dark:text-gray-400">
-                            {{ selectedSubCategory
-                                ? `Monitoring khusus subcategory ${selectedSubCategory.name}`
-                                : selectedCategory
-                                ? `Monitoring khusus kategori ${selectedCategory.name}`
-                                : 'Monitoring data komprehensif semua kategori'
+                            {{
+                                selectedSubCategory
+                                    ? `Monitoring khusus subcategory ${selectedSubCategory.name}`
+                                    : selectedCategory
+                                      ? `Monitoring khusus kategori ${selectedCategory.name}`
+                                      : 'Monitoring data komprehensif semua kategori'
                             }}
                         </p>
                     </div>
@@ -454,40 +483,66 @@ onMounted(async () => {
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <!-- Category Filter -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Kategori</label>
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Kategori</label>
                             <div class="relative">
                                 <button
                                     @click="categoryDropdownOpen = !categoryDropdownOpen"
-                                    class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white w-full justify-between"
+                                    class="flex w-full items-center justify-between gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                 >
                                     <div class="flex items-center gap-2">
-                                        <div class="flex items-center justify-center w-4 h-4">
-                                            <img v-if="selectedCategory?.image_url" :src="selectedCategory.image_url" alt="Category" class="w-4 h-4 object-contain rounded" />
+                                        <div class="flex h-4 w-4 items-center justify-center">
+                                            <img
+                                                v-if="selectedCategory?.image_url"
+                                                :src="selectedCategory.image_url"
+                                                alt="Category"
+                                                class="h-4 w-4 rounded object-contain"
+                                            />
                                             <span v-else-if="selectedCategory?.icon" class="text-sm">{{ selectedCategory.icon }}</span>
                                             <span v-else class="text-sm">🟢</span>
                                         </div>
                                         <span>{{ selectedCategory?.name || 'Semua Kategori' }}</span>
                                     </div>
-                                    <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': categoryDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg
+                                        class="h-4 w-4 transition-transform"
+                                        :class="{ 'rotate-180': categoryDropdownOpen }"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
-                                
-                                <div v-if="categoryDropdownOpen" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-700 dark:border-gray-600 max-h-60 overflow-y-auto">
+
+                                <div
+                                    v-if="categoryDropdownOpen"
+                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700"
+                                >
                                     <button
-                                        @click="selectCategory(null); categoryDropdownOpen = false"
-                                        class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
+                                        @click="
+                                            selectCategory(null);
+                                            categoryDropdownOpen = false;
+                                        "
+                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
                                     >
                                         <span class="text-sm">🟢</span>
                                         <span>Semua Kategori</span>
                                     </button>
                                     <button
-                                        v-for="category in categories" :key="category.id"
-                                        @click="selectCategory(category.slug); categoryDropdownOpen = false"
-                                        class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
+                                        v-for="category in categories"
+                                        :key="category.id"
+                                        @click="
+                                            selectCategory(category.slug);
+                                            categoryDropdownOpen = false;
+                                        "
+                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
                                     >
-                                        <div class="flex items-center justify-center w-4 h-4">
-                                            <img v-if="category.image_url" :src="category.image_url" alt="Category" class="w-4 h-4 object-contain rounded" />
+                                        <div class="flex h-4 w-4 items-center justify-center">
+                                            <img
+                                                v-if="category.image_url"
+                                                :src="category.image_url"
+                                                alt="Category"
+                                                class="h-4 w-4 rounded object-contain"
+                                            />
                                             <span v-else-if="category.icon" class="text-sm">{{ category.icon }}</span>
                                         </div>
                                         <span>{{ category.name }}</span>
@@ -498,40 +553,66 @@ onMounted(async () => {
 
                         <!-- SubCategory Filter -->
                         <div v-if="selectedCategory && subCategories.length > 0">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sub Kategori</label>
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Sub Kategori</label>
                             <div class="relative">
                                 <button
                                     @click="subCategoryDropdownOpen = !subCategoryDropdownOpen"
-                                    class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white w-full justify-between"
+                                    class="flex w-full items-center justify-between gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                 >
                                     <div class="flex items-center gap-2">
-                                        <div class="flex items-center justify-center w-4 h-4">
-                                            <img v-if="selectedSubCategory?.image_url" :src="selectedSubCategory.image_url" alt="Subcategory" class="w-4 h-4 object-contain rounded" />
+                                        <div class="flex h-4 w-4 items-center justify-center">
+                                            <img
+                                                v-if="selectedSubCategory?.image_url"
+                                                :src="selectedSubCategory.image_url"
+                                                alt="Subcategory"
+                                                class="h-4 w-4 rounded object-contain"
+                                            />
                                             <span v-else-if="selectedSubCategory?.icon" class="text-sm">{{ selectedSubCategory.icon }}</span>
                                             <span v-else class="text-sm">🟢</span>
                                         </div>
                                         <span>{{ selectedSubCategory?.name || 'Semua Sub Kategori' }}</span>
                                     </div>
-                                    <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': subCategoryDropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg
+                                        class="h-4 w-4 transition-transform"
+                                        :class="{ 'rotate-180': subCategoryDropdownOpen }"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
-                                
-                                <div v-if="subCategoryDropdownOpen" class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-700 dark:border-gray-600 max-h-60 overflow-y-auto">
+
+                                <div
+                                    v-if="subCategoryDropdownOpen"
+                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700"
+                                >
                                     <button
-                                        @click="selectSubCategory(null); subCategoryDropdownOpen = false"
-                                        class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
+                                        @click="
+                                            selectSubCategory(null);
+                                            subCategoryDropdownOpen = false;
+                                        "
+                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
                                     >
                                         <span class="text-sm">🟢</span>
                                         <span>Semua Sub Kategori</span>
                                     </button>
                                     <button
-                                        v-for="subCategory in subCategories" :key="subCategory.id"
-                                        @click="selectSubCategory(subCategory.slug); subCategoryDropdownOpen = false"
-                                        class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
+                                        v-for="subCategory in subCategories"
+                                        :key="subCategory.id"
+                                        @click="
+                                            selectSubCategory(subCategory.slug);
+                                            subCategoryDropdownOpen = false;
+                                        "
+                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
                                     >
-                                        <div class="flex items-center justify-center w-4 h-4">
-                                            <img v-if="subCategory.image_url" :src="subCategory.image_url" alt="Subcategory" class="w-4 h-4 object-contain rounded" />
+                                        <div class="flex h-4 w-4 items-center justify-center">
+                                            <img
+                                                v-if="subCategory.image_url"
+                                                :src="subCategory.image_url"
+                                                alt="Subcategory"
+                                                class="h-4 w-4 rounded object-contain"
+                                            />
                                             <span v-else-if="subCategory.icon" class="text-sm">{{ subCategory.icon }}</span>
                                         </div>
                                         <span>{{ subCategory.name }}</span>
@@ -542,7 +623,7 @@ onMounted(async () => {
 
                         <!-- Start Date Filter -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanggal Mulai</label>
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Mulai</label>
                             <input
                                 type="date"
                                 @change="selectStartDate(($event.target as HTMLInputElement).value || null)"
@@ -554,7 +635,7 @@ onMounted(async () => {
 
                         <!-- End Date Filter -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tanggal Akhir</label>
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Akhir</label>
                             <input
                                 type="date"
                                 @change="selectEndDate(($event.target as HTMLInputElement).value || null)"
@@ -637,32 +718,33 @@ onMounted(async () => {
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 <!-- Map -->
                 <div class="lg:col-span-2">
-                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800 mb-7">
+                    <div class="mb-7 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                         <div class="mb-4 flex items-center justify-between">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                🗺️ {{ selectedSubCategory 
-                                    ? `${selectedSubCategory.name}` 
-                                    : selectedCategory 
-                                    ? `${selectedCategory.name}` 
-                                    : 'Monitoring Data' }}
+                                🗺️
+                                {{
+                                    selectedSubCategory
+                                        ? `${selectedSubCategory.name}`
+                                        : selectedCategory
+                                          ? `${selectedCategory.name}`
+                                          : 'Monitoring Data'
+                                }}
                             </h3>
                             <div class="flex items-center gap-2 text-sm text-gray-500">
                                 <span
                                     class="h-3 w-3 rounded-full"
                                     :style="{ backgroundColor: selectedCategory ? currentTheme.color : '#6B7280' }"
                                 ></span>
-                                <span>{{ selectedSubCategory 
-                                    ? selectedSubCategory.name 
-                                    : selectedCategory 
-                                    ? selectedCategory.name 
-                                    : 'Semua Data' }}</span>
+                                <span>{{
+                                    selectedSubCategory ? selectedSubCategory.name : selectedCategory ? selectedCategory.name : 'Semua Data'
+                                }}</span>
                             </div>
                         </div>
-                        <div ref="mapContainer" class="h-96 rounded-lg border border-gray-200 dark:border-gray-700 relative z-0"></div>
+                        <div ref="mapContainer" class="relative z-0 h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
                     </div>
 
                     <!-- Location Statistics Cards -->
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-3 mb-6">
+                    <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
                         <!-- Total Provinsi -->
                         <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                             <div class="flex flex-col items-center text-center">
@@ -726,19 +808,18 @@ onMounted(async () => {
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                        📋 {{ selectedSubCategory 
-                                            ? `Data ${selectedSubCategory.name}` 
-                                            : selectedCategory 
-                                            ? `Data ${selectedCategory.name}` 
-                                            : 'Daftar Data Monitoring' }}
+                                        📋
+                                        {{
+                                            selectedSubCategory
+                                                ? `Data ${selectedSubCategory.name}`
+                                                : selectedCategory
+                                                  ? `Data ${selectedCategory.name}`
+                                                  : 'Daftar Data Monitoring'
+                                        }}
                                     </h3>
-                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                        Data monitoring yang ditampilkan pada peta di atas
-                                    </p>
+                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Data monitoring yang ditampilkan pada peta di atas</p>
                                 </div>
-                                <div class="text-sm text-gray-500 dark:text-gray-400">
-                                    {{ monitoringData.length }} data
-                                </div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ monitoringData.length }} data</div>
                             </div>
                         </div>
 
@@ -746,22 +827,40 @@ onMounted(async () => {
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                        <th
+                                            scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
+                                        >
                                             Judul & Lokasi
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                        <th
+                                            scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
+                                        >
                                             Kategori
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                        <th
+                                            scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
+                                        >
                                             Tanggal Kejadian
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                        <th
+                                            scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
+                                        >
                                             Level
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                        <th
+                                            scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
+                                        >
                                             Status
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                        <th
+                                            scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
+                                        >
                                             Terdampak
                                         </th>
                                         <th scope="col" class="relative px-6 py-3">
@@ -773,17 +872,36 @@ onMounted(async () => {
                                     <tr v-if="monitoringData.length === 0">
                                         <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                                             <div class="flex flex-col items-center">
-                                                <svg class="mb-2 h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                <svg
+                                                    class="mb-2 h-12 w-12 text-gray-300 dark:text-gray-600"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                    />
                                                 </svg>
                                                 <p class="font-medium">Tidak ada data monitoring</p>
-                                                <p class="text-sm">{{ selectedCategory 
-                                                    ? `Tidak ada data untuk kategori ${selectedCategory.name}` 
-                                                    : 'Tidak ada data yang sesuai dengan filter yang dipilih' }}</p>
+                                                <p class="text-sm">
+                                                    {{
+                                                        selectedCategory
+                                                            ? `Tidak ada data untuk kategori ${selectedCategory.name}`
+                                                            : 'Tidak ada data yang sesuai dengan filter yang dipilih'
+                                                    }}
+                                                </p>
                                             </div>
                                         </td>
                                     </tr>
-                                    <tr v-else v-for="data in monitoringData.slice(0, 10)" :key="data.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <tr
+                                        v-else
+                                        v-for="data in monitoringData.slice(0, 10)"
+                                        :key="data.id"
+                                        class="hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    >
                                         <td class="px-6 py-4">
                                             <div class="text-sm">
                                                 <div class="font-semibold text-gray-900 dark:text-white">{{ data.title }}</div>
@@ -793,7 +911,7 @@ onMounted(async () => {
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <div class="text-sm space-y-1">
+                                            <div class="space-y-1 text-sm">
                                                 <div>
                                                     <span class="font-medium text-gray-900 dark:text-white">{{ data.category.name }}</span>
                                                 </div>
@@ -814,8 +932,8 @@ onMounted(async () => {
                                             </span>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <span 
-                                                :class="getStatusBadgeClass(data.status)" 
+                                            <span
+                                                :class="getStatusBadgeClass(data.status)"
                                                 class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
                                             >
                                                 {{ getStatusLabel(data.status) }}
@@ -868,7 +986,10 @@ onMounted(async () => {
                         </div>
 
                         <!-- View All Button -->
-                        <div v-if="monitoringData.length > 10" class="border-t border-gray-200 bg-gray-50 px-6 py-3 dark:border-gray-700 dark:bg-gray-700">
+                        <div
+                            v-if="monitoringData.length > 10"
+                            class="border-t border-gray-200 bg-gray-50 px-6 py-3 dark:border-gray-700 dark:bg-gray-700"
+                        >
                             <div class="flex justify-center">
                                 <Link
                                     href="/monitoring-data"
@@ -889,27 +1010,36 @@ onMounted(async () => {
                     <!-- Top Sub Categories / Categories -->
                     <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
-                            🎯 {{ selectedCategory 
-                                ? `Sub Kategori ${selectedCategory.name}` 
-                                : 'Top Kategori' }}
+                            🎯 {{ selectedCategory ? `Sub Kategori ${selectedCategory.name}` : 'Top Kategori' }}
                         </h3>
                         <div class="space-y-3">
                             <div
                                 v-for="[subCategoryId, subCategoryData] in allSubCategoriesDisplay"
                                 :key="subCategoryId"
                                 class="flex items-center justify-between"
-                                :class="selectedSubCategory && subCategoryData.name === selectedSubCategory.name ? 'bg-gray-200 dark:bg-gray-700 rounded-lg p-2 mb-2' : ''"
+                                :class="
+                                    selectedSubCategory && subCategoryData.name === selectedSubCategory.name
+                                        ? 'mb-2 rounded-lg bg-gray-200 p-2 dark:bg-gray-700'
+                                        : ''
+                                "
                             >
                                 <div class="flex items-center gap-2">
-                                    <div class="flex items-center justify-center w-5 h-5">
-                                        <img v-if="subCategoryData.image_url" :src="subCategoryData.image_url" alt="Subcategory" class="w-4 h-4 object-contain rounded" />
+                                    <div class="flex h-5 w-5 items-center justify-center">
+                                        <img
+                                            v-if="subCategoryData.image_url"
+                                            :src="subCategoryData.image_url"
+                                            alt="Subcategory"
+                                            class="h-4 w-4 rounded object-contain"
+                                        />
                                         <span v-else class="text-lg">{{ subCategoryData.icon }}</span>
                                     </div>
-                                    <span 
+                                    <span
                                         class="text-sm font-medium"
-                                        :class="selectedSubCategory && subCategoryData.name === selectedSubCategory.name 
-                                            ? 'text-gray-900 dark:text-white font-semibold' 
-                                            : 'text-gray-900 dark:text-white'"
+                                        :class="
+                                            selectedSubCategory && subCategoryData.name === selectedSubCategory.name
+                                                ? 'font-semibold text-gray-900 dark:text-white'
+                                                : 'text-gray-900 dark:text-white'
+                                        "
                                     >
                                         {{ subCategoryData.name }}
                                     </span>
@@ -925,40 +1055,55 @@ onMounted(async () => {
                     </div>
 
                     <!-- Top 3 Isu Menonjol -->
-                    <div v-if="topIssues.length > 0" class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                    <div
+                        v-if="topIssues.length > 0"
+                        class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                    >
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">🔥 Top 3 Isu Menonjol</h3>
                         <div class="space-y-4">
                             <div
                                 v-for="(issue, index) in topIssues"
                                 :key="issue.id"
-                                class="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                                class="flex cursor-pointer items-start gap-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100 dark:bg-gray-700/50 dark:hover:bg-gray-700"
                                 @click="$inertia.visit(`/monitoring-data/${issue.id}`)"
                             >
-                                <div class="flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold text-white"
-                                     :class="index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : 'bg-orange-600'">
+                                <div
+                                    class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white"
+                                    :class="index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : 'bg-orange-600'"
+                                >
                                     {{ index + 1 }}
                                 </div>
-                                <div class="flex-1 min-w-0">
+                                <div class="min-w-0 flex-1">
                                     <div class="flex items-start justify-between">
                                         <div class="flex-1">
-                                            <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                            <p class="truncate text-sm font-medium text-gray-900 dark:text-white">
                                                 {{ issue.title }}
                                             </p>
-                                            <div class="flex items-center gap-2 mt-1">
-                                                <div class="flex items-center justify-center w-4 h-4">
-                                                    <img v-if="issue.sub_category.image_url" :src="issue.sub_category.image_url" alt="Subcategory" class="w-3 h-3 object-contain rounded" />
+                                            <div class="mt-1 flex items-center gap-2">
+                                                <div class="flex h-4 w-4 items-center justify-center">
+                                                    <img
+                                                        v-if="issue.sub_category.image_url"
+                                                        :src="issue.sub_category.image_url"
+                                                        alt="Subcategory"
+                                                        class="h-3 w-3 rounded object-contain"
+                                                    />
                                                     <span v-else-if="issue.sub_category.icon" class="text-xs">{{ issue.sub_category.icon }}</span>
                                                 </div>
                                                 <span class="text-xs text-gray-500 dark:text-gray-400">{{ issue.sub_category.name }}</span>
                                             </div>
-                                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                                 {{ issue.provinsi.nama }}, {{ issue.kabupaten_kota.nama }}
                                             </p>
                                         </div>
-                                        <div class="text-right ml-2">
+                                        <div class="ml-2 text-right">
                                             <div class="flex items-center gap-1">
-                                                <svg class="w-3 h-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                                <svg class="h-3 w-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                                                    />
                                                 </svg>
                                                 <span class="text-sm font-semibold text-orange-600 dark:text-orange-400">
                                                     {{ issue.jumlah_terdampak?.toLocaleString() }}
@@ -999,9 +1144,12 @@ onMounted(async () => {
                     <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">🏛️ Top Provinsi</h3>
                         <div class="space-y-2">
-                            <div v-for="[provinsi, count] in topDataByProvinsi" :key="provinsi" 
-                                 @click="goToMonitoringDataByProvinsi(provinsi)"
-                                 class="flex items-center justify-between text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded transition-colors">
+                            <div
+                                v-for="[provinsi, count] in topDataByProvinsi"
+                                :key="provinsi"
+                                @click="goToMonitoringDataByProvinsi(provinsi)"
+                                class="flex cursor-pointer items-center justify-between rounded p-2 text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                            >
                                 <span class="text-gray-900 dark:text-white">{{ provinsi }}</span>
                                 <span
                                     class="rounded px-2 py-1 text-xs text-white"

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
     SidebarGroup,
-    SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
@@ -47,7 +46,7 @@ const autoOpenBasedOnUrl = () => {
         if (item.items && item.items.length > 0) {
             // Check if current URL matches any sub-item
             let hasActiveSubItem = false;
-            
+
             item.items.forEach((subItem) => {
                 // Check exact match first
                 if (subItem.href === currentUrl) {
@@ -148,7 +147,7 @@ watch(
                                         <span>{{ subItem.title }}</span>
                                         <ChevronRight class="ml-auto transition-transform" :class="{ 'rotate-90': isOpen(subItem.title) }" />
                                     </SidebarMenuSubButton>
-                                    
+
                                     <div v-show="isOpen(subItem.title)" class="mt-1">
                                         <SidebarMenuSub>
                                             <SidebarMenuSubItem v-for="subSubItem in subItem.items" :key="subSubItem.title">

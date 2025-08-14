@@ -60,7 +60,7 @@
                                     Harga (Rp) <span class="text-red-500">*</span>
                                 </label>
                                 <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                         <span class="text-gray-500 sm:text-sm">Rp</span>
                                     </div>
                                     <input
@@ -69,7 +69,7 @@
                                         type="number"
                                         step="0.01"
                                         min="0"
-                                        class="w-full pl-12 rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                        class="w-full rounded-md border border-gray-300 px-3 py-2 pl-12 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                         placeholder="0"
                                         required
                                     />
@@ -95,16 +95,8 @@
                                     required
                                 >
                                     <option value="">Pilih Kabupaten/Kota</option>
-                                    <optgroup
-                                        v-for="provinsi in groupedKabupaten"
-                                        :key="provinsi.nama"
-                                        :label="provinsi.nama"
-                                    >
-                                        <option
-                                            v-for="kabupaten in provinsi.kabupaten"
-                                            :key="kabupaten.id"
-                                            :value="kabupaten.id"
-                                        >
+                                    <optgroup v-for="provinsi in groupedKabupaten" :key="provinsi.nama" :label="provinsi.nama">
+                                        <option v-for="kabupaten in provinsi.kabupaten" :key="kabupaten.id" :value="kabupaten.id">
                                             {{ kabupaten.nama }}
                                         </option>
                                     </optgroup>
@@ -124,7 +116,9 @@
                                     class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     required
                                 />
-                                <div v-if="form.errors.tanggal_pencatatan" class="mt-1 text-sm text-red-600">{{ form.errors.tanggal_pencatatan }}</div>
+                                <div v-if="form.errors.tanggal_pencatatan" class="mt-1 text-sm text-red-600">
+                                    {{ form.errors.tanggal_pencatatan }}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -135,9 +129,7 @@
                         <div class="space-y-4">
                             <!-- Keterangan -->
                             <div>
-                                <label for="keterangan" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Keterangan
-                                </label>
+                                <label for="keterangan" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Keterangan </label>
                                 <textarea
                                     id="keterangan"
                                     v-model="form.keterangan"
@@ -152,15 +144,17 @@
 
                     <!-- Submit Buttons -->
                     <div class="flex items-center justify-end space-x-4">
-                        <Link :href="route('sembako.index')"
-                              class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                        <Link
+                            :href="route('sembako.index')"
+                            class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                        >
                             <ArrowLeft class="mr-2 h-4 w-4" />
                             Batal
                         </Link>
                         <button
                             type="submit"
                             :disabled="form.processing"
-                            class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-blue-600/50"
+                            class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:bg-blue-600/50"
                         >
                             <span v-if="form.processing">Memperbarui...</span>
                             <span v-else>Perbarui Data</span>
@@ -173,72 +167,72 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useForm, Link, Head } from '@inertiajs/vue3'
-import { ArrowLeft } from 'lucide-vue-next'
-import AppLayout from '@/layouts/AppLayout.vue'
-import { type BreadcrumbItem } from '@/types'
+import AppLayout from '@/layouts/AppLayout.vue';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ArrowLeft } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 interface KabupatenKota {
-    id: number
-    nama: string
+    id: number;
+    nama: string;
     provinsi: {
-        id: number
-        nama: string
-    }
+        id: number;
+        nama: string;
+    };
 }
 
 interface SembakoItem {
-    id: number
-    nama_komoditas: string
-    satuan: string
-    harga: number
-    formatted_harga: string
-    kabupaten_kota_id: number
-    tanggal_pencatatan: string | Date  // Bisa berupa string ISO atau Date object
-    keterangan?: string
-    kabupaten_kota: KabupatenKota
+    id: number;
+    nama_komoditas: string;
+    satuan: string;
+    harga: number;
+    formatted_harga: string;
+    kabupaten_kota_id: number;
+    tanggal_pencatatan: string | Date; // Bisa berupa string ISO atau Date object
+    keterangan?: string;
+    kabupaten_kota: KabupatenKota;
 }
 
 const props = defineProps<{
-    sembako: SembakoItem
-    kabupatenKota: KabupatenKota[]
-}>()
+    sembako: SembakoItem;
+    kabupatenKota: KabupatenKota[];
+}>();
 
 // Breadcrumbs
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', url: '/dashboard' },
     { title: 'Data Sembako', url: '/sembako' },
     { title: 'Edit Data', url: '#' },
-]
+];
 
 // Format tanggal untuk input date HTML (YYYY-MM-DD)
 const formatDateForInput = (dateValue: string | Date) => {
-    if (!dateValue) return ''
+    if (!dateValue) return '';
     try {
-        let date: Date
+        let date: Date;
         if (dateValue instanceof Date) {
-            date = dateValue
+            date = dateValue;
         } else if (typeof dateValue === 'string') {
-            date = new Date(dateValue)
+            date = new Date(dateValue);
         } else {
-            return ''
+            return '';
         }
-        
+
         // Check if date is valid
         if (isNaN(date.getTime())) {
-            console.warn('Invalid date:', dateValue)
-            return ''
+            console.warn('Invalid date:', dateValue);
+            return '';
         }
-        
-        return date.toISOString().split('T')[0]
-    } catch (error) {
-        console.warn('Error formatting date:', dateValue, error)
-        return ''
-    }
-}
 
-const formattedDate = formatDateForInput(props.sembako.tanggal_pencatatan)
+        return date.toISOString().split('T')[0];
+    } catch (error) {
+        console.warn('Error formatting date:', dateValue, error);
+        return '';
+    }
+};
+
+const formattedDate = formatDateForInput(props.sembako.tanggal_pencatatan);
 
 const form = useForm({
     nama_komoditas: props.sembako.nama_komoditas,
@@ -247,25 +241,28 @@ const form = useForm({
     kabupaten_kota_id: props.sembako.kabupaten_kota_id,
     tanggal_pencatatan: formattedDate,
     keterangan: props.sembako.keterangan || '',
-})
+});
 
 const groupedKabupaten = computed(() => {
-    const grouped = props.kabupatenKota.reduce((acc, kabupaten) => {
-        const provinsiNama = kabupaten.provinsi.nama
-        if (!acc[provinsiNama]) {
-            acc[provinsiNama] = {
-                nama: provinsiNama,
-                kabupaten: []
+    const grouped = props.kabupatenKota.reduce(
+        (acc, kabupaten) => {
+            const provinsiNama = kabupaten.provinsi.nama;
+            if (!acc[provinsiNama]) {
+                acc[provinsiNama] = {
+                    nama: provinsiNama,
+                    kabupaten: [],
+                };
             }
-        }
-        acc[provinsiNama].kabupaten.push(kabupaten)
-        return acc
-    }, {} as Record<string, { nama: string; kabupaten: KabupatenKota[] }>)
+            acc[provinsiNama].kabupaten.push(kabupaten);
+            return acc;
+        },
+        {} as Record<string, { nama: string; kabupaten: KabupatenKota[] }>,
+    );
 
-    return Object.values(grouped).sort((a, b) => a.nama.localeCompare(b.nama))
-})
+    return Object.values(grouped).sort((a, b) => a.nama.localeCompare(b.nama));
+});
 
 const submit = () => {
-    form.put(route('sembako.update', props.sembako.id))
-}
+    form.put(route('sembako.update', props.sembako.id));
+};
 </script>
