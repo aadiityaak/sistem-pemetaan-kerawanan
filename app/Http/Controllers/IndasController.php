@@ -107,6 +107,29 @@ class IndasController extends Controller
         return redirect()->back()->with('success', 'Indikator berhasil ditambahkan');
     }
 
+    public function updateIndicator(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'category' => 'required|in:ekonomi,pariwisata,sosial',
+            'unit' => 'required|string|max:50',
+            'weight_factor' => 'required|numeric|min:0|max:1',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        $indicator = IndasIndicatorType::findOrFail($id);
+        
+        $indicator->update([
+            'name' => $request->name,
+            'category' => $request->category,
+            'unit' => $request->unit,
+            'weight_factor' => $request->weight_factor,
+            'description' => $request->description,
+        ]);
+
+        return redirect()->back()->with('success', 'Indikator berhasil diperbarui');
+    }
+
     public function deleteIndicator(Request $request, $id)
     {
         $indicator = IndasIndicatorType::findOrFail($id);
@@ -285,19 +308,31 @@ class IndasController extends Controller
             }
             
             $totalValue = 0;
+            $totalWeight = 0;
             $details = [];
             
             foreach ($categoryData as $data) {
                 $value = $data->value;
-                $totalValue += $value;
+                $weight = $data->indicatorType->weight_factor;
+                
+                // Normalize large values (like UMR) to prevent overflow
+                $normalizedValue = $this->normalizeValue($value, $data->indicatorType->name);
+                $weightedValue = $normalizedValue * $weight;
+                
+                $totalValue += $weightedValue;
+                $totalWeight += $weight;
                 
                 $details[] = [
                     'indicator' => $data->indicatorType->name,
-                    'value' => $value,
+                    'value' => number_format($value, 2),
+                    'normalized' => number_format($normalizedValue, 2),
+                    'weight' => $weight,
+                    'weighted_score' => number_format($weightedValue, 2),
                 ];
             }
             
-            $categoryScore = $totalValue;
+            // Calculate weighted average score, capped at 100
+            $categoryScore = $totalWeight > 0 ? min(100, $totalValue / $totalWeight) : 0;
             
             // Map category to score field
             $scoreField = match($category) {
@@ -349,7 +384,9 @@ class IndasController extends Controller
                 $previousScore = $previousResult->{"{$type}_score"};
                 
                 if ($previousScore > 0) {
-                    $trends["{$type}_trend"] = (($currentScore - $previousScore) / $previousScore) * 100;
+                    $trendPercentage = (($currentScore - $previousScore) / $previousScore) * 100;
+                    // Cap trend values to prevent database overflow (max ±9999.99)
+                    $trends["{$type}_trend"] = max(-9999, min(9999, $trendPercentage));
                 }
             }
         }
@@ -367,6 +404,45 @@ class IndasController extends Controller
         );
         
         return true;
+    }
+
+    /**
+     * Normalize values to prevent database overflow and create meaningful scores
+     */
+    private function normalizeValue($value, $indicatorName)
+    {
+        // Convert indicator name to lowercase for comparison
+        $lowerName = strtolower($indicatorName);
+        
+        // Apply different normalization based on indicator type
+        if (str_contains($lowerName, 'umr') || str_contains($lowerName, 'upah') || str_contains($lowerName, 'gaji')) {
+            // UMR/salary indicators: normalize to 0-100 scale (2M -> 100, 0 -> 0)
+            return min(100, ($value / 2000000) * 100);
+        }
+        
+        if (str_contains($lowerName, 'sekolah') || str_contains($lowerName, 'school')) {
+            // School indicators: normalize based on expected range (500 schools max)
+            return min(100, ($value / 500) * 100);
+        }
+        
+        if (str_contains($lowerName, 'toko') || str_contains($lowerName, 'shop') || str_contains($lowerName, 'store')) {
+            // Store indicators: normalize based on expected range (1000 stores max)
+            return min(100, ($value / 1000) * 100);
+        }
+        
+        if (str_contains($lowerName, 'wisata') || str_contains($lowerName, 'tourism') || str_contains($lowerName, 'hotel')) {
+            // Tourism indicators: normalize based on expected range
+            return min(100, ($value / 100) * 100);
+        }
+        
+        // Default normalization for other indicators
+        // If value is already in reasonable range (0-1000), scale to 0-100
+        if ($value <= 1000) {
+            return min(100, ($value / 10));
+        }
+        
+        // For very large values, use logarithmic scaling
+        return min(100, log10($value + 1) * 10);
     }
 
     /**

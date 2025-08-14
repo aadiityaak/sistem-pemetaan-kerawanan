@@ -71,6 +71,13 @@
                                                     {{ indicator.unit }}
                                                 </span>
                                                 <button
+                                                    @click="editIndicator(indicator)"
+                                                    class="p-1 text-gray-400 transition-colors hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400"
+                                                    title="Edit indicator"
+                                                >
+                                                    <PencilIcon class="h-4 w-4" />
+                                                </button>
+                                                <button
                                                     @click="confirmDelete(indicator)"
                                                     class="p-1 text-gray-400 transition-colors hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
                                                     title="Delete indicator"
@@ -128,6 +135,13 @@
                                                     {{ indicator.unit }}
                                                 </span>
                                                 <button
+                                                    @click="editIndicator(indicator)"
+                                                    class="p-1 text-gray-400 transition-colors hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400"
+                                                    title="Edit indicator"
+                                                >
+                                                    <PencilIcon class="h-4 w-4" />
+                                                </button>
+                                                <button
                                                     @click="confirmDelete(indicator)"
                                                     class="p-1 text-gray-400 transition-colors hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
                                                     title="Delete indicator"
@@ -184,6 +198,13 @@
                                                 >
                                                     {{ indicator.unit }}
                                                 </span>
+                                                <button
+                                                    @click="editIndicator(indicator)"
+                                                    class="p-1 text-gray-400 transition-colors hover:text-blue-500 dark:text-gray-500 dark:hover:text-blue-400"
+                                                    title="Edit indicator"
+                                                >
+                                                    <PencilIcon class="h-4 w-4" />
+                                                </button>
                                                 <button
                                                     @click="confirmDelete(indicator)"
                                                     class="p-1 text-gray-400 transition-colors hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
@@ -310,6 +331,111 @@
             </div>
         </div>
 
+        <!-- Edit Indicator Modal -->
+        <div v-if="showEditModal" class="bg-opacity-50 fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600" @click="closeEditModal">
+            <div class="relative top-20 mx-auto w-96 rounded-md border bg-white p-5 shadow-lg dark:bg-gray-800" @click.stop>
+                <div class="mt-3">
+                    <div class="mb-4 flex items-center justify-between">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">Edit Indicator</h3>
+                        <button @click="closeEditModal" class="text-gray-400 hover:text-gray-600">
+                            <XMarkIcon class="h-5 w-5" />
+                        </button>
+                    </div>
+                    <form @submit.prevent="updateIndicator" class="space-y-4">
+                        <div>
+                            <label for="edit-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Category
+                            </label>
+                            <select
+                                id="edit-category"
+                                v-model="form.category"
+                                required
+                                class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                            >
+                                <option value="">Select category</option>
+                                <option value="ekonomi">Economic</option>
+                                <option value="pariwisata">Tourism</option>
+                                <option value="sosial">Social</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="edit-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Name
+                            </label>
+                            <input
+                                id="edit-name"
+                                v-model="form.name"
+                                type="text"
+                                required
+                                maxlength="255"
+                                class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                placeholder="e.g., Number of Schools"
+                            />
+                        </div>
+                        <div>
+                            <label for="edit-unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Unit
+                            </label>
+                            <input
+                                id="edit-unit"
+                                v-model="form.unit"
+                                type="text"
+                                required
+                                maxlength="50"
+                                class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                placeholder="e.g., units, visitors, %"
+                            />
+                        </div>
+                        <div>
+                            <label for="edit-weight_factor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Weight Factor (0.0 - 1.0)
+                            </label>
+                            <input
+                                id="edit-weight_factor"
+                                v-model="form.weight_factor"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="1"
+                                required
+                                class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                placeholder="e.g., 0.4, 0.3, 0.5"
+                            />
+                            <p class="mt-1 text-xs text-gray-500">Higher values = more important in score calculation</p>
+                        </div>
+                        <div>
+                            <label for="edit-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Description (Optional)
+                            </label>
+                            <textarea
+                                id="edit-description"
+                                v-model="form.description"
+                                rows="3"
+                                class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                placeholder="Brief description of this indicator..."
+                            />
+                        </div>
+                        <div class="flex justify-end space-x-3 pt-4">
+                            <button
+                                type="button"
+                                @click="closeEditModal"
+                                class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                :disabled="isSubmitting"
+                                class="rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
+                            >
+                                {{ isSubmitting ? 'Updating...' : 'Update Indicator' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <!-- Delete Confirmation Modal -->
         <div
             v-if="showDeleteModal && indicatorToDelete"
@@ -363,7 +489,7 @@
 
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { BuildingOffice2Icon, ChartBarIcon, CurrencyDollarIcon, PlusIcon, TrashIcon, UsersIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { BuildingOffice2Icon, ChartBarIcon, CurrencyDollarIcon, PencilIcon, PlusIcon, TrashIcon, UsersIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { Link, router } from '@inertiajs/vue3';
 import { reactive, ref } from 'vue';
 
@@ -385,10 +511,12 @@ defineProps<{
 }>();
 
 const showAddModal = ref(false);
+const showEditModal = ref(false);
 const showDeleteModal = ref(false);
 const isSubmitting = ref(false);
 const isDeleting = ref(false);
 const indicatorToDelete = ref<Indicator | null>(null);
+const indicatorToEdit = ref<Indicator | null>(null);
 
 const form = reactive({
     category: '',
@@ -400,6 +528,12 @@ const form = reactive({
 
 const closeModal = () => {
     showAddModal.value = false;
+    resetForm();
+};
+
+const closeEditModal = () => {
+    showEditModal.value = false;
+    indicatorToEdit.value = null;
     resetForm();
 };
 
@@ -435,6 +569,45 @@ const submitForm = async () => {
         );
     } catch (error) {
         console.error('Error adding indicator:', error);
+        isSubmitting.value = false;
+    }
+};
+
+const editIndicator = (indicator: Indicator) => {
+    indicatorToEdit.value = indicator;
+    form.category = indicator.category;
+    form.name = indicator.name;
+    form.unit = indicator.unit;
+    form.weight_factor = indicator.weight_factor.toString();
+    form.description = indicator.description || '';
+    showEditModal.value = true;
+};
+
+const updateIndicator = async () => {
+    if (!indicatorToEdit.value) return;
+    
+    isSubmitting.value = true;
+    try {
+        await router.put(
+            route('indas.indicators.update', indicatorToEdit.value.id),
+            {
+                category: form.category,
+                name: form.name,
+                unit: form.unit,
+                weight_factor: parseFloat(form.weight_factor),
+                description: form.description || null,
+            },
+            {
+                onSuccess: () => {
+                    closeEditModal();
+                },
+                onFinish: () => {
+                    isSubmitting.value = false;
+                },
+            },
+        );
+    } catch (error) {
+        console.error('Error updating indicator:', error);
         isSubmitting.value = false;
     }
 };

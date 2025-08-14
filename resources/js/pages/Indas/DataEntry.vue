@@ -182,7 +182,7 @@
                                             <input
                                                 :id="`${selectedKabupatenKota.id}-${indicator.id}`"
                                                 type="number"
-                                                step="0.01"
+                                                step="1"
                                                 min="0"
                                                 :value="getExistingValue(selectedKabupatenKota.id, indicator.id)"
                                                 @input="
@@ -218,7 +218,7 @@
                                             <input
                                                 :id="`${selectedKabupatenKota.id}-${indicator.id}`"
                                                 type="number"
-                                                step="0.01"
+                                                step="1"
                                                 min="0"
                                                 :value="getExistingValue(selectedKabupatenKota.id, indicator.id)"
                                                 @input="
@@ -254,7 +254,7 @@
                                             <input
                                                 :id="`${selectedKabupatenKota.id}-${indicator.id}`"
                                                 type="number"
-                                                step="0.01"
+                                                step="1"
                                                 min="0"
                                                 :value="getExistingValue(selectedKabupatenKota.id, indicator.id)"
                                                 @input="
@@ -500,7 +500,8 @@ const getExistingValue = (kabupatenKotaId: number, indicatorId: number) => {
         if (existing && typeof existing === 'object' && 'value' in existing) {
             const value = existing.value;
             if (value !== null && value !== undefined) {
-                return value.toString();
+                // Convert to integer to remove decimals
+                return Math.round(parseFloat(value)).toString();
             }
         }
     } catch (error) {
@@ -512,7 +513,9 @@ const getExistingValue = (kabupatenKotaId: number, indicatorId: number) => {
 
 const updateValue = (kabupatenKotaId: number, indicatorId: number, value: string) => {
     const key = getDataKey(kabupatenKotaId, indicatorId);
-    formData[key] = value;
+    // Convert to integer to ensure no decimals
+    const intValue = value && value.trim() ? Math.round(parseFloat(value)).toString() : value;
+    formData[key] = intValue;
 };
 
 const saveAllData = async () => {
@@ -529,7 +532,7 @@ const saveAllData = async () => {
         for (const [key, value] of Object.entries(formData)) {
             if (value && value.trim() !== '') {
                 const [kabupatenKotaId, indicatorId] = key.split('-').map(Number);
-                const numericValue = parseFloat(value);
+                const numericValue = Math.round(parseFloat(value)); // Convert to integer
 
                 if (numericValue >= 0) {
                     dataToSave.push({

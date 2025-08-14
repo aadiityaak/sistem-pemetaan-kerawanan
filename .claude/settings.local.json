@@ -33,7 +33,8 @@
       "Bash(npm run format:*)",
       "Bash(mysql:*)",
       "Bash(del check_video.php)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
