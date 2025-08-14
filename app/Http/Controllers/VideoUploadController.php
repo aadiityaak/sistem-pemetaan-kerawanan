@@ -23,8 +23,8 @@ class VideoUploadController extends Controller
             'fileSize' => 'required|integer',
         ]);
 
-        $chunkIndex = $request->input('chunkIndex');
-        $totalChunks = $request->input('totalChunks');
+        $chunkIndex = (int) $request->input('chunkIndex');
+        $totalChunks = (int) $request->input('totalChunks');
         $uploadId = $request->input('uploadId');
         $originalFileName = $request->input('fileName');
         $fileSize = $request->input('fileSize');

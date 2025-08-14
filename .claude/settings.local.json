@@ -31,7 +31,9 @@
       "Bash(npm run lint:*)",
       "Bash(npm run format:check:*)",
       "Bash(npm run format:*)",
-      "Bash(mysql:*)"
+      "Bash(mysql:*)",
+      "Bash(del check_video.php)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

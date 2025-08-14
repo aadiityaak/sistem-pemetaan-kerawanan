@@ -62,6 +62,20 @@ _Sistem informasi pemetaan dan monitoring kejahatan berbasis web dengan visualis
 - **Kecamatan**: 7,288+ kecamatan
 - **Data Kejahatan**: CRUD lengkap dengan coordinate mapping
 
+### 📊 **INDAS - Intelligence Data Analysis System**
+
+- **Dashboard Analitis**: Sistem analisis data intelijen untuk nilai langsung indikator
+- **Multi-Kategori Indikator**: 
+  - 💰 **Ekonomi** - Indikator pertumbuhan ekonomi regional
+  - 🏛️ **Pariwisata** - Metrik kinerja sektor pariwisata
+  - 👥 **Sosial** - Parameter kesejahteraan masyarakat
+- **Input Data Bulanan**: Interface untuk memasukkan nilai indikator per periode
+- **Analisis Tren**: Perhitungan tren naik/turun dengan visualisasi
+- **Skor Regional**: Pemeringkatan kabupaten/kota berdasarkan total skor
+- **Filter Periode**: Analisis data berdasarkan bulan dan tahun
+- **Manajemen Indikator**: Konfigurasi jenis dan bobot indikator
+- **Integrasi Unjuk Rasa**: Data monitoring kejadian unjuk rasa per wilayah
+
 ### 🎨 **Modern UI/UX**
 
 - Dark mode support
@@ -69,6 +83,7 @@ _Sistem informasi pemetaan dan monitoring kejahatan berbasis web dengan visualis
 - Loading states & animations
 - Error handling yang user-friendly
 - Beautiful card layouts & statistics
+- Interactive charts & visualizations
 
 ---
 
@@ -101,12 +116,22 @@ _Sistem informasi pemetaan dan monitoring kejahatan berbasis web dengan visualis
 
 ### Dashboard Preview
 
+**Crime Monitoring:**
 ```
 🎯 Total Kejahatan: 18 kasus
 🗺️ Provinsi Terdampak: 6 provinsi
 🏢 Kab/Kota Terdampak: 12 kab/kota
 📍 Kecamatan Terdampak: 18 kecamatan
 🏷️ Jenis Kejahatan: 8 kategori
+```
+
+**INDAS Analytics:**
+```
+📊 Total Wilayah Analisis: 25 kabupaten/kota
+💰 Rata-rata Skor Ekonomi: 7.2/10
+🏛️ Rata-rata Skor Pariwisata: 6.8/10
+👥 Rata-rata Skor Sosial: 7.5/10
+📈 Wilayah dengan Tren Positif: 18 wilayah
 ```
 
 ### Crime Types Supported
@@ -119,6 +144,32 @@ _Sistem informasi pemetaan dan monitoring kejahatan berbasis web dengan visualis
 - 🟢 Narkoba
 - 🔵 Kekerasan
 - ⚫ Vandalisme
+
+### INDAS Features
+
+**📊 Intelligence Dashboard:**
+- Real-time regional analysis dengan scoring system
+- Multi-indicator comparison across regions
+- Monthly trend analysis dengan visualisasi grafik
+- Top performing regions dengan ranking system
+
+**💹 Economic Indicators:**
+- PDRB (Produk Domestik Regional Bruto)
+- Tingkat pengangguran
+- Inflasi regional
+- Investasi daerah
+
+**🏖️ Tourism Indicators:**
+- Jumlah kunjungan wisatawan
+- Tingkat hunian hotel
+- Pendapatan sektor pariwisata
+- Event pariwisata
+
+**👨‍👩‍👧‍👦 Social Indicators:**
+- Indeks pembangunan manusia
+- Tingkat kemiskinan
+- Akses pendidikan dan kesehatan
+- Keamanan dan ketertiban (termasuk unjuk rasa)
 
 ---
 
@@ -216,7 +267,12 @@ crime-map/
 ├── 📁 resources/
 │   ├── 📁 js/
 │   │   ├── 📁 components/      # Vue components
+│   │   │   ├── 📁 indas/      # INDAS specific components
+│   │   │   └── 📁 ui/         # Reusable UI components
 │   │   ├── 📁 pages/          # Inertia pages
+│   │   │   ├── 📁 Indas/      # INDAS analysis pages
+│   │   │   ├── 📁 MonitoringData/ # Crime data pages
+│   │   │   └── 📁 Admin/      # Admin management
 │   │   ├── 📁 layouts/        # Page layouts
 │   │   └── 📁 types/          # TypeScript types
 │   └── 📁 css/                # Stylesheets
@@ -279,12 +335,19 @@ GET /api/kecamatan/{id}        # Get districts by regency
 
 ```
 GET /dashboard                 # Main dashboard
-GET /crime-data               # Crime data management
-GET /crime-data/create        # Add new crime data
-GET /crime-data/{id}/edit     # Edit crime data
+GET /monitoring-data          # Crime data management  
+GET /monitoring-data/create   # Add new crime data
+GET /monitoring-data/{id}/edit # Edit crime data
 GET /provinsi                 # Province management
 GET /kabupaten-kota           # Regency management
 GET /kecamatan                # District management
+
+# INDAS Routes
+GET /indas                    # INDAS dashboard
+GET /indas/data-entry         # Input monthly indicators
+GET /indas/indicators         # Manage indicator types
+POST /indas/save-data         # Save indicator values
+GET /indas/analysis-results   # Regional analysis results
 ```
 
 ---
@@ -312,15 +375,24 @@ Ikuti panduan lengkap di [DEPLOYMENT.md](./DEPLOYMENT.md)
 ### Main Tables
 
 - **provinces** - 38 provinsi Indonesia
-- **regencies** - 514+ kabupaten/kota
+- **regencies** - 514+ kabupaten/kota  
 - **districts** - 7,288+ kecamatan
-- **crime_data** - Data kejahatan dengan koordinat
+- **monitoring_data** - Data kejahatan dengan koordinat
 - **users** - User management
+
+### INDAS Tables
+
+- **indas_indicator_types** - Jenis indikator (ekonomi, pariwisata, sosial)
+- **indas_monthly_data** - Data nilai indikator bulanan per kabupaten/kota
+- **indas_analysis_results** - Hasil analisis dan skor regional
+- **categories/sub_categories** - Kategori kejahatan termasuk unjuk rasa
 
 ### Relationships
 
 ```
-provinces (1) → (n) regencies (1) → (n) districts (1) → (n) crime_data
+provinces (1) → (n) regencies (1) → (n) districts (1) → (n) monitoring_data
+regencies (1) → (n) indas_monthly_data (1) → (1) indas_analysis_results
+indas_indicator_types (1) → (n) indas_monthly_data
 ```
 
 ---

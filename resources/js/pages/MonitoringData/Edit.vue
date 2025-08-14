@@ -172,6 +172,7 @@ const initializeExistingVideo = () => {
         // Use video_url if available (already processed), otherwise construct URL
         videoPreview.value = props.monitoringData.video_url || `/storage/${props.monitoringData.video_path}`;
         uploadedVideoPath.value = props.monitoringData.video_path; // Set as already uploaded
+        form.uploaded_video_path = props.monitoringData.video_path; // Also set in form
     }
 };
 
@@ -371,31 +372,35 @@ const updateGalleryFormData = () => {
 
 // Video upload functions
 const handleVideoUpload = async (event: Event) => {
-    const target = event.target as HTMLInputElement;
-    const file = target.files?.[0];
+    try {
+        const target = event.target as HTMLInputElement;
+        const file = target.files?.[0];
 
-    if (file) {
-        // Check file size (200MB limit - increased for chunked upload)
-        if (file.size > 200 * 1024 * 1024) {
-            alert('Ukuran file video terlalu besar. Maksimal 200MB.');
-            return;
+        if (file) {
+            // Check file size (200MB limit - increased for chunked upload)
+            if (file.size > 200 * 1024 * 1024) {
+                alert('Ukuran file video terlalu besar. Maksimal 200MB.');
+                return;
+            }
+
+            // Check file type
+            if (!file.type.startsWith('video/')) {
+                alert('File harus berupa video.');
+                return;
+            }
+
+            videoFile.value = file;
+            videoUploadError.value = null;
+
+            // Create preview URL
+            const url = URL.createObjectURL(file);
+            videoPreview.value = url;
+
+            // Start auto upload
+            await uploadVideoChunked(file);
         }
-
-        // Check file type
-        if (!file.type.startsWith('video/')) {
-            alert('File harus berupa video.');
-            return;
-        }
-
-        videoFile.value = file;
-        videoUploadError.value = null;
-
-        // Create preview URL
-        const url = URL.createObjectURL(file);
-        videoPreview.value = url;
-
-        // Start auto upload
-        await uploadVideoChunked(file);
+    } catch (error) {
+        console.error('Error in handleVideoUpload:', error);
     }
 };
 
@@ -422,14 +427,16 @@ const uploadVideoChunked = async (file: File) => {
             formData.append('fileName', file.name);
             formData.append('fileSize', file.size.toString());
 
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            
             const response = await fetch('/api/upload-video-chunk', {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN': csrfToken,
                 },
             });
-
+            
             if (!response.ok) {
                 throw new Error(`Upload failed: ${response.statusText}`);
             }
@@ -549,7 +556,7 @@ const submit = () => {
         form.uploaded_video_path = uploadedVideoPath.value;
     }
 
-    form.post(`/monitoring-data/${props.monitoringData.id}`, {
+    form.put(`/monitoring-data/${props.monitoringData.id}`, {
         onSuccess: (page) => {
             // Show success message
             alert('✅ Data monitoring berhasil diperbarui!');
@@ -759,7 +766,7 @@ onMounted(() => {
                                     <path
                                         class="opacity-75"
                                         fill="currentColor"
-                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 004 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                     ></path>
                                 </svg>
                                 <svg v-else-if="isVideoUploading" class="mr-3 -ml-1 h-4 w-4 animate-pulse text-white" fill="none" viewBox="0 0 24 24">

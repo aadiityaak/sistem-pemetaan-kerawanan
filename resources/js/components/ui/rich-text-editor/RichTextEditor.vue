@@ -285,7 +285,10 @@ const mode = ref<'edit' | 'preview'>('edit')
 const editor = useEditor({
   content: props.modelValue,
   extensions: [
-    StarterKit,
+    StarterKit.configure({
+      // Configure StarterKit to exclude duplicate extensions
+      link: false, // We'll add our own Link extension
+    }),
     Underline,
     TextStyle,
     Color,
