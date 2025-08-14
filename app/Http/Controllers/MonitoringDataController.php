@@ -405,6 +405,13 @@ class MonitoringDataController extends Controller
     public function update(Request $request, $id)
     {
         $monitoringData = MonitoringData::findOrFail($id);
+        
+        // Debug: Log request data
+        \Log::info('Update request received', [
+            'all_data' => $request->all(),
+            'files' => $request->files->keys(),
+            'method' => $request->method(),
+        ]);
 
         $validated = $request->validate([
             'provinsi_id' => 'required|exists:provinsi,id',

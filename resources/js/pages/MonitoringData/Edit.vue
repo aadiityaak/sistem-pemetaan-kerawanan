@@ -279,14 +279,12 @@ const updateMarkerPosition = () => {
 watch([() => form.latitude, () => form.longitude], updateMarkerPosition);
 
 // Gallery functions
-const triggerFileInput = () => {
-    galleryFileInput.value?.click();
-};
-
 const handleGalleryFileSelect = (event: Event) => {
     const target = event.target as HTMLInputElement;
     if (target.files) {
         handleGalleryFiles(Array.from(target.files));
+        // Reset input value to allow selecting same files again
+        target.value = '';
     }
 };
 
@@ -556,6 +554,22 @@ const submit = () => {
         form.uploaded_video_path = uploadedVideoPath.value;
     }
 
+    // Debug: Log form data before sending
+    const transformedData = {
+        ...form.data(),
+        provinsi_id: parseInt(form.provinsi_id) || props.monitoringData.provinsi_id,
+        kabupaten_kota_id: parseInt(form.kabupaten_kota_id) || props.monitoringData.kabupaten_kota_id,
+        kecamatan_id: form.kecamatan_id ? parseInt(form.kecamatan_id) : props.monitoringData.kecamatan_id,
+        category_id: parseInt(form.category_id) || props.monitoringData.category_id,
+        sub_category_id: parseInt(form.sub_category_id) || props.monitoringData.sub_category_id,
+        latitude: parseFloat(form.latitude) || props.monitoringData.latitude,
+        longitude: parseFloat(form.longitude) || props.monitoringData.longitude,
+        jumlah_terdampak: form.jumlah_terdampak ? parseInt(form.jumlah_terdampak) : props.monitoringData.jumlah_terdampak,
+    };
+    
+    console.log('Form data before transform:', form.data());
+    console.log('Transformed data:', transformedData);
+    
     form.put(`/monitoring-data/${props.monitoringData.id}`, {
         onSuccess: (page) => {
             // Show success message
@@ -564,12 +578,15 @@ const submit = () => {
         },
         onError: (errors) => {
             // Show error message with details
+            console.log('Validation errors:', errors);
             let errorMessage = '❌ Gagal menyimpan data:\n';
             Object.keys(errors).forEach((key) => {
                 errorMessage += `• ${key}: ${errors[key]}\n`;
             });
             alert(errorMessage);
         },
+        transform: () => transformedData,
+        forceFormData: true, // Force use FormData for file uploads
     });
 };
 
@@ -902,7 +919,6 @@ onMounted(() => {
 
                             <!-- Upload Area -->
                             <div
-                                @click="triggerFileInput"
                                 @dragover.prevent
                                 @drop.prevent="handleDrop"
                                 class="relative cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-6 transition-colors hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500"
