@@ -554,23 +554,19 @@ const submit = () => {
         form.uploaded_video_path = uploadedVideoPath.value;
     }
 
-    // Debug: Log form data before sending
-    const transformedData = {
-        ...form.data(),
-        provinsi_id: parseInt(form.provinsi_id) || props.monitoringData.provinsi_id,
-        kabupaten_kota_id: parseInt(form.kabupaten_kota_id) || props.monitoringData.kabupaten_kota_id,
-        kecamatan_id: form.kecamatan_id ? parseInt(form.kecamatan_id) : props.monitoringData.kecamatan_id,
-        category_id: parseInt(form.category_id) || props.monitoringData.category_id,
-        sub_category_id: parseInt(form.sub_category_id) || props.monitoringData.sub_category_id,
-        latitude: parseFloat(form.latitude) || props.monitoringData.latitude,
-        longitude: parseFloat(form.longitude) || props.monitoringData.longitude,
-        jumlah_terdampak: form.jumlah_terdampak ? parseInt(form.jumlah_terdampak) : props.monitoringData.jumlah_terdampak,
-    };
+    // Transform form data directly in form object
+    form.provinsi_id = parseInt(form.provinsi_id) || props.monitoringData.provinsi_id;
+    form.kabupaten_kota_id = parseInt(form.kabupaten_kota_id) || props.monitoringData.kabupaten_kota_id;
+    form.kecamatan_id = form.kecamatan_id ? parseInt(form.kecamatan_id) : props.monitoringData.kecamatan_id;
+    form.category_id = parseInt(form.category_id) || props.monitoringData.category_id;
+    form.sub_category_id = parseInt(form.sub_category_id) || props.monitoringData.sub_category_id;
+    form.latitude = parseFloat(form.latitude) || props.monitoringData.latitude;
+    form.longitude = parseFloat(form.longitude) || props.monitoringData.longitude;
+    form.jumlah_terdampak = form.jumlah_terdampak ? parseInt(form.jumlah_terdampak) : props.monitoringData.jumlah_terdampak;
     
-    console.log('Form data before transform:', form.data());
-    console.log('Transformed data:', transformedData);
+    console.log('Form data before submit:', form.data());
     
-    form.put(`/monitoring-data/${props.monitoringData.id}`, {
+    form.post(`/monitoring-data/${props.monitoringData.id}`, {
         onSuccess: (page) => {
             // Show success message
             alert('✅ Data monitoring berhasil diperbarui!');
@@ -585,7 +581,6 @@ const submit = () => {
             });
             alert(errorMessage);
         },
-        transform: () => transformedData,
         forceFormData: true, // Force use FormData for file uploads
     });
 };
