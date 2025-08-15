@@ -160,6 +160,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/pasar-saham/chart', [PasarSahamController::class, 'chart'])->name('pasar-saham.chart');
     Route::get('/pasar-saham/watchlist', [PasarSahamController::class, 'watchlist'])->name('pasar-saham.watchlist');
 
+    // Trading Routes
+    Route::get('/trading', [PasarSahamController::class, 'trading'])->name('trading.index');
+
     // Sembako Routes
     Route::delete('sembako/bulk-destroy', [SembakoController::class, 'bulkDestroy'])->name('sembako.bulk-destroy');
     Route::get('sembako/export-csv', [SembakoController::class, 'exportCsv'])->name('sembako.export-csv');

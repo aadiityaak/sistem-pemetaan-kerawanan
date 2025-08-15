@@ -2,16 +2,11 @@
 import {
     SidebarGroup,
     SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarMenuSub,
-    SidebarMenuSubButton,
-    SidebarMenuSubItem,
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
-import { Link, usePage } from '@inertiajs/vue3';
-import { ChevronRight } from 'lucide-vue-next';
+import { usePage } from '@inertiajs/vue3';
 import { onMounted, ref, watch } from 'vue';
+import NavMenuItem from '@/components/NavMenuItem.vue';
 
 const props = defineProps<{
     items: NavItem[];
@@ -38,63 +33,54 @@ const loadOpenState = () => {
     }
 };
 
-// Check if current URL matches any sub-item and auto-open parent
-const autoOpenBasedOnUrl = () => {
-    const currentUrl = page.url;
+// Recursive function to check if URL matches any item in hierarchy
+const checkItemMatch = (item: NavItem, currentUrl: string): boolean => {
+    // Check exact match
+    if (item.href === currentUrl) return true;
+    
+    // Check URL prefix match (for nested routes)
+    if (currentUrl.startsWith(item.href) && item.href !== '/') return true;
+    
+    // Check for URL with query parameters
+    if (currentUrl.includes('?') && item.href.includes('?')) {
+        const currentBase = currentUrl.split('?')[0];
+        const itemBase = item.href.split('?')[0];
+        if (currentBase === itemBase) {
+            const currentParams = new URLSearchParams(currentUrl.split('?')[1] || '');
+            const itemParams = new URLSearchParams(item.href.split('?')[1] || '');
+            const categoryMatch = currentParams.get('category') === itemParams.get('category');
+            const subcategoryMatch = currentParams.get('subcategory') === itemParams.get('subcategory');
+            return categoryMatch && subcategoryMatch;
+        }
+    }
+    
+    return false;
+};
 
-    props.items.forEach((item) => {
+// Recursive function to find and open parent items of active URL
+const findAndOpenActiveItems = (items: NavItem[], currentUrl: string): boolean => {
+    for (const item of items) {
+        // Check if this item matches current URL
+        if (checkItemMatch(item, currentUrl)) {
+            return true;
+        }
+        
+        // Check children recursively
         if (item.items && item.items.length > 0) {
-            // Check if current URL matches any sub-item
-            let hasActiveSubItem = false;
-
-            item.items.forEach((subItem) => {
-                // Check exact match first
-                if (subItem.href === currentUrl) {
-                    hasActiveSubItem = true;
-                    return;
-                }
-
-                // Check if current URL starts with sub-item href (for nested routes)
-                if (currentUrl.startsWith(subItem.href) && subItem.href !== '/') {
-                    hasActiveSubItem = true;
-                    return;
-                }
-
-                // Check 3rd tier items
-                if (subItem.items && subItem.items.length > 0) {
-                    const hasActiveSubSubItem = subItem.items.some((subSubItem) => {
-                        if (subSubItem.href === currentUrl) return true;
-                        // Check for URL with query parameters (more flexible matching)
-                        if (currentUrl.includes('?') && subSubItem.href.includes('?')) {
-                            const currentBase = currentUrl.split('?')[0];
-                            const itemBase = subSubItem.href.split('?')[0];
-                            if (currentBase === itemBase) {
-                                // Check if query parameters match
-                                const currentParams = new URLSearchParams(currentUrl.split('?')[1] || '');
-                                const itemParams = new URLSearchParams(subSubItem.href.split('?')[1] || '');
-                                const categoryMatch = currentParams.get('category') === itemParams.get('category');
-                                const subcategoryMatch = currentParams.get('subcategory') === itemParams.get('subcategory');
-                                return categoryMatch && subcategoryMatch;
-                            }
-                        }
-                        if (currentUrl.startsWith(subSubItem.href) && subSubItem.href !== '/') {
-                            return true;
-                        }
-                        return false;
-                    });
-
-                    if (hasActiveSubSubItem) {
-                        hasActiveSubItem = true;
-                        openItems.value.add(subItem.title); // Open the sub-item too
-                    }
-                }
-            });
-
-            if (hasActiveSubItem) {
+            const hasActiveChild = findAndOpenActiveItems(item.items, currentUrl);
+            if (hasActiveChild) {
                 openItems.value.add(item.title);
+                return true;
             }
         }
-    });
+    }
+    return false;
+};
+
+// Check if current URL matches any item and auto-open parent items
+const autoOpenBasedOnUrl = () => {
+    const currentUrl = page.url;
+    findAndOpenActiveItems(props.items, currentUrl);
 };
 
 const toggleItem = (title: string) => {
@@ -128,64 +114,14 @@ watch(
 <template>
     <SidebarGroup class="px-2 py-0">
         <SidebarMenu>
-            <template v-for="item in items" :key="item.title">
-                <!-- Item with sub-items -->
-                <SidebarMenuItem v-if="item.items && item.items.length > 0">
-                    <SidebarMenuButton @click="toggleItem(item.title)" :tooltip="item.title" class="cursor-pointer">
-                        <component :is="item.icon" />
-                        <span>{{ item.title }}</span>
-                        <ChevronRight class="ml-auto transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
-                    </SidebarMenuButton>
-
-                    <div v-show="isOpen(item.title)" class="mt-1">
-                        <SidebarMenuSub>
-                            <template v-for="subItem in item.items" :key="subItem.title">
-                                <!-- Sub-item with sub-sub-items (3rd tier) -->
-                                <SidebarMenuSubItem v-if="subItem.items && subItem.items.length > 0">
-                                    <SidebarMenuSubButton @click="toggleItem(subItem.title)" class="cursor-pointer">
-                                        <component :is="subItem.icon" />
-                                        <span>{{ subItem.title }}</span>
-                                        <ChevronRight class="ml-auto transition-transform" :class="{ 'rotate-90': isOpen(subItem.title) }" />
-                                    </SidebarMenuSubButton>
-
-                                    <div v-show="isOpen(subItem.title)" class="mt-1">
-                                        <SidebarMenuSub>
-                                            <SidebarMenuSubItem v-for="subSubItem in subItem.items" :key="subSubItem.title">
-                                                <SidebarMenuSubButton as-child :is-active="subSubItem.href === page.url">
-                                                    <Link :href="subSubItem.href">
-                                                        <component :is="subSubItem.icon" />
-                                                        <span>{{ subSubItem.title }}</span>
-                                                    </Link>
-                                                </SidebarMenuSubButton>
-                                            </SidebarMenuSubItem>
-                                        </SidebarMenuSub>
-                                    </div>
-                                </SidebarMenuSubItem>
-
-                                <!-- Regular sub-item without sub-sub-items -->
-                                <SidebarMenuSubItem v-else>
-                                    <SidebarMenuSubButton as-child :is-active="subItem.href === page.url">
-                                        <Link :href="subItem.href">
-                                            <component :is="subItem.icon" />
-                                            <span>{{ subItem.title }}</span>
-                                        </Link>
-                                    </SidebarMenuSubButton>
-                                </SidebarMenuSubItem>
-                            </template>
-                        </SidebarMenuSub>
-                    </div>
-                </SidebarMenuItem>
-
-                <!-- Regular item without sub-items -->
-                <SidebarMenuItem v-else>
-                    <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title">
-                        <Link :href="item.href">
-                            <component :is="item.icon" />
-                            <span>{{ item.title }}</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </template>
+            <NavMenuItem 
+                v-for="item in items" 
+                :key="item.title" 
+                :item="item" 
+                :level="0"
+                :open-items="openItems"
+                @toggle="toggleItem"
+            />
         </SidebarMenu>
     </SidebarGroup>
 </template>

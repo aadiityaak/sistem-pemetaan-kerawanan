@@ -14,12 +14,27 @@ class MenuItemController extends Controller
      */
     public function index()
     {
-        $menuItems = MenuItem::with([
-                'children.children', // Load grandchildren (level 3)
-                'parent'
-            ])
-            ->orderBy('sort_order')
-            ->get();
+        // Get all menu items
+        $menuItems = MenuItem::with('parent')->orderBy('sort_order')->get();
+        
+        // Recursive function to build unlimited depth hierarchy
+        $buildHierarchy = function ($items, $allItems) use (&$buildHierarchy) {
+            foreach ($items as $item) {
+                // Get all children regardless of is_active status
+                $item->children = $allItems->where('parent_id', $item->id)->values();
+                
+                // Recursively build children's hierarchy
+                if ($item->children->count() > 0) {
+                    $buildHierarchy($item->children, $allItems);
+                }
+            }
+        };
+        
+        // Build hierarchy for all items
+        $buildHierarchy($menuItems, $menuItems);
+
+        // Optional: Log for debugging
+        // \Log::info('Menu items loaded for admin', ['count' => $menuItems->count()]);
 
         return Inertia::render('Admin/MenuItems/Index', [
             'menuItems' => $menuItems,
@@ -128,7 +143,19 @@ class MenuItemController extends Controller
      */
     public function toggleStatus(MenuItem $menuItem)
     {
+        \Log::info('toggleStatus called for menu item', [
+            'id' => $menuItem->id,
+            'title' => $menuItem->title,
+            'current_status' => $menuItem->is_active,
+            'new_status' => !$menuItem->is_active
+        ]);
+
         $menuItem->update(['is_active' => !$menuItem->is_active]);
+
+        \Log::info('toggleStatus completed', [
+            'id' => $menuItem->id,
+            'updated_status' => $menuItem->fresh()->is_active
+        ]);
 
         return redirect()->back()
             ->with('success', 'Menu item status updated successfully.');

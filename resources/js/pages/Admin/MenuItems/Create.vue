@@ -27,11 +27,14 @@
 
                             <!-- Icon -->
                             <div class="space-y-2">
-                                <label for="icon" class="text-sm font-medium">Icon</label>
-                                <Input id="icon" v-model="form.icon" placeholder="Nama icon (contoh: LayoutGrid)" />
-                                <div v-if="form.errors.icon" class="text-sm text-destructive">
-                                    {{ form.errors.icon }}
-                                </div>
+                                <IconSelector
+                                    id="icon"
+                                    v-model="form.icon"
+                                    label="Icon"
+                                    placeholder="Cari atau pilih icon..."
+                                    :error="form.errors.icon"
+                                    help-text="Pilih icon yang sesuai untuk menu ini"
+                                />
                             </div>
 
                             <!-- Custom Path -->
@@ -125,6 +128,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import IconSelector from '@/components/ui/IconSelector.vue';
 import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue';
 // Removed Textarea import - using native textarea instead
 import { Checkbox } from '@/components/ui/checkbox';

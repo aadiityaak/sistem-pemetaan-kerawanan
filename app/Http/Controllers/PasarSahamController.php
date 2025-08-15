@@ -21,4 +21,9 @@ class PasarSahamController extends Controller
     {
         return Inertia::render('PasarSaham/Watchlist');
     }
+
+    public function trading()
+    {
+        return Inertia::render('Trading/Index');
+    }
 }

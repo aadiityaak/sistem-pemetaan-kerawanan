@@ -34,7 +34,8 @@
       "Bash(mysql:*)",
       "Bash(del check_video.php)",
       "Bash(grep:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(touch:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

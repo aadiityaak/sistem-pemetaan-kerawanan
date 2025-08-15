@@ -56,7 +56,7 @@ const isAdmin = computed(() => {
 const dbMenuItems = ref<MenuItem[]>([]);
 const isLoading = ref(true);
 
-// Convert database menu items to NavItem format
+// Convert database menu items to NavItem format (recursive for unlimited depth)
 const convertMenuItemsToNavItems = (menuItems: MenuItem[]): NavItem[] => {
     return menuItems.map((item) => {
         const navItem: NavItem = {

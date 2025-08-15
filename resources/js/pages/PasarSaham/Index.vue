@@ -1,10 +1,10 @@
 <template>
-    <AppLayout title="Kurs Mata Uang">
+    <AppLayout title="Pasar Saham">
         <div class="p-6">
             <!-- Header -->
             <div class="mb-6">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Kurs Mata Uang</h1>
-                <p class="mt-1 text-gray-600 dark:text-gray-400">Nilai tukar Rupiah terhadap mata uang asing utama</p>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Pasar Saham</h1>
+                <p class="mt-1 text-gray-600 dark:text-gray-400">Informasi pasar saham dan nilai tukar mata uang</p>
             </div>
 
             <!-- Currency Exchange Rates Grid -->

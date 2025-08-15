@@ -33,6 +33,12 @@ class MenuItem extends Model
             ->orderBy('sort_order');
     }
 
+    public function allChildren(): HasMany
+    {
+        return $this->hasMany(MenuItem::class, 'parent_id')
+            ->orderBy('sort_order');
+    }
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(MenuItem::class, 'parent_id');
@@ -62,15 +68,24 @@ class MenuItem extends Model
 
     public static function getMenuTree($user = null)
     {
-        return self::rootItems()
-            ->forUser($user)
-            ->with(['children' => function ($query) use ($user) {
-                $query->forUser($user)
-                      ->with(['children' => function ($subQuery) use ($user) {
-                          $subQuery->forUser($user);
-                      }]);
-            }])
-            ->orderBy('sort_order')
-            ->get();
+        // Get all active menu items that user can access
+        $allMenuItems = self::forUser($user)->orderBy('sort_order')->get();
+        
+        // Build hierarchy recursively for unlimited depth
+        $buildHierarchy = function ($items, $allItems, $parentId = null) use (&$buildHierarchy, $user) {
+            return $items->filter(function ($item) use ($parentId) {
+                return $item->parent_id === $parentId;
+            })->map(function ($item) use ($allItems, $buildHierarchy, $user) {
+                // Get children recursively
+                $children = $buildHierarchy($allItems, $allItems, $item->id);
+                if ($children->count() > 0) {
+                    $item->children = $children->values(); // Ensure children are indexed arrays
+                }
+                return $item;
+            });
+        };
+        
+        // Return root items with their full hierarchy as values (not keys)
+        return $buildHierarchy($allMenuItems, $allMenuItems)->values();
     }
 }
