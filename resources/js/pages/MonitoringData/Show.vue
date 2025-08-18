@@ -447,15 +447,15 @@ onMounted(async () => {
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div>
                                 <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Provinsi</label>
-                                <div class="text-gray-900 dark:text-white">{{ monitoringData.provinsi.nama }}</div>
+                                <div class="text-gray-900 dark:text-white">{{ monitoringData.provinsi?.nama || 'N/A' }}</div>
                             </div>
                             <div>
                                 <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Kabupaten/Kota</label>
-                                <div class="text-gray-900 dark:text-white">{{ monitoringData.kabupaten_kota.nama }}</div>
+                                <div class="text-gray-900 dark:text-white">{{ monitoringData.kabupaten_kota?.nama || 'N/A' }}</div>
                             </div>
                             <div>
                                 <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Kecamatan</label>
-                                <div class="text-gray-900 dark:text-white">{{ monitoringData.kecamatan.nama }}</div>
+                                <div class="text-gray-900 dark:text-white">{{ monitoringData.kecamatan?.nama || 'N/A' }}</div>
                             </div>
                         </div>
                     </div>

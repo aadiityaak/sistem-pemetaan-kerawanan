@@ -392,7 +392,7 @@ onMounted(async () => {
                             <strong>Kategori:</strong> ${data.category.name} - ${data.sub_category.name}
                         </div>
                         <div class="text-xs text-gray-500 mt-1">
-                            <strong>Lokasi:</strong> ${data.provinsi.nama}, ${data.kabupaten_kota.nama}
+                            <strong>Lokasi:</strong> ${data.provinsi?.nama || 'N/A'}, ${data.kabupaten_kota?.nama || 'N/A'}
                         </div>
                         ${
                             data.jumlah_terdampak
@@ -1140,7 +1140,7 @@ onMounted(async () => {
                                             </div>
                                             <!-- Location info -->
                                             <p class="mt-1 truncate text-xs text-gray-500 dark:text-gray-400">
-                                                {{ issue.provinsi.nama }}, {{ issue.kabupaten_kota.nama }}
+                                                {{ issue.provinsi?.nama || 'N/A' }}, {{ issue.kabupaten_kota?.nama || 'N/A' }}
                                             </p>
                                         </div>
                                         
