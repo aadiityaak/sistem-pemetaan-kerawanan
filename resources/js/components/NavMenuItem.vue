@@ -14,12 +14,18 @@ interface Props {
     item: NavItem;
     level: number;
     openItems: Set<string>;
+    siblings?: NavItem[];
 }
 
 const props = defineProps<Props>();
 const emit = defineEmits<{
-    toggle: [title: string];
+    toggle: [title: string, siblings: NavItem[], level: number];
 }>();
+
+// Helper function to handle toggle with sibling information
+const handleToggle = (title: string) => {
+    emit('toggle', title, props.siblings || [], props.level);
+};
 
 const page = usePage();
 
@@ -34,7 +40,7 @@ const isOpen = (title: string) => {
         <!-- Top level uses SidebarMenuButton, nested levels use SidebarMenuSubButton -->
         <SidebarMenuButton 
             v-if="level === 0"
-            @click="emit('toggle', item.title)" 
+            @click="handleToggle(item.title)" 
             :tooltip="item.title" 
             class="cursor-pointer"
         >
@@ -45,7 +51,7 @@ const isOpen = (title: string) => {
 
         <SidebarMenuSubButton 
             v-else
-            @click="emit('toggle', item.title)" 
+            @click="handleToggle(item.title)" 
             class="cursor-pointer"
         >
             <component :is="item.icon" />
@@ -61,7 +67,8 @@ const isOpen = (title: string) => {
                     :item="subItem"
                     :level="level + 1"
                     :open-items="openItems"
-                    @toggle="emit('toggle', $event)"
+                    :siblings="item.items"
+                    @toggle="(title, siblings, level) => emit('toggle', title, siblings, level)"
                 />
             </SidebarMenuSub>
         </div>

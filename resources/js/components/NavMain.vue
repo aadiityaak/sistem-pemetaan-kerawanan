@@ -83,10 +83,19 @@ const autoOpenBasedOnUrl = () => {
     findAndOpenActiveItems(props.items, currentUrl);
 };
 
-const toggleItem = (title: string) => {
+const toggleItem = (title: string, siblings: NavItem[], level: number) => {
     if (openItems.value.has(title)) {
         openItems.value.delete(title);
     } else {
+        // Only apply accordion behavior to items with siblings and that have sub-items
+        if (siblings && siblings.length > 0) {
+            siblings.forEach(sibling => {
+                if (sibling.title !== title && sibling.items && sibling.items.length > 0) {
+                    openItems.value.delete(sibling.title);
+                }
+            });
+        }
+        
         openItems.value.add(title);
     }
     saveOpenState();
@@ -120,7 +129,8 @@ watch(
                 :item="item" 
                 :level="0"
                 :open-items="openItems"
-                @toggle="toggleItem"
+                :siblings="items"
+                @toggle="(title, siblings, level) => toggleItem(title, siblings, level)"
             />
         </SidebarMenu>
     </SidebarGroup>
