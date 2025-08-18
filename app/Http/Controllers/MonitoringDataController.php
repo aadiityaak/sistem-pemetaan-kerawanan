@@ -215,11 +215,25 @@ class MonitoringDataController extends Controller
         $kabupatenKotaList = $kabupatenKotaQuery->get();
         $kecamatanList = $kecamatanQuery->get();
 
+        // Get pre-selected category and subcategory from URL parameters
+        $selectedCategory = null;
+        $selectedSubCategory = null;
+        
+        if ($request->has('category')) {
+            $selectedCategory = $categories->firstWhere('slug', $request->get('category'));
+        }
+        
+        if ($request->has('subcategory') && $selectedCategory) {
+            $selectedSubCategory = $selectedCategory->subCategories->firstWhere('slug', $request->get('subcategory'));
+        }
+
         return Inertia::render('MonitoringData/Create', [
             'categories' => $categories,
             'provinsiList' => $provinsiList,
             'kabupatenKotaList' => $kabupatenKotaList,
             'kecamatanList' => $kecamatanList,
+            'selectedCategory' => $selectedCategory,
+            'selectedSubCategory' => $selectedSubCategory,
         ]);
     }
 

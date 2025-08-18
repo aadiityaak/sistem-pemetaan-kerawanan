@@ -50,6 +50,8 @@ const props = defineProps<{
     kabupatenKotaList: KabupatenKota[];
     kecamatanList: Kecamatan[];
     categories: Category[];
+    selectedCategory?: Category | null;
+    selectedSubCategory?: SubCategory | null;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -364,9 +366,22 @@ const submit = () => {
 };
 
 // Initialize map on mount
-import { onMounted } from 'vue';
-onMounted(() => {
+import { onMounted, nextTick } from 'vue';
+onMounted(async () => {
     initializeMap();
+    
+    // Set pre-selected category and subcategory from URL parameters
+    if (props.selectedCategory) {
+        form.category_id = props.selectedCategory.id.toString();
+        
+        // Wait for the next tick to ensure filteredSubCategories is updated
+        await nextTick();
+        
+        // Then set the subcategory
+        if (props.selectedSubCategory) {
+            form.sub_category_id = props.selectedSubCategory.id.toString();
+        }
+    }
 });
 </script>
 
