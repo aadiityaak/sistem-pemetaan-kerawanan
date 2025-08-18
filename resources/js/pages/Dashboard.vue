@@ -288,6 +288,22 @@ const goToMonitoringDataByProvinsi = (provinsiName: string) => {
     }
 };
 
+// Function to build create URL with pre-filled category and subcategory
+const buildCreateUrl = () => {
+    const params = new URLSearchParams();
+    
+    if (props.selectedCategory) {
+        params.append('category', props.selectedCategory.slug);
+    }
+    
+    if (props.selectedSubCategory) {
+        params.append('subcategory', props.selectedSubCategory.slug);
+    }
+    
+    const queryString = params.toString();
+    return `/monitoring-data/create${queryString ? `?${queryString}` : ''}`;
+};
+
 // Custom dropdown state
 const categoryDropdownOpen = ref(false);
 const subCategoryDropdownOpen = ref(false);
@@ -445,7 +461,7 @@ onMounted(async () => {
                         />
                         <span v-else class="text-2xl">{{ selectedCategory ? selectedCategory.icon || currentTheme.icon : '📊' }}</span>
                     </div>
-                    <div>
+                    <div class="flex-1">
                         <h1 class="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">
                             <span>Dashboard</span>
                             <span v-if="selectedCategory">{{ selectedCategory.name }}</span>
@@ -470,6 +486,17 @@ onMounted(async () => {
                                       : 'Monitoring data komprehensif semua kategori'
                             }}
                         </p>
+                    </div>
+                    <div class="flex items-center">
+                        <Link
+                            :href="buildCreateUrl()"
+                            class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                        >
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Tambah Data
+                        </Link>
                     </div>
                 </div>
             </div>
