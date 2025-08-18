@@ -74,6 +74,7 @@ class SubCategoryController extends Controller
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'icon' => 'nullable|string|max:10',
             'image' => 'nullable|image|mimes:jpeg,jpg,png,gif,svg|max:2048',
@@ -93,8 +94,19 @@ class SubCategoryController extends Controller
             ]);
         }
 
-        // Generate slug
-        $validated['slug'] = Str::slug($validated['name']);
+        // Check for duplicate slug within the same category
+        $slugExists = SubCategory::where('category_id', $validated['category_id'])
+            ->where('slug', Str::slug($validated['slug']))
+            ->exists();
+
+        if ($slugExists) {
+            return back()->withErrors([
+                'slug' => 'Slug ini sudah digunakan dalam kategori yang dipilih.',
+            ]);
+        }
+
+        // Ensure slug is properly formatted
+        $validated['slug'] = Str::slug($validated['slug']);
 
         // Handle image upload
         if ($request->hasFile('image')) {
@@ -157,6 +169,7 @@ class SubCategoryController extends Controller
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'icon' => 'nullable|string|max:10',
             'image' => 'nullable|image|mimes:jpeg,jpg,png,gif,svg|max:2048',
@@ -177,10 +190,20 @@ class SubCategoryController extends Controller
             ]);
         }
 
-        // Update slug if name changed
-        if ($validated['name'] !== $subCategory->name) {
-            $validated['slug'] = Str::slug($validated['name']);
+        // Check for duplicate slug within the same category (excluding current record)
+        $slugExists = SubCategory::where('category_id', $validated['category_id'])
+            ->where('slug', Str::slug($validated['slug']))
+            ->where('id', '!=', $subCategory->id)
+            ->exists();
+
+        if ($slugExists) {
+            return back()->withErrors([
+                'slug' => 'Slug ini sudah digunakan dalam kategori yang dipilih.',
+            ]);
         }
+
+        // Ensure slug is properly formatted
+        $validated['slug'] = Str::slug($validated['slug']);
 
         // Handle image upload
         if ($request->hasFile('image')) {

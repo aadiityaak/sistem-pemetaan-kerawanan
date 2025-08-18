@@ -57,6 +57,7 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:categories,name',
+            'slug' => 'required|string|max:255|unique:categories,slug',
             'description' => 'nullable|string|max:1000',
             'icon' => 'nullable|string|max:10',
             'image' => 'nullable|image|mimes:jpeg,jpg,png,gif,svg|max:2048',
@@ -65,8 +66,8 @@ class CategoryController extends Controller
             'sort_order' => 'nullable|integer|min:0',
         ]);
 
-        // Generate slug
-        $validated['slug'] = Str::slug($validated['name']);
+        // Ensure slug is properly formatted
+        $validated['slug'] = Str::slug($validated['slug']);
 
         // Handle image upload
         if ($request->hasFile('image')) {
@@ -130,6 +131,7 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:categories,name,'.$category->id,
+            'slug' => 'required|string|max:255|unique:categories,slug,'.$category->id,
             'description' => 'nullable|string|max:1000',
             'icon' => 'nullable|string|max:10',
             'image' => 'nullable|image|mimes:jpeg,jpg,png,gif,svg|max:2048',
@@ -138,10 +140,8 @@ class CategoryController extends Controller
             'sort_order' => 'nullable|integer|min:0',
         ]);
 
-        // Update slug if name changed
-        if ($validated['name'] !== $category->name) {
-            $validated['slug'] = Str::slug($validated['name']);
-        }
+        // Ensure slug is properly formatted
+        $validated['slug'] = Str::slug($validated['slug']);
 
         // Handle image upload
         if ($request->hasFile('image')) {

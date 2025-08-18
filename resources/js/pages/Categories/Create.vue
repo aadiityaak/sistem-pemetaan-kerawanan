@@ -26,6 +26,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const form = useForm({
     name: '',
+    slug: '',
     description: '',
     icon: '',
     image: null,
@@ -109,6 +110,22 @@ const removeImage = () => {
                                     placeholder="Masukkan nama kategori"
                                 />
                                 <div v-if="form.errors.name" class="mt-1 text-sm text-red-500">{{ form.errors.name }}</div>
+                            </div>
+
+                            <!-- Slug -->
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Slug <span class="text-red-500">*</span>
+                                </label>
+                                <input
+                                    v-model="form.slug"
+                                    type="text"
+                                    required
+                                    class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                    placeholder="masukkan-slug-kategori"
+                                />
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Slug digunakan untuk URL. Gunakan huruf kecil, angka, dan tanda hubung (-)</p>
+                                <div v-if="form.errors.slug" class="mt-1 text-sm text-red-500">{{ form.errors.slug }}</div>
                             </div>
 
                             <!-- Description -->

@@ -33,7 +33,7 @@ const includeFiles = [
     'database',
     'resources',
     'routes',
-    'storage',
+    // 'storage', // Excluded - should be created fresh on deployment
     'vendor',
     'artisan',
     'composer.json',
@@ -277,7 +277,37 @@ const deploymentInstructions = [
     '  DB_USERNAME=your_database_user',
     '  DB_PASSWORD=your_database_password',
     '',
-    '### 3. Set File Permissions (via cPanel File Manager atau FTP)',
+    '### 3. Create Storage Directories & Set Permissions',
+    'Storage folder tidak disertakan dalam deployment untuk keamanan.',
+    'Buat struktur storage manually:',
+    '',
+    'Option A: Via SSH',
+    'mkdir -p laravel-app/storage/app/public',
+    'mkdir -p laravel-app/storage/framework/cache',
+    'mkdir -p laravel-app/storage/framework/sessions',
+    'mkdir -p laravel-app/storage/framework/views',
+    'mkdir -p laravel-app/storage/logs',
+    '',
+    'Option B: Via cPanel File Manager',
+    'Buat folder secara manual dengan struktur di atas',
+    '',
+    'Option C: Via PHP Script (jika tidak ada SSH)',
+    'Upload file create-storage-dirs.php ke public_html:',
+    '<?php',
+    '$dirs = [',
+    '    "../laravel-app/storage/app/public",',
+    '    "../laravel-app/storage/framework/cache",',
+    '    "../laravel-app/storage/framework/sessions",',
+    '    "../laravel-app/storage/framework/views",',
+    '    "../laravel-app/storage/logs"',
+    '];',
+    'foreach($dirs as $dir) {',
+    '    if(!is_dir($dir)) mkdir($dir, 0755, true);',
+    '}',
+    'echo "Storage directories created! Delete this file.";',
+    '?>',
+    '',
+    'Set File Permissions (via cPanel File Manager atau FTP):',
     'laravel-app/ - 755',
     'laravel-app/storage/ - 755 (recursive)',
     'laravel-app/bootstrap/cache/ - 755 (recursive)',
@@ -398,6 +428,11 @@ writeFileSync(join(buildDir, 'DEPLOYMENT-INSTRUCTIONS.txt'), instructions);
 console.log('   ✓ Deployment instructions created');
 
 // Create ZIP file
+// Check what's in build directory before zipping
+console.log('📋 Build directory contents:');
+const buildContents = readdirSync(laravelAppDir);
+console.log('   laravel-app/', buildContents.join(', '));
+
 console.log('📦 Creating ZIP file...');
 const zip = new JSZip();
 
