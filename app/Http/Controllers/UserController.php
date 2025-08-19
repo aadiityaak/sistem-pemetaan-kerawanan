@@ -67,7 +67,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:admin,user',
+            'role' => 'required|in:super_admin,admin_vip,admin',
             'is_active' => 'boolean',
             'provinsi_id' => 'nullable|exists:provinsi,id',
         ]);
@@ -113,7 +113,7 @@ class UserController extends Controller
                 Rule::unique('users')->ignore($user->id),
             ],
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|in:admin,user',
+            'role' => 'required|in:super_admin,admin_vip,admin',
             'is_active' => 'boolean',
             'provinsi_id' => 'nullable|exists:provinsi,id',
         ]);

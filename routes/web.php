@@ -239,12 +239,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // User Management Routes (Super Admin and Admin VIP can view, only Super Admin can edit)
     Route::middleware(['role:super_admin,admin_vip'])->group(function () {
         Route::get('/users', [\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
-        Route::get('/users/{user}', [\App\Http\Controllers\UserController::class, 'show'])->name('users.show');
         
         // Only Super Admin can manage users
         Route::middleware(['role:super_admin'])->group(function () {
             Route::get('/users/create', [\App\Http\Controllers\UserController::class, 'create'])->name('users.create');
             Route::post('/users', [\App\Http\Controllers\UserController::class, 'store'])->name('users.store');
+        });
+        
+        // Routes with {user} parameter must come after static routes
+        Route::get('/users/{user}', [\App\Http\Controllers\UserController::class, 'show'])->name('users.show');
+        
+        // Only Super Admin can manage users (continued)
+        Route::middleware(['role:super_admin'])->group(function () {
             Route::get('/users/{user}/edit', [\App\Http\Controllers\UserController::class, 'edit'])->name('users.edit');
             Route::put('/users/{user}', [\App\Http\Controllers\UserController::class, 'update'])->name('users.update');
             Route::delete('/users/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('users.destroy');
