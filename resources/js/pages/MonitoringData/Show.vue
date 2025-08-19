@@ -2,8 +2,8 @@
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
-import { onMounted, ref } from 'vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { onMounted, ref, computed } from 'vue';
 
 interface GalleryItem {
     path: string;
@@ -43,14 +43,22 @@ const props = defineProps<{
     monitoringData: MonitoringData;
 }>();
 
+// Get current user and check edit permissions
+const page = usePage();
+const canEdit = computed(() => page.props.auth.user.role !== 'admin_vip');
+
+// Build back URL with category filter
+const backUrl = computed(() => {
+    if (props.monitoringData.category?.slug) {
+        return `/dashboard?category=${props.monitoringData.category.slug}`;
+    }
+    return '/dashboard';
+});
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
-        href: '/dashboard',
-    },
-    {
-        title: 'Data Monitoring',
-        href: '/monitoring-data',
+        href: backUrl.value,
     },
     {
         title: 'Detail Data',
@@ -265,7 +273,7 @@ onMounted(async () => {
                     <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Detail data monitoring #{{ monitoringData.id }}</p>
                 </div>
                 <div class="flex gap-3">
-                    <Link :href="`/monitoring-data/${monitoringData.id}/edit`">
+                    <Link v-if="canEdit" :href="`/monitoring-data/${monitoringData.id}/edit`">
                         <Button size="sm">
                             <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path
@@ -278,7 +286,7 @@ onMounted(async () => {
                             Edit Data
                         </Button>
                     </Link>
-                    <Link href="/monitoring-data">
+                    <Link :href="backUrl">
                         <Button variant="outline" size="sm">
                             <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -585,7 +593,7 @@ onMounted(async () => {
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Aksi</h3>
 
                         <div class="space-y-3">
-                            <Link :href="`/monitoring-data/${monitoringData.id}/edit`" class="block">
+                            <Link v-if="canEdit" :href="`/monitoring-data/${monitoringData.id}/edit`" class="block">
                                 <Button class="w-full" variant="outline">
                                     <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path
