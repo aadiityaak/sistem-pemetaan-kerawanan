@@ -38,8 +38,9 @@ class UserController extends Controller
         // Statistics
         $statistics = [
             'total' => User::count(),
+            'super_admins' => User::where('role', 'super_admin')->count(),
+            'admin_vips' => User::where('role', 'admin_vip')->count(),
             'admins' => User::where('role', 'admin')->count(),
-            'users' => User::where('role', 'user')->count(),
             'active' => User::where('is_active', true)->count(),
             'inactive' => User::where('is_active', false)->count(),
         ];

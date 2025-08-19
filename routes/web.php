@@ -122,19 +122,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Monitoring Data Routes - Apply province filter for non-admin users
     Route::middleware(['province.filter'])->group(function () {
         Route::get('/monitoring-data', [MonitoringDataController::class, 'index'])->name('monitoring-data.index');
-        Route::get('/monitoring-data/create', [MonitoringDataController::class, 'create'])->name('monitoring-data.create');
-        Route::post('/monitoring-data', [MonitoringDataController::class, 'store'])->name('monitoring-data.store');
         Route::get('/monitoring-data/{id}', [MonitoringDataController::class, 'show'])->name('monitoring-data.show');
-        Route::get('/monitoring-data/{id}/edit', [MonitoringDataController::class, 'edit'])->name('monitoring-data.edit');
-        Route::put('/monitoring-data/{id}', [MonitoringDataController::class, 'update'])->name('monitoring-data.update');
-        Route::delete('/monitoring-data/{id}', [MonitoringDataController::class, 'destroy'])->name('monitoring-data.destroy');
-        Route::delete('/monitoring-data/{id}/gallery', [MonitoringDataController::class, 'deleteGalleryImage'])->name('monitoring-data.delete-gallery');
+        
+        // Only users who can edit can access create/edit/delete routes
+        Route::middleware(['edit.permission'])->group(function () {
+            Route::get('/monitoring-data/create', [MonitoringDataController::class, 'create'])->name('monitoring-data.create');
+            Route::post('/monitoring-data', [MonitoringDataController::class, 'store'])->name('monitoring-data.store');
+            Route::get('/monitoring-data/{id}/edit', [MonitoringDataController::class, 'edit'])->name('monitoring-data.edit');
+            Route::put('/monitoring-data/{id}', [MonitoringDataController::class, 'update'])->name('monitoring-data.update');
+            Route::delete('/monitoring-data/{id}', [MonitoringDataController::class, 'destroy'])->name('monitoring-data.destroy');
+            Route::delete('/monitoring-data/{id}/gallery', [MonitoringDataController::class, 'deleteGalleryImage'])->name('monitoring-data.delete-gallery');
+        });
     });
 
-    // AI Prediction Routes (Admin only)
-    Route::middleware(['role:admin'])->group(function () {
+    // AI Prediction Routes (Super Admin and Admin VIP can view, only Super Admin and Admin can edit)
+    Route::middleware(['role:super_admin,admin_vip,admin'])->group(function () {
         Route::get('/ai-prediction', [\App\Http\Controllers\AiPredictionController::class, 'index'])->name('ai-prediction.index');
-        Route::post('/ai-prediction/analyze', [\App\Http\Controllers\AiPredictionController::class, 'analyze'])->name('ai-prediction.analyze');
+        Route::middleware(['edit.permission'])->group(function () {
+            Route::post('/ai-prediction/analyze', [\App\Http\Controllers\AiPredictionController::class, 'analyze'])->name('ai-prediction.analyze');
+        });
     });
 
     // INDAS Routes - Economic, Tourism & Social Analysis System
@@ -170,25 +176,45 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('sembako/import-csv', [SembakoController::class, 'importCsv'])->name('sembako.import-csv');
     Route::resource('sembako', SembakoController::class);
 
-    // Categories Routes (Admin only)
-    Route::middleware(['role:admin'])->group(function () {
-        Route::resource('categories', \App\Http\Controllers\CategoryController::class);
-        Route::post('/categories/{category}/toggle-status', [\App\Http\Controllers\CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
-        Route::delete('/categories/{category}/delete-image', [\App\Http\Controllers\CategoryController::class, 'deleteImage'])->name('categories.delete-image');
+    // Categories Routes (Super Admin and Admin VIP can view, only Super Admin can edit)
+    Route::middleware(['role:super_admin,admin_vip'])->group(function () {
+        Route::get('categories', [\App\Http\Controllers\CategoryController::class, 'index'])->name('categories.index');
+        Route::get('categories/{category}', [\App\Http\Controllers\CategoryController::class, 'show'])->name('categories.show');
+        Route::get('sub-categories', [\App\Http\Controllers\SubCategoryController::class, 'index'])->name('sub-categories.index');
+        Route::get('sub-categories/{subCategory}', [\App\Http\Controllers\SubCategoryController::class, 'show'])->name('sub-categories.show');
+        
+        // Only Super Admin can edit categories
+        Route::middleware(['role:super_admin'])->group(function () {
+            Route::get('categories/create', [\App\Http\Controllers\CategoryController::class, 'create'])->name('categories.create');
+            Route::post('categories', [\App\Http\Controllers\CategoryController::class, 'store'])->name('categories.store');
+            Route::get('categories/{category}/edit', [\App\Http\Controllers\CategoryController::class, 'edit'])->name('categories.edit');
+            Route::put('categories/{category}', [\App\Http\Controllers\CategoryController::class, 'update'])->name('categories.update');
+            Route::delete('categories/{category}', [\App\Http\Controllers\CategoryController::class, 'destroy'])->name('categories.destroy');
+            Route::post('/categories/{category}/toggle-status', [\App\Http\Controllers\CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
+            Route::delete('/categories/{category}/delete-image', [\App\Http\Controllers\CategoryController::class, 'deleteImage'])->name('categories.delete-image');
 
-        // Sub Categories Routes
-        Route::resource('sub-categories', \App\Http\Controllers\SubCategoryController::class);
-        Route::post('/sub-categories/{subCategory}/toggle-status', [\App\Http\Controllers\SubCategoryController::class, 'toggleStatus'])->name('sub-categories.toggle-status');
-        Route::delete('/sub-categories/{subCategory}/delete-image', [\App\Http\Controllers\SubCategoryController::class, 'deleteImage'])->name('sub-categories.delete-image');
+            // Sub Categories Routes
+            Route::get('sub-categories/create', [\App\Http\Controllers\SubCategoryController::class, 'create'])->name('sub-categories.create');
+            Route::post('sub-categories', [\App\Http\Controllers\SubCategoryController::class, 'store'])->name('sub-categories.store');
+            Route::get('sub-categories/{subCategory}/edit', [\App\Http\Controllers\SubCategoryController::class, 'edit'])->name('sub-categories.edit');
+            Route::put('sub-categories/{subCategory}', [\App\Http\Controllers\SubCategoryController::class, 'update'])->name('sub-categories.update');
+            Route::delete('sub-categories/{subCategory}', [\App\Http\Controllers\SubCategoryController::class, 'destroy'])->name('sub-categories.destroy');
+            Route::post('/sub-categories/{subCategory}/toggle-status', [\App\Http\Controllers\SubCategoryController::class, 'toggleStatus'])->name('sub-categories.toggle-status');
+            Route::delete('/sub-categories/{subCategory}/delete-image', [\App\Http\Controllers\SubCategoryController::class, 'deleteImage'])->name('sub-categories.delete-image');
+        });
     });
 
     // Event Calendar Routes (Universal for Kamtibmas, Agenda, etc.)
     Route::get('/event', [EventController::class, 'index'])->name('event.index');
-    Route::post('/event', [EventController::class, 'store'])->name('event.store');
     Route::get('/event/{event}', [EventController::class, 'show'])->name('event.show');
-    Route::put('/event/{event}', [EventController::class, 'update'])->name('event.update');
-    Route::delete('/event/{event}', [EventController::class, 'destroy'])->name('event.destroy');
-    Route::post('/event/{event}/toggle-status', [EventController::class, 'toggleStatus'])->name('event.toggle-status');
+    
+    // Only users who can edit can modify events
+    Route::middleware(['edit.permission'])->group(function () {
+        Route::post('/event', [EventController::class, 'store'])->name('event.store');
+        Route::put('/event/{event}', [EventController::class, 'update'])->name('event.update');
+        Route::delete('/event/{event}', [EventController::class, 'destroy'])->name('event.destroy');
+        Route::post('/event/{event}/toggle-status', [EventController::class, 'toggleStatus'])->name('event.toggle-status');
+    });
     
     // Specific route for Agenda Internal Korp Brimob POLRI
     Route::get('/agenda-internal-korp-brimob', function() {
@@ -199,52 +225,60 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/kamtibmas-calendar', function() {
         return redirect('/event?event=kamtibmas');
     });
-    Route::post('/kamtibmas-events', [EventController::class, 'store'])->name('kamtibmas-events.store');
     Route::get('/kamtibmas-events/{event}', [EventController::class, 'show'])->name('kamtibmas-events.show');
-    Route::put('/kamtibmas-events/{event}', [EventController::class, 'update'])->name('kamtibmas-events.update');
-    Route::delete('/kamtibmas-events/{event}', [EventController::class, 'destroy'])->name('kamtibmas-events.destroy');
-    Route::post('/kamtibmas-events/{event}/toggle-status', [EventController::class, 'toggleStatus'])->name('kamtibmas-events.toggle-status');
-
-
-    // User Management Routes (Admin only)
-    Route::middleware(['role:admin'])->group(function () {
-        Route::get('/users', [\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
-        Route::get('/users/create', [\App\Http\Controllers\UserController::class, 'create'])->name('users.create');
-        Route::post('/users', [\App\Http\Controllers\UserController::class, 'store'])->name('users.store');
-        Route::get('/users/{user}', [\App\Http\Controllers\UserController::class, 'show'])->name('users.show');
-        Route::get('/users/{user}/edit', [\App\Http\Controllers\UserController::class, 'edit'])->name('users.edit');
-        Route::put('/users/{user}', [\App\Http\Controllers\UserController::class, 'update'])->name('users.update');
-        Route::delete('/users/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('users.destroy');
-        Route::post('/users/{user}/toggle-status', [\App\Http\Controllers\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+    
+    // Only users who can edit can modify kamtibmas events
+    Route::middleware(['edit.permission'])->group(function () {
+        Route::post('/kamtibmas-events', [EventController::class, 'store'])->name('kamtibmas-events.store');
+        Route::put('/kamtibmas-events/{event}', [EventController::class, 'update'])->name('kamtibmas-events.update');
+        Route::delete('/kamtibmas-events/{event}', [EventController::class, 'destroy'])->name('kamtibmas-events.destroy');
+        Route::post('/kamtibmas-events/{event}/toggle-status', [EventController::class, 'toggleStatus'])->name('kamtibmas-events.toggle-status');
     });
 
-    // Settings Routes (Admin only - Fixed settings - only allow viewing and updating values)
-    Route::middleware(['role:admin'])->group(function () {
-        Route::get('/settings', [AppSettingController::class, 'index'])->name('settings.index');
-        Route::match(['POST', 'PUT'], '/settings/{key}', [AppSettingController::class, 'update'])->name('settings.update');
+
+    // User Management Routes (Super Admin and Admin VIP can view, only Super Admin can edit)
+    Route::middleware(['role:super_admin,admin_vip'])->group(function () {
+        Route::get('/users', [\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
+        Route::get('/users/{user}', [\App\Http\Controllers\UserController::class, 'show'])->name('users.show');
         
-        // Menu Management Routes
-        Route::resource('admin/menu-items', \App\Http\Controllers\Admin\MenuItemController::class, [
-            'names' => [
-                'index' => 'admin.menu-items.index',
-                'create' => 'admin.menu-items.create',
-                'store' => 'admin.menu-items.store',
-                'show' => 'admin.menu-items.show',
-                'edit' => 'admin.menu-items.edit',
-                'update' => 'admin.menu-items.update',
-                'destroy' => 'admin.menu-items.destroy',
-            ]
-        ]);
-        Route::post('/admin/menu-items/{menuItem}/toggle-status', [\App\Http\Controllers\Admin\MenuItemController::class, 'toggleStatus'])
-            ->name('admin.menu-items.toggle-status');
-        Route::post('/admin/menu-items/reorder', [\App\Http\Controllers\Admin\MenuItemController::class, 'reorder'])
-            ->name('admin.menu-items.reorder');
-        Route::post('/admin/menu-items/{menuItem}/indent', [\App\Http\Controllers\Admin\MenuItemController::class, 'indent'])
-            ->name('admin.menu-items.indent');
-        Route::post('/admin/menu-items/{menuItem}/outdent', [\App\Http\Controllers\Admin\MenuItemController::class, 'outdent'])
-            ->name('admin.menu-items.outdent');
-        Route::post('/admin/menu-items/reset', [\App\Http\Controllers\Admin\MenuItemController::class, 'reset'])
-            ->name('admin.menu-items.reset');
+        // Only Super Admin can manage users
+        Route::middleware(['role:super_admin'])->group(function () {
+            Route::get('/users/create', [\App\Http\Controllers\UserController::class, 'create'])->name('users.create');
+            Route::post('/users', [\App\Http\Controllers\UserController::class, 'store'])->name('users.store');
+            Route::get('/users/{user}/edit', [\App\Http\Controllers\UserController::class, 'edit'])->name('users.edit');
+            Route::put('/users/{user}', [\App\Http\Controllers\UserController::class, 'update'])->name('users.update');
+            Route::delete('/users/{user}', [\App\Http\Controllers\UserController::class, 'destroy'])->name('users.destroy');
+            Route::post('/users/{user}/toggle-status', [\App\Http\Controllers\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+        });
+    });
+
+    // Settings Routes (Super Admin and Admin VIP can view, only Super Admin can edit)
+    Route::middleware(['role:super_admin,admin_vip'])->group(function () {
+        Route::get('/settings', [AppSettingController::class, 'index'])->name('settings.index');
+        Route::get('admin/menu-items', [\App\Http\Controllers\Admin\MenuItemController::class, 'index'])->name('admin.menu-items.index');
+        Route::get('admin/menu-items/{menuItem}', [\App\Http\Controllers\Admin\MenuItemController::class, 'show'])->name('admin.menu-items.show');
+        
+        // Only Super Admin can manage settings and menus
+        Route::middleware(['role:super_admin'])->group(function () {
+            Route::match(['POST', 'PUT'], '/settings/{key}', [AppSettingController::class, 'update'])->name('settings.update');
+            
+            // Menu Management Routes
+            Route::get('admin/menu-items/create', [\App\Http\Controllers\Admin\MenuItemController::class, 'create'])->name('admin.menu-items.create');
+            Route::post('admin/menu-items', [\App\Http\Controllers\Admin\MenuItemController::class, 'store'])->name('admin.menu-items.store');
+            Route::get('admin/menu-items/{menuItem}/edit', [\App\Http\Controllers\Admin\MenuItemController::class, 'edit'])->name('admin.menu-items.edit');
+            Route::put('admin/menu-items/{menuItem}', [\App\Http\Controllers\Admin\MenuItemController::class, 'update'])->name('admin.menu-items.update');
+            Route::delete('admin/menu-items/{menuItem}', [\App\Http\Controllers\Admin\MenuItemController::class, 'destroy'])->name('admin.menu-items.destroy');
+            Route::post('/admin/menu-items/{menuItem}/toggle-status', [\App\Http\Controllers\Admin\MenuItemController::class, 'toggleStatus'])
+                ->name('admin.menu-items.toggle-status');
+            Route::post('/admin/menu-items/reorder', [\App\Http\Controllers\Admin\MenuItemController::class, 'reorder'])
+                ->name('admin.menu-items.reorder');
+            Route::post('/admin/menu-items/{menuItem}/indent', [\App\Http\Controllers\Admin\MenuItemController::class, 'indent'])
+                ->name('admin.menu-items.indent');
+            Route::post('/admin/menu-items/{menuItem}/outdent', [\App\Http\Controllers\Admin\MenuItemController::class, 'outdent'])
+                ->name('admin.menu-items.outdent');
+            Route::post('/admin/menu-items/reset', [\App\Http\Controllers\Admin\MenuItemController::class, 'reset'])
+                ->name('admin.menu-items.reset');
+        });
     });
 });
 

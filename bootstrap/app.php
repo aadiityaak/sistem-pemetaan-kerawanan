@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckEditPermission;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'role' => CheckRole::class,
+            'edit.permission' => CheckEditPermission::class,
             'province.filter' => ProvinceFilter::class,
         ]);
     })

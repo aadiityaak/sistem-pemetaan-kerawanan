@@ -18,7 +18,7 @@ const form = useForm({
     email: '',
     password: '',
     password_confirmation: '',
-    role: 'user',
+    role: 'admin',
     is_active: true,
     provinsi_id: null as number | null,
 });
@@ -154,14 +154,15 @@ const submit = () => {
                                 required
                                 class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                             >
-                                <option value="user">👤 Regular User</option>
-                                <option value="admin">👑 Administrator</option>
+                                <option value="admin">👤 Admin Regional</option>
+                                <option value="admin_vip">👁️ Admin VIP (View Only)</option>
+                                <option value="super_admin">👑 Super Administrator</option>
                             </select>
                             <div v-if="form.errors.role" class="mt-1 text-sm text-red-600 dark:text-red-400">
                                 {{ form.errors.role }}
                             </div>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                Admins have access to all system features including user management
+                                Admin Regional dapat edit data di wilayahnya, Admin VIP hanya melihat semua data, Super Admin mengatur semua
                             </p>
                         </div>
 
@@ -182,7 +183,7 @@ const submit = () => {
                                 {{ form.errors.provinsi_id }}
                             </div>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                Regular users can only access data from their assigned province. Leave empty for admin users to access all provinces.
+                                Admin Regional hanya dapat akses data provinsinya. Kosongkan untuk Super Admin dan Admin VIP (akses semua).
                             </p>
                         </div>
                     </div>

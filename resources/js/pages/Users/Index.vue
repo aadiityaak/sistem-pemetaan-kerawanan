@@ -38,8 +38,9 @@ interface PaginatedUsers {
 
 interface Statistics {
     total: number;
+    super_admins: number;
+    admin_vips: number;
     admins: number;
-    users: number;
     active: number;
     inactive: number;
 }
@@ -96,10 +97,20 @@ const formatDate = (dateString: string): string => {
 
 const getRoleBadgeClass = (role: string): string => {
     const classes: Record<string, string> = {
-        admin: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-        user: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+        super_admin: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+        admin_vip: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+        admin: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
     };
     return classes[role] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+};
+
+const getRoleLabel = (role: string): string => {
+    const labels: Record<string, string> = {
+        super_admin: '👑 Super Admin',
+        admin_vip: '👁️ Admin VIP',
+        admin: '👤 Admin Regional',
+    };
+    return labels[role] || '❓ Unknown';
 };
 
 const getStatusBadgeClass = (isActive: boolean): string => {
@@ -182,8 +193,33 @@ const toggleUserStatus = (user: User) => {
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Admins</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ statistics.admins }}</p>
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Super Admin</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ statistics.super_admins }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-lg border border-gray-200 bg-white p-6 shadow dark:border-gray-700 dark:bg-gray-800">
+                    <div class="flex items-center">
+                        <div class="rounded-lg bg-yellow-100 p-2 dark:bg-yellow-900">
+                            <svg class="h-6 w-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                />
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Admin VIP</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ statistics.admin_vips }}</p>
                         </div>
                     </div>
                 </div>
@@ -201,8 +237,8 @@ const toggleUserStatus = (user: User) => {
                             </svg>
                         </div>
                         <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Regular Users</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ statistics.users }}</p>
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Admin Regional</p>
+                            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ statistics.admins }}</p>
                         </div>
                     </div>
                 </div>
@@ -367,7 +403,7 @@ const toggleUserStatus = (user: User) => {
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span :class="getRoleBadgeClass(user.role)" class="inline-flex rounded-full px-2 py-1 text-xs font-semibold">
-                                        {{ user.role === 'admin' ? '👑 Admin' : '👤 User' }}
+                                        {{ getRoleLabel(user.role) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">

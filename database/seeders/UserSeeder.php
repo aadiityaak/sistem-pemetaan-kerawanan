@@ -14,64 +14,77 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create admin user
+        // Create super admin user
         User::updateOrCreate([
-            'email' => 'admin@example.com',
+            'email' => 'superadmin@example.com',
         ], [
-            'name' => 'Administrator',
-            'email' => 'admin@example.com',
+            'name' => 'Super Administrator',
+            'email' => 'superadmin@example.com',
             'password' => Hash::make('password'),
-            'role' => 'admin',
+            'role' => 'super_admin',
             'is_active' => true,
             'email_verified_at' => now(),
         ]);
 
-        $this->command->info('Admin user created/updated: admin@example.com / password');
+        // Create admin vip user (can view all but not edit)
+        User::updateOrCreate([
+            'email' => 'adminvip@example.com',
+        ], [
+            'name' => 'Admin VIP',
+            'email' => 'adminvip@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'admin_vip',
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
 
-        // Create regular users for testing with different provinces
+        $this->command->info('Super Admin user created/updated: superadmin@example.com / password');
+        $this->command->info('Admin VIP user created/updated: adminvip@example.com / password');
+
+        // Create admin users for testing with different provinces
         $provinsiJakarta = \App\Models\Provinsi::where('nama', 'DKI Jakarta')->first();
         $provinciBali = \App\Models\Provinsi::where('nama', 'Bali')->first();
         $provinsiJabar = \App\Models\Provinsi::where('nama', 'Jawa Barat')->first();
 
         User::updateOrCreate([
-            'email' => 'user@example.com',
+            'email' => 'admin.jakarta@example.com',
         ], [
-            'name' => 'Test User Jakarta',
-            'email' => 'user@example.com',
-            'password' => Hash::make('user123'),
-            'role' => 'user',
+            'name' => 'Admin Jakarta',
+            'email' => 'admin.jakarta@example.com',
+            'password' => Hash::make('admin123'),
+            'role' => 'admin',
             'is_active' => true,
             'email_verified_at' => now(),
             'provinsi_id' => $provinsiJakarta?->id,
         ]);
 
         User::updateOrCreate([
-            'email' => 'user.bali@example.com',
+            'email' => 'admin.bali@example.com',
         ], [
-            'name' => 'Test User Bali',
-            'email' => 'user.bali@example.com',
-            'password' => Hash::make('user123'),
-            'role' => 'user',
+            'name' => 'Admin Bali',
+            'email' => 'admin.bali@example.com',
+            'password' => Hash::make('admin123'),
+            'role' => 'admin',
             'is_active' => true,
             'email_verified_at' => now(),
             'provinsi_id' => $provinciBali?->id,
         ]);
 
         User::updateOrCreate([
-            'email' => 'user.jabar@example.com',
+            'email' => 'admin.jabar@example.com',
         ], [
-            'name' => 'Test User Jawa Barat',
-            'email' => 'user.jabar@example.com',
-            'password' => Hash::make('user123'),
-            'role' => 'user',
+            'name' => 'Admin Jawa Barat',
+            'email' => 'admin.jabar@example.com',
+            'password' => Hash::make('admin123'),
+            'role' => 'admin',
             'is_active' => true,
             'email_verified_at' => now(),
             'provinsi_id' => $provinsiJabar?->id,
         ]);
 
-        $this->command->info('Regular users created/updated:');
-        $this->command->info('- user@example.com / user123 (Jakarta)');
-        $this->command->info('- user.bali@example.com / user123 (Bali)');
-        $this->command->info('- user.jabar@example.com / user123 (Jawa Barat)');
+        $this->command->info('Regional admin users created/updated:');
+        $this->command->info('- admin.jakarta@example.com / admin123 (Jakarta)');
+        $this->command->info('- admin.bali@example.com / admin123 (Bali)');
+        $this->command->info('- admin.jabar@example.com / admin123 (Jawa Barat)');
     }
 }

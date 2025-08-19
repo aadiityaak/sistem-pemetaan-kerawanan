@@ -53,7 +53,23 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user has admin role
+     * Check if user has super admin role
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin';
+    }
+
+    /**
+     * Check if user has admin vip role (can view all but not edit)
+     */
+    public function isAdminVip(): bool
+    {
+        return $this->role === 'admin_vip';
+    }
+
+    /**
+     * Check if user has admin role (can edit within their region)
      */
     public function isAdmin(): bool
     {
@@ -61,11 +77,19 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user has user role
+     * Check if user has any admin level access
      */
-    public function isUser(): bool
+    public function hasAdminAccess(): bool
     {
-        return $this->role === 'user';
+        return in_array($this->role, ['super_admin', 'admin_vip', 'admin']);
+    }
+
+    /**
+     * Check if user can edit data (not just view)
+     */
+    public function canEdit(): bool
+    {
+        return in_array($this->role, ['super_admin', 'admin']);
     }
 
     /**
@@ -97,12 +121,44 @@ class User extends Authenticatable
      */
     public function canAccessProvinsi(?int $provinsiId): bool
     {
-        // Admin can access all provinces
-        if ($this->isAdmin()) {
+        // Super admin can access all provinces
+        if ($this->isSuperAdmin()) {
             return true;
         }
 
-        // User can only access their own province
-        return $this->provinsi_id === $provinsiId;
+        // Admin VIP can view all provinces but not edit
+        if ($this->isAdminVip()) {
+            return true;
+        }
+
+        // Admin can only access their own province
+        if ($this->isAdmin()) {
+            return $this->provinsi_id === $provinsiId;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if user can edit data from specific province
+     */
+    public function canEditProvinsi(?int $provinsiId): bool
+    {
+        // Super admin can edit all provinces
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        // Admin VIP cannot edit anything
+        if ($this->isAdminVip()) {
+            return false;
+        }
+
+        // Admin can only edit their own province
+        if ($this->isAdmin()) {
+            return $this->provinsi_id === $provinsiId;
+        }
+
+        return false;
     }
 }
