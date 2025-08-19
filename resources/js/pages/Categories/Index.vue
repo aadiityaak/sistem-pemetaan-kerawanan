@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 interface Category {
@@ -38,6 +38,13 @@ interface PaginatedData {
     total: number;
 }
 
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+}
+
 const props = defineProps<{
     categories: PaginatedData;
     filters?: {
@@ -45,6 +52,11 @@ const props = defineProps<{
         status?: string;
     };
 }>();
+
+// Get current user and permissions
+const page = usePage();
+const currentUser = computed(() => page.props.auth.user as User);
+const canManageCategories = computed(() => currentUser.value.role === 'super_admin');
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -151,7 +163,7 @@ const hasActiveFilters = computed(() => {
                         </svg>
                         Filter
                     </Button>
-                    <Link href="/categories/create">
+                    <Link v-if="canManageCategories" href="/categories/create">
                         <Button size="sm">
                             <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -299,7 +311,7 @@ const hasActiveFilters = computed(() => {
                                                 </svg>
                                             </Button>
                                         </Link>
-                                        <Link :href="`/categories/${category.id}/edit`">
+                                        <Link v-if="canManageCategories" :href="`/categories/${category.id}/edit`">
                                             <Button variant="outline" size="sm">
                                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path
@@ -312,6 +324,7 @@ const hasActiveFilters = computed(() => {
                                             </Button>
                                         </Link>
                                         <Button
+                                            v-if="canManageCategories"
                                             @click="toggleStatus(category.id)"
                                             variant="outline"
                                             size="sm"
@@ -431,7 +444,7 @@ const hasActiveFilters = computed(() => {
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         {{ hasActiveFilters ? 'Tidak ada kategori yang sesuai dengan filter.' : 'Belum ada kategori yang tersedia.' }}
                     </p>
-                    <div class="mt-6">
+                    <div v-if="canManageCategories" class="mt-6">
                         <Link href="/categories/create">
                             <Button>
                                 <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

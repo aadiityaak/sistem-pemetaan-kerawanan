@@ -35,7 +35,9 @@
       "Bash(del check_video.php)",
       "Bash(grep:*)",
       "Bash(find:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(zip:*)",
+      "Bash(powershell:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

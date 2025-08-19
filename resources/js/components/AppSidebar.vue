@@ -47,9 +47,16 @@ interface MenuItem {
 
 const page = usePage<AppPageProps>();
 
-// Check if current user is admin
-const isAdmin = computed(() => {
-    return page.props.auth?.user?.role === 'admin';
+// Check if current user can manage settings (Super Admin and Admin only, not Admin VIP)
+const canManageSettings = computed(() => {
+    const userRole = page.props.auth?.user?.role;
+    return userRole === 'super_admin' || userRole === 'admin';
+});
+
+// Check if current user has admin access (includes all admin types)
+const hasAdminAccess = computed(() => {
+    const userRole = page.props.auth?.user?.role;
+    return userRole === 'super_admin' || userRole === 'admin_vip' || userRole === 'admin';
 });
 
 // Reactive menu items from database
@@ -165,13 +172,18 @@ const settingsNavItems = computed<NavItem[]>(() => {
         },
     ];
 
-    // Add admin-only items
-    if (isAdmin.value) {
+    // Add admin access items (User Management for Super Admin and Admin VIP)
+    if (hasAdminAccess.value) {
+        // User Management - visible to all admin types but only Super Admin can edit
         baseItems.unshift({
             title: 'User Management',
             href: '/users',
             icon: Users,
         });
+    }
+    
+    // Add settings for users who can manage settings (Super Admin and Admin only)
+    if (canManageSettings.value) {
         baseItems.unshift({
             title: 'Pengaturan Aplikasi',
             href: '/settings',
@@ -182,7 +194,7 @@ const settingsNavItems = computed<NavItem[]>(() => {
     return [
         {
             title: 'PENGATURAN',
-            href: isAdmin.value ? '/settings' : '/provinsi',
+            href: hasAdminAccess.value ? (canManageSettings.value ? '/settings' : '/users') : '/provinsi',
             icon: Settings,
             items: baseItems,
         },

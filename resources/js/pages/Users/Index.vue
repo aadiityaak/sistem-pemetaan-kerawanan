@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Link, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { ref, watch, computed } from 'vue';
 
 // Define types
 interface Provinsi {
@@ -55,6 +55,11 @@ const props = defineProps<{
         status?: string;
     };
 }>();
+
+// Get current user and permissions
+const page = usePage();
+const currentUser = computed(() => page.props.auth.user as User);
+const canManageUsers = computed(() => currentUser.value.role === 'super_admin');
 
 // Reactive data
 const searchQuery = ref(props.filters.search || '');
@@ -287,6 +292,7 @@ const toggleUserStatus = (user: User) => {
                 <div></div>
                 <div>
                     <Link
+                        v-if="canManageUsers"
                         :href="route('users.create')"
                         class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-xs leading-5 font-semibold tracking-widest whitespace-nowrap text-white uppercase transition duration-150 ease-in-out hover:bg-blue-700 focus:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:bg-blue-900"
                     >
@@ -457,6 +463,7 @@ const toggleUserStatus = (user: User) => {
                                             View
                                         </Link>
                                         <Link
+                                            v-if="canManageUsers"
                                             :href="route('users.edit', user.id)"
                                             class="inline-flex items-center rounded-md bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700 transition-colors duration-200 hover:bg-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-400 dark:hover:bg-indigo-900"
                                         >
@@ -471,6 +478,7 @@ const toggleUserStatus = (user: User) => {
                                             Edit
                                         </Link>
                                         <button
+                                            v-if="canManageUsers"
                                             @click="toggleUserStatus(user)"
                                             :class="
                                                 user.is_active
@@ -498,6 +506,7 @@ const toggleUserStatus = (user: User) => {
                                             {{ user.is_active ? 'Deactivate' : 'Activate' }}
                                         </button>
                                         <button
+                                            v-if="canManageUsers"
                                             @click="confirmDelete(user)"
                                             class="inline-flex items-center rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-700 transition-colors duration-200 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-400 dark:hover:bg-red-900"
                                         >

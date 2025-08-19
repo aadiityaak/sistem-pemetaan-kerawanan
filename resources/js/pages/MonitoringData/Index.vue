@@ -95,6 +95,7 @@
                         Ke Beranda
                     </Link>
                     <Link
+                        v-if="canEdit"
                         :href="route('monitoring-data.create')"
                         class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-xs leading-5 font-semibold tracking-widest whitespace-nowrap text-white uppercase transition duration-150 ease-in-out hover:bg-blue-700 focus:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:bg-blue-900"
                     >
@@ -394,6 +395,7 @@
                                             Lihat
                                         </Link>
                                         <Link
+                                            v-if="canEdit"
                                             :href="route('monitoring-data.edit', data.id)"
                                             class="inline-flex items-center rounded-md bg-indigo-100 px-2 py-1 text-xs font-medium text-indigo-700 transition-colors duration-200 hover:bg-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-400 dark:hover:bg-indigo-900"
                                         >
@@ -408,6 +410,7 @@
                                             Edit
                                         </Link>
                                         <button
+                                            v-if="canEdit"
                                             @click="confirmDelete(data)"
                                             class="inline-flex items-center rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-700 transition-colors duration-200 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-400 dark:hover:bg-red-900"
                                         >
@@ -584,7 +587,7 @@
 
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
 // Define types
@@ -663,6 +666,13 @@ interface KecamatanItem {
     kabupaten_kota_id: number;
 }
 
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+}
+
 // Props
 const props = defineProps<{
     monitoringData: PaginatedData;
@@ -691,6 +701,11 @@ const selectedKabupaten = ref(props.filters.kabupaten_kota_id || '');
 const showDeleteModal = ref(false);
 const dataToDelete = ref<MonitoringDataItem | null>(null);
 const searchTimeout = ref<number | null>(null);
+
+// Get current user from page props
+const page = usePage();
+const user = computed(() => page.props.auth.user as User);
+const canEdit = computed(() => user.value.role !== 'admin_vip');
 
 // Computed properties for regional filtering
 const filteredKabupaten = computed(() => {

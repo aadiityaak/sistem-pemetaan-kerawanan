@@ -18,8 +18,8 @@ class ProvinceFilter
     {
         $user = Auth::user();
         
-        if ($user && !$user->isAdmin()) {
-            // For non-admin users, add province filter to the request
+        if ($user && $user->role === 'admin') {
+            // Only 'admin' role gets province filter - super_admin and admin_vip see all data
             $request->merge([
                 'province_filter' => $user->provinsi_id
             ]);
