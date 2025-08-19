@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 
 interface MonitoringData {
@@ -79,6 +79,11 @@ const props = defineProps<{
     statistics: Statistics;
     recentActivities: MonitoringData[];
 }>();
+
+// Get current user and check edit permissions
+const page = usePage();
+const currentUser = computed(() => page.props.auth.user as any);
+const canEdit = computed(() => currentUser.value.role !== 'admin_vip');
 
 // Dynamic breadcrumbs based on selected category and subcategory
 const breadcrumbs = computed<BreadcrumbItem[]>(() => {
@@ -487,7 +492,7 @@ onMounted(async () => {
                             }}
                         </p>
                     </div>
-                    <div class="flex items-center">
+                    <div v-if="$page.props.auth.user.role !== 'admin_vip'" class="flex items-center">
                         <Link
                             :href="buildCreateUrl()"
                             class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"

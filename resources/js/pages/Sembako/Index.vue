@@ -12,7 +12,7 @@
                 <div class="flex items-center gap-3">
                     <!-- Bulk Delete Button -->
                     <button
-                        v-if="selectedItems.length > 0"
+                        v-if="canEdit && selectedItems.length > 0"
                         @click="confirmBulkDelete"
                         class="inline-flex items-center justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-xs leading-5 font-semibold tracking-widest whitespace-nowrap text-white uppercase transition duration-150 ease-in-out hover:bg-red-700 focus:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none active:bg-red-900"
                     >
@@ -22,7 +22,7 @@
 
                     <!-- Select All Button -->
                     <button
-                        v-if="sembako.data.length > 0"
+                        v-if="canEdit && sembako.data.length > 0"
                         @click="toggleSelectAll"
                         class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-semibold tracking-widest text-gray-700 uppercase transition duration-150 ease-in-out hover:bg-gray-50 focus:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                     >
@@ -74,7 +74,7 @@
                         </div>
                     </div>
                 </div>
-                <div>
+                <div v-if="canEdit">
                     <Link
                         :href="route('sembako.create')"
                         class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-xs leading-5 font-semibold tracking-widest whitespace-nowrap text-white uppercase transition duration-150 ease-in-out hover:bg-blue-700 focus:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none active:bg-blue-900"
@@ -237,7 +237,7 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-900">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                <th v-if="canEdit" class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
                                     <input
                                         type="checkbox"
                                         :checked="isAllSelected"
@@ -267,7 +267,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                             <tr v-for="item in sembako.data" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td v-if="canEdit" class="px-6 py-4 whitespace-nowrap">
                                     <input
                                         type="checkbox"
                                         :value="item.id"
@@ -304,6 +304,7 @@
                                             Lihat
                                         </Link>
                                         <Link
+                                            v-if="canEdit"
                                             :href="route('sembako.edit', item.id)"
                                             class="inline-flex items-center rounded border border-yellow-300 bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-700 hover:bg-yellow-100 dark:border-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400 dark:hover:bg-yellow-900/40"
                                         >
@@ -311,6 +312,7 @@
                                             Edit
                                         </Link>
                                         <button
+                                            v-if="canEdit"
                                             @click="confirmDelete(item)"
                                             class="inline-flex items-center rounded border border-red-300 bg-red-50 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-100 dark:border-red-600 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
                                         >
@@ -443,7 +445,7 @@
 
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { ChevronDown, Download, Edit, Eye, FileText, Plus, Trash, Upload } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
@@ -524,6 +526,11 @@ const props = defineProps<{
         sort_direction?: string;
     };
 }>();
+
+// Get current user and check edit permissions
+const page = usePage();
+const currentUser = computed(() => page.props.auth.user as any);
+const canEdit = computed(() => currentUser.value.role !== 'admin_vip');
 
 // Filters - initialize from server-side filters
 const searchQuery = ref(props.filters.search || '');

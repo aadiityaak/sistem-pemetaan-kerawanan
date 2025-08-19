@@ -109,6 +109,7 @@
 
                 <!-- Add Button -->
                 <Link
+                    v-if="canEdit"
                     :href="route('partai-politik.create')"
                     class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
                 >
@@ -229,6 +230,7 @@
                                         Detail
                                     </Link>
                                     <Link
+                                        v-if="canEdit"
                                         :href="route('partai-politik.edit', partai.id)"
                                         class="inline-flex items-center rounded border border-yellow-300 bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-700 hover:bg-yellow-100 dark:border-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400 dark:hover:bg-yellow-900/40"
                                     >
@@ -243,6 +245,7 @@
                                         Edit
                                     </Link>
                                     <button
+                                        v-if="canEdit"
                                         @click="deletePartai(partai)"
                                         class="inline-flex items-center rounded border border-red-300 bg-red-50 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-100 dark:border-red-600 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
                                     >
@@ -277,6 +280,7 @@
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Mulai dengan menambahkan partai politik pertama.</p>
                             <div class="mt-6">
                                 <Link
+                                    v-if="canEdit"
                                     :href="route('partai-politik.create')"
                                     class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
                                 >
@@ -357,8 +361,8 @@
 
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Link, router } from '@inertiajs/vue3';
-import { reactive } from 'vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import { reactive, computed } from 'vue';
 // Simple debounce function
 const debounce = (func: Function, wait: number) => {
     let timeout: ReturnType<typeof setTimeout>;
@@ -411,6 +415,10 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+// Get current user and check edit permissions
+const page = usePage();
+const canEdit = computed(() => page.props.auth.user.role !== 'admin_vip');
 
 const form = reactive({
     search: props.filters.search || '',
