@@ -137,12 +137,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/monitoring-data/{id}', [MonitoringDataController::class, 'show'])->name('monitoring-data.show');
     });
 
-    // AI Prediction Routes (Super Admin and Admin VIP can view, only Super Admin and Admin can edit)
+    // AI Prediction Routes (Super Admin, Admin VIP, and Admin can access all features)
     Route::middleware(['role:super_admin,admin_vip,admin'])->group(function () {
         Route::get('/ai-prediction', [\App\Http\Controllers\AiPredictionController::class, 'index'])->name('ai-prediction.index');
-        Route::middleware(['edit.permission'])->group(function () {
-            Route::post('/ai-prediction/analyze', [\App\Http\Controllers\AiPredictionController::class, 'analyze'])->name('ai-prediction.analyze');
-        });
+        Route::post('/ai-prediction/analyze', [\App\Http\Controllers\AiPredictionController::class, 'analyze'])->name('ai-prediction.analyze');
     });
 
     // INDAS Routes - Economic, Tourism & Social Analysis System
