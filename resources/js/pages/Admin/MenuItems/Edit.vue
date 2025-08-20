@@ -104,26 +104,32 @@
                                     <label class="text-sm font-medium">Tampil untuk Role:</label>
                                     <div class="space-y-2">
                                         <div class="flex items-center space-x-2">
-                                            <Checkbox 
+                                            <input 
+                                                type="checkbox"
                                                 id="role_super_admin" 
-                                                :checked="form.permissions.includes('super_admin')"
-                                                @update:checked="updatePermission('super_admin', $event)"
+                                                v-model="form.permissions"
+                                                value="super_admin"
+                                                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                             />
                                             <label for="role_super_admin" class="text-sm font-medium">Super Admin</label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <Checkbox 
+                                            <input 
+                                                type="checkbox"
                                                 id="role_admin_vip" 
-                                                :checked="form.permissions.includes('admin_vip')"
-                                                @update:checked="updatePermission('admin_vip', $event)"
+                                                v-model="form.permissions"
+                                                value="admin_vip"
+                                                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                             />
                                             <label for="role_admin_vip" class="text-sm font-medium">Admin VIP</label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <Checkbox 
+                                            <input 
+                                                type="checkbox"
                                                 id="role_admin" 
-                                                :checked="form.permissions.includes('admin')"
-                                                @update:checked="updatePermission('admin', $event)"
+                                                v-model="form.permissions"
+                                                value="admin"
+                                                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                             />
                                             <label for="role_admin" class="text-sm font-medium">Admin</label>
                                         </div>
@@ -157,9 +163,10 @@ import IconSelector from '@/components/ui/IconSelector.vue';
 import { Input } from '@/components/ui/input';
 import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue';
 // Removed Textarea import - using native textarea instead
-import { Checkbox } from '@/components/ui/checkbox';
+// Removed Checkbox import - using native checkbox instead
 // Removed Select components - using native select instead
 import { Link, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 interface MenuItem {
     id: number;
@@ -196,22 +203,13 @@ const form = useForm({
     sort_order: props.menuItem.sort_order || 0,
     parent_id: props.menuItem.parent_id || null,
     admin_only: props.menuItem.admin_only ?? false,
-    permissions: (props.menuItem.permissions || []) as string[],
+    permissions: (props.menuItem.permissions && Array.isArray(props.menuItem.permissions) 
+        ? props.menuItem.permissions 
+        : []) as string[],
     description: props.menuItem.description || '',
 });
 
-const updatePermission = (role: string, checked: boolean) => {
-    if (checked) {
-        if (!form.permissions.includes(role)) {
-            form.permissions.push(role);
-        }
-    } else {
-        const index = form.permissions.indexOf(role);
-        if (index > -1) {
-            form.permissions.splice(index, 1);
-        }
-    }
-};
+// Native checkboxes with v-model work automatically with arrays
 
 const submit = () => {
     form.put(route('admin.menu-items.update', props.menuItem.id), {

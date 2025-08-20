@@ -125,14 +125,6 @@ class MenuItemController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        // Debug logging
-        \Log::info('MenuItem Update Debug', [
-            'menu_id' => $menuItem->id,
-            'menu_title' => $menuItem->title,
-            'request_permissions' => $request->input('permissions'),
-            'request_admin_only' => $request->input('admin_only'),
-            'all_request_data' => $request->all()
-        ]);
 
         $menuItem->update($request->all());
 

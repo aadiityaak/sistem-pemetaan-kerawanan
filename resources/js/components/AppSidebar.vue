@@ -59,6 +59,12 @@ const hasAdminAccess = computed(() => {
     return userRole === 'super_admin' || userRole === 'admin_vip' || userRole === 'admin';
 });
 
+// Check if current user is super admin only (for sidebar footer)
+const isSuperAdmin = computed(() => {
+    const userRole = page.props.auth?.user?.role;
+    return userRole === 'super_admin';
+});
+
 // Reactive menu items from database
 const dbMenuItems = ref<MenuItem[]>([]);
 const isLoading = ref(true);
@@ -140,9 +146,9 @@ const mainNavItems = computed<NavItem[]>(() => {
     return convertMenuItemsToNavItems(mainItems);
 });
 
-// Settings nav items for sidebar footer
+// Settings nav items for sidebar footer (Super Admin only)
 const settingsNavItems = computed<NavItem[]>(() => {
-    if (isLoading.value || !dbMenuItems.value.length) {
+    if (isLoading.value || !dbMenuItems.value.length || !isSuperAdmin.value) {
         return [];
     }
 
@@ -153,8 +159,18 @@ const settingsNavItems = computed<NavItem[]>(() => {
         return convertMenuItemsToNavItems([pengaturanMenu]);
     }
 
-    // Fallback if PENGATURAN not found in database
+    // Fallback if PENGATURAN not found in database - Super Admin gets all settings
     const baseItems = [
+        {
+            title: 'Pengaturan Aplikasi',
+            href: '/settings',
+            icon: Settings,
+        },
+        {
+            title: 'User Management',
+            href: '/users',
+            icon: Users,
+        },
         {
             title: 'Provinsi',
             href: '/provinsi',
@@ -172,29 +188,10 @@ const settingsNavItems = computed<NavItem[]>(() => {
         },
     ];
 
-    // Add admin access items (User Management for Super Admin and Admin VIP)
-    if (hasAdminAccess.value) {
-        // User Management - visible to all admin types but only Super Admin can edit
-        baseItems.unshift({
-            title: 'User Management',
-            href: '/users',
-            icon: Users,
-        });
-    }
-
-    // Add settings for users who can manage settings (Super Admin and Admin only)
-    if (canManageSettings.value) {
-        baseItems.unshift({
-            title: 'Pengaturan Aplikasi',
-            href: '/settings',
-            icon: Settings,
-        });
-    }
-
     return [
         {
             title: 'PENGATURAN',
-            href: hasAdminAccess.value ? (canManageSettings.value ? '/settings' : '/users') : '/provinsi',
+            href: '/settings',
             icon: Settings,
             items: baseItems,
         },
@@ -226,7 +223,7 @@ onMounted(() => {
         </SidebarContent>
 
         <SidebarFooter>
-            <NavMain :items="settingsNavItems" />
+            <NavMain v-if="isSuperAdmin" :items="settingsNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>
