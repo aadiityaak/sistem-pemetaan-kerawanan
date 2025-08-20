@@ -90,9 +90,11 @@ class AiPredictionController extends Controller
         // Prepare data for AI analysis
         $dataForAi = $crimeData->map(function ($data) {
             return [
-                'category' => $data->category->name,
-                'sub_category' => $data->subCategory->name,
-                'location' => $data->provinsi->nama . ', ' . $data->kabupatenKota->nama . ', ' . $data->kecamatan->nama,
+                'category' => $data->category?->name ?? 'Tidak diketahui',
+                'sub_category' => $data->subCategory?->name ?? 'Tidak diketahui',
+                'location' => ($data->provinsi?->nama ?? 'Tidak diketahui') . ', ' . 
+                             ($data->kabupatenKota?->nama ?? 'Tidak diketahui') . ', ' . 
+                             ($data->kecamatan?->nama ?? 'Tidak diketahui'),
                 'date' => $data->incident_date->format('Y-m-d'),
                 'severity' => $data->severity_level,
                 'description' => $data->description,
@@ -112,7 +114,7 @@ class AiPredictionController extends Controller
                 ->map(function ($items) {
                     return [
                         'count' => $items->count(),
-                        'location' => $items->first()->kabupatenKota->nama,
+                        'location' => $items->first()->kabupatenKota?->nama ?? 'Lokasi tidak diketahui',
                     ];
                 })
                 ->sortByDesc('count')
