@@ -181,9 +181,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Categories Routes (Super Admin and Admin VIP can view, only Super Admin can edit)
     Route::middleware(['role:super_admin,admin_vip'])->group(function () {
         Route::get('categories', [\App\Http\Controllers\CategoryController::class, 'index'])->name('categories.index');
-        Route::get('categories/{category}', [\App\Http\Controllers\CategoryController::class, 'show'])->name('categories.show');
         Route::get('sub-categories', [\App\Http\Controllers\SubCategoryController::class, 'index'])->name('sub-categories.index');
-        Route::get('sub-categories/{subCategory}', [\App\Http\Controllers\SubCategoryController::class, 'show'])->name('sub-categories.show');
         
         // Only Super Admin can edit categories
         Route::middleware(['role:super_admin'])->group(function () {
@@ -195,7 +193,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/categories/{category}/toggle-status', [\App\Http\Controllers\CategoryController::class, 'toggleStatus'])->name('categories.toggle-status');
             Route::delete('/categories/{category}/delete-image', [\App\Http\Controllers\CategoryController::class, 'deleteImage'])->name('categories.delete-image');
 
-            // Sub Categories Routes
+            // Sub Categories Routes - specific routes must come before parameterized routes
             Route::get('sub-categories/create', [\App\Http\Controllers\SubCategoryController::class, 'create'])->name('sub-categories.create');
             Route::post('sub-categories', [\App\Http\Controllers\SubCategoryController::class, 'store'])->name('sub-categories.store');
             Route::get('sub-categories/{subCategory}/edit', [\App\Http\Controllers\SubCategoryController::class, 'edit'])->name('sub-categories.edit');
@@ -204,6 +202,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/sub-categories/{subCategory}/toggle-status', [\App\Http\Controllers\SubCategoryController::class, 'toggleStatus'])->name('sub-categories.toggle-status');
             Route::delete('/sub-categories/{subCategory}/delete-image', [\App\Http\Controllers\SubCategoryController::class, 'deleteImage'])->name('sub-categories.delete-image');
         });
+        
+        // Show routes must come AFTER more specific routes like create and edit
+        Route::get('categories/{category}', [\App\Http\Controllers\CategoryController::class, 'show'])->name('categories.show');
+        Route::get('sub-categories/{subCategory}', [\App\Http\Controllers\SubCategoryController::class, 'show'])->name('sub-categories.show');
     });
 
     // Event Calendar Routes (Universal for Kamtibmas, Agenda, etc.)

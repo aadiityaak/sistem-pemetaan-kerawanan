@@ -492,7 +492,7 @@ onMounted(async () => {
                             }}
                         </p>
                     </div>
-                    <div v-if="$page.props.auth.user.role !== 'admin_vip'" class="flex items-center">
+                    <div v-if="['super_admin', 'admin'].includes($page.props.auth.user.role)" class="flex items-center">
                         <Link
                             :href="buildCreateUrl()"
                             class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:focus:ring-offset-gray-800"

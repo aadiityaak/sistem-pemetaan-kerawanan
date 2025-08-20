@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MenuItem extends Model
 {
@@ -57,12 +57,12 @@ class MenuItem extends Model
     public function scopeForUser($query, $user)
     {
         $query->where('is_active', true);
-        
-        // If not admin, exclude admin-only items
-        if (!$user || $user->role !== 'admin') {
+
+        // If not admin, super_admin, or admin_vip, exclude admin-only items
+        if (! $user || ! in_array($user->role, ['super_admin', 'admin_vip', 'admin'])) {
             $query->where('admin_only', false);
         }
-        
+
         return $query;
     }
 
@@ -70,21 +70,22 @@ class MenuItem extends Model
     {
         // Get all active menu items that user can access
         $allMenuItems = self::forUser($user)->orderBy('sort_order')->get();
-        
+
         // Build hierarchy recursively for unlimited depth
-        $buildHierarchy = function ($items, $allItems, $parentId = null) use (&$buildHierarchy, $user) {
+        $buildHierarchy = function ($items, $allItems, $parentId = null) use (&$buildHierarchy) {
             return $items->filter(function ($item) use ($parentId) {
                 return $item->parent_id === $parentId;
-            })->map(function ($item) use ($allItems, $buildHierarchy, $user) {
+            })->map(function ($item) use ($allItems, $buildHierarchy) {
                 // Get children recursively
                 $children = $buildHierarchy($allItems, $allItems, $item->id);
                 if ($children->count() > 0) {
                     $item->children = $children->values(); // Ensure children are indexed arrays
                 }
+
                 return $item;
             });
         };
-        
+
         // Return root items with their full hierarchy as values (not keys)
         return $buildHierarchy($allMenuItems, $allMenuItems)->values();
     }
