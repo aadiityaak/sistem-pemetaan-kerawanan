@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { ref, watch, computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 // Define types
 interface Provinsi {
@@ -208,12 +208,7 @@ const toggleUserStatus = (user: User) => {
                     <div class="flex items-center">
                         <div class="rounded-lg bg-yellow-100 p-2 dark:bg-yellow-900">
                             <svg class="h-6 w-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"

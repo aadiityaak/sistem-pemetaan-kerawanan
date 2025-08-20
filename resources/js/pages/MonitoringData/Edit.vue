@@ -426,7 +426,7 @@ const uploadVideoChunked = async (file: File) => {
             formData.append('fileSize', file.size.toString());
 
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-            
+
             const response = await fetch('/api/upload-video-chunk', {
                 method: 'POST',
                 body: formData,
@@ -434,7 +434,7 @@ const uploadVideoChunked = async (file: File) => {
                     'X-CSRF-TOKEN': csrfToken,
                 },
             });
-            
+
             if (!response.ok) {
                 throw new Error(`Upload failed: ${response.statusText}`);
             }
@@ -563,9 +563,9 @@ const submit = () => {
     form.latitude = parseFloat(form.latitude) || props.monitoringData.latitude;
     form.longitude = parseFloat(form.longitude) || props.monitoringData.longitude;
     form.jumlah_terdampak = form.jumlah_terdampak ? parseInt(form.jumlah_terdampak) : props.monitoringData.jumlah_terdampak;
-    
+
     console.log('Form data before submit:', form.data());
-    
+
     form.post(`/monitoring-data/${props.monitoringData.id}`, {
         onSuccess: (page) => {
             // Show success message

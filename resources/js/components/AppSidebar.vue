@@ -181,7 +181,7 @@ const settingsNavItems = computed<NavItem[]>(() => {
             icon: Users,
         });
     }
-    
+
     // Add settings for users who can manage settings (Super Admin and Admin only)
     if (canManageSettings.value) {
         baseItems.unshift({

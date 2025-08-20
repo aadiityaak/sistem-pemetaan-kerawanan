@@ -12,25 +12,30 @@
                             <div class="flex items-center">
                                 <div class="flex-shrink-0">
                                     <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                        <path
+                                            fill-rule="evenodd"
+                                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                            clip-rule="evenodd"
+                                        />
                                     </svg>
                                 </div>
                                 <div class="ml-3">
-                                    <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                                        Akses Terbatas
-                                    </h3>
+                                    <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">Akses Terbatas</h3>
                                     <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
-                                        <p>Anda tidak memiliki izin untuk mengubah pengaturan aplikasi. Silakan hubungi Super Admin jika perlu melakukan perubahan.</p>
+                                        <p>
+                                            Anda tidak memiliki izin untuk mengubah pengaturan aplikasi. Silakan hubungi Super Admin jika perlu
+                                            melakukan perubahan.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- View-only mode for Admin VIP -->
                         <div v-if="formsReady && !canManageSettings">
                             <div v-for="(groupSettings, group) in settings" :key="group" class="mb-8">
                                 <h3 class="mb-4 text-lg font-semibold text-gray-800 capitalize dark:text-gray-200">{{ group }}</h3>
-                                
+
                                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                                     <div
                                         v-for="setting in groupSettings"
@@ -47,21 +52,30 @@
                                                 </p>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Read-only display of setting values -->
                                         <div class="mt-2">
-                                            <div v-if="setting.type === 'text' || setting.type === 'email' || setting.type === 'url'" 
-                                                 class="block w-full rounded-md border-gray-300 bg-gray-100 p-2 text-sm text-gray-600 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-300">
+                                            <div
+                                                v-if="setting.type === 'text' || setting.type === 'email' || setting.type === 'url'"
+                                                class="block w-full rounded-md border-gray-300 bg-gray-100 p-2 text-sm text-gray-600 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-300"
+                                            >
                                                 {{ setting.value || '-' }}
                                             </div>
-                                            <div v-else-if="setting.type === 'textarea'" 
-                                                 class="block w-full rounded-md border-gray-300 bg-gray-100 p-2 text-sm text-gray-600 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-300">
+                                            <div
+                                                v-else-if="setting.type === 'textarea'"
+                                                class="block w-full rounded-md border-gray-300 bg-gray-100 p-2 text-sm text-gray-600 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-300"
+                                            >
                                                 {{ setting.value || '-' }}
                                             </div>
-                                            <div v-else-if="setting.type === 'boolean'" 
-                                                 class="flex items-center">
-                                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                                                      :class="setting.value === '1' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'">
+                                            <div v-else-if="setting.type === 'boolean'" class="flex items-center">
+                                                <span
+                                                    class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                                                    :class="
+                                                        setting.value === '1'
+                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                                                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                                                    "
+                                                >
                                                     {{ setting.value === '1' ? 'Aktif' : 'Tidak Aktif' }}
                                                 </span>
                                             </div>
@@ -70,7 +84,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <form @submit.prevent="saveAllSettings" v-if="formsReady && canManageSettings">
                             <div v-for="(groupSettings, group) in settings" :key="group" class="mb-8">
                                 <h3 class="mb-4 text-lg font-semibold text-gray-800 capitalize dark:text-gray-200">{{ group }}</h3>

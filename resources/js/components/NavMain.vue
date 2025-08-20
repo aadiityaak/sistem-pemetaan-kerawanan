@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import {
-    SidebarGroup,
-    SidebarMenu,
-} from '@/components/ui/sidebar';
+import NavMenuItem from '@/components/NavMenuItem.vue';
+import { SidebarGroup, SidebarMenu } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { usePage } from '@inertiajs/vue3';
 import { onMounted, ref, watch } from 'vue';
-import NavMenuItem from '@/components/NavMenuItem.vue';
 
 const props = defineProps<{
     items: NavItem[];
@@ -37,10 +34,10 @@ const loadOpenState = () => {
 const checkItemMatch = (item: NavItem, currentUrl: string): boolean => {
     // Check exact match
     if (item.href === currentUrl) return true;
-    
+
     // Check URL prefix match (for nested routes)
     if (currentUrl.startsWith(item.href) && item.href !== '/') return true;
-    
+
     // Check for URL with query parameters
     if (currentUrl.includes('?') && item.href.includes('?')) {
         const currentBase = currentUrl.split('?')[0];
@@ -53,7 +50,7 @@ const checkItemMatch = (item: NavItem, currentUrl: string): boolean => {
             return categoryMatch && subcategoryMatch;
         }
     }
-    
+
     return false;
 };
 
@@ -64,7 +61,7 @@ const findAndOpenActiveItems = (items: NavItem[], currentUrl: string): boolean =
         if (checkItemMatch(item, currentUrl)) {
             return true;
         }
-        
+
         // Check children recursively
         if (item.items && item.items.length > 0) {
             const hasActiveChild = findAndOpenActiveItems(item.items, currentUrl);
@@ -89,13 +86,13 @@ const toggleItem = (title: string, siblings: NavItem[], level: number) => {
     } else {
         // Only apply accordion behavior to items with siblings and that have sub-items
         if (siblings && siblings.length > 0) {
-            siblings.forEach(sibling => {
+            siblings.forEach((sibling) => {
                 if (sibling.title !== title && sibling.items && sibling.items.length > 0) {
                     openItems.value.delete(sibling.title);
                 }
             });
         }
-        
+
         openItems.value.add(title);
     }
     saveOpenState();
@@ -123,10 +120,10 @@ watch(
 <template>
     <SidebarGroup class="px-2 py-0">
         <SidebarMenu>
-            <NavMenuItem 
-                v-for="item in items" 
-                :key="item.title" 
-                :item="item" 
+            <NavMenuItem
+                v-for="item in items"
+                :key="item.title"
+                :item="item"
                 :level="0"
                 :open-items="openItems"
                 :siblings="items"

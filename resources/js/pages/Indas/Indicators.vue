@@ -61,11 +61,6 @@
                                             </h4>
                                             <div class="flex items-center space-x-2">
                                                 <span
-                                                    class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
-                                                >
-                                                    Weight: {{ indicator.weight_factor }}
-                                                </span>
-                                                <span
                                                     class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
                                                 >
                                                     {{ indicator.unit }}
@@ -124,11 +119,6 @@
                                                 {{ indicator.name }}
                                             </h4>
                                             <div class="flex items-center space-x-2">
-                                                <span
-                                                    class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
-                                                >
-                                                    Weight: {{ indicator.weight_factor }}
-                                                </span>
                                                 <span
                                                     class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
                                                 >
@@ -189,11 +179,6 @@
                                             </h4>
                                             <div class="flex items-center space-x-2">
                                                 <span
-                                                    class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
-                                                >
-                                                    Weight: {{ indicator.weight_factor }}
-                                                </span>
-                                                <span
                                                     class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
                                                 >
                                                     {{ indicator.unit }}
@@ -227,7 +212,7 @@
         </div>
 
         <!-- Add Indicator Modal -->
-        <div v-if="showAddModal" class="bg-opacity-50 fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600" @click="closeModal">
+        <div v-if="showAddModal" class="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600/50" @click="closeModal">
             <div class="relative top-20 mx-auto w-96 rounded-md border bg-white p-5 shadow-lg dark:bg-gray-800" @click.stop>
                 <div class="mt-3">
                     <div class="mb-4 flex items-center justify-between">
@@ -280,24 +265,6 @@
                         </div>
 
                         <div>
-                            <label for="weight_factor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Weight Factor (0.0 - 1.0)
-                            </label>
-                            <input
-                                id="weight_factor"
-                                v-model="form.weight_factor"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                max="1"
-                                required
-                                class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                placeholder="e.g., 0.4, 0.3, 0.5"
-                            />
-                            <p class="mt-1 text-xs text-gray-500">Higher values = more important in score calculation</p>
-                        </div>
-
-                        <div>
                             <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Description (Optional)
                             </label>
@@ -332,7 +299,7 @@
         </div>
 
         <!-- Edit Indicator Modal -->
-        <div v-if="showEditModal" class="bg-opacity-50 fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600" @click="closeEditModal">
+        <div v-if="showEditModal" class="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600/50" @click="closeEditModal">
             <div class="relative top-20 mx-auto w-96 rounded-md border bg-white p-5 shadow-lg dark:bg-gray-800" @click.stop>
                 <div class="mt-3">
                     <div class="mb-4 flex items-center justify-between">
@@ -343,9 +310,7 @@
                     </div>
                     <form @submit.prevent="updateIndicator" class="space-y-4">
                         <div>
-                            <label for="edit-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Category
-                            </label>
+                            <label for="edit-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300"> Category </label>
                             <select
                                 id="edit-category"
                                 v-model="form.category"
@@ -359,9 +324,7 @@
                             </select>
                         </div>
                         <div>
-                            <label for="edit-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Name
-                            </label>
+                            <label for="edit-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300"> Name </label>
                             <input
                                 id="edit-name"
                                 v-model="form.name"
@@ -373,9 +336,7 @@
                             />
                         </div>
                         <div>
-                            <label for="edit-unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Unit
-                            </label>
+                            <label for="edit-unit" class="block text-sm font-medium text-gray-700 dark:text-gray-300"> Unit </label>
                             <input
                                 id="edit-unit"
                                 v-model="form.unit"
@@ -385,23 +346,6 @@
                                 class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                 placeholder="e.g., units, visitors, %"
                             />
-                        </div>
-                        <div>
-                            <label for="edit-weight_factor" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Weight Factor (0.0 - 1.0)
-                            </label>
-                            <input
-                                id="edit-weight_factor"
-                                v-model="form.weight_factor"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                max="1"
-                                required
-                                class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                placeholder="e.g., 0.4, 0.3, 0.5"
-                            />
-                            <p class="mt-1 text-xs text-gray-500">Higher values = more important in score calculation</p>
                         </div>
                         <div>
                             <label for="edit-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -439,7 +383,7 @@
         <!-- Delete Confirmation Modal -->
         <div
             v-if="showDeleteModal && indicatorToDelete"
-            class="bg-opacity-50 fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600"
+            class="fixed inset-0 z-50 h-full w-full overflow-y-auto bg-gray-600/50"
             @click="closeDeleteModal"
         >
             <div class="relative top-20 mx-auto w-96 rounded-md border bg-white p-5 shadow-lg dark:bg-gray-800" @click.stop>
@@ -456,8 +400,7 @@
                         <div class="rounded-md bg-gray-50 p-3 dark:bg-gray-700">
                             <h4 class="font-medium text-gray-900 dark:text-white">{{ indicatorToDelete.name }}</h4>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                Category: {{ indicatorToDelete.category }} • Weight: {{ indicatorToDelete.weight_factor }} • Unit:
-                                {{ indicatorToDelete.unit }}
+                                Category: {{ indicatorToDelete.category }} • Unit: {{ indicatorToDelete.unit }}
                             </p>
                         </div>
                         <p class="mt-2 text-xs text-red-600 dark:text-red-400">
@@ -489,7 +432,16 @@
 
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { BuildingOffice2Icon, ChartBarIcon, CurrencyDollarIcon, PencilIcon, PlusIcon, TrashIcon, UsersIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import {
+    BuildingOffice2Icon,
+    ChartBarIcon,
+    CurrencyDollarIcon,
+    PencilIcon,
+    PlusIcon,
+    TrashIcon,
+    UsersIcon,
+    XMarkIcon,
+} from '@heroicons/vue/24/outline';
 import { Link, router } from '@inertiajs/vue3';
 import { reactive, ref } from 'vue';
 
@@ -498,7 +450,6 @@ interface Indicator {
     name: string;
     category: string;
     unit: string;
-    weight_factor: number;
     description?: string;
 }
 
@@ -522,7 +473,6 @@ const form = reactive({
     category: '',
     name: '',
     unit: '',
-    weight_factor: '',
     description: '',
 });
 
@@ -541,7 +491,6 @@ const resetForm = () => {
     form.category = '';
     form.name = '';
     form.unit = '';
-    form.weight_factor = '';
     form.description = '';
 };
 
@@ -555,7 +504,6 @@ const submitForm = async () => {
                 category: form.category,
                 name: form.name,
                 unit: form.unit,
-                weight_factor: parseFloat(form.weight_factor),
                 description: form.description || null,
             },
             {
@@ -578,14 +526,13 @@ const editIndicator = (indicator: Indicator) => {
     form.category = indicator.category;
     form.name = indicator.name;
     form.unit = indicator.unit;
-    form.weight_factor = indicator.weight_factor.toString();
     form.description = indicator.description || '';
     showEditModal.value = true;
 };
 
 const updateIndicator = async () => {
     if (!indicatorToEdit.value) return;
-    
+
     isSubmitting.value = true;
     try {
         await router.put(
@@ -594,7 +541,6 @@ const updateIndicator = async () => {
                 category: form.category,
                 name: form.name,
                 unit: form.unit,
-                weight_factor: parseFloat(form.weight_factor),
                 description: form.description || null,
             },
             {

@@ -174,7 +174,9 @@ const removeImage = () => {
                                     class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     placeholder="masukkan-slug-sub-kategori"
                                 />
-                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Slug digunakan untuk URL. Gunakan huruf kecil, angka, dan tanda hubung (-)</p>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    Slug digunakan untuk URL. Gunakan huruf kecil, angka, dan tanda hubung (-)
+                                </p>
                                 <div v-if="form.errors.slug" class="mt-1 text-sm text-red-500">{{ form.errors.slug }}</div>
                             </div>
 

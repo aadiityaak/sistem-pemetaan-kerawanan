@@ -366,17 +366,17 @@ const submit = () => {
 };
 
 // Initialize map on mount
-import { onMounted, nextTick } from 'vue';
+import { nextTick, onMounted } from 'vue';
 onMounted(async () => {
     initializeMap();
-    
+
     // Set pre-selected category and subcategory from URL parameters
     if (props.selectedCategory) {
         form.category_id = props.selectedCategory.id.toString();
-        
+
         // Wait for the next tick to ensure filteredSubCategories is updated
         await nextTick();
-        
+
         // Then set the subcategory
         if (props.selectedSubCategory) {
             form.sub_category_id = props.selectedSubCategory.id.toString();

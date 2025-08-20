@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { onMounted, ref, computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 interface GalleryItem {
     path: string;

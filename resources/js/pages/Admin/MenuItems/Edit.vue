@@ -127,8 +127,8 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import IconSelector from '@/components/ui/IconSelector.vue';
+import { Input } from '@/components/ui/input';
 import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue';
 // Removed Textarea import - using native textarea instead
 import { Checkbox } from '@/components/ui/checkbox';

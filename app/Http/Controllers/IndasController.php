@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\IndasRegion;
+use App\Models\Category;
+use App\Models\IndasAnalysisResult;
 use App\Models\IndasIndicatorType;
 use App\Models\IndasMonthlyData;
-use App\Models\IndasAnalysisResult;
 use App\Models\KabupatenKota;
 use App\Models\MonitoringData;
-use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -18,28 +17,28 @@ class IndasController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        
+
         // Get current month/year or use provided values
         $month = $request->input('month', now()->month);
         $year = $request->input('year', now()->year);
-        
+
         // Base query for analysis results
         $query = IndasAnalysisResult::with(['kabupatenKota.provinsi'])
             ->forPeriod($month, $year)
             ->latest();
-        
+
         // Apply province filter for non-admin users
-        if (!$user->isAdmin() && $user->provinsi_id) {
+        if (! $user->isAdmin() && $user->provinsi_id) {
             $query->whereHas('kabupatenKota', function ($q) use ($user) {
                 $q->where('provinsi_id', $user->provinsi_id);
             });
         }
-        
+
         $analysisResults = $query->get();
-        
+
         // Get regional information for each kabupaten/kota
         $regionalInfo = $this->getRegionalInfo($user, $analysisResults->pluck('kabupaten_kota_id')->toArray());
-        
+
         // Get summary statistics
         $stats = [
             'total_regions' => $analysisResults->count(),
@@ -48,10 +47,10 @@ class IndasController extends Controller
             'avg_social_score' => $analysisResults->avg('social_score') ?? 0,
             'avg_total_score' => $analysisResults->avg('total_score') ?? 0,
         ];
-        
+
         // Get unjuk rasa (protest) data
         $unjukRasaStats = $this->getUnjukRasaStats($user);
-        
+
         return Inertia::render('Indas/Index', [
             'analysisResults' => $analysisResults,
             'regionalInfo' => $regionalInfo,
@@ -65,19 +64,19 @@ class IndasController extends Controller
     public function regions(Request $request)
     {
         $user = $request->user();
-        
+
         $query = KabupatenKota::with(['provinsi']);
-        
+
         // Apply province filter for non-admin users
-        if (!$user->isAdmin() && $user->provinsi_id) {
+        if (! $user->isAdmin() && $user->provinsi_id) {
             $query->where('provinsi_id', $user->provinsi_id);
         }
-        
+
         // Add search functionality
         if ($request->has('search')) {
             $query->where('nama', 'like', '%'.$request->search.'%');
         }
-        
+
         return Inertia::render('Indas/Regions', [
             'kabupatenKota' => $query->get(),
             'filters' => [
@@ -95,37 +94,30 @@ class IndasController extends Controller
 
     public function storeIndicator(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'required|in:ekonomi,pariwisata,sosial',
             'unit' => 'required|string|max:50',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:500',
         ]);
-        
-        IndasIndicatorType::create($request->validated());
-        
+
+        IndasIndicatorType::create($validated);
+
         return redirect()->back()->with('success', 'Indikator berhasil ditambahkan');
     }
 
     public function updateIndicator(Request $request, $id)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category' => 'required|in:ekonomi,pariwisata,sosial',
             'unit' => 'required|string|max:50',
-            'weight_factor' => 'required|numeric|min:0|max:1',
             'description' => 'nullable|string|max:500',
         ]);
 
         $indicator = IndasIndicatorType::findOrFail($id);
-        
-        $indicator->update([
-            'name' => $request->name,
-            'category' => $request->category,
-            'unit' => $request->unit,
-            'weight_factor' => $request->weight_factor,
-            'description' => $request->description,
-        ]);
+
+        $indicator->update($validated);
 
         return redirect()->back()->with('success', 'Indikator berhasil diperbarui');
     }
@@ -133,16 +125,16 @@ class IndasController extends Controller
     public function deleteIndicator(Request $request, $id)
     {
         $indicator = IndasIndicatorType::findOrFail($id);
-        
+
         // Check if indicator has associated data
         $hasData = IndasMonthlyData::where('indicator_type_id', $id)->exists();
-        
+
         if ($hasData) {
             return redirect()->back()->with('error', 'Tidak dapat menghapus indikator yang memiliki data terkait. Hapus data terlebih dahulu.');
         }
-        
+
         $indicator->delete();
-        
+
         return redirect()->back()->with('success', 'Indikator berhasil dihapus');
     }
 
@@ -152,36 +144,36 @@ class IndasController extends Controller
         $month = $request->input('month', now()->month);
         $year = $request->input('year', now()->year);
         $selectedKabupatenKotaId = $request->input('kabupaten_kota_id');
-        
+
         // Get available kabupaten/kota for dropdown
         $kabupatenKotaQuery = KabupatenKota::with(['provinsi'])->orderBy('nama');
-        
-        if (!$user->isAdmin() && $user->provinsi_id) {
+
+        if (! $user->isAdmin() && $user->provinsi_id) {
             $kabupatenKotaQuery->where('provinsi_id', $user->provinsi_id);
         }
-        
+
         $availableKabupatenKota = $kabupatenKotaQuery->get();
         $indicators = IndasIndicatorType::active()->get()->groupBy('category');
-        
+
         // Get selected kabupaten/kota data
         $selectedKabupatenKota = null;
         $existingData = [];
-        
+
         if ($selectedKabupatenKotaId) {
             $selectedKabupatenKota = KabupatenKota::with(['provinsi'])
                 ->where('id', $selectedKabupatenKotaId)
-                ->when(!$user->isAdmin() && $user->provinsi_id, function ($query) use ($user) {
+                ->when(! $user->isAdmin() && $user->provinsi_id, function ($query) use ($user) {
                     $query->where('provinsi_id', $user->provinsi_id);
                 })
                 ->first();
-            
+
             if ($selectedKabupatenKota) {
                 // Get existing data for the selected kabupaten/kota and period
                 $monthlyData = IndasMonthlyData::with(['indicatorType'])
                     ->where('kabupaten_kota_id', $selectedKabupatenKotaId)
                     ->forPeriod($month, $year)
                     ->get();
-                
+
                 // Structure data for frontend consumption
                 $existingData = [];
                 foreach ($monthlyData as $data) {
@@ -192,7 +184,7 @@ class IndasController extends Controller
                 }
             }
         }
-        
+
         return Inertia::render('Indas/DataEntry', [
             'availableKabupatenKota' => $availableKabupatenKota,
             'selectedKabupatenKota' => $selectedKabupatenKota,
@@ -214,17 +206,17 @@ class IndasController extends Controller
             'year' => 'required|integer|min:2020|max:2030',
             'notes' => 'nullable|string',
         ]);
-        
+
         $user = $request->user();
-        
+
         // Check access to kabupaten/kota
-        if (!$user->isAdmin() && $user->provinsi_id) {
+        if (! $user->isAdmin() && $user->provinsi_id) {
             $kabupatenKota = KabupatenKota::find($request->kabupaten_kota_id);
-            if (!$kabupatenKota || $kabupatenKota->provinsi_id !== $user->provinsi_id) {
+            if (! $kabupatenKota || $kabupatenKota->provinsi_id !== $user->provinsi_id) {
                 abort(403, 'Akses tidak diizinkan ke wilayah ini');
             }
         }
-        
+
         // Update or create monthly data
         IndasMonthlyData::updateOrCreate(
             [
@@ -239,10 +231,10 @@ class IndasController extends Controller
                 'notes' => $request->notes,
             ]
         );
-        
+
         // Trigger recalculation for this kabupaten/kota and period
         $this->calculateScores($request->kabupaten_kota_id, $request->month, $request->year);
-        
+
         return redirect()->back()->with('success', 'Data berhasil disimpan');
     }
 
@@ -252,31 +244,31 @@ class IndasController extends Controller
         $year = $request->input('year', now()->year);
         $specificKabupatenKotaId = $request->input('kabupaten_kota_id');
         $user = $request->user();
-        
+
         $kabupatenKotaQuery = KabupatenKota::query();
-        
-        if (!$user->isAdmin() && $user->provinsi_id) {
+
+        if (! $user->isAdmin() && $user->provinsi_id) {
             $kabupatenKotaQuery->where('provinsi_id', $user->provinsi_id);
         }
-        
+
         // If specific kabupaten/kota is requested, calculate for that only
         if ($specificKabupatenKotaId) {
             $kabupatenKotaQuery->where('id', $specificKabupatenKotaId);
         }
-        
+
         $kabupatenKotaList = $kabupatenKotaQuery->get();
         $calculatedCount = 0;
-        
+
         foreach ($kabupatenKotaList as $kabupatenKota) {
             if ($this->calculateScores($kabupatenKota->id, $month, $year)) {
                 $calculatedCount++;
             }
         }
-        
-        $message = $specificKabupatenKotaId 
-            ? "Calculated scores for {$kabupatenKotaList->first()?->nama}" 
+
+        $message = $specificKabupatenKotaId
+            ? "Calculated scores for {$kabupatenKotaList->first()?->nama}"
             : "Calculated scores for {$calculatedCount} regions";
-            
+
         return redirect()->back()->with('success', $message);
     }
 
@@ -289,39 +281,40 @@ class IndasController extends Controller
             ->where('year', $year)
             ->get()
             ->groupBy('indicatorType.category');
-        
+
         $scores = [
             'economic_score' => 0,
             'tourism_score' => 0,
             'social_score' => 0,
         ];
-        
+
         $calculationDetails = [];
-        
+
         // Calculate category scores using agreed formula
         foreach (['ekonomi', 'pariwisata', 'sosial'] as $category) {
             $categoryData = $monthlyData->get($category, collect());
-            
+
             if ($categoryData->isEmpty()) {
                 $calculationDetails[$category] = ['message' => 'No data available'];
+
                 continue;
             }
-            
+
             $totalValue = 0;
             $totalWeight = 0;
             $details = [];
-            
+
             foreach ($categoryData as $data) {
                 $value = $data->value;
                 $weight = $data->indicatorType->weight_factor;
-                
+
                 // Normalize large values (like UMR) to prevent overflow
                 $normalizedValue = $this->normalizeValue($value, $data->indicatorType->name);
                 $weightedValue = $normalizedValue * $weight;
-                
+
                 $totalValue += $weightedValue;
                 $totalWeight += $weight;
-                
+
                 $details[] = [
                     'indicator' => $data->indicatorType->name,
                     'value' => number_format($value, 2),
@@ -330,17 +323,17 @@ class IndasController extends Controller
                     'weighted_score' => number_format($weightedValue, 2),
                 ];
             }
-            
+
             // Calculate weighted average score, capped at 100
             $categoryScore = $totalWeight > 0 ? min(100, $totalValue / $totalWeight) : 0;
-            
+
             // Map category to score field
-            $scoreField = match($category) {
+            $scoreField = match ($category) {
                 'ekonomi' => 'economic_score',
                 'pariwisata' => 'tourism_score',
                 'sosial' => 'social_score',
             };
-            
+
             $scores[$scoreField] = $categoryScore;
             $calculationDetails[$category] = [
                 'total_value' => $totalValue,
@@ -348,41 +341,41 @@ class IndasController extends Controller
                 'details' => $details,
             ];
         }
-        
+
         // Calculate total score as sum of all category scores
         $totalScore = $scores['economic_score'] + $scores['tourism_score'] + $scores['social_score'];
-        
+
         $scores['total_score'] = $totalScore;
         $calculationDetails['total'] = [
             'total_score' => $totalScore,
         ];
-        
+
         // Get previous month for trend calculation
         $prevMonth = $month - 1;
         $prevYear = $year;
-        
+
         if ($prevMonth < 1) {
             $prevMonth = 12;
             $prevYear = $year - 1;
         }
-        
+
         $previousResult = IndasAnalysisResult::where('kabupaten_kota_id', $kabupatenKotaId)
             ->where('month', $prevMonth)
             ->where('year', $prevYear)
             ->first();
-        
+
         $trends = [
             'economic_trend' => null,
             'tourism_trend' => null,
             'social_trend' => null,
             'total_trend' => null,
         ];
-        
+
         if ($previousResult) {
             foreach (['economic', 'tourism', 'social', 'total'] as $type) {
                 $currentScore = $scores["{$type}_score"];
                 $previousScore = $previousResult->{"{$type}_score"};
-                
+
                 if ($previousScore > 0) {
                     $trendPercentage = (($currentScore - $previousScore) / $previousScore) * 100;
                     // Cap trend values to prevent database overflow (max ±9999.99)
@@ -390,7 +383,7 @@ class IndasController extends Controller
                 }
             }
         }
-        
+
         // Save analysis result
         IndasAnalysisResult::updateOrCreate(
             [
@@ -402,7 +395,7 @@ class IndasController extends Controller
                 'calculation_details' => $calculationDetails,
             ])
         );
-        
+
         return true;
     }
 
@@ -413,34 +406,34 @@ class IndasController extends Controller
     {
         // Convert indicator name to lowercase for comparison
         $lowerName = strtolower($indicatorName);
-        
+
         // Apply different normalization based on indicator type
         if (str_contains($lowerName, 'umr') || str_contains($lowerName, 'upah') || str_contains($lowerName, 'gaji')) {
             // UMR/salary indicators: normalize to 0-100 scale (2M -> 100, 0 -> 0)
             return min(100, ($value / 2000000) * 100);
         }
-        
+
         if (str_contains($lowerName, 'sekolah') || str_contains($lowerName, 'school')) {
             // School indicators: normalize based on expected range (500 schools max)
             return min(100, ($value / 500) * 100);
         }
-        
+
         if (str_contains($lowerName, 'toko') || str_contains($lowerName, 'shop') || str_contains($lowerName, 'store')) {
             // Store indicators: normalize based on expected range (1000 stores max)
             return min(100, ($value / 1000) * 100);
         }
-        
+
         if (str_contains($lowerName, 'wisata') || str_contains($lowerName, 'tourism') || str_contains($lowerName, 'hotel')) {
             // Tourism indicators: normalize based on expected range
             return min(100, ($value / 100) * 100);
         }
-        
+
         // Default normalization for other indicators
         // If value is already in reasonable range (0-1000), scale to 0-100
         if ($value <= 1000) {
             return min(100, ($value / 10));
         }
-        
+
         // For very large values, use logarithmic scaling
         return min(100, log10($value + 1) * 10);
     }
@@ -456,19 +449,21 @@ class IndasController extends Controller
 
         // Get security category ID for demo points
         $securityCategory = Category::where('slug', 'keamanan')->first();
-        
+
         $regionalInfo = [];
-        
+
         foreach ($kabupatenKotaIds as $kabupatenKotaId) {
             $kabupatenKota = KabupatenKota::with('provinsi')->find($kabupatenKotaId);
-            
-            if (!$kabupatenKota) continue;
-            
-            // Check access permissions
-            if (!$user->isAdmin() && $user->provinsi_id && $kabupatenKota->provinsi_id !== $user->provinsi_id) {
+
+            if (! $kabupatenKota) {
                 continue;
             }
-            
+
+            // Check access permissions
+            if (! $user->isAdmin() && $user->provinsi_id && $kabupatenKota->provinsi_id !== $user->provinsi_id) {
+                continue;
+            }
+
             // Get demo points from monitoring_data with security category
             $demoPoints = [];
             if ($securityCategory) {
@@ -480,14 +475,14 @@ class IndasController extends Controller
                     ->limit(10) // Limit to recent 10 demo points
                     ->get();
             }
-            
+
             // Get latest INDAS data for this region (all categories)
             $latestIndasData = IndasMonthlyData::with('indicatorType')
                 ->where('kabupaten_kota_id', $kabupatenKotaId)
                 ->latest('created_at')
                 ->get()
                 ->groupBy('indicatorType.category');
-            
+
             // Organize regional information
             $regionalInfo[$kabupatenKotaId] = [
                 'kabupaten_kota' => $kabupatenKota,
@@ -504,10 +499,10 @@ class IndasController extends Controller
                     'total_tourist_attractions' => $latestIndasData->get('pariwisata', collect())->where('indicatorType.name', 'Objek Wisata')->sum('value') ?? 0,
                     'total_hotels' => $latestIndasData->get('pariwisata', collect())->where('indicatorType.name', 'Hotel')->sum('value') ?? 0,
                     'total_public_facilities' => $latestIndasData->get('sosial', collect())->where('indicatorType.name', 'Program Bantuan Sosial')->sum('value') ?? 0,
-                ]
+                ],
             ];
         }
-        
+
         return $regionalInfo;
     }
 
@@ -517,7 +512,7 @@ class IndasController extends Controller
     private function getCharacterOfSociety($indasData)
     {
         $socialData = $indasData->get('sosial', collect());
-        
+
         return [
             'public_facilities' => $socialData->where('indicatorType.name', 'Fasilitas Umum')->first()?->value ?? 0,
             'social_indicators' => $socialData->map(function ($item) {
@@ -537,7 +532,7 @@ class IndasController extends Controller
     {
         // This could be expanded based on specific indicators for vital objects
         $economicData = $indasData->get('ekonomi', collect());
-        
+
         return [
             'banks' => $economicData->where('indicatorType.name', 'Jumlah Bank')->first()?->value ?? 0,
             'markets' => $economicData->where('indicatorType.name', 'Jumlah Pasar')->first()?->value ?? 0,
@@ -551,7 +546,7 @@ class IndasController extends Controller
     private function getTourismInfo($indasData)
     {
         $tourismData = $indasData->get('pariwisata', collect());
-        
+
         return [
             'tourist_attractions' => $tourismData->where('indicatorType.name', 'Objek Wisata')->first()?->value ?? 0,
             'hotels' => $tourismData->where('indicatorType.name', 'Jumlah Hotel')->first()?->value ?? 0,
@@ -572,7 +567,7 @@ class IndasController extends Controller
     {
         $socialData = $indasData->get('sosial', collect());
         $publicFacilities = $socialData->where('indicatorType.name', 'Fasilitas Umum')->first()?->value ?? 0;
-        
+
         // Estimate schools as 40% of public facilities (this can be made more accurate with specific indicators)
         return [
             'estimated_schools' => round($publicFacilities * 0.4),
@@ -587,7 +582,7 @@ class IndasController extends Controller
     {
         $socialData = $indasData->get('sosial', collect());
         $publicFacilities = $socialData->where('indicatorType.name', 'Fasilitas Umum')->first()?->value ?? 0;
-        
+
         // Estimate hospitals as 10% of public facilities (this can be made more accurate with specific indicators)
         return [
             'estimated_hospitals' => round($publicFacilities * 0.1),
@@ -602,7 +597,7 @@ class IndasController extends Controller
     {
         $socialData = $indasData->get('sosial', collect());
         $publicFacilities = $socialData->where('indicatorType.name', 'Fasilitas Umum')->first()?->value ?? 0;
-        
+
         // Estimate transportation facilities as 30% of public facilities
         return [
             'estimated_transport_facilities' => round($publicFacilities * 0.3),
@@ -618,14 +613,14 @@ class IndasController extends Controller
         // Get the "Sosial Budaya" category and "Unjuk rasa" subcategory
         $sosialBudayaCategory = Category::where('slug', 'sosial-budaya')->first();
         $unjukRasaSubCategory = null;
-        
+
         if ($sosialBudayaCategory) {
             $unjukRasaSubCategory = $sosialBudayaCategory->subCategories()
                 ->where('slug', 'sosial-budaya-unjuk-rasa')
                 ->first();
         }
-        
-        if (!$unjukRasaSubCategory) {
+
+        if (! $unjukRasaSubCategory) {
             return [
                 'total_count' => 0,
                 'active_count' => 0,
@@ -636,39 +631,39 @@ class IndasController extends Controller
                 'subcategory_info' => null,
             ];
         }
-        
+
         // Base query for unjuk rasa data
         $query = MonitoringData::where('category_id', $sosialBudayaCategory->id)
             ->where('sub_category_id', $unjukRasaSubCategory->id);
-        
+
         // Apply province filter for non-admin users
-        if (!$user->isAdmin() && $user->provinsi_id) {
+        if (! $user->isAdmin() && $user->provinsi_id) {
             $query->where('provinsi_id', $user->provinsi_id);
         }
-        
+
         $unjukRasaData = $query->with(['provinsi', 'kabupatenKota', 'kecamatan'])
             ->orderBy('incident_date', 'desc')
             ->get();
-        
+
         // Calculate statistics
         $totalCount = $unjukRasaData->count();
         $activeCount = $unjukRasaData->where('status', 'active')->count();
         $thisMonthCount = $unjukRasaData->where('incident_date', '>=', now()->startOfMonth())->count();
         $highSeverityCount = $unjukRasaData->whereIn('severity_level', ['high', 'critical'])->count();
-        
+
         // Get recent incidents (last 5)
         $recentIncidents = $unjukRasaData->take(5)->map(function ($incident) {
             return [
                 'id' => $incident->id,
                 'title' => $incident->title,
                 'description' => $incident->description,
-                'location' => $incident->kabupatenKota->nama . ', ' . $incident->provinsi->nama,
+                'location' => $incident->kabupatenKota->nama.', '.$incident->provinsi->nama,
                 'incident_date' => $incident->incident_date,
                 'severity_level' => $incident->severity_level,
                 'status' => $incident->status,
             ];
         });
-        
+
         // Group by province
         $byProvince = $unjukRasaData->groupBy(function ($item) {
             return $item->provinsi->nama;
@@ -679,10 +674,10 @@ class IndasController extends Controller
                 'active_count' => $provinceData->where('status', 'active')->count(),
             ];
         })->values();
-        
+
         // Add subcategory info with image
         $unjukRasaSubCategory->append(['image_url']);
-        
+
         return [
             'total_count' => $totalCount,
             'active_count' => $activeCount,
@@ -693,5 +688,4 @@ class IndasController extends Controller
             'subcategory_info' => $unjukRasaSubCategory,
         ];
     }
-
 }

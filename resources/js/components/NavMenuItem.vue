@@ -1,11 +1,5 @@
 <script setup lang="ts">
-import {
-    SidebarMenuItem,
-    SidebarMenuButton,
-    SidebarMenuSub,
-    SidebarMenuSubButton,
-    SidebarMenuSubItem,
-} from '@/components/ui/sidebar';
+import { SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { ChevronRight } from 'lucide-vue-next';
@@ -38,22 +32,13 @@ const isOpen = (title: string) => {
     <!-- Item with sub-items (recursive) -->
     <SidebarMenuItem v-if="item.items && item.items.length > 0">
         <!-- Top level uses SidebarMenuButton, nested levels use SidebarMenuSubButton -->
-        <SidebarMenuButton 
-            v-if="level === 0"
-            @click="handleToggle(item.title)" 
-            :tooltip="item.title" 
-            class="cursor-pointer"
-        >
+        <SidebarMenuButton v-if="level === 0" @click="handleToggle(item.title)" :tooltip="item.title" class="cursor-pointer">
             <component :is="item.icon" />
             <span>{{ item.title }}</span>
             <ChevronRight class="ml-auto transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
         </SidebarMenuButton>
 
-        <SidebarMenuSubButton 
-            v-else
-            @click="handleToggle(item.title)" 
-            class="cursor-pointer"
-        >
+        <SidebarMenuSubButton v-else @click="handleToggle(item.title)" class="cursor-pointer">
             <component :is="item.icon" />
             <span>{{ item.title }}</span>
             <ChevronRight class="ml-auto transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />

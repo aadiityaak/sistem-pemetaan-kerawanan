@@ -133,11 +133,11 @@
                                         </div>
 
                                         <!-- Status & Edit Controls -->
-                                        <Button 
-                                            size="sm" 
-                                            variant="outline" 
-                                            @click.stop="toggleStatus(item)" 
-                                            :disabled="loading" 
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            @click.stop="toggleStatus(item)"
+                                            :disabled="loading"
                                             class="text-xs"
                                             type="button"
                                         >
@@ -148,13 +148,7 @@
                                                 <Edit class="h-3 w-3" />
                                             </Link>
                                         </Button>
-                                        <Button 
-                                            size="sm" 
-                                            variant="destructive" 
-                                            @click.stop="deleteItem(item)" 
-                                            :disabled="loading"
-                                            type="button"
-                                        >
+                                        <Button size="sm" variant="destructive" @click.stop="deleteItem(item)" :disabled="loading" type="button">
                                             <Trash class="h-3 w-3" />
                                         </Button>
                                     </div>
@@ -186,7 +180,8 @@
                                     tinggi
                                 </li>
                                 <li>
-                                    • <strong>Visual Hierarki:</strong> Level 0 (border biru), Level 1 (border hijau), Level 2 (border kuning), Level 3 (border ungu), Level 4 (border pink), Level 5+ (border abu-abu) - Support unlimited depth
+                                    • <strong>Visual Hierarki:</strong> Level 0 (border biru), Level 1 (border hijau), Level 2 (border kuning), Level
+                                    3 (border ungu), Level 4 (border pink), Level 5+ (border abu-abu) - Support unlimited depth
                                 </li>
                                 <li>• <strong>Toggle Status:</strong> Gunakan tombol ON/OFF untuk mengatur visibilitas menu</li>
                                 <li>• <strong>Admin Only:</strong> Menu dengan label oranye hanya tampil untuk administrator</li>
@@ -305,24 +300,24 @@ const getMenuItemClasses = (item: MenuItem) => {
 
     // Level-specific styling with dynamic indentation
     const indentPixels = level * 24; // 24px per level
-    
+
     // Color scheme based on level
     const levelColors = [
         'border-l-blue-500 bg-blue-50/30', // Level 0 - Main menu
         'border-l-green-500 bg-green-50/20', // Level 1 - Sub menu
-        'border-l-yellow-500 bg-yellow-50/20', // Level 2 - Sub-sub menu  
+        'border-l-yellow-500 bg-yellow-50/20', // Level 2 - Sub-sub menu
         'border-l-purple-500 bg-purple-50/20', // Level 3
         'border-l-pink-500 bg-pink-50/20', // Level 4
         'border-l-indigo-500 bg-indigo-50/20', // Level 5
     ];
-    
+
     // Use appropriate color or fallback to gray for deeper levels
     if (level < levelColors.length) {
         classes += levelColors[level] + ' ';
     } else {
         classes += 'border-l-gray-400 bg-gray-50/20 ';
     }
-    
+
     // Add dynamic margin-left for indentation
     if (level > 0) {
         classes += `ml-[${indentPixels}px] `;
@@ -486,7 +481,7 @@ onMounted(() => {
 
 const toggleStatus = async (item: MenuItem) => {
     if (loading.value) return;
-    
+
     loading.value = true;
     try {
         await router.post(

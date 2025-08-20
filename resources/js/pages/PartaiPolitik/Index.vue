@@ -362,7 +362,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { reactive, computed } from 'vue';
+import { computed, reactive } from 'vue';
 // Simple debounce function
 const debounce = (func: Function, wait: number) => {
     let timeout: ReturnType<typeof setTimeout>;

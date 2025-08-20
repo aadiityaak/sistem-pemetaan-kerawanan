@@ -296,15 +296,15 @@ const goToMonitoringDataByProvinsi = (provinsiName: string) => {
 // Function to build create URL with pre-filled category and subcategory
 const buildCreateUrl = () => {
     const params = new URLSearchParams();
-    
+
     if (props.selectedCategory) {
         params.append('category', props.selectedCategory.slug);
     }
-    
+
     if (props.selectedSubCategory) {
         params.append('subcategory', props.selectedSubCategory.slug);
     }
-    
+
     const queryString = params.toString();
     return `/monitoring-data/create${queryString ? `?${queryString}` : ''}`;
 };
@@ -495,7 +495,7 @@ onMounted(async () => {
                     <div v-if="$page.props.auth.user.role !== 'admin_vip'" class="flex items-center">
                         <Link
                             :href="buildCreateUrl()"
-                            class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+                            class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:focus:ring-offset-gray-800"
                         >
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -1089,14 +1089,14 @@ onMounted(async () => {
                     <!-- Top 3 Isu Menonjol -->
                     <div
                         v-if="topIssues.length > 0"
-                        class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800 w-full max-w-full overflow-hidden"
+                        class="w-full max-w-full overflow-hidden rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
                     >
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">🔥 Top 3 Isu Menonjol</h3>
                         <div class="space-y-4">
                             <div
                                 v-for="(issue, index) in topIssues"
                                 :key="issue.id"
-                                class="flex cursor-pointer items-start gap-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100 dark:bg-gray-700/50 dark:hover:bg-gray-700 overflow-hidden"
+                                class="flex cursor-pointer items-start gap-3 overflow-hidden rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100 dark:bg-gray-700/50 dark:hover:bg-gray-700"
                                 @click="$inertia.visit(`/monitoring-data/${issue.id}`)"
                             >
                                 <div
@@ -1108,8 +1108,8 @@ onMounted(async () => {
                                 <div class="min-w-0 flex-1 overflow-hidden">
                                     <!-- Title with proper wrapping and line limit -->
                                     <div class="w-full overflow-hidden">
-                                        <p 
-                                            class="text-sm font-medium text-gray-900 dark:text-white leading-tight overflow-hidden break-all"
+                                        <p
+                                            class="overflow-hidden text-sm leading-tight font-medium break-all text-gray-900 dark:text-white"
                                             :title="issue.title"
                                             style="
                                                 display: -webkit-box;
@@ -1126,7 +1126,7 @@ onMounted(async () => {
                                             {{ issue.title }}
                                         </p>
                                     </div>
-                                    
+
                                     <!-- Content area with proper spacing -->
                                     <div class="mt-2 flex items-start justify-between gap-3 overflow-hidden">
                                         <div class="min-w-0 flex-1 overflow-hidden">
@@ -1148,7 +1148,7 @@ onMounted(async () => {
                                                 {{ issue.provinsi?.nama || 'N/A' }}, {{ issue.kabupaten_kota?.nama || 'N/A' }}
                                             </p>
                                         </div>
-                                        
+
                                         <!-- Impact count - always visible on right -->
                                         <div class="flex-shrink-0 text-right">
                                             <div class="flex items-center gap-1">
