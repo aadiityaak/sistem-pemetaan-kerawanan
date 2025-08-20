@@ -68,6 +68,8 @@ class MenuItemController extends Controller
             'sort_order' => 'integer',
             'parent_id' => 'nullable|exists:menu_items,id',
             'admin_only' => 'boolean',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string|in:super_admin,admin_vip,admin',
             'description' => 'nullable|string',
         ]);
 
@@ -118,7 +120,18 @@ class MenuItemController extends Controller
             'sort_order' => 'integer',
             'parent_id' => 'nullable|exists:menu_items,id',
             'admin_only' => 'boolean',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string|in:super_admin,admin_vip,admin',
             'description' => 'nullable|string',
+        ]);
+
+        // Debug logging
+        \Log::info('MenuItem Update Debug', [
+            'menu_id' => $menuItem->id,
+            'menu_title' => $menuItem->title,
+            'request_permissions' => $request->input('permissions'),
+            'request_admin_only' => $request->input('admin_only'),
+            'all_request_data' => $request->all()
         ]);
 
         $menuItem->update($request->all());

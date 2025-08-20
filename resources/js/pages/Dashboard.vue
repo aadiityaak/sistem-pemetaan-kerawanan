@@ -2,7 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 interface MonitoringData {
     id: number;
@@ -106,6 +106,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
 // Map related refs
 let map: any;
 const mapContainer = ref();
+const mapMarkers = ref<any[]>([]);
 
 // Category color mapping for theming
 const categoryThemes: Record<string, { color: string; icon: string; bgColor: string }> = {
@@ -313,6 +314,125 @@ const buildCreateUrl = () => {
 const categoryDropdownOpen = ref(false);
 const subCategoryDropdownOpen = ref(false);
 
+// Search functionality
+const searchQuery = ref('');
+
+// Computed property for filtered monitoring data
+const filteredMonitoringData = computed(() => {
+    if (!searchQuery.value.trim()) {
+        return props.monitoringData;
+    }
+    
+    return props.monitoringData.filter(data =>
+        data.title.toLowerCase().includes(searchQuery.value.toLowerCase().trim())
+    );
+});
+
+// Function to update map markers
+const updateMapMarkers = async () => {
+    if (!map) return;
+    
+    // Clear existing markers
+    mapMarkers.value.forEach(marker => map.removeLayer(marker));
+    mapMarkers.value = [];
+    
+    // Dynamic import Leaflet
+    const L = await import('leaflet');
+    
+    // Add markers for filtered data
+    filteredMonitoringData.value.forEach((data: MonitoringData) => {
+        const severityConfig = severityIcons[data.severity_level] || severityIcons['medium'];
+
+        // Create custom HTML marker with theme color if category specific
+        const markerColor = props.selectedCategory ? currentTheme.value.color : severityConfig.color;
+
+        // Determine marker icon: sub category image > sub category icon > category theme icon > severity icon
+        let markerContent = '';
+        let hasCustomImage = false;
+
+        if (data.sub_category.image_url) {
+            // Use actual custom image in marker
+            markerContent = `<img src="${data.sub_category.image_url}" style="width: 16px; height: 16px; object-fit: contain; border-radius: 2px;">`;
+            hasCustomImage = true;
+        } else if (data.sub_category.icon) {
+            markerContent = `<span style="font-size: 12px;">${data.sub_category.icon}</span>`;
+        } else if (props.selectedCategory) {
+            markerContent = `<span style="font-size: 12px;">${currentTheme.value.icon}</span>`;
+        } else {
+            markerContent = `<span style="font-size: 12px;">${severityConfig.icon}</span>`;
+        }
+
+        const customIcon = L.divIcon({
+            html: `<div style="
+                background-color: ${hasCustomImage ? '#ffffff' : markerColor}; 
+                border: 2px solid ${markerColor}; 
+                border-radius: 50%; 
+                width: 24px; 
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 12px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                overflow: hidden;
+            ">${markerContent}</div>`,
+            className: 'custom-marker',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
+        });
+
+        const marker = L.marker([data.latitude, data.longitude], {
+            icon: customIcon,
+        }).addTo(map);
+
+        // Add popup with sub category icon or image if available
+        const popupIcon = data.sub_category.image_url
+            ? `<img src="${data.sub_category.image_url}" alt="Subcategory" style="width: 16px; height: 16px; object-fit: contain; border-radius: 2px;">`
+            : `<span style="font-size: 16px;">${data.sub_category.icon || '📊'}</span>`;
+        marker.bindPopup(`
+            <div class="p-3">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="flex items-center justify-center" style="min-width: 20px;">${popupIcon}</div>
+                    <div class="font-semibold text-sm" style="color: ${markerColor}">${data.title}</div>
+                </div>
+                <div class="text-xs text-gray-600 mt-1">
+                    <strong>Kategori:</strong> ${data.category.name} - ${data.sub_category.name}
+                </div>
+                <div class="text-xs text-gray-500 mt-1">
+                    <strong>Lokasi:</strong> ${data.provinsi?.nama || 'N/A'}, ${data.kabupaten_kota?.nama || 'N/A'}
+                </div>
+                ${
+                    data.jumlah_terdampak
+                        ? `
+                <div class="text-xs text-gray-600 mt-1">
+                    <strong>Terdampak:</strong> ${data.jumlah_terdampak.toLocaleString()} orang
+                </div>
+                `
+                        : ''
+                }
+                <div class="text-xs mt-2">
+                    <span class="px-2 py-1 bg-gray-100 rounded text-gray-700 text-xs">
+                        Level: ${getSeverityLabel(data.severity_level)}
+                    </span>
+                </div>
+                <div class="mt-3 pt-2 border-t border-gray-200">
+                    <a href="/monitoring-data/${data.id}" 
+                       class="!text-white inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors duration-200"
+                       style="text-decoration: none;">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        Lihat Detail
+                    </a>
+                </div>
+            </div>
+        `);
+        
+        mapMarkers.value.push(marker);
+    });
+};
+
 // Initialize map
 onMounted(async () => {
     if (typeof window !== 'undefined') {
@@ -337,99 +457,16 @@ onMounted(async () => {
                 attribution: '© OpenStreetMap contributors',
             }).addTo(map);
 
-            // Add markers for monitoring data
-            props.monitoringData.forEach((data: MonitoringData) => {
-                const severityConfig = severityIcons[data.severity_level] || severityIcons['medium'];
-
-                // Create custom HTML marker with theme color if category specific
-                const markerColor = props.selectedCategory ? currentTheme.value.color : severityConfig.color;
-
-                // Determine marker icon: sub category image > sub category icon > category theme icon > severity icon
-                let markerContent = '';
-                let hasCustomImage = false;
-
-                if (data.sub_category.image_url) {
-                    // Use actual custom image in marker
-                    markerContent = `<img src="${data.sub_category.image_url}" style="width: 16px; height: 16px; object-fit: contain; border-radius: 2px;">`;
-                    hasCustomImage = true;
-                } else if (data.sub_category.icon) {
-                    markerContent = `<span style="font-size: 12px;">${data.sub_category.icon}</span>`;
-                } else if (props.selectedCategory) {
-                    markerContent = `<span style="font-size: 12px;">${currentTheme.value.icon}</span>`;
-                } else {
-                    markerContent = `<span style="font-size: 12px;">${severityConfig.icon}</span>`;
-                }
-
-                const customIcon = L.divIcon({
-                    html: `<div style="
-                        background-color: ${hasCustomImage ? '#ffffff' : markerColor}; 
-                        border: 2px solid ${markerColor}; 
-                        border-radius: 50%; 
-                        width: 24px; 
-                        height: 24px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-size: 12px;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                        overflow: hidden;
-                    ">${markerContent}</div>`,
-                    className: 'custom-marker',
-                    iconSize: [24, 24],
-                    iconAnchor: [12, 12],
-                });
-
-                const marker = L.marker([data.latitude, data.longitude], {
-                    icon: customIcon,
-                }).addTo(map);
-
-                // Add popup with sub category icon or image if available
-                const popupIcon = data.sub_category.image_url
-                    ? `<img src="${data.sub_category.image_url}" alt="Subcategory" style="width: 16px; height: 16px; object-fit: contain; border-radius: 2px;">`
-                    : `<span style="font-size: 16px;">${data.sub_category.icon || '📊'}</span>`;
-                marker.bindPopup(`
-                    <div class="p-3">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="flex items-center justify-center" style="min-width: 20px;">${popupIcon}</div>
-                            <div class="font-semibold text-sm" style="color: ${markerColor}">${data.title}</div>
-                        </div>
-                        <div class="text-xs text-gray-600 mt-1">
-                            <strong>Kategori:</strong> ${data.category.name} - ${data.sub_category.name}
-                        </div>
-                        <div class="text-xs text-gray-500 mt-1">
-                            <strong>Lokasi:</strong> ${data.provinsi?.nama || 'N/A'}, ${data.kabupaten_kota?.nama || 'N/A'}
-                        </div>
-                        ${
-                            data.jumlah_terdampak
-                                ? `
-                        <div class="text-xs text-gray-600 mt-1">
-                            <strong>Terdampak:</strong> ${data.jumlah_terdampak.toLocaleString()} orang
-                        </div>
-                        `
-                                : ''
-                        }
-                        <div class="text-xs mt-2">
-                            <span class="px-2 py-1 bg-gray-100 rounded text-gray-700 text-xs">
-                                Level: ${getSeverityLabel(data.severity_level)}
-                            </span>
-                        </div>
-                        <div class="mt-3 pt-2 border-t border-gray-200">
-                            <a href="/monitoring-data/${data.id}" 
-                               class="!text-white inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors duration-200"
-                               style="text-decoration: none;">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                </svg>
-                                Lihat Detail
-                            </a>
-                        </div>
-                    </div>
-                `);
-            });
+            // Add initial markers
+            updateMapMarkers();
         }
     }
 });
+
+// Watch for changes in filtered data and update map markers
+watch(filteredMonitoringData, () => {
+    updateMapMarkers();
+}, { deep: true });
 </script>
 
 <template>
@@ -492,7 +529,7 @@ onMounted(async () => {
                             }}
                         </p>
                     </div>
-                    <div v-if="['super_admin', 'admin'].includes($page.props.auth.user.role)" class="flex items-center">
+                    <div v-if="canEdit" class="flex items-center">
                         <Link
                             :href="buildCreateUrl()"
                             class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:focus:ring-offset-gray-800"
@@ -512,7 +549,30 @@ onMounted(async () => {
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">🔍 Filter & Pencarian</h3>
                 </div>
                 <div class="p-6">
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+                        <!-- Search Filter -->
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Pencarian</label>
+                            <div class="relative">
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                        />
+                                    </svg>
+                                </div>
+                                <input
+                                    v-model="searchQuery"
+                                    type="text"
+                                    placeholder="Cari berdasarkan judul..."
+                                    class="block w-full rounded-lg border border-gray-300 bg-white py-2 pr-3 pl-10 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                />
+                            </div>
+                        </div>
+
                         <!-- Category Filter -->
                         <div>
                             <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Kategori</label>
@@ -851,7 +911,7 @@ onMounted(async () => {
                                     </h3>
                                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Data monitoring yang ditampilkan pada peta di atas</p>
                                 </div>
-                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ monitoringData.length }} data</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ filteredMonitoringData.length }} data</div>
                             </div>
                         </div>
 
@@ -901,7 +961,7 @@ onMounted(async () => {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-                                    <tr v-if="monitoringData.length === 0">
+                                    <tr v-if="filteredMonitoringData.length === 0">
                                         <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                                             <div class="flex flex-col items-center">
                                                 <svg
@@ -920,7 +980,9 @@ onMounted(async () => {
                                                 <p class="font-medium">Tidak ada data monitoring</p>
                                                 <p class="text-sm">
                                                     {{
-                                                        selectedCategory
+                                                        searchQuery.trim()
+                                                            ? `Tidak ada data yang ditemukan untuk pencarian "${searchQuery}"`
+                                                            : selectedCategory
                                                             ? `Tidak ada data untuk kategori ${selectedCategory.name}`
                                                             : 'Tidak ada data yang sesuai dengan filter yang dipilih'
                                                     }}
@@ -930,7 +992,7 @@ onMounted(async () => {
                                     </tr>
                                     <tr
                                         v-else
-                                        v-for="data in monitoringData.slice(0, 10)"
+                                        v-for="data in filteredMonitoringData.slice(0, 10)"
                                         :key="data.id"
                                         class="hover:bg-gray-50 dark:hover:bg-gray-700"
                                     >
@@ -1020,7 +1082,7 @@ onMounted(async () => {
 
                         <!-- View All Button -->
                         <div
-                            v-if="monitoringData.length > 10"
+                            v-if="filteredMonitoringData.length > 10"
                             class="border-t border-gray-200 bg-gray-50 px-6 py-3 dark:border-gray-700 dark:bg-gray-700"
                         >
                             <div class="flex justify-center">
@@ -1028,7 +1090,7 @@ onMounted(async () => {
                                     href="/monitoring-data"
                                     class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
                                 >
-                                    Lihat Semua Data Monitoring ({{ monitoringData.length }})
+                                    Lihat Semua Data Monitoring ({{ filteredMonitoringData.length }})
                                     <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                                     </svg>

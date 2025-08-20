@@ -66,6 +66,12 @@ class DashboardController extends Controller
             $query->whereDate('incident_date', '<=', $endDate);
         }
 
+        // Filter berdasarkan search (title) jika ada
+        if ($request->has('search') && $request->filled('search')) {
+            $searchTerm = $request->input('search');
+            $query->where('title', 'like', '%' . $searchTerm . '%');
+        }
+
         $monitoringData = $query->get();
         
         // Append image URLs to subcategories

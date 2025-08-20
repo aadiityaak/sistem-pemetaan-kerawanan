@@ -99,11 +99,37 @@
                                 </div>
                                 <p class="ml-6 text-xs text-muted-foreground">Jika dinonaktifkan, menu tidak akan muncul di sidebar</p>
 
-                                <div class="flex items-center space-x-2">
-                                    <Checkbox id="admin_only" v-model:checked="form.admin_only" />
-                                    <label for="admin_only" class="text-sm font-medium"> Hanya untuk Admin </label>
+                                <!-- Role Permissions -->
+                                <div class="space-y-3">
+                                    <label class="text-sm font-medium">Tampil untuk Role:</label>
+                                    <div class="space-y-2">
+                                        <div class="flex items-center space-x-2">
+                                            <Checkbox 
+                                                id="role_super_admin" 
+                                                :checked="form.permissions.includes('super_admin')"
+                                                @update:checked="updatePermission('super_admin', $event)"
+                                            />
+                                            <label for="role_super_admin" class="text-sm font-medium">Super Admin</label>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <Checkbox 
+                                                id="role_admin_vip" 
+                                                :checked="form.permissions.includes('admin_vip')"
+                                                @update:checked="updatePermission('admin_vip', $event)"
+                                            />
+                                            <label for="role_admin_vip" class="text-sm font-medium">Admin VIP</label>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <Checkbox 
+                                                id="role_admin" 
+                                                :checked="form.permissions.includes('admin')"
+                                                @update:checked="updatePermission('admin', $event)"
+                                            />
+                                            <label for="role_admin" class="text-sm font-medium">Admin</label>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-muted-foreground">Pilih role yang dapat melihat menu ini. Jika tidak ada yang dipilih, menu akan tampil untuk semua user.</p>
                                 </div>
-                                <p class="ml-6 text-xs text-muted-foreground">Menu hanya ditampilkan untuk user dengan role admin</p>
                             </div>
                         </div>
 
@@ -144,6 +170,7 @@ interface MenuItem {
     sort_order: number;
     parent_id?: number;
     admin_only: boolean;
+    permissions?: string[];
     description?: string;
 }
 
@@ -169,8 +196,22 @@ const form = useForm({
     sort_order: props.menuItem.sort_order || 0,
     parent_id: props.menuItem.parent_id || null,
     admin_only: props.menuItem.admin_only ?? false,
+    permissions: (props.menuItem.permissions || []) as string[],
     description: props.menuItem.description || '',
 });
+
+const updatePermission = (role: string, checked: boolean) => {
+    if (checked) {
+        if (!form.permissions.includes(role)) {
+            form.permissions.push(role);
+        }
+    } else {
+        const index = form.permissions.indexOf(role);
+        if (index > -1) {
+            form.permissions.splice(index, 1);
+        }
+    }
+};
 
 const submit = () => {
     form.put(route('admin.menu-items.update', props.menuItem.id), {
