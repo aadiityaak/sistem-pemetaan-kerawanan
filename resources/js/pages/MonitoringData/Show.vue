@@ -45,7 +45,10 @@ const props = defineProps<{
 
 // Get current user and check edit permissions
 const page = usePage();
-const canEdit = computed(() => ['super_admin', 'admin'].includes(page.props.auth.user.role));
+const canEdit = computed(() => {
+    const currentUser = page.props.auth.user;
+    return currentUser && currentUser.role && ['super_admin', 'admin'].includes(currentUser.role);
+});
 
 // Build back URL with category filter
 const backUrl = computed(() => {

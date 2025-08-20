@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
             IndasIndicatorTypeSeeder::class,
             IndasAnalysisResultSeeder::class,
             SembakoSeeder::class,
+            MenuItemSeeder::class
         ]);
     }
 }

@@ -710,7 +710,10 @@ const searchTimeout = ref<number | null>(null);
 // Get current user from page props
 const page = usePage();
 const user = computed(() => page.props.auth.user as User);
-const canEdit = computed(() => ['super_admin', 'admin'].includes(user.value.role));
+const canEdit = computed(() => {
+    const currentUser = page.props.auth.user;
+    return currentUser && currentUser.role && ['super_admin', 'admin'].includes(currentUser.role);
+});
 
 // Computed properties for regional filtering
 const filteredKabupaten = computed(() => {
