@@ -122,7 +122,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Monitoring Data Routes - Apply province filter for non-admin users
     Route::middleware(['province.filter'])->group(function () {
         Route::get('/monitoring-data', [MonitoringDataController::class, 'index'])->name('monitoring-data.index');
-        Route::get('/monitoring-data/{id}', [MonitoringDataController::class, 'show'])->name('monitoring-data.show');
         
         // Only users who can edit can access create/edit/delete routes
         Route::middleware(['edit.permission'])->group(function () {
@@ -133,6 +132,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('/monitoring-data/{id}', [MonitoringDataController::class, 'destroy'])->name('monitoring-data.destroy');
             Route::delete('/monitoring-data/{id}/gallery', [MonitoringDataController::class, 'deleteGalleryImage'])->name('monitoring-data.delete-gallery');
         });
+        
+        // Show route must come AFTER more specific routes like create and edit
+        Route::get('/monitoring-data/{id}', [MonitoringDataController::class, 'show'])->name('monitoring-data.show');
     });
 
     // AI Prediction Routes (Super Admin and Admin VIP can view, only Super Admin and Admin can edit)

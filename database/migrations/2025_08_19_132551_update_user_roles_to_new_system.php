@@ -12,6 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // First, change role column from ENUM to VARCHAR to support new role values
+        DB::statement("ALTER TABLE users MODIFY COLUMN role VARCHAR(50) NOT NULL DEFAULT 'admin'");
+        
         // Update existing roles to new system:
         // 'admin' -> 'super_admin' (current admin becomes super admin)
         // 'user' -> 'admin' (current user becomes admin with regional access)
@@ -38,5 +41,8 @@ return new class extends Migration
         DB::table('users')
             ->where('role', 'admin')
             ->update(['role' => 'user']);
+            
+        // Revert back to ENUM with original values
+        DB::statement("ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'user') NOT NULL DEFAULT 'user'");
     }
 };
