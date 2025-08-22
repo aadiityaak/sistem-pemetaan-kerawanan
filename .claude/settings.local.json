@@ -37,10 +37,14 @@
       "Bash(find:*)",
       "Bash(touch:*)",
       "Bash(zip:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": [
+      "G:\\"
+    ]
   },
   "enabledMcpjsonServers": [
     "laravel-boost"

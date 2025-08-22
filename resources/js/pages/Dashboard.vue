@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch } from 'vue';
+import 'leaflet/dist/leaflet.css';
 
 interface MonitoringData {
     id: number;
@@ -393,7 +394,14 @@ const filteredMonitoringData = computed(() => {
 
 // Function to update map markers
 const updateMapMarkers = async () => {
-    if (!map) return;
+    console.log('updateMapMarkers called, map exists:', !!map);
+    if (!map) {
+        console.log('No map instance, skipping marker update');
+        return;
+    }
+    
+    console.log('Filtering data for markers. Total data:', props.monitoringData.length);
+    console.log('Filtered data:', filteredMonitoringData.value.length);
     
     // Clear existing markers
     mapMarkers.value.forEach(marker => map.removeLayer(marker));
@@ -404,6 +412,7 @@ const updateMapMarkers = async () => {
     
     // Add markers for filtered data
     filteredMonitoringData.value.forEach((data: MonitoringData) => {
+        console.log('Processing data item:', data.id, 'Coordinates:', data.latitude, data.longitude);
         const severityConfig = severityIcons[data.severity_level] || severityIcons['medium'];
 
         // Create custom HTML marker with theme color if category specific
@@ -499,37 +508,74 @@ const updateMapMarkers = async () => {
 // Initialize map
 onMounted(async () => {
     if (typeof window !== 'undefined') {
-        // Dynamic import Leaflet
-        const L = await import('leaflet');
+        try {
+            console.log('Initializing map...');
+            
+            // Wait a bit for DOM to be ready
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Dynamic import Leaflet
+            const L = await import('leaflet');
+            console.log('Leaflet imported successfully');
 
-        // Initialize map
-        if (mapContainer.value) {
-            // Use user's province coordinates if available, otherwise use Indonesia center
-            let mapCenter: [number, number] = [-2.5489, 118.0149]; // Default: Indonesia center
-            let zoomLevel = 5; // Default zoom for Indonesia
+            // Initialize map
+            if (mapContainer.value) {
+                console.log('Map container found:', mapContainer.value);
+                console.log('Container dimensions:', mapContainer.value.offsetWidth, 'x', mapContainer.value.offsetHeight);
+                
+                // Use Indonesia center coordinates
+                let mapCenter: [number, number] = [-2.5489, 118.0149]; // Indonesia center
+                let zoomLevel = 5; // Zoom level for Indonesia
 
-            if (props.userProvinsi && props.userProvinsi.latitude && props.userProvinsi.longitude) {
-                mapCenter = [props.userProvinsi.latitude, props.userProvinsi.longitude];
-                zoomLevel = 8; // Closer zoom for province view
+                console.log('Using Indonesia coordinates:', mapCenter);
+
+                console.log('Creating Leaflet map...');
+                map = L.map(mapContainer.value, {
+                    center: mapCenter,
+                    zoom: zoomLevel,
+                    scrollWheelZoom: true,
+                    doubleClickZoom: true,
+                    boxZoom: true,
+                    keyboard: true,
+                    dragging: true,
+                    zoomControl: true
+                });
+                console.log('Map created successfully');
+
+                // Add tile layer
+                console.log('Adding tile layer...');
+                const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 18,
+                    minZoom: 3
+                });
+                tileLayer.addTo(map);
+                console.log('Tile layer added');
+
+                // Force map to resize after initialization
+                setTimeout(() => {
+                    if (map) {
+                        console.log('Invalidating map size...');
+                        map.invalidateSize();
+                        console.log('Map size invalidated');
+                    }
+                }, 250);
+
+                console.log('Map initialization complete - Indonesia map should be visible');
+            } else {
+                console.error('Map container not found!');
             }
-
-            map = L.map(mapContainer.value).setView(mapCenter, zoomLevel);
-
-            // Add tile layer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
-            }).addTo(map);
-
-            // Add initial markers
-            updateMapMarkers();
+        } catch (error) {
+            console.error('Error initializing map:', error);
         }
     }
 });
 
 // Watch for changes in filtered data and update map markers
-watch(filteredMonitoringData, () => {
-    updateMapMarkers();
-}, { deep: true });
+// TEMPORARILY DISABLED FOR TESTING
+// watch(filteredMonitoringData, () => {
+//     updateMapMarkers();
+// }, { deep: true });
 </script>
 
 <template>
@@ -1005,7 +1051,7 @@ watch(filteredMonitoringData, () => {
                                 }}</span>
                             </div>
                         </div>
-                        <div ref="mapContainer" class="relative z-0 h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
+                        <div ref="mapContainer" class="relative z-0 h-[500px] rounded-lg border border-gray-200 dark:border-gray-700"></div>
                     </div>
 
                     <!-- Location Statistics Cards -->

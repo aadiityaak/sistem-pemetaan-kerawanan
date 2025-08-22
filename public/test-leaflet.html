@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet Test</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🗺️ Leaflet Test</h1>
+    <div id="map"></div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        console.log('🚀 Starting Leaflet test...');
+        
+        const map = L.map('map', {
+            center: [-2.548926, 118.0148634],
+            zoom: 5
+        });
+        
+        console.log('✅ Map created:', map);
+        
+        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        });
+        
+        tileLayer.addTo(map);
+        console.log('✅ Tiles added');
+        
+        setTimeout(() => {
+            map.invalidateSize();
+            console.log('✅ Size invalidated');
+        }, 100);
+        
+        // Add marker
+        const marker = L.marker([-2.548926, 118.0148634]).addTo(map);
+        marker.bindPopup('Indonesia Center').openPopup();
+        console.log('✅ Marker added');
+        
+        console.log('🎉 Test completed successfully!');
+    </script>
+</body>
+</html>

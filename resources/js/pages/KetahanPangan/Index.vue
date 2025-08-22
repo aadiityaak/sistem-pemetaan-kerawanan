@@ -23,7 +23,7 @@
                                 class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                             >
                                 <option value="" disabled>Pilih Komoditas</option>
-                                <option v-for="komoditas in komoditas" :key="komoditas.value" :value="komoditas.value">
+                                <option v-for="komoditas in komoditasList" :key="komoditas.value" :value="komoditas.value">
                                     {{ komoditas.label }}
                                 </option>
                             </select>
@@ -78,20 +78,13 @@
                                 <Search v-else class="mr-2 h-4 w-4" />
                                 {{ loading ? 'Memuat...' : 'Perbarui Data' }}
                             </button>
-                            <button
-                                @click="clearCache"
-                                :disabled="dataCache.size === 0"
-                                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                            >
-                                🗑️ Clear Cache ({{ dataCache.size }})
-                            </button>
                         </div>
                         <div class="flex flex-col items-end text-sm text-gray-500 dark:text-gray-400">
                             <div v-if="lastUpdated">
                                 Terakhir diperbarui: {{ formatDateTime(lastUpdated) }}
                             </div>
-                            <div v-if="isCacheData" class="text-xs text-green-600 dark:text-green-400">
-                                📦 Data dari cache
+                            <div class="text-xs mt-1" :class="mapInitialized ? 'text-green-600' : 'text-red-600'">
+                                Map: {{ mapInitialized ? '✅ Active' : '❌ Inactive' }}
                             </div>
                         </div>
                     </div>
@@ -123,8 +116,11 @@
                         </div>
                     </div>
                     <div v-else class="relative">
-                        <!-- Map will be inserted here -->
-                        <div id="indonesia-map" class="h-[500px] w-full overflow-hidden rounded-md"></div>
+                        <!-- Map will be inserted here (same as Dashboard) -->
+                        <div 
+                            ref="mapContainer" 
+                            class="relative z-0 h-[500px] rounded-lg border border-gray-200 dark:border-gray-700"
+                        ></div>
                         
                         <!-- Legend -->
                         <div class="mt-4 flex flex-wrap items-center justify-center gap-4">
@@ -196,22 +192,16 @@
                     </table>
                 </div>
             </div>
-
-            <!-- Empty State -->
-            <div v-else-if="!loading && !error" class="rounded-lg border border-gray-200 bg-white p-12 text-center shadow dark:border-gray-700 dark:bg-gray-800">
-                <Package class="mx-auto mb-4 h-12 w-12 text-gray-400" />
-                <h3 class="mb-2 text-lg font-medium text-gray-900 dark:text-gray-100">Belum Ada Data</h3>
-                <p class="text-gray-500 dark:text-gray-400">Pilih komoditas untuk melihat data harga pangan.</p>
-            </div>
         </div>
     </AppLayout>
 </template>
 
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
-import { AlertCircle, Package, RefreshCw, Search } from 'lucide-vue-next';
-import { computed, onMounted, ref, watch } from 'vue';
+import { AlertCircle, RefreshCw, Search } from 'lucide-vue-next';
+import { nextTick, onMounted, ref, watch } from 'vue';
 import axios from 'axios';
+import 'leaflet/dist/leaflet.css';
 
 interface Komoditas {
     value: string;
@@ -225,6 +215,7 @@ interface PriceDataItem {
     unit: string;
     status: string;
     map_color?: string;
+    latlong?: string;
 }
 
 const props = defineProps<{
@@ -240,76 +231,19 @@ const loading = ref(false);
 const error = ref('');
 const priceData = ref<PriceDataItem[]>([]);
 const lastUpdated = ref<Date | null>(null);
-const mapLoading = ref(true);
-const isCacheData = ref(false);
+const mapInitialized = ref(false);
 
-// Cache untuk menyimpan data berdasarkan tanggal dan komoditas
-const dataCache = ref<Map<string, {
-    data: any;
-    timestamp: number;
-    expiry: number;
-}>>(new Map());
+// Map instance (same pattern as Dashboard)
+let map: any = null;
+let markersLayer: any = null;
+const mapContainer = ref<HTMLElement>();
 
-// Computed values
-const selectedKomoditasName = computed(() => {
-    const komoditas = props.komoditas.find(k => k.value === selectedKomoditas.value);
-    return komoditas?.label || 'Komoditas';
-});
-
-// Cache utilities
-const getCacheKey = (): string => {
-    const periodDate = `${formatDateForAPI(startDate.value)} - ${formatDateForAPI(endDate.value)}`;
-    return `${selectedLevelHarga.value}-${selectedKomoditas.value}-${periodDate}`;
-};
-
-const getCachedData = (key: string): any | null => {
-    const cached = dataCache.value.get(key);
-    if (cached && Date.now() < cached.expiry) {
-        console.log('Using cached data for:', key);
-        return cached.data;
-    }
-    if (cached) {
-        console.log('Cache expired for:', key);
-        dataCache.value.delete(key);
-    }
-    return null;
-};
-
-const setCachedData = (key: string, data: any, hoursToCache: number = 2): void => {
-    const now = Date.now();
-    dataCache.value.set(key, {
-        data,
-        timestamp: now,
-        expiry: now + (hoursToCache * 60 * 60 * 1000) // Convert hours to milliseconds
-    });
-    console.log(`Data cached for ${hoursToCache} hours:`, key);
-};
-
-const clearCache = (): void => {
-    const size = dataCache.value.size;
-    dataCache.value.clear();
-    isCacheData.value = false;
-    console.log(`Cleared ${size} cache entries`);
-    
-    // Show notification
-    alert(`Cache cleared! ${size} entries removed.`);
-};
+// Komoditas list
+const komoditasList = props.komoditas;
 
 // Methods
 const fetchPriceData = async () => {
     if (!selectedKomoditas.value) return;
-
-    const cacheKey = getCacheKey();
-    
-    // Try to get from cache first
-    const cachedData = getCachedData(cacheKey);
-    if (cachedData) {
-        priceData.value = transformPriceData(cachedData);
-        lastUpdated.value = new Date(dataCache.value.get(cacheKey)?.timestamp || Date.now());
-        isCacheData.value = true;
-        updateMapVisualization(priceData.value);
-        return;
-    }
 
     loading.value = true;
     error.value = '';
@@ -317,7 +251,7 @@ const fetchPriceData = async () => {
     try {
         const periodDate = `${formatDateForAPI(startDate.value)} - ${formatDateForAPI(endDate.value)}`;
         
-        console.log('Fetching fresh data from API for:', cacheKey);
+        console.log('Fetching price data from API...');
         const response = await axios.get(route('api.ketahanan-pangan.harga-peta'), {
             params: {
                 level_harga_id: selectedLevelHarga.value,
@@ -332,13 +266,10 @@ const fetchPriceData = async () => {
             error.value = response.data.error;
             priceData.value = [];
         } else {
-            // Cache the raw response
-            setCachedData(cacheKey, response.data, 2); // Cache for 2 hours
-            
             // Transform the API response to match our interface
             priceData.value = transformPriceData(response.data);
             lastUpdated.value = new Date();
-            isCacheData.value = false;
+            
             // Update the map visualization
             updateMapVisualization(priceData.value);
         }
@@ -360,7 +291,8 @@ const transformPriceData = (rawData: any): PriceDataItem[] => {
             price: parseFloat(item.rata_rata_geometrik || 0),
             unit: 'Rp/Kg',
             status: item.status_map || 'normal',
-            map_color: item.map_color || 'gray'
+            map_color: item.map_color || 'gray',
+            latlong: item.latlong || ''
         }));
     }
 
@@ -368,238 +300,186 @@ const transformPriceData = (rawData: any): PriceDataItem[] => {
 };
 
 const updateMapVisualization = (data: PriceDataItem[]) => {
-    // Load and update the SVG map with price data
-    loadIndonesiaMap(data);
+    // Update Leaflet map with markers
+    if (map) {
+        updateMapMarkers(data);
+    }
 };
 
-const loadIndonesiaMap = async (data: PriceDataItem[]) => {
-    console.log('loadIndonesiaMap called with', data.length, 'items');
+// Initialize map (exact same pattern as Dashboard)
+const initializeLeafletMap = async () => {
+    console.log('🗺️ [MAP INIT] Starting map initialization (Dashboard pattern)');
     
-    // Wait for DOM to be ready
-    await new Promise(resolve => {
-        if (document.readyState === 'complete') {
-            resolve(true);
-        } else {
-            window.addEventListener('load', () => resolve(true), { once: true });
+    if (typeof window !== 'undefined') {
+        try {
+            // Dynamic import Leaflet (same as Dashboard)
+            const L = await import('leaflet');
+            
+            // Initialize map
+            if (mapContainer.value) {
+                console.log('✅ [MAP INIT] Container ref available:', {
+                    width: mapContainer.value.offsetWidth,
+                    height: mapContainer.value.offsetHeight
+                });
+                
+                // Clean up existing map
+                if (map) {
+                    console.log('🧹 [MAP INIT] Cleaning up existing map');
+                    map.remove();
+                    map = null;
+                    markersLayer = null;
+                }
+                
+                // Default center for Indonesia
+                const mapCenter: [number, number] = [-2.548926, 118.0148634];
+                const zoomLevel = 5;
+                
+                console.log('🆕 [MAP INIT] Creating Leaflet map instance');
+                
+                // Create map (exact same as Dashboard)
+                map = L.map(mapContainer.value).setView(mapCenter, zoomLevel);
+                
+                console.log('✅ [MAP INIT] Map instance created successfully');
+                
+                // Add tile layer (same as Dashboard)
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                }).addTo(map);
+                
+                console.log('🗺️ [MAP INIT] Tiles added to map');
+                
+                // Create markers layer
+                markersLayer = L.layerGroup().addTo(map);
+                console.log('📍 [MAP INIT] Markers layer created');
+                
+                // Success!
+                mapInitialized.value = true;
+                
+                console.log('✅ [MAP INIT] Map initialization completed successfully!');
+                
+            } else {
+                console.error('❌ [MAP INIT] Map container ref not available');
+                mapInitialized.value = false;
+            }
+        } catch (error) {
+            console.error('💥 [MAP INIT] Error initializing map:', error);
+            mapInitialized.value = false;
         }
-    });
-    
-    const mapContainer = document.getElementById('indonesia-map');
-    if (!mapContainer) {
-        console.error('Map container not found even after DOM ready');
-        console.log('Available elements:', document.querySelectorAll('[id*="map"]'));
-        mapLoading.value = false;
+    }
+};
+
+const updateMapMarkers = async (data: PriceDataItem[]) => {
+    if (!map || !markersLayer) {
+        console.warn('Map or markers layer not available, skipping marker update');
         return;
     }
     
-    console.log('Map container found:', mapContainer);
-
-    console.log('Loading map with data:', data.length, 'provinces');
-    mapLoading.value = true;
-
-    try {
-        // Show loading state
-        mapContainer.innerHTML = '<div class="flex items-center justify-center h-full"><div class="text-gray-500">Memuat peta...</div></div>';
-        
-        // Load the SVG map
-        console.log('Fetching SVG from /assets/indonesia-map.svg');
-        const response = await fetch('/assets/indonesia-map.svg');
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const svgContent = await response.text();
-        console.log('SVG content length:', svgContent.length);
-        
-        if (svgContent.length < 100) {
-            throw new Error('SVG content seems too short, might be an error page');
-        }
-        
-        mapContainer.innerHTML = svgContent;
-        
-        const svgElement = mapContainer.querySelector('svg');
-        if (svgElement) {
-            console.log('SVG element found, applying styles');
-            svgElement.style.width = '100%';
-            svgElement.style.height = '100%';
-            svgElement.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-            
-            // Get original viewBox or set a default
-            const originalViewBox = svgElement.getAttribute('viewBox');
-            console.log('Original ViewBox:', originalViewBox);
-            
-            // Apply price-based colors to provinces
-            applyPriceColors(svgElement, data);
-            
-            mapLoading.value = false;
-        } else {
-            console.error('SVG element not found in loaded content');
-            mapContainer.innerHTML = '<p class="text-center text-gray-500 p-4">SVG element tidak ditemukan dalam file map</p>';
-            mapLoading.value = false;
-        }
-    } catch (err) {
-        console.error('Error loading map:', err);
-        mapContainer.innerHTML = `<div class="text-center text-red-500 p-4">
-            <p>Error loading map: ${err instanceof Error ? err.message : 'Unknown error'}</p>
-            <p class="text-sm mt-2">Trying to load: /assets/indonesia-map.svg</p>
-        </div>`;
-        mapLoading.value = false;
-    }
-};
-
-const applyPriceColors = (svg: SVGElement, data: PriceDataItem[]) => {
-    const provinces = svg.querySelectorAll('path, polygon, circle, g path');
-    console.log('Found SVG elements:', provinces.length);
+    console.log('Updating map markers with', data.length, 'data points');
     
-    // Clear existing indicators
-    const existingIndicators = svg.querySelectorAll('.status-indicator, .status-icon');
-    existingIndicators.forEach(indicator => indicator.remove());
+    // Clear existing markers
+    markersLayer.clearLayers();
     
-    provinces.forEach((province: Element) => {
-        const provinceElement = province as SVGElement;
-        const provinceName = provinceElement.getAttribute('data-name') || 
-                           provinceElement.getAttribute('title') || 
-                           provinceElement.getAttribute('id') ||
-                           provinceElement.getAttribute('name') || '';
+    // Dynamic import Leaflet
+    const L = await import('leaflet');
+    
+    let validMarkers = 0;
+    
+    data.forEach((item) => {
+        // Parse coordinates from latlong string
+        const latLong = item.latlong || '';
+        const [lat, lng] = latLong.split(',').map(coord => parseFloat(coord.trim()));
         
-        // Set default styling first
-        provinceElement.style.fill = '#e5e7eb'; // Light gray default
-        provinceElement.style.stroke = '#9ca3af';
-        provinceElement.style.strokeWidth = '0.5';
-        provinceElement.style.cursor = 'pointer';
-        
-        // If no data, show default map
-        if (data.length === 0) {
-            (provinceElement as any).title = `${provinceName || 'Provinsi'}: Belum ada data`;
+        if (isNaN(lat) || isNaN(lng)) {
+            console.warn(`Invalid coordinates for ${item.province_name}: ${latLong}`);
             return;
         }
         
-        // Find matching price data - try multiple matching strategies
-        let priceItem = data.find(d => 
-            d.province_name.toLowerCase() === provinceName.toLowerCase()
-        );
+        // Get color based on status
+        const color = getMarkerColor(item.map_color, item.status);
+        const statusIcon = getStatusIcon(item.status);
         
-        // If exact match not found, try partial match
-        if (!priceItem && provinceName) {
-            priceItem = data.find(d => 
-                d.province_name.toLowerCase().includes(provinceName.toLowerCase()) ||
-                provinceName.toLowerCase().includes(d.province_name.toLowerCase())
-            );
-        }
+        // Create custom marker icon
+        const markerIcon = createCustomMarkerIcon(color, statusIcon, L);
         
-        // If still not found, try cleaning up common variations
-        if (!priceItem && provinceName) {
-            const cleanProvinceName = provinceName.toLowerCase()
-                .replace(/^prov\.?\s*/, '') // Remove "Prov." prefix
-                .replace(/\s+/g, ' ') // Normalize spaces
-                .trim();
-            
-            priceItem = data.find(d => {
-                const cleanApiName = d.province_name.toLowerCase()
-                    .replace(/^prov\.?\s*/, '')
-                    .replace(/\s+/g, ' ')
-                    .trim();
-                return cleanApiName.includes(cleanProvinceName) || cleanProvinceName.includes(cleanApiName);
-            });
-        }
+        // Create marker
+        const marker = L.marker([lat, lng], { icon: markerIcon });
         
-        if (priceItem && priceItem.price > 0) {
-            let color = '#e5e7eb'; // Default gray
-            
-            // Use map_color from API response for accurate color coding
-            switch (priceItem.map_color?.toLowerCase()) {
-                case 'green':
-                    color = '#10b981'; // Green - safe price
-                    break;
-                case 'yellow':
-                    color = '#f59e0b'; // Yellow - warning price
-                    break;
-                case 'red':
-                    color = '#ef4444'; // Red - intervention needed
-                    break;
-                default:
-                    // Fallback to status if map_color not available
-                    switch (priceItem.status?.toLowerCase()) {
-                        case 'aman':
-                            color = '#10b981';
-                            break;
-                        case 'waspada':
-                            color = '#f59e0b';
-                            break;
-                        case 'intervensi':
-                            color = '#ef4444';
-                            break;
-                        default:
-                            color = '#10b981';
-                            break;
-                    }
-                    break;
-            }
-            
-            provinceElement.style.fill = color;
-            provinceElement.style.stroke = '#374151';
-            provinceElement.style.strokeWidth = '1';
-            
-            // Add tooltip
-            (provinceElement as any).title = `${priceItem.province_name}: ${formatPrice(priceItem.price)} - ${getPriceStatusText(priceItem.status)}`;
-            
-            // Add status indicator dot
-            addStatusIndicator(provinceElement, priceItem, color);
-        } else {
-            // No data available for this province
-            (provinceElement as any).title = `${provinceName || 'Provinsi'}: Data tidak tersedia`;
-        }
+        // Create popup content
+        const popupContent = `
+            <div class="p-2 min-w-[200px]">
+                <h3 class="font-semibold text-lg mb-2">${item.province_name}</h3>
+                <div class="space-y-1 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Harga:</span>
+                        <span class="font-semibold text-green-600">${formatPrice(item.price)}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Status:</span>
+                        <span class="px-2 py-1 rounded text-xs font-medium ${getStatusBadgeClass(item.status)}">
+                            ${getPriceStatusText(item.status)}
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Satuan:</span>
+                        <span>${item.unit}</span>
+                    </div>
+                </div>
+            </div>
+        `;
         
-        // Add hover effect
-        provinceElement.addEventListener('mouseenter', () => {
-            provinceElement.style.opacity = '0.8';
-        });
-        provinceElement.addEventListener('mouseleave', () => {
-            provinceElement.style.opacity = '1';
-        });
+        marker.bindPopup(popupContent);
+        markersLayer.addLayer(marker);
+        validMarkers++;
     });
+    
+    console.log(`Added ${validMarkers} valid markers out of ${data.length} data points`);
 };
 
-// Add status indicator dot to provinces
-const addStatusIndicator = (provinceElement: SVGElement, priceItem: PriceDataItem, color: string) => {
-    // Get bounding box of the province
-    const bbox = provinceElement.getBBox();
-    const centerX = bbox.x + bbox.width / 2;
-    const centerY = bbox.y + bbox.height / 2;
-    
-    // Create status indicator circle
-    const indicator = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    indicator.setAttribute('cx', centerX.toString());
-    indicator.setAttribute('cy', centerY.toString());
-    indicator.setAttribute('r', '3');
-    indicator.setAttribute('fill', color);
-    indicator.setAttribute('stroke', '#ffffff');
-    indicator.setAttribute('stroke-width', '1');
-    indicator.setAttribute('class', 'status-indicator');
-    indicator.style.filter = 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))';
-    
-    // Add status icon based on price status
-    const statusIcon = getStatusIcon(priceItem.status);
-    if (statusIcon) {
-        const iconElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        iconElement.setAttribute('x', centerX.toString());
-        iconElement.setAttribute('y', (centerY + 1).toString());
-        iconElement.setAttribute('text-anchor', 'middle');
-        iconElement.setAttribute('dominant-baseline', 'central');
-        iconElement.setAttribute('font-size', '8');
-        iconElement.setAttribute('fill', '#ffffff');
-        iconElement.setAttribute('font-weight', 'bold');
-        iconElement.setAttribute('class', 'status-icon');
-        iconElement.textContent = statusIcon;
-        
-        // Add both indicator and icon to SVG
-        provinceElement.parentNode?.appendChild(indicator);
-        provinceElement.parentNode?.appendChild(iconElement);
-    } else {
-        // Just add the indicator circle
-        provinceElement.parentNode?.appendChild(indicator);
+// Get marker color based on status
+const getMarkerColor = (mapColor?: string, status?: string): string => {
+    // First try map_color from API
+    switch (mapColor?.toLowerCase()) {
+        case 'green':
+            return '#10b981';
+        case 'yellow':
+            return '#f59e0b';
+        case 'red':
+            return '#ef4444';
+        default:
+            break;
     }
+    
+    // Fallback to status
+    switch (status?.toLowerCase()) {
+        case 'aman':
+            return '#10b981';
+        case 'waspada':
+            return '#f59e0b';
+        case 'intervensi':
+            return '#ef4444';
+        default:
+            return '#6b7280';
+    }
+};
+
+// Create custom marker icon
+const createCustomMarkerIcon = (color: string, statusIcon?: string | null, L?: any) => {
+    const iconHtml = `
+        <div class="relative">
+            <div class="w-6 h-6 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white text-xs font-bold" 
+                 style="background-color: ${color}">
+                ${statusIcon || ''}
+            </div>
+        </div>
+    `;
+    
+    return L.divIcon({
+        html: iconHtml,
+        className: 'custom-marker-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+        popupAnchor: [0, -12]
+    });
 };
 
 // Get status icon based on status
@@ -612,7 +492,21 @@ const getStatusIcon = (status: string): string | null => {
         case 'intervensi':
             return '⚠';
         default:
-            return null;
+            return '●';
+    }
+};
+
+// Get status badge class for popup
+const getStatusBadgeClass = (status: string): string => {
+    switch (status?.toLowerCase()) {
+        case 'aman':
+            return 'bg-green-100 text-green-800';
+        case 'waspada':
+            return 'bg-yellow-100 text-yellow-800';
+        case 'intervensi':
+            return 'bg-red-100 text-red-800';
+        default:
+            return 'bg-gray-100 text-gray-800';
     }
 };
 
@@ -668,24 +562,41 @@ const getPriceStatusText = (status: string): string => {
     }
 };
 
-// Lifecycle hooks
-onMounted(() => {
-    console.log('Component mounted, loading map and data');
-    // Load map first, even without data
-    setTimeout(() => {
-        loadIndonesiaMap([]);
-    }, 100);
-    // Then load initial data
-    setTimeout(() => {
-        fetchPriceData();
-    }, 500);
+// Initialize map (exact same pattern as Dashboard)
+onMounted(async () => {
+    console.log('🚀 [MOUNT] Component mounted');
+    
+    // Initialize map immediately (same as Dashboard)
+    await initializeLeafletMap();
+    
+    // Load initial data
+    console.log('📊 [MOUNT] Loading initial data');
+    fetchPriceData();
 });
 
 // Watch for changes
-watch([selectedKomoditas, selectedLevelHarga, startDate, endDate], () => {
-    if (selectedKomoditas.value) {
-        // Debounce the API call
+watch([selectedKomoditas, selectedLevelHarga, startDate, endDate], (newValues, oldValues) => {
+    if (selectedKomoditas.value && map) {
+        console.log('🔍 Parameter change detected - fetching new data');
+        // Debounce the API call, only fetch data (don't re-init map)
         setTimeout(fetchPriceData, 300);
     }
 });
 </script>
+
+<style scoped>
+:deep(.custom-marker-icon) {
+    background: transparent !important;
+    border: none !important;
+}
+
+:deep(.leaflet-popup-content-wrapper) {
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+:deep(.leaflet-popup-content) {
+    margin: 0;
+    padding: 0;
+}
+</style>
