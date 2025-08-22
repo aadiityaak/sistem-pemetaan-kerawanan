@@ -6,6 +6,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\IndasController;
 use App\Http\Controllers\KabupatenKotaController;
 use App\Http\Controllers\KecamatanController;
+use App\Http\Controllers\KetahanePanganController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\MonitoringDataController;
 use App\Http\Controllers\PartaiPolitikController;
@@ -14,12 +15,10 @@ use App\Http\Controllers\ProvinsiController;
 use App\Http\Controllers\SembakoController;
 use App\Http\Controllers\VideoUploadController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', function () {
     return redirect('/login');
 })->name('home');
-
 
 Route::get('/api/provinsi', function () {
     return \App\Models\Provinsi::select('id', 'nama')->get();
@@ -42,6 +41,7 @@ Route::get('/api/categories', function () {
     $categories->each(function ($category) {
         $category->append(['image_url']);
     });
+
     return $categories;
 });
 
@@ -53,7 +53,7 @@ Route::get('/api/categories-with-subcategories', function () {
         }])
         ->select('id', 'name', 'slug', 'icon', 'image_path')
         ->get();
-    
+
     // Append image URLs to categories and subcategories
     $categories->each(function ($category) {
         $category->append(['image_url']);
@@ -61,7 +61,7 @@ Route::get('/api/categories-with-subcategories', function () {
             $subCategory->append(['image_url']);
         });
     });
-    
+
     return $categories;
 });
 
@@ -74,6 +74,7 @@ Route::get('/api/sub-categories/{category_id}', function ($category_id) {
     $subCategories->each(function ($subCategory) {
         $subCategory->append(['image_url']);
     });
+
     return $subCategories;
 });
 
@@ -84,6 +85,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/upload-video-chunk', [VideoUploadController::class, 'uploadChunk'])->name('api.upload-video-chunk');
     Route::post('/api/delete-video', [VideoUploadController::class, 'deleteVideo'])->name('api.delete-video');
 });
+
+// Public API routes
+Route::get('/api/ketahanan-pangan/harga-peta', [KetahanePanganController::class, 'getHargaPeta'])->name('api.ketahanan-pangan.harga-peta');
 
 Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified', 'province.filter'])->name('dashboard');
 
@@ -122,7 +126,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Monitoring Data Routes - Apply province filter for non-admin users
     Route::middleware(['province.filter'])->group(function () {
         Route::get('/monitoring-data', [MonitoringDataController::class, 'index'])->name('monitoring-data.index');
-        
+
         // Only users who can edit can access create/edit/delete routes
         Route::middleware(['edit.permission'])->group(function () {
             Route::get('/monitoring-data/create', [MonitoringDataController::class, 'create'])->name('monitoring-data.create');
@@ -132,7 +136,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('/monitoring-data/{id}', [MonitoringDataController::class, 'destroy'])->name('monitoring-data.destroy');
             Route::delete('/monitoring-data/{id}/gallery', [MonitoringDataController::class, 'deleteGalleryImage'])->name('monitoring-data.delete-gallery');
         });
-        
+
         // Show route must come AFTER more specific routes like create and edit
         Route::get('/monitoring-data/{id}', [MonitoringDataController::class, 'show'])->name('monitoring-data.show');
     });
@@ -176,11 +180,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('sembako/import-csv', [SembakoController::class, 'importCsv'])->name('sembako.import-csv');
     Route::resource('sembako', SembakoController::class);
 
+    // Ketahanan Pangan Routes
+    Route::get('/ketahanan-pangan', [KetahanePanganController::class, 'index'])->name('ketahanan-pangan.index');
+
     // Categories Routes (Super Admin and Admin VIP can view, only Super Admin can edit)
     Route::middleware(['role:super_admin,admin_vip'])->group(function () {
         Route::get('categories', [\App\Http\Controllers\CategoryController::class, 'index'])->name('categories.index');
         Route::get('sub-categories', [\App\Http\Controllers\SubCategoryController::class, 'index'])->name('sub-categories.index');
-        
+
         // Only Super Admin can edit categories
         Route::middleware(['role:super_admin'])->group(function () {
             Route::get('categories/create', [\App\Http\Controllers\CategoryController::class, 'create'])->name('categories.create');
@@ -200,7 +207,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/sub-categories/{subCategory}/toggle-status', [\App\Http\Controllers\SubCategoryController::class, 'toggleStatus'])->name('sub-categories.toggle-status');
             Route::delete('/sub-categories/{subCategory}/delete-image', [\App\Http\Controllers\SubCategoryController::class, 'deleteImage'])->name('sub-categories.delete-image');
         });
-        
+
         // Show routes must come AFTER more specific routes like create and edit
         Route::get('categories/{category}', [\App\Http\Controllers\CategoryController::class, 'show'])->name('categories.show');
         Route::get('sub-categories/{subCategory}', [\App\Http\Controllers\SubCategoryController::class, 'show'])->name('sub-categories.show');
@@ -209,7 +216,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Event Calendar Routes (Universal for Kamtibmas, Agenda, etc.)
     Route::get('/event', [EventController::class, 'index'])->name('event.index');
     Route::get('/event/{event}', [EventController::class, 'show'])->name('event.show');
-    
+
     // Only users who can edit can modify events
     Route::middleware(['edit.permission'])->group(function () {
         Route::post('/event', [EventController::class, 'store'])->name('event.store');
@@ -217,18 +224,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/event/{event}', [EventController::class, 'destroy'])->name('event.destroy');
         Route::post('/event/{event}/toggle-status', [EventController::class, 'toggleStatus'])->name('event.toggle-status');
     });
-    
+
     // Specific route for Agenda Internal Korp Brimob POLRI
-    Route::get('/agenda-internal-korp-brimob', function() {
+    Route::get('/agenda-internal-korp-brimob', function () {
         return redirect('/event?category=Agenda Internal Korp Brimob POLRI');
     })->name('agenda-internal-korp-brimob.index');
-    
+
     // Legacy routes for backward compatibility
-    Route::get('/kamtibmas-calendar', function() {
+    Route::get('/kamtibmas-calendar', function () {
         return redirect('/event?event=kamtibmas');
     });
     Route::get('/kamtibmas-events/{event}', [EventController::class, 'show'])->name('kamtibmas-events.show');
-    
+
     // Only users who can edit can modify kamtibmas events
     Route::middleware(['edit.permission'])->group(function () {
         Route::post('/kamtibmas-events', [EventController::class, 'store'])->name('kamtibmas-events.store');
@@ -237,20 +244,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/kamtibmas-events/{event}/toggle-status', [EventController::class, 'toggleStatus'])->name('kamtibmas-events.toggle-status');
     });
 
-
     // User Management Routes (Super Admin and Admin VIP can view, only Super Admin can edit)
     Route::middleware(['role:super_admin,admin_vip'])->group(function () {
         Route::get('/users', [\App\Http\Controllers\UserController::class, 'index'])->name('users.index');
-        
+
         // Only Super Admin can manage users
         Route::middleware(['role:super_admin'])->group(function () {
             Route::get('/users/create', [\App\Http\Controllers\UserController::class, 'create'])->name('users.create');
             Route::post('/users', [\App\Http\Controllers\UserController::class, 'store'])->name('users.store');
         });
-        
+
         // Routes with {user} parameter must come after static routes
         Route::get('/users/{user}', [\App\Http\Controllers\UserController::class, 'show'])->name('users.show');
-        
+
         // Only Super Admin can manage users (continued)
         Route::middleware(['role:super_admin'])->group(function () {
             Route::get('/users/{user}/edit', [\App\Http\Controllers\UserController::class, 'edit'])->name('users.edit');
@@ -265,11 +271,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/settings', [AppSettingController::class, 'index'])->name('settings.index');
         Route::get('admin/menu-items', [\App\Http\Controllers\Admin\MenuItemController::class, 'index'])->name('admin.menu-items.index');
         Route::get('admin/menu-items/{menuItem}', [\App\Http\Controllers\Admin\MenuItemController::class, 'show'])->name('admin.menu-items.show');
-        
+
         // Only Super Admin can manage settings and menus
         Route::middleware(['role:super_admin'])->group(function () {
             Route::match(['POST', 'PUT'], '/settings/{key}', [AppSettingController::class, 'update'])->name('settings.update');
-            
+
             // Menu Management Routes
             Route::get('admin/menu-items/create', [\App\Http\Controllers\Admin\MenuItemController::class, 'create'])->name('admin.menu-items.create');
             Route::post('admin/menu-items', [\App\Http\Controllers\Admin\MenuItemController::class, 'store'])->name('admin.menu-items.store');
