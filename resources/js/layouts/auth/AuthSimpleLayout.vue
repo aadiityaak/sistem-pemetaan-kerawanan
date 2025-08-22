@@ -13,6 +13,9 @@ const page = usePage<AppPageProps>();
 const appSettings = computed(() => page.props.appSettings);
 
 let matrixAnimation: number | null = null;
+let lastTime = 0;
+const FPS = 8; // Reduced from default 60fps to 8fps for slower effect
+const fpsInterval = 1000 / FPS;
 
 // Matrix rain animation
 onMounted(() => {
@@ -44,8 +47,8 @@ onMounted(() => {
     }
 
     const drawMatrix = () => {
-        // Semi-transparent black background for trail effect
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+        // More transparent black background for longer trails (slower fade)
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         // Green text
@@ -60,20 +63,26 @@ onMounted(() => {
             ctx.fillStyle = i % 3 === 0 ? '#00FF41' : i % 5 === 0 ? '#00AA00' : '#008800';
             ctx.fillText(text, i * fontSize, drops[i] * fontSize);
 
-            // Reset drop randomly and based on conditions
-            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+            // Reset drop more slowly and randomly (increased threshold for slower reset)
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.985) {
                 drops[i] = 0;
             }
             drops[i]++;
         }
     };
 
-    const animate = () => {
-        drawMatrix();
+    const animate = (currentTime: number) => {
+        // Control frame rate for slower animation
+        if (currentTime - lastTime >= fpsInterval) {
+            drawMatrix();
+            lastTime = currentTime;
+        }
         matrixAnimation = requestAnimationFrame(animate);
     };
 
-    animate();
+    // Start animation
+    lastTime = performance.now();
+    animate(lastTime);
 });
 
 onUnmounted(() => {

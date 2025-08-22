@@ -162,6 +162,35 @@ const formatDateTime = (dateString: string): string => {
     });
 };
 
+// Format description dengan auto paragraph
+const formatDescription = (description: string): string => {
+    if (!description) return '';
+    
+    // Jika sudah mengandung tag HTML, pastikan spacing yang baik antar paragraf
+    if (/<[a-z][\s\S]*>/i.test(description)) {
+        // Bersihkan paragraf kosong yang tidak perlu dan perbaiki spacing
+        return description
+            .replace(/<p><\/p>/g, '<p>&nbsp;</p>') // Convert empty p tags to space
+            .replace(/(<\/p>\s*<p>)/g, '</p><p>'); // Ensure consistent p tag spacing
+    }
+    
+    // Konversi line breaks menjadi paragraf
+    // Split berdasarkan double line breaks untuk paragraf baru
+    const paragraphs = description.split(/\n\s*\n/);
+    
+    // Konversi setiap paragraf dan ganti single line breaks dengan <br>
+    const formattedParagraphs = paragraphs.map(paragraph => {
+        const trimmed = paragraph.trim();
+        if (!trimmed) {
+            return '<p>&nbsp;</p>'; // Empty paragraph with non-breaking space
+        }
+        const formattedParagraph = trimmed.replace(/\n/g, '<br>');
+        return `<p>${formattedParagraph}</p>`;
+    });
+    
+    return formattedParagraphs.join('');
+};
+
 const printData = () => {
     if (typeof window !== 'undefined') {
         window.print();
@@ -269,72 +298,115 @@ onMounted(async () => {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-1 flex-col gap-6 rounded-xl p-6">
-            <!-- Header -->
-            <div class="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ monitoringData.title }}</h1>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Detail data monitoring #{{ monitoringData.id }}</p>
-                </div>
-                <div class="flex gap-3">
-                    <Link v-if="canEdit" :href="`/monitoring-data/${monitoringData.id}/edit`">
-                        <Button size="sm">
-                            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                />
-                            </svg>
-                            Edit Data
-                        </Button>
-                    </Link>
-                    <Link :href="backUrl">
-                        <Button variant="outline" size="sm">
-                            <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                            </svg>
-                            Kembali
-                        </Button>
-                    </Link>
-                </div>
+            <!-- Header Actions -->
+            <div class="flex justify-end gap-3">
+                <Link v-if="canEdit" :href="`/monitoring-data/${monitoringData.id}/edit`">
+                    <Button size="sm">
+                        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
+                        </svg>
+                        Edit Data
+                    </Button>
+                </Link>
+                <Link :href="backUrl">
+                    <Button variant="outline" size="sm">
+                        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Kembali
+                    </Button>
+                </Link>
             </div>
 
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                <!-- Main Information -->
+                <!-- Main Content -->
                 <div class="space-y-6 lg:col-span-2">
-                    <!-- Basic Information -->
-                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Informasi Dasar</h3>
-
-                        <div class="space-y-4">
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <!-- Title -->
-                                <div>
-                                    <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Judul</label>
-                                    <div class="text-gray-900 dark:text-white">{{ monitoringData.title }}</div>
+                    <!-- Article Header Card -->
+                    <article class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <!-- Meta Information -->
+                        <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                            <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                <div class="flex items-center gap-2">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <time>{{ formatDate(monitoringData.incident_date) }}</time>
                                 </div>
+                                <div class="flex items-center gap-2">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span>{{ monitoringData.kecamatan?.nama }}, {{ monitoringData.kabupaten_kota?.nama }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span
+                                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                                        :class="[
+                                            getSeverityConfig(monitoringData.severity_level).bgColor,
+                                            getSeverityConfig(monitoringData.severity_level).color,
+                                        ]"
+                                    >
+                                        {{ getSeverityConfig(monitoringData.severity_level).icon }}
+                                        {{ getSeverityConfig(monitoringData.severity_level).label }}
+                                    </span>
+                                    <span
+                                        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                                        :class="[getStatusConfig(monitoringData.status).bgColor, getStatusConfig(monitoringData.status).color]"
+                                    >
+                                        {{ getStatusConfig(monitoringData.status).icon }} {{ getStatusConfig(monitoringData.status).label }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
 
-                                <!-- Incident Date -->
-                                <div>
-                                    <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Kejadian</label>
-                                    <div class="text-gray-900 dark:text-white">{{ formatDate(monitoringData.incident_date) }}</div>
+                        <!-- Article Title -->
+                        <header class="px-6 py-6">
+                            <h1 class="text-3xl font-bold leading-tight text-gray-900 dark:text-white lg:text-4xl">
+                                {{ monitoringData.title }}
+                            </h1>
+                        </header>
+
+                        <!-- Article Content -->
+                        <div v-if="monitoringData.description" class="px-6 pb-6">
+                            <div
+                                class="prose prose-lg dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 [&>p]:mb-6 [&>p:empty]:mb-8 [&>p:last-child]:mb-0 [&>p]:leading-relaxed [&>p]:text-lg"
+                                v-html="formatDescription(monitoringData.description)"
+                            ></div>
+                        </div>
+                    </article>
+
+                    <!-- Additional Information Card -->
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Informasi Tambahan</h3>
+
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <!-- Jumlah Terdampak -->
+                            <div v-if="monitoringData.jumlah_terdampak">
+                                <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah Terdampak</label>
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ monitoringData.jumlah_terdampak.toLocaleString() }}</span>
+                                    <span class="text-gray-600 dark:text-gray-400">orang</span>
                                 </div>
                             </div>
 
-                            <!-- Description -->
-                            <div v-if="monitoringData.description">
-                                <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Deskripsi</label>
-                                <div
-                                    class="prose prose-sm dark:prose-invert max-w-none text-gray-900 dark:text-white"
-                                    v-html="monitoringData.description"
-                                ></div>
+                            <!-- Koordinat -->
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-400">Koordinat</label>
+                                <div class="font-mono text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-md">
+                                    {{ monitoringData.latitude }}, {{ monitoringData.longitude }}
+                                </div>
                             </div>
 
                             <!-- Sumber Berita -->
-                            <div v-if="monitoringData.sumber_berita">
-                                <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Sumber Berita</label>
-                                <div class="flex items-center gap-2">
+                            <div v-if="monitoringData.sumber_berita" class="md:col-span-2">
+                                <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-400">Sumber Berita</label>
+                                <div class="flex items-center gap-2 text-gray-900 dark:text-white">
                                     <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path
                                             stroke-linecap="round"
@@ -343,50 +415,7 @@ onMounted(async () => {
                                             d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15"
                                         ></path>
                                     </svg>
-                                    <span class="text-gray-900 dark:text-white">{{ monitoringData.sumber_berita }}</span>
-                                </div>
-                            </div>
-
-                            <!-- Jumlah Terdampak -->
-                            <div v-if="monitoringData.jumlah_terdampak">
-                                <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah Terdampak</label>
-                                <div class="text-gray-900 dark:text-white">
-                                    <span class="text-2xl font-bold">{{ monitoringData.jumlah_terdampak.toLocaleString() }}</span>
-                                    <span class="ml-1 text-sm text-gray-500 dark:text-gray-400">orang</span>
-                                </div>
-                            </div>
-
-                            <!-- Classification -->
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <!-- Severity & Status -->
-                                <div>
-                                    <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-400">Level & Status</label>
-                                    <div class="flex flex-wrap gap-2">
-                                        <span
-                                            class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium"
-                                            :class="[
-                                                getSeverityConfig(monitoringData.severity_level).bgColor,
-                                                getSeverityConfig(monitoringData.severity_level).color,
-                                            ]"
-                                        >
-                                            {{ getSeverityConfig(monitoringData.severity_level).icon }}
-                                            {{ getSeverityConfig(monitoringData.severity_level).label }}
-                                        </span>
-                                        <span
-                                            class="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium"
-                                            :class="[getStatusConfig(monitoringData.status).bgColor, getStatusConfig(monitoringData.status).color]"
-                                        >
-                                            {{ getStatusConfig(monitoringData.status).icon }} {{ getStatusConfig(monitoringData.status).label }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Coordinates -->
-                                <div>
-                                    <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Koordinat</label>
-                                    <div class="font-mono text-sm text-gray-900 dark:text-white">
-                                        {{ monitoringData.latitude }}, {{ monitoringData.longitude }}
-                                    </div>
+                                    <span>{{ monitoringData.sumber_berita }}</span>
                                 </div>
                             </div>
                         </div>
