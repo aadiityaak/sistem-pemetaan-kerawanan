@@ -119,9 +119,9 @@ _Sistem informasi pemetaan dan monitoring kejahatan berbasis web dengan visualis
 **Crime Monitoring:**
 ```
 🎯 Total Kejahatan: 18 kasus
-🗺️ Provinsi Terdampak: 6 provinsi
-🏢 Kab/Kota Terdampak: 12 kab/kota
-📍 Kecamatan Terdampak: 18 kecamatan
+🗺️ Provinsi Komentar: 6 provinsi
+🏢 Kab/Kota Komentar: 12 kab/kota
+📍 Kecamatan Komentar: 18 kecamatan
 🏷️ Jenis Kejahatan: 8 kategori
 ```
 

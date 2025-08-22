@@ -449,21 +449,21 @@ onMounted(async () => {
                                     </p>
                                 </div>
 
-                                <!-- Jumlah Terdampak -->
+                                <!-- Jumlah Komentar -->
                                 <div>
-                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Jumlah Terdampak </label>
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Jumlah Komentar </label>
                                     <input
                                         v-model="form.jumlah_terdampak"
                                         type="number"
                                         min="0"
                                         class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                        placeholder="Masukkan jumlah orang yang terdampak"
+                                        placeholder="Masukkan jumlah komentar"
                                     />
                                     <div v-if="form.errors.jumlah_terdampak" class="mt-1 text-sm text-red-500">
                                         {{ form.errors.jumlah_terdampak }}
                                     </div>
                                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        Jumlah orang yang terlibat atau terdampak dalam kejadian ini
+                                        Jumlah komentar dalam kejadian ini
                                     </p>
                                 </div>
 

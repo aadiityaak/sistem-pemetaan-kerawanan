@@ -196,7 +196,7 @@ class AiPredictionController extends Controller
             $prompt .= "  Tanggal: {$data['date']}\n";
             $prompt .= "  Tingkat: {$data['severity']}\n";
             $prompt .= "  Status: {$data['status']}\n";
-            $prompt .= "  Terdampak: {$data['affected_count']} orang\n";
+            $prompt .= "  Komentar: {$data['affected_count']} orang\n";
             if (!empty($data['description'])) {
                 $prompt .= "  Deskripsi: " . substr($data['description'], 0, 100) . "\n";
             }

@@ -67,6 +67,12 @@ interface Statistics {
     dataByStatus: Record<string, number>;
 }
 
+interface KabupatenKota {
+    id: number;
+    nama: string;
+    provinsi_id: number;
+}
+
 const props = defineProps<{
     monitoringData: MonitoringData[];
     selectedCategory?: Category | null;
@@ -78,6 +84,10 @@ const props = defineProps<{
     userProvinsi?: UserProvinsi | null;
     statistics: Statistics;
     recentActivities: MonitoringData[];
+    provinsiList?: UserProvinsi[];
+    selectedProvinsi?: UserProvinsi | null;
+    kabupatenKotaList?: KabupatenKota[];
+    selectedKabupatenKota?: KabupatenKota | null;
 }>();
 
 // Get current user and check edit permissions
@@ -123,6 +133,11 @@ const currentTheme = computed(() => {
         return categoryThemes[props.selectedCategory.slug] || categoryThemes['keamanan'];
     }
     return { color: '#6B7280', icon: '📊', bgColor: 'bg-gray-100 dark:bg-gray-900' };
+});
+
+// Check if current category is kategori-indas
+const isKategoriIndas = computed(() => {
+    return props.selectedCategory?.slug === 'kategori-indas';
 });
 
 // Icon mapping untuk setiap severity level
@@ -244,6 +259,8 @@ const selectCategory = (categorySlug: string | null) => {
             subcategory: categorySlug ? props.selectedSubCategory?.slug || null : null,
             start_date: props.startDate || null,
             end_date: props.endDate || null,
+            provinsi_id: props.selectedProvinsi?.id?.toString() || null,
+            kabupaten_kota_id: props.selectedKabupatenKota?.id?.toString() || null,
         }),
     );
 };
@@ -256,6 +273,36 @@ const selectSubCategory = (subCategorySlug: string | null) => {
             subcategory: subCategorySlug,
             start_date: props.startDate || null,
             end_date: props.endDate || null,
+            provinsi_id: props.selectedProvinsi?.id?.toString() || null,
+            kabupaten_kota_id: props.selectedKabupatenKota?.id?.toString() || null,
+        }),
+    );
+};
+
+// Function to change province filter
+const selectProvinsi = (provinsiId: number | null) => {
+    router.get(
+        buildFilterUrl({
+            category: props.selectedCategory?.slug || null,
+            subcategory: props.selectedSubCategory?.slug || null,
+            start_date: props.startDate || null,
+            end_date: props.endDate || null,
+            provinsi_id: provinsiId?.toString() || null,
+            kabupaten_kota_id: null, // Reset kabupaten/kota when province changes
+        }),
+    );
+};
+
+// Function to change kabupaten/kota filter
+const selectKabupatenKota = (kabupatenKotaId: number | null) => {
+    router.get(
+        buildFilterUrl({
+            category: props.selectedCategory?.slug || null,
+            subcategory: props.selectedSubCategory?.slug || null,
+            start_date: props.startDate || null,
+            end_date: props.endDate || null,
+            provinsi_id: props.selectedProvinsi?.id?.toString() || null,
+            kabupaten_kota_id: kabupatenKotaId?.toString() || null,
         }),
     );
 };
@@ -268,6 +315,8 @@ const selectStartDate = (startDate: string | null) => {
             subcategory: props.selectedSubCategory?.slug || null,
             start_date: startDate,
             end_date: props.endDate || null,
+            provinsi_id: props.selectedProvinsi?.id?.toString() || null,
+            kabupaten_kota_id: props.selectedKabupatenKota?.id?.toString() || null,
         }),
     );
 };
@@ -280,6 +329,8 @@ const selectEndDate = (endDate: string | null) => {
             subcategory: props.selectedSubCategory?.slug || null,
             start_date: props.startDate || null,
             end_date: endDate,
+            provinsi_id: props.selectedProvinsi?.id?.toString() || null,
+            kabupaten_kota_id: props.selectedKabupatenKota?.id?.toString() || null,
         }),
     );
 };
@@ -313,9 +364,21 @@ const buildCreateUrl = () => {
 // Custom dropdown state
 const categoryDropdownOpen = ref(false);
 const subCategoryDropdownOpen = ref(false);
+const provinsiDropdownOpen = ref(false);
+const kabupatenKotaDropdownOpen = ref(false);
 
 // Search functionality
 const searchQuery = ref('');
+
+// Computed property for filtered kabupaten/kota based on selected province
+const filteredKabupatenKotaList = computed(() => {
+    if (!props.selectedProvinsi || !props.kabupatenKotaList) {
+        return props.kabupatenKotaList || [];
+    }
+    return props.kabupatenKotaList.filter(kabupatenKota => 
+        kabupatenKota.provinsi_id === props.selectedProvinsi!.id
+    );
+});
 
 // Computed property for filtered monitoring data
 const filteredMonitoringData = computed(() => {
@@ -483,61 +546,68 @@ watch(filteredMonitoringData, () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-1 flex-col gap-6 rounded-xl p-6">
             <!-- Header -->
-            <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                <div class="flex items-center">
-                    <div
-                        class="mr-4 flex h-12 w-12 items-center justify-center rounded-lg"
-                        :class="
-                            selectedCategory?.image_url
-                                ? 'bg-gray-50 dark:bg-gray-800'
-                                : selectedCategory
-                                  ? currentTheme.bgColor
-                                  : 'bg-gray-100 dark:bg-gray-900'
-                        "
-                    >
-                        <img
-                            v-if="selectedCategory?.image_url"
-                            :src="selectedCategory.image_url"
-                            alt="Category icon"
-                            class="h-10 w-10 rounded object-contain"
-                        />
-                        <span v-else class="text-2xl">{{ selectedCategory ? selectedCategory.icon || currentTheme.icon : '📊' }}</span>
-                    </div>
-                    <div class="flex-1">
-                        <h1 class="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">
-                            <span>Dashboard</span>
-                            <span v-if="selectedCategory">{{ selectedCategory.name }}</span>
-                            <template v-if="selectedSubCategory">
-                                <span>/</span>
-                                <img
-                                    v-if="selectedSubCategory.image_url"
-                                    :src="selectedSubCategory.image_url"
-                                    alt="Subcategory icon"
-                                    class="h-6 w-6 rounded object-contain"
-                                />
-                                <span>{{ selectedSubCategory.name }}</span>
-                            </template>
-                            <span v-if="!selectedCategory">Monitoring</span>
-                        </h1>
-                        <p class="text-gray-600 dark:text-gray-400">
-                            {{
-                                selectedSubCategory
-                                    ? `Monitoring khusus subcategory ${selectedSubCategory.name}`
+            <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <!-- Icon & Title Section -->
+                    <div class="flex items-center min-w-0 flex-1">
+                        <div
+                            class="mr-3 flex h-10 w-10 items-center justify-center rounded-lg sm:mr-4 sm:h-12 sm:w-12"
+                            :class="
+                                selectedCategory?.image_url
+                                    ? 'bg-gray-50 dark:bg-gray-800'
                                     : selectedCategory
-                                      ? `Monitoring khusus kategori ${selectedCategory.name}`
-                                      : 'Monitoring data komprehensif semua kategori'
-                            }}
-                        </p>
+                                      ? currentTheme.bgColor
+                                      : 'bg-gray-100 dark:bg-gray-900'
+                            "
+                        >
+                            <img
+                                v-if="selectedCategory?.image_url"
+                                :src="selectedCategory.image_url"
+                                alt="Category icon"
+                                class="h-8 w-8 rounded object-contain sm:h-10 sm:w-10"
+                            />
+                            <span v-else class="text-lg sm:text-2xl">{{ selectedCategory ? selectedCategory.icon || currentTheme.icon : '📊' }}</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h1 class="flex flex-wrap items-center gap-1 text-lg font-bold text-gray-900 dark:text-white sm:gap-2 sm:text-2xl">
+                                <span class="whitespace-nowrap">Dashboard</span>
+                                <span v-if="selectedCategory" class="truncate">{{ selectedCategory.name }}</span>
+                                <template v-if="selectedSubCategory">
+                                    <span class="hidden sm:inline">/</span>
+                                    <div class="flex items-center gap-1 sm:gap-2">
+                                        <img
+                                            v-if="selectedSubCategory.image_url"
+                                            :src="selectedSubCategory.image_url"
+                                            alt="Subcategory icon"
+                                            class="h-4 w-4 rounded object-contain sm:h-6 sm:w-6"
+                                        />
+                                        <span class="truncate">{{ selectedSubCategory.name }}</span>
+                                    </div>
+                                </template>
+                                <span v-if="!selectedCategory" class="whitespace-nowrap">Monitoring</span>
+                            </h1>
+                            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400 sm:text-base">
+                                {{
+                                    selectedSubCategory
+                                        ? `Monitoring khusus subcategory ${selectedSubCategory.name}`
+                                        : selectedCategory
+                                          ? `Monitoring khusus kategori ${selectedCategory.name}`
+                                          : 'Monitoring data komprehensif semua kategori'
+                                }}
+                            </p>
+                        </div>
                     </div>
-                    <div v-if="canEdit" class="flex items-center">
+                    
+                    <!-- Action Button -->
+                    <div v-if="canEdit" class="flex justify-end sm:justify-end sm:flex-shrink-0">
                         <Link
                             :href="buildCreateUrl()"
-                            class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:focus:ring-offset-gray-800"
+                            class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:focus:ring-offset-gray-800 sm:px-4"
                         >
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
-                            Tambah Data
+                            <span class="whitespace-nowrap">Tambah Data</span>
                         </Link>
                     </div>
                 </div>
@@ -549,7 +619,7 @@ watch(filteredMonitoringData, () => {
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">🔍 Filter & Pencarian</h3>
                 </div>
                 <div class="p-6">
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+                    <div :class="isKategoriIndas ? 'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4' : 'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5'">
                         <!-- Search Filter -->
                         <div>
                             <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Pencarian</label>
@@ -713,8 +783,8 @@ watch(filteredMonitoringData, () => {
                             </div>
                         </div>
 
-                        <!-- Start Date Filter -->
-                        <div>
+                        <!-- Start Date Filter - Hidden for kategori-indas -->
+                        <div v-if="!isKategoriIndas">
                             <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Mulai</label>
                             <input
                                 type="date"
@@ -725,8 +795,8 @@ watch(filteredMonitoringData, () => {
                             />
                         </div>
 
-                        <!-- End Date Filter -->
-                        <div>
+                        <!-- End Date Filter - Hidden for kategori-indas -->
+                        <div v-if="!isKategoriIndas">
                             <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Akhir</label>
                             <input
                                 type="date"
@@ -736,6 +806,109 @@ watch(filteredMonitoringData, () => {
                                 placeholder="Tanggal Akhir"
                             />
                         </div>
+
+                        <!-- Province Filter - Only for kategori-indas -->
+                        <div v-if="isKategoriIndas">
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Provinsi</label>
+                            <div class="relative">
+                                <button
+                                    @click="provinsiDropdownOpen = !provinsiDropdownOpen"
+                                    class="flex w-full items-center justify-between gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                >
+                                    <span>{{ selectedProvinsi?.nama || 'Semua Provinsi' }}</span>
+                                    <svg
+                                        class="h-4 w-4 transition-transform"
+                                        :class="{ 'rotate-180': provinsiDropdownOpen }"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                <div
+                                    v-if="provinsiDropdownOpen"
+                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700"
+                                >
+                                    <button
+                                        @click="
+                                            selectProvinsi(null);
+                                            provinsiDropdownOpen = false;
+                                        "
+                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                    >
+                                        <span>Semua Provinsi</span>
+                                    </button>
+                                    <button
+                                        v-for="provinsi in (provinsiList || [])"
+                                        :key="provinsi.id"
+                                        @click="
+                                            selectProvinsi(provinsi.id);
+                                            provinsiDropdownOpen = false;
+                                        "
+                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                    >
+                                        <span>{{ provinsi.nama }}</span>
+                                    </button>
+                                    <div
+                                        v-if="!provinsiList || provinsiList.length === 0"
+                                        class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400"
+                                    >
+                                        Data provinsi tidak tersedia
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kabupaten/Kota Filter - Only for kategori-indas when province is selected -->
+                        <div v-if="isKategoriIndas && selectedProvinsi && filteredKabupatenKotaList.length > 0">
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Kabupaten/Kota</label>
+                            <div class="relative">
+                                <button
+                                    @click="kabupatenKotaDropdownOpen = !kabupatenKotaDropdownOpen"
+                                    class="flex w-full items-center justify-between gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                >
+                                    <span>{{ selectedKabupatenKota?.nama || 'Semua Kabupaten/Kota' }}</span>
+                                    <svg
+                                        class="h-4 w-4 transition-transform"
+                                        :class="{ 'rotate-180': kabupatenKotaDropdownOpen }"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                <div
+                                    v-if="kabupatenKotaDropdownOpen"
+                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700"
+                                >
+                                    <button
+                                        @click="
+                                            selectKabupatenKota(null);
+                                            kabupatenKotaDropdownOpen = false;
+                                        "
+                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                    >
+                                        <span>Semua Kabupaten/Kota</span>
+                                    </button>
+                                    <button
+                                        v-for="kabupatenKota in filteredKabupatenKotaList"
+                                        :key="kabupatenKota.id"
+                                        @click="
+                                            selectKabupatenKota(kabupatenKota.id);
+                                            kabupatenKotaDropdownOpen = false;
+                                        "
+                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                    >
+                                        <span>{{ kabupatenKota.nama }}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -783,7 +956,7 @@ watch(filteredMonitoringData, () => {
                             </svg>
                         </div>
                         <p class="text-xl font-bold text-gray-900 dark:text-white">{{ statistics.totalTerdampak.toLocaleString() }}</p>
-                        <p class="text-xs text-gray-600 dark:text-gray-400">Terdampak</p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400">Komentar</p>
                     </div>
                 </div>
 
@@ -932,28 +1105,32 @@ watch(filteredMonitoringData, () => {
                                             Kategori
                                         </th>
                                         <th
+                                            v-if="!isKategoriIndas"
                                             scope="col"
                                             class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
                                         >
                                             Tanggal Kejadian
                                         </th>
                                         <th
+                                            v-if="!isKategoriIndas"
                                             scope="col"
                                             class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
                                         >
                                             Level
                                         </th>
                                         <th
+                                            v-if="!isKategoriIndas"
                                             scope="col"
                                             class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
                                         >
                                             Status
                                         </th>
                                         <th
+                                            v-if="!isKategoriIndas"
                                             scope="col"
                                             class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
                                         >
-                                            Terdampak
+                                            Komentar
                                         </th>
                                         <th scope="col" class="relative px-6 py-3">
                                             <span class="sr-only">Actions</span>
@@ -962,7 +1139,7 @@ watch(filteredMonitoringData, () => {
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                                     <tr v-if="filteredMonitoringData.length === 0">
-                                        <td colspan="7" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                                        <td :colspan="isKategoriIndas ? '3' : '7'" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                                             <div class="flex flex-col items-center">
                                                 <svg
                                                     class="mb-2 h-12 w-12 text-gray-300 dark:text-gray-600"
@@ -1014,10 +1191,10 @@ watch(filteredMonitoringData, () => {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                                        <td v-if="!isKategoriIndas" class="px-6 py-4 text-sm text-gray-900 dark:text-white">
                                             {{ formatDate(data.incident_date) }}
                                         </td>
-                                        <td class="px-6 py-4">
+                                        <td v-if="!isKategoriIndas" class="px-6 py-4">
                                             <span
                                                 :class="getLevelBadgeClass(data.severity_level)"
                                                 class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
@@ -1025,7 +1202,7 @@ watch(filteredMonitoringData, () => {
                                                 {{ getSeverityLabel(data.severity_level) }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4">
+                                        <td v-if="!isKategoriIndas" class="px-6 py-4">
                                             <span
                                                 :class="getStatusBadgeClass(data.status)"
                                                 class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
@@ -1033,7 +1210,7 @@ watch(filteredMonitoringData, () => {
                                                 {{ getStatusLabel(data.status) }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                                        <td v-if="!isKategoriIndas" class="px-6 py-4 text-sm text-gray-900 dark:text-white">
                                             {{ data.jumlah_terdampak?.toLocaleString() || '-' }}
                                         </td>
                                         <td class="px-6 py-4 text-right text-sm font-medium">
@@ -1227,7 +1404,7 @@ watch(filteredMonitoringData, () => {
                                                     {{ issue.jumlah_terdampak?.toLocaleString() }}
                                                 </span>
                                             </div>
-                                            <span class="text-xs text-gray-500 dark:text-gray-400">terdampak</span>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">komentar</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1235,8 +1412,8 @@ watch(filteredMonitoringData, () => {
                         </div>
                     </div>
 
-                    <!-- Severity Level Distribution -->
-                    <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                    <!-- Severity Level Distribution - Hidden for kategori-indas -->
+                    <div v-if="!isKategoriIndas" class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">📊 Tingkat Resiko</h3>
                         <div class="space-y-3">
                             <div v-for="(config, severity) in severityIcons" :key="severity" class="flex items-center gap-3">

@@ -504,7 +504,7 @@ onUnmounted(() => {
                                         Klik untuk melihat detail lengkap dan daftar kejadian terbaru
                                     </div>
                                     <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
-                                        <span>{{ props.unjukRasaStats.by_province.length }} Provinsi Terdampak</span>
+                                        <span>{{ props.unjukRasaStats.by_province.length }} Provinsi Komentar</span>
                                         <span>•</span>
                                         <span>Diperbarui Real-time</span>
                                     </div>

@@ -388,7 +388,7 @@ onMounted(async () => {
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <!-- Jumlah Terdampak -->
                             <div v-if="monitoringData.jumlah_terdampak">
-                                <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah Terdampak</label>
+                                <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah Komentar</label>
                                 <div class="flex items-baseline gap-2">
                                     <span class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ monitoringData.jumlah_terdampak.toLocaleString() }}</span>
                                     <span class="text-gray-600 dark:text-gray-400">orang</span>
@@ -610,7 +610,7 @@ onMounted(async () => {
                                 <span class="text-sm font-medium text-gray-900 dark:text-white">#{{ monitoringData.id }}</span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-500 dark:text-gray-400">Dibuat</span>
+                                <span class="text-sm text-gray-500 dark:text-gray-400">Didapat</span>
                                 <span class="text-sm text-gray-900 dark:text-white">{{ formatDateTime(monitoringData.created_at) }}</span>
                             </div>
                             <div class="flex items-center justify-between">

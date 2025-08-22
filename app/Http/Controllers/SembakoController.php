@@ -257,7 +257,7 @@ class SembakoController extends Controller
             'Harga',
             'Provinsi',
             'Kabupaten/Kota',
-            'Tanggal Pencatatan',
+            'Komentar',
             'Keterangan'
         ];
 
@@ -303,7 +303,7 @@ class SembakoController extends Controller
         $kabupatenKota = $provinsi ? $provinsi->kabupatenKota->first() : null;
 
         $sampleData = [
-            ['Nama Komoditas', 'Satuan', 'Harga', 'Provinsi', 'Kabupaten/Kota', 'Tanggal Pencatatan', 'Keterangan'],
+            ['Nama Komoditas', 'Satuan', 'Harga', 'Provinsi', 'Kabupaten/Kota', 'Komentar', 'Keterangan'],
             ['Beras Premium', 'kg', '15000', $provinsi->nama ?? 'DKI Jakarta', $kabupatenKota->nama ?? 'Jakarta Selatan', date('Y-m-d'), 'Harga pasar tradisional'],
             ['Minyak Goreng', 'liter', '18000', $provinsi->nama ?? 'DKI Jakarta', $kabupatenKota->nama ?? 'Jakarta Selatan', date('Y-m-d'), 'Harga supermarket'],
             ['Gula Pasir', 'kg', '13000', $provinsi->nama ?? 'DKI Jakarta', $kabupatenKota->nama ?? 'Jakarta Selatan', date('Y-m-d'), 'Harga pasar modern'],

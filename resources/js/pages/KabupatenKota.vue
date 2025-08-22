@@ -154,7 +154,7 @@ watch(
                             </div>
                             <div class="ml-5 w-0 flex-1">
                                 <dl>
-                                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Kabupaten/Kota Terdampak</dt>
+                                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Kabupaten/Kota Komentar</dt>
                                     <dd class="text-lg font-medium text-gray-900 dark:text-white">
                                         {{ statistics.affected_kabkota.toLocaleString() }}
                                     </dd>

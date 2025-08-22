@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\KabupatenKota;
 use App\Models\MonitoringData;
 use App\Models\Provinsi;
 use App\Models\SubCategory;
@@ -16,6 +17,8 @@ class DashboardController extends Controller
         // Ambil parameter category dan subcategory jika ada
         $categorySlug = $request->query('category');
         $subCategorySlug = $request->query('subcategory');
+        $provinsiId = $request->query('provinsi_id');
+        $kabupatenKotaId = $request->query('kabupaten_kota_id');
         
         // Set default date range to last 6 months if not provided
         $defaultStartDate = now()->subMonths(6)->format('Y-m-d');
@@ -25,6 +28,8 @@ class DashboardController extends Controller
         $endDate = $request->query('end_date', $defaultEndDate);
         $selectedCategory = null;
         $selectedSubCategory = null;
+        $selectedProvinsi = null;
+        $selectedKabupatenKota = null;
 
         // Query monitoring data
         $query = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory']);
@@ -55,6 +60,18 @@ class DashboardController extends Controller
                     }
                 }
             }
+        }
+
+        // Filter berdasarkan provinsi jika ada (untuk kategori-indas)
+        if ($provinsiId) {
+            $selectedProvinsi = Provinsi::find($provinsiId);
+            $query->where('provinsi_id', $provinsiId);
+        }
+
+        // Filter berdasarkan kabupaten/kota jika ada (untuk kategori-indas)
+        if ($kabupatenKotaId) {
+            $selectedKabupatenKota = KabupatenKota::find($kabupatenKotaId);
+            $query->where('kabupaten_kota_id', $kabupatenKotaId);
         }
 
         // Filter berdasarkan tanggal jika ada
@@ -194,6 +211,20 @@ class DashboardController extends Controller
                 ->find($request->input('province_filter'));
         }
 
+        // Get province list for kategori-indas filter
+        $provinsiList = null;
+        $kabupatenKotaList = null;
+        
+        if ($categorySlug === 'kategori-indas') {
+            $provinsiList = Provinsi::select('id', 'nama', 'latitude', 'longitude')
+                ->orderBy('nama')
+                ->get();
+                
+            $kabupatenKotaList = KabupatenKota::select('id', 'nama', 'provinsi_id')
+                ->orderBy('nama')
+                ->get();
+        }
+
         return Inertia::render('Dashboard', [
             'monitoringData' => $monitoringData,
             'selectedCategory' => $selectedCategory,
@@ -203,6 +234,10 @@ class DashboardController extends Controller
             'categories' => $categories,
             'subCategories' => $subCategories,
             'userProvinsi' => $userProvinsi,
+            'provinsiList' => $provinsiList,
+            'selectedProvinsi' => $selectedProvinsi,
+            'kabupatenKotaList' => $kabupatenKotaList,
+            'selectedKabupatenKota' => $selectedKabupatenKota,
             'statistics' => [
                 'totalData' => $totalData,
                 'totalProvinsi' => $totalProvinsi,

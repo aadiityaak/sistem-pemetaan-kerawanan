@@ -53,7 +53,7 @@
                                 <dd class="text-lg font-bold text-green-600 dark:text-green-400">{{ sembako.formatted_harga }}</dd>
                             </div>
                             <div class="flex justify-between">
-                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Pencatatan</dt>
+                                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Komentar</dt>
                                 <dd class="text-sm text-gray-900 dark:text-gray-100">{{ formatDate(sembako.tanggal_pencatatan) }}</dd>
                             </div>
                         </dl>

@@ -104,10 +104,10 @@
                                 <div v-if="form.errors.kabupaten_kota_id" class="mt-1 text-sm text-red-600">{{ form.errors.kabupaten_kota_id }}</div>
                             </div>
 
-                            <!-- Tanggal Pencatatan -->
+                            <!-- Komentar -->
                             <div>
                                 <label for="tanggal_pencatatan" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Tanggal Pencatatan <span class="text-red-500">*</span>
+                                    Komentar <span class="text-red-500">*</span>
                                 </label>
                                 <input
                                     id="tanggal_pencatatan"
