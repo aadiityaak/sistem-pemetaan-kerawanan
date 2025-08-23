@@ -7,7 +7,8 @@
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">🗺️ Peta Ketahanan Pangan Indonesia</h3>
                 </div>
                 <div class="px-6 py-4">
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                    <!-- Baris 1: Komoditas dan Level Harga -->
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <!-- Pilih Komoditas -->
                         <div>
                             <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Pilih Komoditas</label>
@@ -37,42 +38,43 @@
                             </select>
                         </div>
 
-                        <!-- Tanggal -->
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Mulai</label>
-                                <input
-                                    v-model="startDate"
-                                    type="date"
-                                    @change="fetchPriceData"
-                                    class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                />
-                            </div>
-                            <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Akhir</label>
-                                <input
-                                    v-model="endDate"
-                                    type="date"
-                                    @change="fetchPriceData"
-                                    class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                                />
-                            </div>
+                    </div>
+
+                    <!-- Baris 2: Tanggal dan Action Button -->
+                    <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <!-- Tanggal Mulai -->
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Mulai</label>
+                            <input
+                                v-model="startDate"
+                                type="date"
+                                @change="fetchPriceData"
+                                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            />
                         </div>
 
-                        <!-- Action Button & Last Updated -->
+                        <!-- Tanggal Akhir -->
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Akhir</label>
+                            <input
+                                v-model="endDate"
+                                type="date"
+                                @change="fetchPriceData"
+                                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            />
+                        </div>
+
+                        <!-- Action Button -->
                         <div class="flex flex-col justify-end">
                             <button
                                 @click="fetchPriceData"
                                 :disabled="loading || !selectedKomoditas"
-                                class="mb-2 inline-flex w-full items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                class="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 <RefreshCw v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
                                 <Search v-else class="mr-2 h-4 w-4" />
                                 {{ loading ? 'Memuat...' : 'Perbarui Data' }}
                             </button>
-                            <div v-if="lastUpdated" class="text-xs text-gray-500 dark:text-gray-400">
-                                Terakhir diperbarui: {{ formatDateTime(lastUpdated) }}
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -125,6 +127,13 @@
                         </path>
                     </svg>
                 
+                    <!-- Last Updated Info -->
+                    <div v-if="lastUpdated && !selectedProvince" class="absolute right-4 top-4 z-30 rounded-lg bg-white/90 px-3 py-2 shadow-lg dark:bg-gray-800/90">
+                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                            Terakhir diperbarui: {{ formatDateTime(lastUpdated) }}
+                        </div>
+                    </div>
+
                     <!-- Selected Province Detail -->
                     <div
                         v-if="selectedProvince"
