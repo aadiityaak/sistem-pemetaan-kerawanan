@@ -88,6 +88,20 @@ class MonitoringDataController extends Controller
             $query->where('kabupaten_kota_id', $request->kabupaten_kota_id);
         }
 
+        // Filter by category
+        if ($request->has('category') && $request->category != '') {
+            $query->whereHas('category', function ($q) use ($request) {
+                $q->where('slug', $request->category);
+            });
+        }
+
+        // Filter by subcategory
+        if ($request->has('subcategory') && $request->subcategory != '') {
+            $query->whereHas('subCategory', function ($q) use ($request) {
+                $q->where('slug', $request->subcategory);
+            });
+        }
+
 
         $monitoringData = $query->latest()->paginate(15);
 
@@ -143,6 +157,19 @@ class MonitoringDataController extends Controller
         if ($endDate) {
             $statsQuery->whereDate('incident_date', '<=', $endDate);
         }
+
+        // Apply category and subcategory filters to statistics
+        if ($request->has('category') && $request->category != '') {
+            $statsQuery->whereHas('category', function ($q) use ($request) {
+                $q->where('slug', $request->category);
+            });
+        }
+
+        if ($request->has('subcategory') && $request->subcategory != '') {
+            $statsQuery->whereHas('subCategory', function ($q) use ($request) {
+                $q->where('slug', $request->subcategory);
+            });
+        }
         
         $totalData = (clone $statsQuery)->count();
         $activeData = (clone $statsQuery)->where('status', 'active')->count();
@@ -162,6 +189,29 @@ class MonitoringDataController extends Controller
         $provinsiList = $provinsiQuery->get();
         $kabupatenKotaList = $kabupatenKotaQuery->get();
 
+        // Get selected category and subcategory objects
+        $selectedCategory = null;
+        $selectedSubCategory = null;
+
+        if ($request->has('category') && $request->category != '') {
+            $selectedCategory = \App\Models\Category::where('slug', $request->category)->first();
+        }
+
+        if ($request->has('subcategory') && $request->subcategory != '') {
+            $selectedSubCategory = \App\Models\SubCategory::where('slug', $request->subcategory)->first();
+        }
+
+        // Get all categories and subcategories for filter dropdowns
+        $categories = \App\Models\Category::active()->ordered()->get();
+        $subCategories = collect();
+        
+        if ($selectedCategory) {
+            $subCategories = \App\Models\SubCategory::where('category_id', $selectedCategory->id)
+                ->active()
+                ->ordered()
+                ->get();
+        }
+
         return Inertia::render('MonitoringData/Index', [
             'monitoringData' => $monitoringData,
             'statistics' => [
@@ -171,12 +221,16 @@ class MonitoringDataController extends Controller
                 'critical' => $criticalData,
             ],
             'filters' => array_merge(
-                $request->only(['search', 'status', 'level', 'provinsi_id', 'kabupaten_kota_id']),
+                $request->only(['search', 'status', 'level', 'provinsi_id', 'kabupaten_kota_id', 'category', 'subcategory']),
                 [
                     'start_date' => $startDate,
                     'end_date' => $endDate,
                 ]
             ),
+            'selectedCategory' => $selectedCategory,
+            'selectedSubCategory' => $selectedSubCategory,
+            'categories' => $categories,
+            'subCategories' => $subCategories,
             'provinsiList' => $provinsiList,
             'kabupatenKotaList' => $kabupatenKotaList,
         ]);

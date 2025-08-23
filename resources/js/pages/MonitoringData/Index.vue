@@ -115,10 +115,49 @@
             <!-- Filters Card -->
             <div class="mb-6 rounded-lg border border-gray-200 bg-white shadow dark:border-gray-700 dark:bg-gray-800">
                 <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">🔍 Filter & Pencarian</h3>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        🔍 Filter & Pencarian
+                        <span v-if="selectedCategory || selectedSubCategory" class="text-sm font-normal text-gray-600 dark:text-gray-400">
+                            - {{ selectedSubCategory ? selectedSubCategory.name : selectedCategory ? selectedCategory.name : '' }}
+                        </span>
+                    </h3>
                 </div>
 
                 <div class="p-6">
+                    <!-- Baris 0: Kategori, Sub Kategori -->
+                    <div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2">
+                        <!-- Filter Kategori -->
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Kategori</label>
+                            <select
+                                v-model="selectedCategory"
+                                @change="onCategoryChange"
+                                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            >
+                                <option value="">🟢 Semua Kategori</option>
+                                <option v-for="category in categories" :key="category.id" :value="category.slug">
+                                    {{ category.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Filter Sub Kategori -->
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Sub Kategori</label>
+                            <select
+                                v-model="selectedSubCategory"
+                                @change="onSubCategoryChange"
+                                :disabled="!selectedCategory"
+                                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:disabled:bg-gray-600"
+                            >
+                                <option value="">🟢 Semua Sub Kategori</option>
+                                <option v-for="subCategory in subCategories" :key="subCategory.id" :value="subCategory.slug">
+                                    {{ subCategory.name }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
                     <!-- Baris 1: Search, Provinsi, Kabupaten, Status -->
                     <div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <!-- Search -->
@@ -690,7 +729,13 @@ const props = defineProps<{
         end_date?: string;
         provinsi_id?: string;
         kabupaten_kota_id?: string;
+        category?: string;
+        subcategory?: string;
     };
+    selectedCategory?: Category | null;
+    selectedSubCategory?: SubCategory | null;
+    categories: Category[];
+    subCategories: SubCategory[];
     provinsiList: Provinsi[];
     kabupatenKotaList: KabupatenKotaItem[];
 }>();
@@ -699,6 +744,8 @@ const props = defineProps<{
 const searchQuery = ref(props.filters.search || '');
 const selectedStatus = ref(props.filters.status || '');
 const selectedLevel = ref(props.filters.level || '');
+const selectedCategory = ref(props.filters.category || '');
+const selectedSubCategory = ref(props.filters.subcategory || '');
 const startDate = ref(props.filters.start_date || '');
 const endDate = ref(props.filters.end_date || '');
 const selectedProvinsi = ref(props.filters.provinsi_id || '');
@@ -735,6 +782,16 @@ const filteredKabupaten = computed(() => {
     return filtered;
 });
 
+// onChange handlers for category filters
+const onCategoryChange = () => {
+    selectedSubCategory.value = '';
+    applyFilters();
+};
+
+const onSubCategoryChange = () => {
+    applyFilters();
+};
+
 // onChange handlers for regional filters
 const onProvinsiChange = () => {
     selectedKabupaten.value = '';
@@ -750,6 +807,8 @@ const resetFilters = () => {
     searchQuery.value = '';
     selectedStatus.value = '';
     selectedLevel.value = '';
+    selectedCategory.value = '';
+    selectedSubCategory.value = '';
     startDate.value = '';
     endDate.value = '';
     selectedProvinsi.value = '';
@@ -769,6 +828,8 @@ const applyFilters = () => {
         if (searchQuery.value) params.search = searchQuery.value;
         if (selectedStatus.value) params.status = selectedStatus.value;
         if (selectedLevel.value) params.level = selectedLevel.value;
+        if (selectedCategory.value) params.category = selectedCategory.value;
+        if (selectedSubCategory.value) params.subcategory = selectedSubCategory.value;
         if (startDate.value) params.start_date = startDate.value;
         if (endDate.value) params.end_date = endDate.value;
         if (selectedProvinsi.value) params.provinsi_id = selectedProvinsi.value;
