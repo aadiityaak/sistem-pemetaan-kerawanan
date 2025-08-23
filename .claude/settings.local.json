@@ -40,7 +40,10 @@
       "Bash(powershell:*)",
       "mcp__ide__getDiagnostics",
       "WebFetch(domain:panelharga.badanpangan.go.id)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "mcp__laravel-boost__last-error",
+      "mcp__laravel-boost__browser-logs",
+      "mcp__laravel-boost__tinker"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

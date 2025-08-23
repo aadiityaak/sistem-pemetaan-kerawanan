@@ -180,21 +180,6 @@
                             <div class="text-sm text-gray-600 dark:text-gray-400">
                                 <span class="font-medium">{{ priceData.length }}</span> Provinsi
                             </div>
-                            <button
-                                @click="showTable = !showTable"
-                                class="inline-flex items-center rounded-md bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30"
-                            >
-                                {{ showTable ? 'Sembunyikan' : 'Tampilkan' }} Detail
-                                <svg 
-                                    class="ml-1 h-4 w-4 transition-transform" 
-                                    :class="{ 'rotate-180': showTable }"
-                                    fill="none" 
-                                    stroke="currentColor" 
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -266,7 +251,7 @@
                 </div>
 
                 <!-- Detail Table -->
-                <div v-show="showTable" class="border-t border-gray-200 dark:border-gray-700">
+                <div class="border-t border-gray-200 dark:border-gray-700">
                     <div class="max-h-96 overflow-y-auto">
                         <table class="min-w-full">
                             <thead class="sticky top-0 bg-gray-50 dark:bg-gray-700">
@@ -380,7 +365,6 @@ const loading = ref(false);
 const error = ref('');
 const priceData = ref<PriceDataItem[]>([]);
 const lastUpdated = ref<Date | null>(null);
-const showTable = ref(false);
 
 // Map controls
 const selectedProvince = ref<PriceDataItem | null>(null);
@@ -509,11 +493,81 @@ const formatDateTime = (date: Date): string => {
 // Gunakan data provinsi dari file terpisah
 const provincePathData = ref<ProvincePathData[]>(indonesiaProvinces);
 
+// Mapping nama provinsi untuk mencocokkan dengan data API
+const provinceNameMapping: Record<string, string[]> = {
+    'DAERAH ISTIMEWA YOGYAKARTA': ['D.I. YOGYAKARTA', 'YOGYAKARTA', 'DI YOGYAKARTA', 'JOGJA', 'D.I YOGYAKARTA', 'DAERAH ISTIMEWA YOGYAKARTA'],
+    'BANGKA BELITUNG': ['KEP. BANGKA BELITUNG', 'KEPULAUAN BANGKA BELITUNG'],
+    'SUMATRA BARAT': ['SUMATERA BARAT', 'SUMBAR', 'SUMATRA BARAT'],
+    'SUMATRA UTARA': ['SUMATERA UTARA', 'SUMUT', 'SUMATRA UTARA'],
+    'SUMATRA SELATAN': ['SUMATERA SELATAN', 'SUMSEL', 'SUMATRA SELATAN'],
+    'PAPUA SELATAN': ['PAPUA SELATAN'],
+    'PAPUA PEGUNUNGAN': ['PAPUA PEGUNUNGAN'],
+    'PAPUA BARAT': ['PAPUA BARAT'],
+    'PAPUA BARAT DAYA': ['PAPUA BARAT DAYA'],
+    'NUSA TENGGARA BARAT': ['NTB', 'NUSA TENGGARA BARAT'],
+    'NUSA TENGGARA TIMUR': ['NTT', 'NUSA TENGGARA TIMUR'],
+    'KALIMANTAN BARAT': ['KALBAR', 'KALIMANTAN BARAT'],
+    'KALIMANTAN TENGAH': ['KALTENG', 'KALIMANTAN TENGAH'],
+    'KALIMANTAN SELATAN': ['KALSEL', 'KALIMANTAN SELATAN'],
+    'KALIMANTAN TIMUR': ['KALTIM', 'KALIMANTAN TIMUR'],
+    'KALIMANTAN UTARA': ['KALUT', 'KALIMANTAN UTARA'],
+    'SULAWESI UTARA': ['SULUT', 'SULAWESI UTARA'],
+    'SULAWESI TENGAH': ['SULTENG', 'SULAWESI TENGAH'],
+    'SULAWESI SELATAN': ['SULSEL', 'SULAWESI SELATAN'],
+    'SULAWESI TENGGARA': ['SULTRA', 'SULAWESI TENGGARA'],
+    'SULAWESI BARAT': ['SULBAR', 'SULAWESI BARAT'],
+    'GORONTALO': ['GORONTALO'],
+    'MALUKU': ['MALUKU'],
+    'MALUKU UTARA': ['MALUT', 'MALUKU UTARA'],
+    'JAWA BARAT': ['JABAR', 'JAWA BARAT'],
+    'JAWA TENGAH': ['JATENG', 'JAWA TENGAH'],
+    'JAWA TIMUR': ['JATIM', 'JAWA TIMUR'],
+    'BANTEN': ['BANTEN'],
+    'DKI JAKARTA': ['JAKARTA', 'DKI JAKARTA'],
+    'BALI': ['BALI'],
+    'ACEH': ['ACEH', 'NANGGROE ACEH DARUSSALAM'],
+    'RIAU': ['RIAU'],
+    'KEPULAUAN RIAU': ['KEP. RIAU', 'KEPULAUAN RIAU'],
+    'JAMBI': ['JAMBI'],
+    'BENGKULU': ['BENGKULU'],
+    'LAMPUNG': ['LAMPUNG']
+};
+
 // Get province color based on price data
 const getProvinceMapColor = (provinceName: string): string => {
-    const province = priceData.value.find(p => 
+    // Cari berdasarkan nama langsung
+    let province = priceData.value.find(p => 
         p.province_name.toUpperCase() === provinceName.toUpperCase()
     );
+    
+    // Jika tidak ditemukan, cari menggunakan mapping
+    if (!province) {
+        const svgProvinceName = provinceName.toUpperCase();
+        const apiProvinceAlias = Object.entries(provinceNameMapping).find(([_, aliases]) => 
+            aliases.some(alias => alias.toUpperCase() === svgProvinceName)
+        );
+        
+        if (apiProvinceAlias) {
+            const [mappedName] = apiProvinceAlias;
+            province = priceData.value.find(p => 
+                provinceNameMapping[mappedName]?.some(alias => 
+                    p.province_name.toUpperCase().includes(alias.toUpperCase()) ||
+                    alias.toUpperCase().includes(p.province_name.toUpperCase())
+                )
+            );
+        }
+    }
+    
+    // Jika masih tidak ditemukan, cari dengan partial matching
+    if (!province) {
+        province = priceData.value.find(p => {
+            const apiName = p.province_name.toUpperCase();
+            const svgName = provinceName.toUpperCase();
+            return apiName.includes(svgName) || svgName.includes(apiName) ||
+                   apiName.replace(/\s+/g, '').includes(svgName.replace(/\s+/g, '')) ||
+                   svgName.replace(/\s+/g, '').includes(apiName.replace(/\s+/g, ''));
+        });
+    }
     
     if (!province) {
         return '#e5e7eb'; // Default gray untuk provinsi tanpa data
@@ -524,9 +578,39 @@ const getProvinceMapColor = (provinceName: string): string => {
 
 // Show province detail by name
 const showProvinceByName = (provinceName: string) => {
-    const province = priceData.value.find(p => 
+    // Cari berdasarkan nama langsung
+    let province = priceData.value.find(p => 
         p.province_name.toUpperCase() === provinceName.toUpperCase()
     );
+    
+    // Jika tidak ditemukan, cari menggunakan mapping
+    if (!province) {
+        const svgProvinceName = provinceName.toUpperCase();
+        const apiProvinceAlias = Object.entries(provinceNameMapping).find(([_, aliases]) => 
+            aliases.some(alias => alias.toUpperCase() === svgProvinceName)
+        );
+        
+        if (apiProvinceAlias) {
+            const [mappedName] = apiProvinceAlias;
+            province = priceData.value.find(p => 
+                provinceNameMapping[mappedName]?.some(alias => 
+                    p.province_name.toUpperCase().includes(alias.toUpperCase()) ||
+                    alias.toUpperCase().includes(p.province_name.toUpperCase())
+                )
+            );
+        }
+    }
+    
+    // Jika masih tidak ditemukan, cari dengan partial matching
+    if (!province) {
+        province = priceData.value.find(p => {
+            const apiName = p.province_name.toUpperCase();
+            const svgName = provinceName.toUpperCase();
+            return apiName.includes(svgName) || svgName.includes(apiName) ||
+                   apiName.replace(/\s+/g, '').includes(svgName.replace(/\s+/g, '')) ||
+                   svgName.replace(/\s+/g, '').includes(apiName.replace(/\s+/g, ''));
+        });
+    }
     
     if (province) {
         selectedProvince.value = province;
