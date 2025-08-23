@@ -38,7 +38,8 @@
       "Bash(touch:*)",
       "Bash(zip:*)",
       "Bash(powershell:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "WebFetch(domain:panelharga.badanpangan.go.id)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
