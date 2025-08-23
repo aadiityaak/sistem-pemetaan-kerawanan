@@ -39,7 +39,8 @@
       "Bash(zip:*)",
       "Bash(powershell:*)",
       "mcp__ide__getDiagnostics",
-      "WebFetch(domain:panelharga.badanpangan.go.id)"
+      "WebFetch(domain:panelharga.badanpangan.go.id)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",

@@ -103,36 +103,27 @@
 
             <!-- SVG Map Indonesia Full Screen -->
             <div v-else class="absolute inset-0 bg-gradient-to-b from-blue-50 to-green-50 dark:from-gray-800 dark:to-gray-900">
-                <!-- Indonesia SVG Map Background -->
-                <iframe 
-                    src="/assets/maps/indonesia.svg"
-                    class="absolute inset-0 h-full w-full border-0"
-                    style="pointer-events: none; transform: scale(1.5) translate(-10%, 0%);"
-                ></iframe>
-                
-                <!-- Interactive Province Markers -->
+                <!-- Indonesia SVG Map with Dynamic Colors -->
                 <svg
-                    viewBox="0 0 800 320"
+                    viewBox="0 0 792.54596 316.66394"
                     class="absolute inset-0 h-full w-full"
                     xmlns="http://www.w3.org/2000/svg"
-                    style="transform: scale(1.5) translate(-10%, 0%);"
+                    preserveAspectRatio="xMinYMin"
                 >
-                    <g id="province-markers">
-                        <circle
-                            v-for="province in priceData"
-                            :key="province.id"
-                            :cx="getProvincePosition(province.province_name).x"
-                            :cy="getProvincePosition(province.province_name).y"
-                            r="8"
-                            :fill="getMarkerColor(province.map_color, province.status)"
-                            :stroke="'#ffffff'"
-                            stroke-width="2"
-                            class="cursor-pointer transition-all hover:r-12 hover:stroke-gray-600"
-                            @click="showProvinceDetail(province)"
-                        >
-                            <title>{{ province.province_name }}: {{ formatPrice(province.price) }}</title>
-                        </circle>
-                    </g>
+                    <!-- Base Indonesia Map Paths -->
+                    <path
+                        v-for="provinceCode in provincePathData"
+                        :key="provinceCode.id"
+                        :d="provinceCode.path"
+                        :fill="getProvinceMapColor(provinceCode.name)"
+                        stroke="#ffffff"
+                        stroke-width="1"
+                        stroke-linejoin="round"
+                        class="cursor-pointer transition-all hover:stroke-gray-800"
+                        @click="showProvinceByName(provinceCode.name)"
+                    >
+                        <title>{{ provinceCode.name }}</title>
+                    </path>
                 </svg>
                 
                 <!-- Selected Province Detail -->
@@ -234,6 +225,7 @@ import { AlertCircle, RefreshCw, Search } from 'lucide-vue-next';
 import { onMounted, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
+import { indonesiaProvinces, type ProvincePathData } from '@/data/indonesiaProvinces';
 
 // Import route helper
 declare global {
@@ -390,51 +382,31 @@ const formatDateTime = (date: Date): string => {
     });
 };
 
-// SVG Map Functions - Coordinates adjusted for scaled map
-const getProvincePosition = (provinceName: string): { x: number; y: number } => {
-    // Coordinates adjusted for scaled map (scale 1.5)
-    const positions: Record<string, { x: number; y: number }> = {
-        'ACEH': { x: 60, y: 58 },
-        'SUMATERA UTARA': { x: 75, y: 83 },
-        'SUMATERA BARAT': { x: 67, y: 108 },
-        'RIAU': { x: 92, y: 100 },
-        'KEPULAUAN RIAU': { x: 108, y: 117 },
-        'JAMBI': { x: 83, y: 133 },
-        'SUMATERA SELATAN': { x: 97, y: 150 },
-        'BENGKULU': { x: 75, y: 158 },
-        'LAMPUNG': { x: 108, y: 175 },
-        'BANGKA BELITUNG': { x: 125, y: 142 },
-        'DKI JAKARTA': { x: 142, y: 192 },
-        'JAWA BARAT': { x: 150, y: 197 },
-        'JAWA TENGAH': { x: 192, y: 200 },
-        'DI YOGYAKARTA': { x: 200, y: 205 },
-        'JAWA TIMUR': { x: 242, y: 200 },
-        'BANTEN': { x: 130, y: 197 },
-        'BALI': { x: 275, y: 217 },
-        'NUSA TENGGARA BARAT': { x: 308, y: 225 },
-        'NUSA TENGGARA TIMUR': { x: 350, y: 233 },
-        'KALIMANTAN BARAT': { x: 183, y: 108 },
-        'KALIMANTAN TENGAH': { x: 217, y: 133 },
-        'KALIMANTAN SELATAN': { x: 233, y: 167 },
-        'KALIMANTAN TIMUR': { x: 267, y: 125 },
-        'KALIMANTAN UTARA': { x: 250, y: 92 },
-        'SULAWESI UTARA': { x: 367, y: 75 },
-        'SULAWESI TENGAH': { x: 350, y: 117 },
-        'SULAWESI SELATAN': { x: 367, y: 167 },
-        'SULAWESI TENGGARA': { x: 400, y: 183 },
-        'GORONTALO': { x: 358, y: 92 },
-        'SULAWESI BARAT': { x: 342, y: 142 },
-        'MALUKU': { x: 467, y: 150 },
-        'MALUKU UTARA': { x: 450, y: 100 },
-        'PAPUA BARAT': { x: 567, y: 167 },
-        'PAPUA': { x: 667, y: 183 },
-        'PAPUA SELATAN': { x: 617, y: 217 },
-        'PAPUA TENGAH': { x: 650, y: 167 },
-        'PAPUA PEGUNUNGAN': { x: 683, y: 150 },
-        'PAPUA BARAT DAYA': { x: 583, y: 200 }
-    };
+// Gunakan data provinsi dari file terpisah
+const provincePathData = ref<ProvincePathData[]>(indonesiaProvinces);
 
-    return positions[provinceName.toUpperCase()] || { x: 200, y: 100 };
+// Get province color based on price data
+const getProvinceMapColor = (provinceName: string): string => {
+    const province = priceData.value.find(p => 
+        p.province_name.toUpperCase() === provinceName.toUpperCase()
+    );
+    
+    if (!province) {
+        return '#e5e7eb'; // Default gray untuk provinsi tanpa data
+    }
+    
+    return getMarkerColor(province.map_color, province.status);
+};
+
+// Show province detail by name
+const showProvinceByName = (provinceName: string) => {
+    const province = priceData.value.find(p => 
+        p.province_name.toUpperCase() === provinceName.toUpperCase()
+    );
+    
+    if (province) {
+        selectedProvince.value = province;
+    }
 };
 
 const showProvinceDetail = (province: PriceDataItem) => {
