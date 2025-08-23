@@ -533,7 +533,7 @@ const props = defineProps<{
 // Get current user and check edit permissions
 const page = usePage();
 const currentUser = computed(() => page.props.auth.user as any);
-const canEdit = computed(() => currentUser.value.role !== 'admin_vip');
+const canEdit = computed(() => ['super_admin', 'admin'].includes(currentUser.value.role));
 
 // Filters - initialize from server-side filters
 const searchQuery = ref(props.filters.search || '');

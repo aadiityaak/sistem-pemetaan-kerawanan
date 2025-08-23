@@ -93,7 +93,7 @@ const props = defineProps<{
 // Get current user and check edit permissions
 const page = usePage();
 const currentUser = computed(() => page.props.auth.user as any);
-const canEdit = computed(() => currentUser.value.role !== 'admin_vip');
+const canEdit = computed(() => ['super_admin', 'admin'].includes(currentUser.value.role));
 
 // Dynamic breadcrumbs based on selected category and subcategory
 const breadcrumbs = computed<BreadcrumbItem[]>(() => {
@@ -249,6 +249,38 @@ const buildFilterUrl = (params: Record<string, string | null>) => {
 
     const queryString = urlParams.toString();
     return `/dashboard${queryString ? `?${queryString}` : ''}`;
+};
+
+// Helper function to build monitoring data URL with current filters
+const buildMonitoringDataUrl = () => {
+    const urlParams = new URLSearchParams();
+
+    if (props.selectedCategory) {
+        urlParams.append('category', props.selectedCategory.slug);
+    }
+
+    if (props.selectedSubCategory) {
+        urlParams.append('subcategory', props.selectedSubCategory.slug);
+    }
+
+    if (props.startDate) {
+        urlParams.append('start_date', props.startDate);
+    }
+
+    if (props.endDate) {
+        urlParams.append('end_date', props.endDate);
+    }
+
+    if (props.selectedProvinsi) {
+        urlParams.append('provinsi_id', props.selectedProvinsi.id.toString());
+    }
+
+    if (props.selectedKabupatenKota) {
+        urlParams.append('kabupaten_kota_id', props.selectedKabupatenKota.id.toString());
+    }
+
+    const queryString = urlParams.toString();
+    return `/monitoring-data${queryString ? `?${queryString}` : ''}`;
 };
 
 // Function to change category filter
@@ -1264,7 +1296,7 @@ watch(filteredMonitoringData, () => {
                         >
                             <div class="flex justify-center">
                                 <Link
-                                    href="/monitoring-data"
+                                    :href="buildMonitoringDataUrl()"
                                     class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
                                 >
                                     Lihat Semua Data Monitoring ({{ filteredMonitoringData.length }})

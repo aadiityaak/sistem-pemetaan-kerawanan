@@ -418,7 +418,7 @@ const props = defineProps<Props>();
 
 // Get current user and check edit permissions
 const page = usePage();
-const canEdit = computed(() => page.props.auth.user.role !== 'admin_vip');
+const canEdit = computed(() => ['super_admin', 'admin'].includes(page.props.auth.user.role));
 
 const form = reactive({
     search: props.filters.search || '',

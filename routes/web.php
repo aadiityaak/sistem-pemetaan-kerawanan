@@ -270,13 +270,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:super_admin,admin_vip'])->group(function () {
         Route::get('/settings', [AppSettingController::class, 'index'])->name('settings.index');
         Route::get('admin/menu-items', [\App\Http\Controllers\Admin\MenuItemController::class, 'index'])->name('admin.menu-items.index');
-        Route::get('admin/menu-items/{menuItem}', [\App\Http\Controllers\Admin\MenuItemController::class, 'show'])->name('admin.menu-items.show');
 
         // Only Super Admin can manage settings and menus
         Route::middleware(['role:super_admin'])->group(function () {
             Route::match(['POST', 'PUT'], '/settings/{key}', [AppSettingController::class, 'update'])->name('settings.update');
 
-            // Menu Management Routes
+            // Menu Management Routes - specific routes must come before parameterized routes
             Route::get('admin/menu-items/create', [\App\Http\Controllers\Admin\MenuItemController::class, 'create'])->name('admin.menu-items.create');
             Route::post('admin/menu-items', [\App\Http\Controllers\Admin\MenuItemController::class, 'store'])->name('admin.menu-items.store');
             Route::get('admin/menu-items/{menuItem}/edit', [\App\Http\Controllers\Admin\MenuItemController::class, 'edit'])->name('admin.menu-items.edit');
@@ -293,6 +292,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/admin/menu-items/reset', [\App\Http\Controllers\Admin\MenuItemController::class, 'reset'])
                 ->name('admin.menu-items.reset');
         });
+
+        // Show route must come AFTER specific routes like create and edit
+        Route::get('admin/menu-items/{menuItem}', [\App\Http\Controllers\Admin\MenuItemController::class, 'show'])->name('admin.menu-items.show');
     });
 });
 
