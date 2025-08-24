@@ -393,6 +393,25 @@ const buildCreateUrl = () => {
     return `/monitoring-data/create${queryString ? `?${queryString}` : ''}`;
 };
 
+// Pagination navigation methods
+const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages.value) {
+        currentPage.value = page;
+    }
+};
+
+const goToNextPage = () => {
+    if (currentPage.value < totalPages.value) {
+        currentPage.value++;
+    }
+};
+
+const goToPreviousPage = () => {
+    if (currentPage.value > 1) {
+        currentPage.value--;
+    }
+};
+
 // Custom dropdown state
 const categoryDropdownOpen = ref(false);
 const subCategoryDropdownOpen = ref(false);
@@ -401,6 +420,10 @@ const kabupatenKotaDropdownOpen = ref(false);
 
 // Search functionality
 const searchQuery = ref('');
+
+// Pagination functionality
+const currentPage = ref(1);
+const itemsPerPage = ref(10);
 
 // Computed property for filtered kabupaten/kota based on selected province
 const filteredKabupatenKotaList = computed(() => {
@@ -421,6 +444,15 @@ const filteredMonitoringData = computed(() => {
     return props.monitoringData.filter(data =>
         data.title.toLowerCase().includes(searchQuery.value.toLowerCase().trim())
     );
+});
+
+// Computed properties for pagination
+const totalPages = computed(() => Math.ceil(filteredMonitoringData.value.length / itemsPerPage.value));
+
+const paginatedMonitoringData = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage.value;
+    const end = start + itemsPerPage.value;
+    return filteredMonitoringData.value.slice(start, end);
 });
 
 // Function to update map markers
@@ -561,6 +593,8 @@ onMounted(async () => {
 // Watch for changes in filtered data and update map markers
 watch(filteredMonitoringData, () => {
     updateMapMarkers();
+    // Reset to first page when data changes
+    currentPage.value = 1;
 }, { deep: true });
 </script>
 
@@ -1206,7 +1240,7 @@ watch(filteredMonitoringData, () => {
                                     </tr>
                                     <tr
                                         v-else
-                                        v-for="data in filteredMonitoringData.slice(0, 10)"
+                                        v-for="data in paginatedMonitoringData"
                                         :key="data.id"
                                         class="hover:bg-gray-50 dark:hover:bg-gray-700"
                                     >
@@ -1254,10 +1288,9 @@ watch(filteredMonitoringData, () => {
                                             <div class="flex items-center justify-end space-x-2">
                                                 <Link
                                                     :href="`/monitoring-data/${data.id}`"
-                                                    class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                                                    title="Lihat Detail"
+                                                    class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600"
                                                 >
-                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path
                                                             stroke-linecap="round"
                                                             stroke-linejoin="round"
@@ -1271,14 +1304,14 @@ watch(filteredMonitoringData, () => {
                                                             d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                                                         />
                                                     </svg>
+                                                    Detail
                                                 </Link>
                                                 <Link
                                                     v-if="canEdit"
                                                     :href="`/monitoring-data/${data.id}/edit`"
-                                                    class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                    title="Edit"
+                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                                                 >
-                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path
                                                             stroke-linecap="round"
                                                             stroke-linejoin="round"
@@ -1286,6 +1319,7 @@ watch(filteredMonitoringData, () => {
                                                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                                                         />
                                                     </svg>
+                                                    Edit
                                                 </Link>
                                             </div>
                                         </td>
@@ -1294,23 +1328,83 @@ watch(filteredMonitoringData, () => {
                             </table>
                         </div>
 
-                        <!-- View All Button -->
+                        <!-- Pagination Controls -->
                         <div
-                            v-if="filteredMonitoringData.length > 10"
-                            class="border-t border-gray-200 bg-gray-50 px-6 py-3 dark:border-gray-700 dark:bg-gray-700"
+                            v-if="totalPages > 1"
+                            class="border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-700"
                         >
-                            <div class="flex justify-center">
-                                <Link
-                                    :href="buildMonitoringDataUrl()"
-                                    class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-                                >
-                                    Lihat Semua Data {{ selectedSubCategory ? selectedSubCategory.name : selectedCategory ? selectedCategory.name : 'Monitoring' }} ({{ filteredMonitoringData.length }})
-                                    <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </Link>
+                            <div class="flex items-center justify-between">
+                                <!-- Results Info -->
+                                <div class="text-sm text-gray-700 dark:text-gray-300">
+                                    Menampilkan {{ (currentPage - 1) * itemsPerPage + 1 }}-{{ Math.min(currentPage * itemsPerPage, filteredMonitoringData.length) }} dari {{ filteredMonitoringData.length }} data
+                                </div>
+
+                                <!-- Pagination Navigation -->
+                                <div class="flex items-center space-x-2">
+                                    <!-- Previous Button -->
+                                    <button
+                                        @click="goToPreviousPage"
+                                        :disabled="currentPage <= 1"
+                                        class="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                                        :class="currentPage <= 1 
+                                            ? 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500' 
+                                            : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
+                                    >
+                                        <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                        Sebelumnya
+                                    </button>
+
+                                    <!-- Page Numbers -->
+                                    <div class="flex items-center space-x-1">
+                                        <template v-for="page in Math.min(5, totalPages)" :key="page">
+                                            <button
+                                                v-if="page <= totalPages"
+                                                @click="goToPage(page)"
+                                                :class="currentPage === page 
+                                                    ? 'bg-blue-600 text-white shadow-sm' 
+                                                    : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
+                                                class="inline-flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors"
+                                            >
+                                                {{ page }}
+                                            </button>
+                                        </template>
+                                        
+                                        <!-- Show ... if there are more pages -->
+                                        <span v-if="totalPages > 5" class="px-2 text-gray-500 dark:text-gray-400">...</span>
+                                        
+                                        <!-- Last page if not already shown -->
+                                        <button
+                                            v-if="totalPages > 5"
+                                            @click="goToPage(totalPages)"
+                                            :class="currentPage === totalPages 
+                                                ? 'bg-blue-600 text-white shadow-sm' 
+                                                : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
+                                            class="inline-flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors"
+                                        >
+                                            {{ totalPages }}
+                                        </button>
+                                    </div>
+
+                                    <!-- Next Button -->
+                                    <button
+                                        @click="goToNextPage"
+                                        :disabled="currentPage >= totalPages"
+                                        class="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                                        :class="currentPage >= totalPages 
+                                            ? 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500' 
+                                            : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
+                                    >
+                                        Selanjutnya
+                                        <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
