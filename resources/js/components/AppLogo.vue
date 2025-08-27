@@ -18,9 +18,9 @@ const appLogo = computed(() => {
 </script>
 
 <template>
-    <div class="p-2text-sidebar-primary-foreground flex w-full items-center justify-center rounded-md bg-zinc-900">
+    <div class="flex w-full h-full items-center justify-center rounded-md bg-zinc-900">
         <!-- Custom logo if available -->
-        <img v-if="appLogo" :src="appLogo" :alt="appName + ' Logo'" class="h-[120px] w-full object-contain" />
+        <img v-if="appLogo" :src="appLogo" :alt="appName + ' Logo'" class="max-h-full max-w-full object-contain" />
 
         <!-- Default SVG icon if no custom logo -->
         <svg
@@ -30,7 +30,7 @@ const appLogo = computed(() => {
             height="24"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="black"
+            stroke="white"
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"

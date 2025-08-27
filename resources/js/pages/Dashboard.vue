@@ -1358,9 +1358,9 @@ watch(filteredMonitoringData, () => {
 
                                     <!-- Page Numbers -->
                                     <div class="flex items-center space-x-1">
-                                        <template v-for="page in Math.min(5, totalPages)" :key="page">
+                                        <!-- First 3 pages -->
+                                        <template v-for="page in Math.min(3, totalPages)" :key="`start-${page}`">
                                             <button
-                                                v-if="page <= totalPages"
                                                 @click="goToPage(page)"
                                                 :class="currentPage === page 
                                                     ? 'bg-blue-600 text-white shadow-sm' 
@@ -1370,21 +1370,40 @@ watch(filteredMonitoringData, () => {
                                                 {{ page }}
                                             </button>
                                         </template>
-                                        
-                                        <!-- Show ... if there are more pages -->
-                                        <span v-if="totalPages > 5" class="px-2 text-gray-500 dark:text-gray-400">...</span>
-                                        
-                                        <!-- Last page if not already shown -->
-                                        <button
-                                            v-if="totalPages > 5"
-                                            @click="goToPage(totalPages)"
-                                            :class="currentPage === totalPages 
-                                                ? 'bg-blue-600 text-white shadow-sm' 
-                                                : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
-                                            class="inline-flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors"
-                                        >
-                                            {{ totalPages }}
-                                        </button>
+
+                                        <!-- Left ellipsis -->
+                                        <span v-if="currentPage > 6" class="px-2 text-gray-500 dark:text-gray-400">...</span>
+
+                                        <!-- Pages around current page -->
+                                        <template v-for="page in [currentPage - 1, currentPage, currentPage + 1]" :key="`middle-${page}`">
+                                            <button
+                                                v-if="page > 3 && page <= totalPages - 3 && page > 0"
+                                                @click="goToPage(page)"
+                                                :class="currentPage === page 
+                                                    ? 'bg-blue-600 text-white shadow-sm' 
+                                                    : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
+                                                class="inline-flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors"
+                                            >
+                                                {{ page }}
+                                            </button>
+                                        </template>
+
+                                        <!-- Right ellipsis -->
+                                        <span v-if="currentPage < totalPages - 5" class="px-2 text-gray-500 dark:text-gray-400">...</span>
+
+                                        <!-- Last 3 pages -->
+                                        <template v-for="page in [totalPages - 2, totalPages - 1, totalPages]" :key="`end-${page}`">
+                                            <button
+                                                v-if="page > 3 && page > 0 && totalPages > 6"
+                                                @click="goToPage(page)"
+                                                :class="currentPage === page 
+                                                    ? 'bg-blue-600 text-white shadow-sm' 
+                                                    : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
+                                                class="inline-flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors"
+                                            >
+                                                {{ page }}
+                                            </button>
+                                        </template>
                                     </div>
 
                                     <!-- Next Button -->
