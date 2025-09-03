@@ -478,7 +478,7 @@
                 <!-- Pagination -->
                 <div
                     class="border-t border-gray-200 bg-white px-4 py-3 sm:px-6 dark:border-gray-700 dark:bg-gray-800"
-                    v-if="monitoringData.last_page > 1"
+                    v-if="monitoringData.last_page > 1 && monitoringData.total > 0"
                 >
                     <div class="flex items-center justify-between">
                         <div class="flex flex-1 justify-between sm:hidden">
@@ -500,13 +500,13 @@
                         <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                             <div>
                                 <p class="text-sm text-gray-700 dark:text-gray-300">
-                                    Showing
-                                    <span class="font-medium">{{ monitoringData.from }}</span>
-                                    to
-                                    <span class="font-medium">{{ monitoringData.to }}</span>
-                                    of
-                                    <span class="font-medium">{{ monitoringData.total }}</span>
-                                    results
+                                    Menampilkan
+                                    <span class="font-medium">{{ monitoringData.from || 0 }}</span>
+                                    -
+                                    <span class="font-medium">{{ monitoringData.to || 0 }}</span>
+                                    dari
+                                    <span class="font-medium">{{ monitoringData.total || 0 }}</span>
+                                    data
                                 </p>
                             </div>
                             <div>
@@ -813,6 +813,8 @@ const resetFilters = () => {
     endDate.value = '';
     selectedProvinsi.value = '';
     selectedKabupaten.value = '';
+    
+    // Apply filters will automatically reset pagination to page 1
     applyFilters();
 };
 
@@ -835,6 +837,8 @@ const applyFilters = () => {
         if (selectedProvinsi.value) params.provinsi_id = selectedProvinsi.value;
         if (selectedKabupaten.value) params.kabupaten_kota_id = selectedKabupaten.value;
 
+        // Reset pagination to first page when filters change
+        // Don't add page parameter, Laravel will default to page 1
         console.log('Applying filters:', params);
 
         router.get(route('monitoring-data.index'), params, {
@@ -844,8 +848,8 @@ const applyFilters = () => {
     }, 300);
 };
 
-// Watch for filter changes with debounce (non-regional filters)
-watch([searchQuery, selectedStatus, selectedLevel, startDate, endDate], () => {
+// Watch for filter changes with debounce (all filters)
+watch([searchQuery, selectedStatus, selectedLevel, selectedCategory, selectedSubCategory, selectedProvinsi, selectedKabupaten, startDate, endDate], () => {
     applyFilters();
 });
 
