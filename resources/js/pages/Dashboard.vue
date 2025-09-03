@@ -2,7 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 
 interface MonitoringData {
     id: number;
@@ -283,7 +283,78 @@ const buildMonitoringDataUrl = () => {
     return `/monitoring-data${queryString ? `?${queryString}` : ''}`;
 };
 
-// Function to change category filter
+// Local filter change functions (don't trigger immediate search)
+const selectLocalCategory = (categorySlug: string | null) => {
+    localFilters.value.category = categorySlug;
+    // Clear subcategory when category changes
+    if (!categorySlug) {
+        localFilters.value.subCategory = null;
+    }
+};
+
+const selectLocalSubCategory = (subCategorySlug: string | null) => {
+    localFilters.value.subCategory = subCategorySlug;
+};
+
+const selectLocalProvinsi = (provinsiId: number | null) => {
+    localFilters.value.provinsi = provinsiId;
+    // Clear kabupaten/kota when province changes
+    localFilters.value.kabupatenKota = null;
+};
+
+const selectLocalKabupatenKota = (kabupatenKotaId: number | null) => {
+    localFilters.value.kabupatenKota = kabupatenKotaId;
+};
+
+const selectLocalStartDate = (startDate: string | null) => {
+    localFilters.value.startDate = startDate;
+};
+
+const selectLocalEndDate = (endDate: string | null) => {
+    localFilters.value.endDate = endDate;
+};
+
+// Function to apply all filters at once
+const applyFilters = () => {
+    // Reset pagination to first page when applying filters
+    currentPage.value = 1;
+    
+    // Update search query for filtering
+    searchQuery.value = localFilters.value.search;
+    
+    router.get(
+        buildFilterUrl({
+            category: localFilters.value.category,
+            subcategory: localFilters.value.subCategory,
+            start_date: localFilters.value.startDate,
+            end_date: localFilters.value.endDate,
+            provinsi_id: localFilters.value.provinsi?.toString() || null,
+            kabupaten_kota_id: localFilters.value.kabupatenKota?.toString() || null,
+        }),
+    );
+};
+
+// Function to reset all filters
+const resetFilters = () => {
+    // Reset pagination to first page when resetting filters
+    currentPage.value = 1;
+    
+    localFilters.value = {
+        category: null,
+        subCategory: null,
+        startDate: null,
+        endDate: null,
+        provinsi: null,
+        kabupatenKota: null,
+        search: ''
+    };
+    searchQuery.value = '';
+    
+    // Navigate to base dashboard URL (clear all filters)
+    router.get('/dashboard');
+};
+
+// Original filter functions (kept for backward compatibility)
 const selectCategory = (categorySlug: string | null) => {
     router.get(
         buildFilterUrl({
@@ -396,19 +467,19 @@ const buildCreateUrl = () => {
 // Pagination navigation methods
 const goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages.value) {
-        currentPage.value = page;
+        validCurrentPage.value = page;
     }
 };
 
 const goToNextPage = () => {
-    if (currentPage.value < totalPages.value) {
-        currentPage.value++;
+    if (validCurrentPage.value < totalPages.value) {
+        validCurrentPage.value++;
     }
 };
 
 const goToPreviousPage = () => {
-    if (currentPage.value > 1) {
-        currentPage.value--;
+    if (validCurrentPage.value > 1) {
+        validCurrentPage.value--;
     }
 };
 
@@ -419,14 +490,69 @@ const provinsiDropdownOpen = ref(false);
 const kabupatenKotaDropdownOpen = ref(false);
 const showFilters = ref(false);
 
+// Initialize filter visibility based on screen size
+const initializeFilterVisibility = () => {
+    if (typeof window !== 'undefined') {
+        const isLargeScreen = window.innerWidth >= 1024; // lg breakpoint (desktop)
+        showFilters.value = isLargeScreen; // Show on desktop, hide on mobile
+    }
+};
+
+// Watch for window resize to adjust filter visibility
+const handleResize = () => {
+    if (typeof window !== 'undefined') {
+        const isLargeScreen = window.innerWidth >= 1024;
+        // Auto-show filters when switching to desktop, auto-hide when switching to mobile
+        showFilters.value = isLargeScreen;
+    }
+};
+
 // Search functionality
 const searchQuery = ref('');
+
+// Local filter state (temporary values before applying)
+const localFilters = ref({
+    category: props.selectedCategory?.slug || null,
+    subCategory: props.selectedSubCategory?.slug || null,
+    startDate: props.startDate || null,
+    endDate: props.endDate || null,
+    provinsi: props.selectedProvinsi?.id || null,
+    kabupatenKota: props.selectedKabupatenKota?.id || null,
+    search: ''
+});
 
 // Pagination functionality
 const currentPage = ref(1);
 const itemsPerPage = ref(10);
 
-// Computed property for filtered kabupaten/kota based on selected province
+// Computed properties for local filter display
+const selectedLocalCategory = computed(() => {
+    return props.categories.find(cat => cat.slug === localFilters.value.category) || null;
+});
+
+const selectedLocalSubCategory = computed(() => {
+    return props.subCategories.find(sub => sub.slug === localFilters.value.subCategory) || null;
+});
+
+const selectedLocalProvinsi = computed(() => {
+    return props.provinsiList?.find(prov => prov.id === localFilters.value.provinsi) || null;
+});
+
+const selectedLocalKabupatenKota = computed(() => {
+    return props.kabupatenKotaList?.find(kab => kab.id === localFilters.value.kabupatenKota) || null;
+});
+
+// Computed property for filtered kabupaten/kota based on selected province (for local filters)
+const filteredLocalKabupatenKotaList = computed(() => {
+    if (!localFilters.value.provinsi || !props.kabupatenKotaList) {
+        return props.kabupatenKotaList || [];
+    }
+    return props.kabupatenKotaList.filter(kabupatenKota => 
+        kabupatenKota.provinsi_id === localFilters.value.provinsi
+    );
+});
+
+// Computed property for filtered kabupaten/kota based on selected province (original)
 const filteredKabupatenKotaList = computed(() => {
     if (!props.selectedProvinsi || !props.kabupatenKotaList) {
         return props.kabupatenKotaList || [];
@@ -451,9 +577,19 @@ const filteredMonitoringData = computed(() => {
 const totalPages = computed(() => Math.ceil(filteredMonitoringData.value.length / itemsPerPage.value));
 
 const paginatedMonitoringData = computed(() => {
-    const start = (currentPage.value - 1) * itemsPerPage.value;
+    const start = (validCurrentPage.value - 1) * itemsPerPage.value;
     const end = start + itemsPerPage.value;
     return filteredMonitoringData.value.slice(start, end);
+});
+
+// Computed property to validate current page
+const validCurrentPage = computed({
+    get() {
+        return Math.min(Math.max(1, currentPage.value), totalPages.value || 1);
+    },
+    set(value) {
+        currentPage.value = value;
+    }
 });
 
 // Function to update map markers
@@ -561,9 +697,15 @@ const updateMapMarkers = async () => {
     });
 };
 
-// Initialize map
+// Initialize map and responsive filter behavior
 onMounted(async () => {
     if (typeof window !== 'undefined') {
+        // Initialize filter visibility based on screen size
+        initializeFilterVisibility();
+        
+        // Add resize event listener
+        window.addEventListener('resize', handleResize);
+        
         // Dynamic import Leaflet
         const L = await import('leaflet');
 
@@ -591,12 +733,31 @@ onMounted(async () => {
     }
 });
 
+// Cleanup on unmount
+onBeforeUnmount(() => {
+    if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', handleResize);
+    }
+});
+
 // Watch for changes in filtered data and update map markers
 watch(filteredMonitoringData, () => {
     updateMapMarkers();
-    // Reset to first page when data changes
+    // Reset to first page when data changes due to filtering
     currentPage.value = 1;
 }, { deep: true });
+
+// Watch for totalPages changes to ensure currentPage is valid
+watch(totalPages, (newTotalPages) => {
+    if (newTotalPages > 0 && currentPage.value > newTotalPages) {
+        currentPage.value = 1;
+    }
+});
+
+// Watch for search query changes to reset pagination
+watch(searchQuery, () => {
+    currentPage.value = 1;
+});
 </script>
 
 <template>
@@ -695,62 +856,84 @@ watch(filteredMonitoringData, () => {
 
             <!-- Filters Card -->
             <div v-if="showFilters" class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                        🔍 Filter & Pencarian
-                        <span v-if="selectedCategory || selectedSubCategory" class="text-sm font-normal text-gray-600 dark:text-gray-400">
-                            - {{ selectedSubCategory ? selectedSubCategory.name : selectedCategory ? selectedCategory.name : '' }}
-                        </span>
-                    </h3>
+                <div class="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 dark:border-gray-700 dark:from-gray-800 dark:to-gray-700">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                                    <svg class="h-4 w-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                    </svg>
+                                </div>
+                                Filter & Pencarian Data
+                            </h3>
+                            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                Atur filter yang diinginkan, lalu terapkan untuk melihat hasil pencarian
+                            </p>
+                        </div>
+                        <div v-if="selectedCategory || selectedSubCategory" class="rounded-full bg-white px-3 py-1 text-sm font-medium text-blue-700 shadow-sm dark:bg-gray-800 dark:text-blue-300">
+                            {{ selectedSubCategory ? selectedSubCategory.name : selectedCategory ? selectedCategory.name : '' }}
+                        </div>
+                    </div>
                 </div>
                 <div class="p-6">
-                    <div :class="isKategoriIndas ? 'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4' : 'grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5'">
+                    <div :class="isKategoriIndas ? 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4' : 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5'">
                         <!-- Search Filter -->
-                        <div>
-                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Pencarian</label>
+                        <div class="group">
+                            <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                Pencarian Judul
+                            </label>
                             <div class="relative">
-                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="2"
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                        />
+                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                                    <svg class="h-4 w-4 text-gray-400 group-focus-within:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
                                 </div>
                                 <input
-                                    v-model="searchQuery"
+                                    v-model="localFilters.search"
                                     type="text"
-                                    placeholder="Cari berdasarkan judul..."
-                                    class="block w-full rounded-lg border border-gray-300 bg-white py-2 pr-3 pl-10 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                    placeholder="Ketik untuk mencari..."
+                                    @keydown.enter="applyFilters"
+                                    class="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pr-4 pl-11 text-sm text-gray-900 placeholder-gray-500 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-blue-400"
                                 />
+                                <div v-if="localFilters.search" class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                    <kbd class="inline-flex items-center rounded border border-gray-200 px-1 text-xs font-sans text-gray-500 dark:border-gray-600 dark:text-gray-400">Enter</kbd>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Category Filter -->
-                        <div>
-                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Kategori</label>
+                        <div class="group">
+                            <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                </svg>
+                                Kategori Data
+                            </label>
                             <div class="relative">
                                 <button
                                     @click="categoryDropdownOpen = !categoryDropdownOpen"
-                                    class="flex w-full items-center justify-between gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                    type="button"
+                                    class="flex w-full items-center justify-between gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:border-blue-400"
                                 >
-                                    <div class="flex items-center gap-2">
-                                        <div class="flex h-4 w-4 items-center justify-center">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex h-5 w-5 items-center justify-center">
                                             <img
-                                                v-if="selectedCategory?.image_url"
-                                                :src="selectedCategory.image_url"
+                                                v-if="selectedLocalCategory?.image_url"
+                                                :src="selectedLocalCategory.image_url"
                                                 alt="Category"
-                                                class="h-4 w-4 rounded object-contain"
+                                                class="h-5 w-5 rounded object-contain"
                                             />
-                                            <span v-else-if="selectedCategory?.icon" class="text-sm">{{ selectedCategory.icon }}</span>
-                                            <span v-else class="text-sm">🟢</span>
+                                            <span v-else-if="selectedLocalCategory?.icon" class="text-lg">{{ selectedLocalCategory.icon }}</span>
+                                            <div v-else class="h-2 w-2 rounded-full bg-green-500"></div>
                                         </div>
-                                        <span>{{ selectedCategory?.name || 'Semua Kategori' }}</span>
+                                        <span class="font-medium text-gray-900 dark:text-white">{{ selectedLocalCategory?.name || 'Pilih Kategori' }}</span>
                                     </div>
                                     <svg
-                                        class="h-4 w-4 transition-transform"
+                                        class="h-4 w-4 text-gray-400 transition-transform duration-200"
                                         :class="{ 'rotate-180': categoryDropdownOpen }"
                                         fill="none"
                                         stroke="currentColor"
@@ -766,7 +949,7 @@ watch(filteredMonitoringData, () => {
                                 >
                                     <button
                                         @click="
-                                            selectCategory(null);
+                                            selectLocalCategory(null);
                                             categoryDropdownOpen = false;
                                         "
                                         class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
@@ -778,7 +961,7 @@ watch(filteredMonitoringData, () => {
                                         v-for="category in categories"
                                         :key="category.id"
                                         @click="
-                                            selectCategory(category.slug);
+                                            selectLocalCategory(category.slug);
                                             categoryDropdownOpen = false;
                                         "
                                         class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
@@ -799,28 +982,34 @@ watch(filteredMonitoringData, () => {
                         </div>
 
                         <!-- SubCategory Filter -->
-                        <div v-if="selectedCategory && subCategories.length > 0">
-                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Sub Kategori</label>
+                        <div v-if="selectedLocalCategory && subCategories.length > 0" class="group">
+                            <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                </svg>
+                                Sub Kategori
+                            </label>
                             <div class="relative">
                                 <button
                                     @click="subCategoryDropdownOpen = !subCategoryDropdownOpen"
-                                    class="flex w-full items-center justify-between gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                    type="button"
+                                    class="flex w-full items-center justify-between gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:border-blue-400"
                                 >
-                                    <div class="flex items-center gap-2">
-                                        <div class="flex h-4 w-4 items-center justify-center">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex h-5 w-5 items-center justify-center">
                                             <img
-                                                v-if="selectedSubCategory?.image_url"
-                                                :src="selectedSubCategory.image_url"
+                                                v-if="selectedLocalSubCategory?.image_url"
+                                                :src="selectedLocalSubCategory.image_url"
                                                 alt="Subcategory"
-                                                class="h-4 w-4 rounded object-contain"
+                                                class="h-5 w-5 rounded object-contain"
                                             />
-                                            <span v-else-if="selectedSubCategory?.icon" class="text-sm">{{ selectedSubCategory.icon }}</span>
-                                            <span v-else class="text-sm">🟢</span>
+                                            <span v-else-if="selectedLocalSubCategory?.icon" class="text-lg">{{ selectedLocalSubCategory.icon }}</span>
+                                            <div v-else class="h-2 w-2 rounded-full bg-green-500"></div>
                                         </div>
-                                        <span>{{ selectedSubCategory?.name || 'Semua Sub Kategori' }}</span>
+                                        <span class="font-medium text-gray-900 dark:text-white">{{ selectedLocalSubCategory?.name || 'Pilih Sub Kategori' }}</span>
                                     </div>
                                     <svg
-                                        class="h-4 w-4 transition-transform"
+                                        class="h-4 w-4 text-gray-400 transition-transform duration-200"
                                         :class="{ 'rotate-180': subCategoryDropdownOpen }"
                                         fill="none"
                                         stroke="currentColor"
@@ -836,7 +1025,7 @@ watch(filteredMonitoringData, () => {
                                 >
                                     <button
                                         @click="
-                                            selectSubCategory(null);
+                                            selectLocalSubCategory(null);
                                             subCategoryDropdownOpen = false;
                                         "
                                         class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
@@ -848,7 +1037,7 @@ watch(filteredMonitoringData, () => {
                                         v-for="subCategory in subCategories"
                                         :key="subCategory.id"
                                         @click="
-                                            selectSubCategory(subCategory.slug);
+                                            selectLocalSubCategory(subCategory.slug);
                                             subCategoryDropdownOpen = false;
                                         "
                                         class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
@@ -869,40 +1058,55 @@ watch(filteredMonitoringData, () => {
                         </div>
 
                         <!-- Start Date Filter - Hidden for kategori-indas -->
-                        <div v-if="!isKategoriIndas">
-                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Mulai</label>
+                        <div v-if="!isKategoriIndas" class="group">
+                            <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Tanggal Mulai
+                            </label>
                             <input
                                 type="date"
-                                @change="selectStartDate(($event.target as HTMLInputElement).value || null)"
-                                :value="startDate || ''"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                placeholder="Tanggal Mulai"
+                                @change="selectLocalStartDate(($event.target as HTMLInputElement).value || null)"
+                                :value="localFilters.startDate || ''"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400"
                             />
                         </div>
 
                         <!-- End Date Filter - Hidden for kategori-indas -->
-                        <div v-if="!isKategoriIndas">
-                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal Akhir</label>
+                        <div v-if="!isKategoriIndas" class="group">
+                            <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Tanggal Akhir
+                            </label>
                             <input
                                 type="date"
-                                @change="selectEndDate(($event.target as HTMLInputElement).value || null)"
-                                :value="endDate || ''"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                                placeholder="Tanggal Akhir"
+                                @change="selectLocalEndDate(($event.target as HTMLInputElement).value || null)"
+                                :value="localFilters.endDate || ''"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:focus:border-blue-400"
                             />
                         </div>
 
                         <!-- Province Filter - Only for kategori-indas -->
-                        <div v-if="isKategoriIndas">
-                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Provinsi</label>
+                        <div v-if="isKategoriIndas" class="group">
+                            <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Provinsi
+                            </label>
                             <div class="relative">
                                 <button
                                     @click="provinsiDropdownOpen = !provinsiDropdownOpen"
-                                    class="flex w-full items-center justify-between gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                    type="button"
+                                    class="flex w-full items-center justify-between gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:border-blue-400"
                                 >
-                                    <span>{{ selectedProvinsi?.nama || 'Semua Provinsi' }}</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">{{ selectedLocalProvinsi?.nama || 'Pilih Provinsi' }}</span>
                                     <svg
-                                        class="h-4 w-4 transition-transform"
+                                        class="h-4 w-4 text-gray-400 transition-transform duration-200"
                                         :class="{ 'rotate-180': provinsiDropdownOpen }"
                                         fill="none"
                                         stroke="currentColor"
@@ -918,7 +1122,7 @@ watch(filteredMonitoringData, () => {
                                 >
                                     <button
                                         @click="
-                                            selectProvinsi(null);
+                                            selectLocalProvinsi(null);
                                             provinsiDropdownOpen = false;
                                         "
                                         class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
@@ -929,7 +1133,7 @@ watch(filteredMonitoringData, () => {
                                         v-for="provinsi in (provinsiList || [])"
                                         :key="provinsi.id"
                                         @click="
-                                            selectProvinsi(provinsi.id);
+                                            selectLocalProvinsi(provinsi.id);
                                             provinsiDropdownOpen = false;
                                         "
                                         class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
@@ -947,16 +1151,22 @@ watch(filteredMonitoringData, () => {
                         </div>
 
                         <!-- Kabupaten/Kota Filter - Only for kategori-indas when province is selected -->
-                        <div v-if="isKategoriIndas && selectedProvinsi && filteredKabupatenKotaList.length > 0">
-                            <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Kabupaten/Kota</label>
+                        <div v-if="isKategoriIndas && selectedLocalProvinsi && filteredLocalKabupatenKotaList.length > 0" class="group">
+                            <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                                Kabupaten/Kota
+                            </label>
                             <div class="relative">
                                 <button
                                     @click="kabupatenKotaDropdownOpen = !kabupatenKotaDropdownOpen"
-                                    class="flex w-full items-center justify-between gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                    type="button"
+                                    class="flex w-full items-center justify-between gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:border-blue-400"
                                 >
-                                    <span>{{ selectedKabupatenKota?.nama || 'Semua Kabupaten/Kota' }}</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">{{ selectedLocalKabupatenKota?.nama || 'Pilih Kabupaten/Kota' }}</span>
                                     <svg
-                                        class="h-4 w-4 transition-transform"
+                                        class="h-4 w-4 text-gray-400 transition-transform duration-200"
                                         :class="{ 'rotate-180': kabupatenKotaDropdownOpen }"
                                         fill="none"
                                         stroke="currentColor"
@@ -972,7 +1182,7 @@ watch(filteredMonitoringData, () => {
                                 >
                                     <button
                                         @click="
-                                            selectKabupatenKota(null);
+                                            selectLocalKabupatenKota(null);
                                             kabupatenKotaDropdownOpen = false;
                                         "
                                         class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
@@ -980,10 +1190,10 @@ watch(filteredMonitoringData, () => {
                                         <span>Semua Kabupaten/Kota</span>
                                     </button>
                                     <button
-                                        v-for="kabupatenKota in filteredKabupatenKotaList"
+                                        v-for="kabupatenKota in filteredLocalKabupatenKotaList"
                                         :key="kabupatenKota.id"
                                         @click="
-                                            selectKabupatenKota(kabupatenKota.id);
+                                            selectLocalKabupatenKota(kabupatenKota.id);
                                             kabupatenKotaDropdownOpen = false;
                                         "
                                         class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
@@ -994,6 +1204,52 @@ watch(filteredMonitoringData, () => {
                             </div>
                         </div>
 
+                    </div>
+                    
+                    <!-- Filter Action Buttons -->
+                    <div class="border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800/50">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-start gap-3">
+                                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                                    <svg class="h-4 w-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                        Siap untuk menerapkan filter?
+                                    </p>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">
+                                        Ubah filter di atas, lalu klik "Terapkan Filter" untuk melihat hasil pencarian
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <button
+                                    @click="resetFilters"
+                                    type="button"
+                                    class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 dark:focus:ring-offset-gray-800"
+                                >
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    Reset Semua
+                                </button>
+                                <button
+                                    @click="applyFilters"
+                                    type="button"
+                                    class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:focus:ring-offset-gray-800"
+                                >
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    Terapkan Filter
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1350,7 +1606,7 @@ watch(filteredMonitoringData, () => {
                             <div class="flex items-center justify-between">
                                 <!-- Results Info -->
                                 <div class="text-sm text-gray-700 dark:text-gray-300">
-                                    Menampilkan {{ (currentPage - 1) * itemsPerPage + 1 }}-{{ Math.min(currentPage * itemsPerPage, filteredMonitoringData.length) }} dari {{ filteredMonitoringData.length }} data
+                                    Menampilkan {{ (validCurrentPage - 1) * itemsPerPage + 1 }}-{{ Math.min(validCurrentPage * itemsPerPage, filteredMonitoringData.length) }} dari {{ filteredMonitoringData.length }} data
                                 </div>
 
                                 <!-- Pagination Navigation -->
@@ -1358,9 +1614,9 @@ watch(filteredMonitoringData, () => {
                                     <!-- Previous Button -->
                                     <button
                                         @click="goToPreviousPage"
-                                        :disabled="currentPage <= 1"
+                                        :disabled="validCurrentPage <= 1"
                                         class="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                                        :class="currentPage <= 1 
+                                        :class="validCurrentPage <= 1 
                                             ? 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500' 
                                             : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
                                     >
@@ -1376,7 +1632,7 @@ watch(filteredMonitoringData, () => {
                                         <template v-for="page in Math.min(3, totalPages)" :key="`start-${page}`">
                                             <button
                                                 @click="goToPage(page)"
-                                                :class="currentPage === page 
+                                                :class="validCurrentPage === page 
                                                     ? 'bg-blue-600 text-white shadow-sm' 
                                                     : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
                                                 class="inline-flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors"
@@ -1386,14 +1642,14 @@ watch(filteredMonitoringData, () => {
                                         </template>
 
                                         <!-- Left ellipsis -->
-                                        <span v-if="currentPage > 6" class="px-2 text-gray-500 dark:text-gray-400">...</span>
+                                        <span v-if="validCurrentPage > 6" class="px-2 text-gray-500 dark:text-gray-400">...</span>
 
                                         <!-- Pages around current page -->
-                                        <template v-for="page in [currentPage - 1, currentPage, currentPage + 1]" :key="`middle-${page}`">
+                                        <template v-for="page in [validCurrentPage - 1, validCurrentPage, validCurrentPage + 1]" :key="`middle-${page}`">
                                             <button
                                                 v-if="page > 3 && page <= totalPages - 3 && page > 0"
                                                 @click="goToPage(page)"
-                                                :class="currentPage === page 
+                                                :class="validCurrentPage === page 
                                                     ? 'bg-blue-600 text-white shadow-sm' 
                                                     : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
                                                 class="inline-flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors"
@@ -1403,14 +1659,14 @@ watch(filteredMonitoringData, () => {
                                         </template>
 
                                         <!-- Right ellipsis -->
-                                        <span v-if="currentPage < totalPages - 5" class="px-2 text-gray-500 dark:text-gray-400">...</span>
+                                        <span v-if="validCurrentPage < totalPages - 5" class="px-2 text-gray-500 dark:text-gray-400">...</span>
 
                                         <!-- Last 3 pages -->
                                         <template v-for="page in [totalPages - 2, totalPages - 1, totalPages]" :key="`end-${page}`">
                                             <button
                                                 v-if="page > 3 && page > 0 && totalPages > 6"
                                                 @click="goToPage(page)"
-                                                :class="currentPage === page 
+                                                :class="validCurrentPage === page 
                                                     ? 'bg-blue-600 text-white shadow-sm' 
                                                     : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
                                                 class="inline-flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors"
@@ -1423,9 +1679,9 @@ watch(filteredMonitoringData, () => {
                                     <!-- Next Button -->
                                     <button
                                         @click="goToNextPage"
-                                        :disabled="currentPage >= totalPages"
+                                        :disabled="validCurrentPage >= totalPages"
                                         class="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                                        :class="currentPage >= totalPages 
+                                        :class="validCurrentPage >= totalPages 
                                             ? 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500' 
                                             : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
                                     >
