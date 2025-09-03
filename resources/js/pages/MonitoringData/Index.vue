@@ -484,17 +484,17 @@
                         <div class="flex flex-1 justify-between sm:hidden">
                             <Link
                                 v-if="monitoringData.prev_page_url"
-                                :href="monitoringData.prev_page_url"
+                                :href="addFiltersToUrl(monitoringData.prev_page_url)"
                                 class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                             >
-                                Previous
+                                Sebelumnya
                             </Link>
                             <Link
                                 v-if="monitoringData.next_page_url"
-                                :href="monitoringData.next_page_url"
+                                :href="addFiltersToUrl(monitoringData.next_page_url)"
                                 class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                             >
-                                Next
+                                Selanjutnya
                             </Link>
                         </div>
                         <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
@@ -514,7 +514,7 @@
                                     <!-- Previous Page Link -->
                                     <Link
                                         v-if="monitoringData.prev_page_url"
-                                        :href="monitoringData.prev_page_url"
+                                        :href="addFiltersToUrl(monitoringData.prev_page_url)"
                                         class="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
                                     >
                                         <span class="sr-only">Previous</span>
@@ -531,7 +531,7 @@
                                     <template v-for="link in monitoringData.links" :key="link.label">
                                         <Link
                                             v-if="link.url && !link.label.includes('Previous') && !link.label.includes('Next')"
-                                            :href="link.url"
+                                            :href="addFiltersToUrl(link.url)"
                                             :class="[
                                                 'relative inline-flex items-center border px-4 py-2 text-sm font-medium',
                                                 link.active
@@ -552,7 +552,7 @@
                                     <!-- Next Page Link -->
                                     <Link
                                         v-if="monitoringData.next_page_url"
-                                        :href="monitoringData.next_page_url"
+                                        :href="addFiltersToUrl(monitoringData.next_page_url)"
                                         class="relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
                                     >
                                         <span class="sr-only">Next</span>
@@ -818,6 +818,45 @@ const resetFilters = () => {
     applyFilters();
 };
 
+// Helper function to get current filter parameters
+const getCurrentFilterParams = () => {
+    const params: Record<string, any> = {};
+    
+    if (searchQuery.value) params.search = searchQuery.value;
+    if (selectedStatus.value) params.status = selectedStatus.value;
+    if (selectedLevel.value) params.level = selectedLevel.value;
+    if (selectedCategory.value) params.category = selectedCategory.value;
+    if (selectedSubCategory.value) params.subcategory = selectedSubCategory.value;
+    if (startDate.value) params.start_date = startDate.value;
+    if (endDate.value) params.end_date = endDate.value;
+    if (selectedProvinsi.value) params.provinsi_id = selectedProvinsi.value;
+    if (selectedKabupaten.value) params.kabupaten_kota_id = selectedKabupaten.value;
+    
+    return params;
+};
+
+// Helper function to add current filters to pagination URL
+const addFiltersToUrl = (url: string) => {
+    if (!url) return url;
+    
+    try {
+        const urlObj = new URL(url, window.location.origin);
+        const currentFilters = getCurrentFilterParams();
+        
+        // Add current filters to the URL
+        Object.keys(currentFilters).forEach(key => {
+            if (currentFilters[key]) {
+                urlObj.searchParams.set(key, currentFilters[key]);
+            }
+        });
+        
+        return urlObj.toString();
+    } catch (error) {
+        console.error('Error adding filters to URL:', error);
+        return url;
+    }
+};
+
 // Helper function to apply filters
 const applyFilters = () => {
     if (searchTimeout.value) {
@@ -825,17 +864,7 @@ const applyFilters = () => {
     }
 
     searchTimeout.value = setTimeout(() => {
-        const params: Record<string, any> = {};
-
-        if (searchQuery.value) params.search = searchQuery.value;
-        if (selectedStatus.value) params.status = selectedStatus.value;
-        if (selectedLevel.value) params.level = selectedLevel.value;
-        if (selectedCategory.value) params.category = selectedCategory.value;
-        if (selectedSubCategory.value) params.subcategory = selectedSubCategory.value;
-        if (startDate.value) params.start_date = startDate.value;
-        if (endDate.value) params.end_date = endDate.value;
-        if (selectedProvinsi.value) params.provinsi_id = selectedProvinsi.value;
-        if (selectedKabupaten.value) params.kabupaten_kota_id = selectedKabupaten.value;
+        const params = getCurrentFilterParams();
 
         // Reset pagination to first page when filters change
         // Don't add page parameter, Laravel will default to page 1
