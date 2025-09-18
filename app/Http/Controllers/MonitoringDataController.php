@@ -347,6 +347,7 @@ class MonitoringDataController extends Controller
         
         $validated['gallery'] = $galleryPaths;
         $validated['video_path'] = $videoPath;
+        $validated['user_id'] = auth()->id(); // Set the current user as the author
         MonitoringData::create($validated);
 
         return redirect()->route('monitoring-data.index')
@@ -355,7 +356,7 @@ class MonitoringDataController extends Controller
 
     public function show($id)
     {
-        $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])
+        $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory', 'user.provinsi'])
             ->findOrFail($id);
 
         // Append image URLs to category and subcategory

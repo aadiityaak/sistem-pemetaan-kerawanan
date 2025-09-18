@@ -11,6 +11,7 @@ class MonitoringData extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'provinsi_id',
         'kabupaten_kota_id',
         'kecamatan_id',
@@ -77,6 +78,14 @@ class MonitoringData extends Model
     public function subCategory(): BelongsTo
     {
         return $this->belongsTo(SubCategory::class);
+    }
+
+    /**
+     * Get the user who created this monitoring data
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**

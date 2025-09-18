@@ -172,6 +172,15 @@ const formatDateTime = (dateString: string): string => {
     });
 };
 
+const getRoleLabel = (role: string): string => {
+    const roles: Record<string, string> = {
+        'super_admin': 'Super Administrator',
+        'admin_vip': 'Administrator VIP',
+        'admin': 'Administrator',
+    };
+    return roles[role] || role;
+};
+
 // Format description dengan auto paragraph
 const formatDescription = (description: string): string => {
     if (!description) return '';
@@ -606,6 +615,51 @@ onMounted(async () => {
                                 @click="goToCarouselImage(index)"
                             >
                                 <img :src="image.url" :alt="`Thumbnail ${index + 1}`" class="h-full w-full rounded object-cover" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Author Information -->
+                    <div v-if="monitoringData.user" class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">👤 Penulis Berita</h3>
+
+                        <div class="space-y-4">
+                            <!-- Author Name and Role -->
+                            <div class="flex items-start space-x-3">
+                                <div class="flex-shrink-0">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                                        <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ monitoringData.user.name }}</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ getRoleLabel(monitoringData.user.role) }}</p>
+                                    <p v-if="monitoringData.user.provinsi" class="text-xs text-gray-400 dark:text-gray-500">📍 {{ monitoringData.user.provinsi.nama }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Contact Information -->
+                            <div class="space-y-2 border-t border-gray-100 pt-4 dark:border-gray-700">
+                                <div class="flex items-center space-x-2">
+                                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    <span class="text-sm text-gray-600 dark:text-gray-300">{{ monitoringData.user.email }}</span>
+                                </div>
+                                <div v-if="monitoringData.user.phone" class="flex items-center space-x-2">
+                                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                    </svg>
+                                    <span class="text-sm text-gray-600 dark:text-gray-300">{{ monitoringData.user.phone }}</span>
+                                </div>
+                                <div v-else class="flex items-center space-x-2">
+                                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                    </svg>
+                                    <span class="text-sm text-gray-400 dark:text-gray-500 italic">Nomor telepon tidak tersedia</span>
+                                </div>
                             </div>
                         </div>
                     </div>
