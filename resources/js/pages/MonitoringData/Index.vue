@@ -347,6 +347,12 @@
                                     scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
                                 >
+                                    Jenis Data
+                                </th>
+                                <th
+                                    scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300"
+                                >
                                     Status
                                 </th>
                                 <th
@@ -362,7 +368,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                             <tr v-if="monitoringData.data.length === 0">
-                                <td colspan="9" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">Tidak ada data yang ditemukan</td>
+                                <td colspan="10" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">Tidak ada data yang ditemukan</td>
                             </tr>
                             <tr v-else v-for="data in monitoringData.data" :key="data.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <td class="px-6 py-4">
@@ -407,6 +413,20 @@
                                         <span class="truncate">{{ data.sumber_berita }}</span>
                                     </div>
                                     <span v-else class="text-xs text-gray-400 italic">-</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        v-if="data.data_source === 'online'"
+                                        class="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                    >
+                                        🌐 Online
+                                    </span>
+                                    <span
+                                        v-else
+                                        class="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-300"
+                                    >
+                                        📝 Offline
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span :class="getStatusBadgeClass(data.status)" class="inline-flex rounded-full px-2 py-1 text-xs font-semibold">

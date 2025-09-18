@@ -84,6 +84,7 @@ const form = useForm({
     severity_level: 'medium',
     status: 'active',
     incident_date: new Date().toISOString().split('T')[0],
+    data_source: 'offline',
     additional_data: {} as Record<string, any>,
     gallery: [] as File[],
     video: null as File | null,
@@ -167,6 +168,18 @@ watch(
     () => form.category_id,
     () => {
         form.sub_category_id = '';
+    },
+);
+
+// Watch for sumber_berita changes to automatically set data_source
+watch(
+    () => form.sumber_berita,
+    (newValue) => {
+        if (newValue && newValue.trim() !== '') {
+            form.data_source = 'online';
+        } else {
+            form.data_source = 'offline';
+        }
     },
 );
 
@@ -446,6 +459,32 @@ onMounted(async () => {
                                     </div>
                                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                         Contoh: Detik.com, Kompas.com, atau sumber informasi lainnya
+                                    </p>
+                                </div>
+
+                                <!-- Jenis Data -->
+                                <div>
+                                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Jenis Data <span class="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        v-model="form.data_source"
+                                        required
+                                        class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                                    >
+                                        <option value="offline">📝 Offline (Ditulis Sendiri)</option>
+                                        <option value="online">🌐 Online (Portal Berita)</option>
+                                    </select>
+                                    <div v-if="form.errors.data_source" class="mt-1 text-sm text-red-600">
+                                        {{ form.errors.data_source }}
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        <span v-if="form.data_source === 'offline'">
+                                            Data yang ditulis sendiri oleh penanggung jawab
+                                        </span>
+                                        <span v-else>
+                                            Data yang berasal dari portal berita atau sumber online lainnya
+                                        </span>
                                     </p>
                                 </div>
 

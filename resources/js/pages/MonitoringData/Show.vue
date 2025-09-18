@@ -35,6 +35,7 @@ interface MonitoringData {
     severity_level: string;
     status: string;
     incident_date: string;
+    data_source: string;
     created_at: string;
     updated_at: string;
     additional_data: Record<string, any>;
@@ -420,6 +421,33 @@ onMounted(async () => {
                                 <div class="font-mono text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-md">
                                     {{ monitoringData.latitude }}, {{ monitoringData.longitude }}
                                 </div>
+                            </div>
+
+                            <!-- Jenis Data -->
+                            <div>
+                                <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-400">Jenis Data</label>
+                                <div class="flex items-center gap-2">
+                                    <span
+                                        v-if="monitoringData.data_source === 'online'"
+                                        class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                    >
+                                        🌐 Online (Portal Berita)
+                                    </span>
+                                    <span
+                                        v-else
+                                        class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-300"
+                                    >
+                                        📝 Offline (Ditulis Sendiri)
+                                    </span>
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                    <span v-if="monitoringData.data_source === 'online'">
+                                        Data berasal dari portal berita atau sumber online lainnya
+                                    </span>
+                                    <span v-else>
+                                        Data ditulis sendiri oleh penanggung jawab
+                                    </span>
+                                </p>
                             </div>
 
                             <!-- Sumber Berita -->

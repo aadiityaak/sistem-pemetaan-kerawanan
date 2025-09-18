@@ -299,7 +299,7 @@ class MonitoringDataController extends Controller
                 'provinsi_id' => 'required|in:' . $request->input('province_filter'),
             ]);
         }
-        
+
         $validated = $request->validate([
             'provinsi_id' => 'required|exists:provinsi,id',
             'kabupaten_kota_id' => 'required|exists:kabupaten_kota,id',
@@ -316,6 +316,7 @@ class MonitoringDataController extends Controller
             'status' => 'required|in:active,resolved,monitoring,archived',
             'incident_date' => 'nullable|date',
             'source' => 'nullable|string|max:255',
+            'data_source' => 'required|in:online,offline',
             'additional_data' => 'nullable|array',
             'gallery' => 'nullable|array',
             'gallery.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max per image
@@ -474,7 +475,7 @@ class MonitoringDataController extends Controller
     public function update(Request $request, $id)
     {
         $monitoringData = MonitoringData::findOrFail($id);
-        
+
         // Debug: Log request data
         \Log::info('Update request received', [
             'all_data' => $request->all(),
@@ -498,6 +499,7 @@ class MonitoringDataController extends Controller
             'status' => 'required|in:active,resolved,monitoring,archived',
             'incident_date' => 'nullable|date',
             'source' => 'nullable|string|max:255',
+            'data_source' => 'required|in:online,offline',
             'additional_data' => 'nullable|array',
             'gallery' => 'nullable|array',
             'gallery.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max per image

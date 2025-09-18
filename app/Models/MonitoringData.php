@@ -28,6 +28,7 @@ class MonitoringData extends Model
         'status',
         'incident_date',
         'source',
+        'data_source',
         'gallery',
         'video_path',
     ];
