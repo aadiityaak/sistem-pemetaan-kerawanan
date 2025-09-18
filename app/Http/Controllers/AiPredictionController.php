@@ -39,6 +39,7 @@ class AiPredictionController extends Controller
         $request->validate([
             'category_id' => 'required|exists:categories,id',
             'sub_category_id' => 'nullable|exists:sub_categories,id',
+            'time_period' => 'required|integer|in:1,3,6,12',
         ]);
 
         if (!$this->geminiService->isEnabled()) {
@@ -55,12 +56,13 @@ class AiPredictionController extends Controller
 
         $categoryId = $request->category_id;
         $subCategoryId = $request->sub_category_id;
+        $timePeriod = $request->time_period;
         $category = Category::find($categoryId);
 
-        // Get crime data for the selected category (last 6 months)
+        // Get crime data for the selected category based on time period
         $query = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])
             ->where('category_id', $categoryId)
-            ->where('created_at', '>=', now()->subMonths(6));
+            ->where('created_at', '>=', now()->subMonths($timePeriod));
 
         // Filter by sub-category if provided
         if ($subCategoryId) {
@@ -72,9 +74,10 @@ class AiPredictionController extends Controller
             ->get();
 
         if ($crimeData->isEmpty()) {
+            $periodText = $this->getTimePeriodText($timePeriod);
             $errorMessage = $subCategoryId
-                ? 'Tidak ada data kriminalitas untuk sub-kategori ini dalam 6 bulan terakhir.'
-                : 'Tidak ada data kriminalitas untuk kategori ini dalam 6 bulan terakhir.';
+                ? "Tidak ada data kriminalitas untuk sub-kategori ini dalam {$periodText}."
+                : "Tidak ada data kriminalitas untuk kategori ini dalam {$periodText}.";
 
             if ($request->wantsJson()) {
                 return response()->json([
@@ -122,7 +125,7 @@ class AiPredictionController extends Controller
         ];
 
         // Create comprehensive prompt for AI analysis
-        $prompt = $this->createAnalysisPrompt($category->name, $dataForAi, $statistics);
+        $prompt = $this->createAnalysisPrompt($category->name, $dataForAi, $statistics, $timePeriod);
 
         try {
             $aiAnalysis = $this->geminiService->generateContent($prompt);
@@ -145,7 +148,7 @@ class AiPredictionController extends Controller
                 'success' => true,
                 'analysis' => $aiAnalysis,
                 'statistics' => $statistics,
-                'data_period' => '6 bulan terakhir',
+                'data_period' => $this->getTimePeriodText($timePeriod),
                 'total_analyzed' => $crimeData->count(),
                 'category' => $category->name,
                 'sub_category' => $subCategory ? $subCategory->name : null,
@@ -174,13 +177,14 @@ class AiPredictionController extends Controller
     /**
      * Create comprehensive prompt for AI analysis
      */
-    private function createAnalysisPrompt(string $categoryName, array $crimeData, array $statistics): string
+    private function createAnalysisPrompt(string $categoryName, array $crimeData, array $statistics, int $timePeriod): string
     {
+        $periodText = $this->getTimePeriodText($timePeriod);
         $prompt = "Sebagai seorang ahli analisis kriminalitas, analisis data kejahatan kategori '{$categoryName}' berikut:\n\n";
 
         $prompt .= "STATISTIK UMUM:\n";
         $prompt .= "- Total kasus: " . $statistics['total_cases'] . "\n";
-        $prompt .= "- Periode: 6 bulan terakhir\n";
+        $prompt .= "- Periode: {$periodText}\n";
         $prompt .= "- Distribusi Tingkat Resiko: " . json_encode($statistics['severity_distribution']) . "\n";
         $prompt .= "- Trend bulanan: " . json_encode($statistics['monthly_trend']) . "\n\n";
 
@@ -216,7 +220,7 @@ class AiPredictionController extends Controller
         $prompt .= "   - Faktor lokasi yang berkontribusi\n\n";
 
         $prompt .= "3. **PREDIKSI DAN PROYEKSI**\n";
-        $prompt .= "   - Prediksi trend 6 bulan ke depan berdasarkan data 6 bulan terakhir\n";
+        $prompt .= "   - Prediksi trend {$timePeriod} bulan ke depan berdasarkan data {$periodText}\n";
         $prompt .= "   - Wilayah yang berpotensi mengalami peningkatan\n";
         $prompt .= "   - Estimasi dampak berdasarkan data historis\n";
         $prompt .= "   - Proyeksi pola musiman dan siklus tahunan\n\n";
@@ -234,5 +238,19 @@ class AiPredictionController extends Controller
         $prompt .= "Format jawaban dengan struktur yang jelas menggunakan markdown dan berikan insight yang actionable untuk pengambilan keputusan.";
 
         return $prompt;
+    }
+
+    /**
+     * Get time period text for display
+     */
+    private function getTimePeriodText(int $months): string
+    {
+        return match($months) {
+            1 => '1 bulan terakhir',
+            3 => '3 bulan terakhir',
+            6 => '6 bulan terakhir',
+            12 => '1 tahun terakhir',
+            default => "{$months} bulan terakhir"
+        };
     }
 }

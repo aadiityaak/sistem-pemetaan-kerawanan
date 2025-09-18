@@ -76,9 +76,28 @@
                         </select>
                     </div>
 
+                    <!-- Time Period Selection -->
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Periode Analisis <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                            v-model="selectedTimePeriod"
+                            required
+                            :disabled="isAnalyzing || !geminiEnabled"
+                            class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        >
+                            <option value="">-- Pilih Periode --</option>
+                            <option value="1">1 Bulan Terakhir</option>
+                            <option value="3">3 Bulan Terakhir</option>
+                            <option value="6">6 Bulan Terakhir</option>
+                            <option value="12">1 Tahun Terakhir</option>
+                        </select>
+                    </div>
+
                     <!-- Analysis Button -->
                     <div>
-                        <Button type="submit" :disabled="!selectedCategory || isAnalyzing || !geminiEnabled" class="w-full sm:w-auto">
+                        <Button type="submit" :disabled="!selectedCategory || !selectedTimePeriod || isAnalyzing || !geminiEnabled" class="w-full sm:w-auto">
                             <svg v-if="isAnalyzing" class="mr-3 -ml-1 h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path
@@ -319,6 +338,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const selectedCategory = ref<string>('');
 const selectedSubCategory = ref<string>('');
+const selectedTimePeriod = ref<string>('');
 const isAnalyzing = ref(false);
 const analysisResult = ref<AnalysisResult | null>(null);
 const errorMessage = ref<string>('');
@@ -383,7 +403,7 @@ const resetSubCategory = () => {
 };
 
 const analyzeCategory = async () => {
-    if (!selectedCategory.value || !props.geminiEnabled) return;
+    if (!selectedCategory.value || !selectedTimePeriod.value || !props.geminiEnabled) return;
 
     isAnalyzing.value = true;
     errorMessage.value = '';
@@ -408,6 +428,7 @@ const analyzeCategory = async () => {
             body: JSON.stringify({
                 category_id: selectedCategory.value,
                 sub_category_id: selectedSubCategory.value || null,
+                time_period: selectedTimePeriod.value,
             }),
         });
 
@@ -428,9 +449,9 @@ const analyzeCategory = async () => {
         } else {
             errorMessage.value = data.error || 'Terjadi kesalahan saat menganalisis';
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error('Analysis error:', error);
-        if (error.message.includes('CSRF')) {
+        if (error?.message?.includes('CSRF')) {
             errorMessage.value = 'Session expired. Silakan refresh halaman dan coba lagi.';
         } else {
             errorMessage.value = 'Gagal menghubungi server. Silakan refresh halaman dan coba lagi.';
@@ -457,7 +478,7 @@ const initializeCharts = async () => {
         // Initialize Severity Distribution Chart
         if (severityChartRef.value && stats.severity_distribution) {
             const severityData = Object.entries(stats.severity_distribution);
-            const severityColors = {
+            const severityColors: Record<string, string> = {
                 low: '#10B981',
                 medium: '#F59E0B',
                 high: '#EF4444',
@@ -491,7 +512,7 @@ const initializeCharts = async () => {
 
         // Initialize Location Distribution Chart
         if (locationChartRef.value && stats.location_distribution) {
-            const locationData = Object.values(stats.location_distribution).slice(0, 5);
+            const locationData = Object.values(stats.location_distribution).slice(0, 5) as Array<{location: string, count: number}>;
 
             locationChart = new Chart(locationChartRef.value, {
                 type: 'bar',
