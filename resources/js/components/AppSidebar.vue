@@ -6,6 +6,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { type AppPageProps, type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import {
+    BarChart3,
     Brain,
     Building2,
     Calendar,
@@ -112,6 +113,7 @@ const getIconComponent = (iconName?: string) => {
         Landmark: Landmark,
         Globe: Globe,
         TrendingUp: TrendingUp,
+        BarChart3: BarChart3,
     };
     return iconMap[iconName || ''] || Tags;
 };

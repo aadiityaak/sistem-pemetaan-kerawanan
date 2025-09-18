@@ -13,6 +13,7 @@ use App\Http\Controllers\PartaiPolitikController;
 use App\Http\Controllers\PasarSahamController;
 use App\Http\Controllers\ProvinsiController;
 use App\Http\Controllers\SembakoController;
+use App\Http\Controllers\UserPerformanceController;
 use App\Http\Controllers\VideoUploadController;
 use Illuminate\Support\Facades\Route;
 
@@ -90,6 +91,9 @@ Route::middleware('auth')->group(function () {
 Route::get('/api/ketahanan-pangan/harga-peta', [KetahanePanganController::class, 'getHargaPeta'])->name('api.ketahanan-pangan.harga-peta');
 
 Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified', 'province.filter'])->name('dashboard');
+
+// User Performance Dashboard - untuk statistik performa user
+Route::get('user-performance', [\App\Http\Controllers\UserPerformanceController::class, 'index'])->middleware(['auth', 'verified'])->name('user-performance.index');
 
 // Dashboard dengan parameter category (contoh: /dashboard?category=keamanan)
 Route::middleware(['auth', 'verified'])->group(function () {
