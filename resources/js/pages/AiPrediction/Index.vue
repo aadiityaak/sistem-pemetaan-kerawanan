@@ -88,10 +88,12 @@
                             class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         >
                             <option value="">-- Pilih Periode --</option>
+                            <option value="0.03">1 Hari Terakhir</option>
+                            <option value="0.25">1 Minggu Terakhir</option>
                             <option value="1">1 Bulan Terakhir</option>
                             <option value="3">3 Bulan Terakhir</option>
                             <option value="6">6 Bulan Terakhir</option>
-                            <option value="12">1 Tahun Terakhir</option>
+                            <option value="12">12 Bulan Terakhir</option>
                         </select>
                     </div>
 

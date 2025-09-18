@@ -10,6 +10,15 @@ interface GalleryItem {
     url: string;
 }
 
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    phone?: string;
+    role: string;
+    provinsi?: { id: number; nama: string };
+}
+
 interface MonitoringData {
     id: number;
     provinsi_id: number;
@@ -32,6 +41,7 @@ interface MonitoringData {
     gallery?: GalleryItem[];
     video_path?: string;
     video_url?: string;
+    user?: User; // Author information
     provinsi: { id: number; nama: string };
     kabupaten_kota: { id: number; nama: string; provinsi_id: number };
     kecamatan: { id: number; nama: string; kabupaten_kota_id: number };

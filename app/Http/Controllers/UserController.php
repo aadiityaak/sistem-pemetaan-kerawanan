@@ -19,7 +19,8 @@ class UserController extends Controller
         if ($request->has('search') && $request->search != '') {
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('email', 'like', '%' . $request->search . '%');
+                    ->orWhere('email', 'like', '%' . $request->search . '%')
+                    ->orWhere('phone', 'like', '%' . $request->search . '%');
             });
         }
 
@@ -66,6 +67,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
+            'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:super_admin,admin_vip,admin',
             'is_active' => 'boolean',
@@ -112,6 +114,7 @@ class UserController extends Controller
                 'max:255',
                 Rule::unique('users')->ignore($user->id),
             ],
+            'phone' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:8|confirmed',
             'role' => 'required|in:super_admin,admin_vip,admin',
             'is_active' => 'boolean',

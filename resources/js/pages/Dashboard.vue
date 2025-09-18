@@ -2,7 +2,13 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue';
+import { indonesiaProvinces, type ProvincePathData } from '@/data/indonesiaProvinces';
+
+// Import route helper
+declare global {
+    function route(name: string, params?: any): string;
+}
 
 interface MonitoringData {
     id: number;
@@ -117,6 +123,8 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
 let map: any;
 const mapContainer = ref();
 const mapMarkers = ref<any[]>([]);
+const isLeafletMap = ref(true); // Toggle between Leaflet and SVG map
+const selectedProvince = ref<MonitoringData | null>(null); // For SVG map province selection
 
 // Category color mapping for theming
 const categoryThemes: Record<string, { color: string; icon: string; bgColor: string }> = {
@@ -594,7 +602,7 @@ const validCurrentPage = computed({
 
 // Function to update map markers
 const updateMapMarkers = async () => {
-    if (!map) return;
+    if (!map || !isLeafletMap.value) return;
     
     // Clear existing markers
     mapMarkers.value.forEach(marker => map.removeLayer(marker));
@@ -706,12 +714,203 @@ onMounted(async () => {
         // Add resize event listener
         window.addEventListener('resize', handleResize);
         
-        // Dynamic import Leaflet
-        const L = await import('leaflet');
+        // Initialize map only if in Leaflet mode
+        if (isLeafletMap.value) {
+            // Dynamic import Leaflet
+            const L = await import('leaflet');
 
-        // Initialize map
+            // Initialize map
+            if (mapContainer.value) {
+                // Use user's province coordinates if available, otherwise use Indonesia center
+                let mapCenter: [number, number] = [-2.5489, 118.0149]; // Default: Indonesia center
+                let zoomLevel = 5; // Default zoom for Indonesia
+
+                if (props.userProvinsi && props.userProvinsi.latitude && props.userProvinsi.longitude) {
+                    mapCenter = [props.userProvinsi.latitude, props.userProvinsi.longitude];
+                    zoomLevel = 8; // Closer zoom for province view
+                }
+
+                map = L.map(mapContainer.value).setView(mapCenter, zoomLevel);
+
+                // Add tile layer
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                }).addTo(map);
+
+                // Add initial markers
+                updateMapMarkers();
+            }
+        }
+    }
+});
+
+// Cleanup on unmount
+onBeforeUnmount(() => {
+    if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', handleResize);
+    }
+
+    // Cleanup map
+    if (map) {
+        map.remove();
+        map = null;
+        mapMarkers.value = [];
+    }
+});
+
+// Province name mapping for SVG map
+const provinceNameMapping: Record<string, string[]> = {
+    'DAERAH ISTIMEWA YOGYAKARTA': ['D.I. YOGYAKARTA', 'YOGYAKARTA', 'DI YOGYAKARTA', 'JOGJA', 'D.I YOGYAKARTA', 'DAERAH ISTIMEWA YOGYAKARTA'],
+    'BANGKA BELITUNG': ['KEP. BANGKA BELITUNG', 'KEPULAUAN BANGKA BELITUNG'],
+    'SUMATRA BARAT': ['SUMATERA BARAT', 'SUMBAR', 'SUMATRA BARAT'],
+    'SUMATRA UTARA': ['SUMATERA UTARA', 'SUMUT', 'SUMATRA UTARA'],
+    'SUMATRA SELATAN': ['SUMATERA SELATAN', 'SUMSEL', 'SUMATRA SELATAN'],
+    'NUSA TENGGARA BARAT': ['NTB', 'NUSA TENGGARA BARAT'],
+    'NUSA TENGGARA TIMUR': ['NTT', 'NUSA TENGGARA TIMUR'],
+    'KALIMANTAN BARAT': ['KALBAR', 'KALIMANTAN BARAT'],
+    'KALIMANTAN TENGAH': ['KALTENG', 'KALIMANTAN TENGAH'],
+    'KALIMANTAN SELATAN': ['KALSEL', 'KALIMANTAN SELATAN'],
+    'KALIMANTAN TIMUR': ['KALTIM', 'KALIMANTAN TIMUR'],
+    'KALIMANTAN UTARA': ['KALUT', 'KALIMANTAN UTARA'],
+    'SULAWESI UTARA': ['SULUT', 'SULAWESI UTARA'],
+    'SULAWESI TENGAH': ['SULTENG', 'SULAWESI TENGAH'],
+    'SULAWESI SELATAN': ['SULSEL', 'SULAWESI SELATAN'],
+    'SULAWESI TENGGARA': ['SULTRA', 'SULAWESI TENGGARA'],
+    'SULAWESI BARAT': ['SULBAR', 'SULAWESI BARAT'],
+    'GORONTALO': ['GORONTALO'],
+    'MALUKU': ['MALUKU'],
+    'MALUKU UTARA': ['MALUT', 'MALUKU UTARA'],
+    'JAWA BARAT': ['JABAR', 'JAWA BARAT'],
+    'JAWA TENGAH': ['JATENG', 'JAWA TENGAH'],
+    'JAWA TIMUR': ['JATIM', 'JAWA TIMUR'],
+    'BANTEN': ['BANTEN'],
+    'DKI JAKARTA': ['JAKARTA', 'DKI JAKARTA'],
+    'BALI': ['BALI'],
+    'ACEH': ['ACEH', 'NANGGROE ACEH DARUSSALAM'],
+    'RIAU': ['RIAU'],
+    'KEPULAUAN RIAU': ['KEP. RIAU', 'KEPULAUAN RIAU'],
+    'JAMBI': ['JAMBI'],
+    'BENGKULU': ['BENGKULU'],
+    'LAMPUNG': ['LAMPUNG'],
+    'PAPUA': ['PAPUA'],
+    'PAPUA BARAT': ['PAPUA BARAT'],
+    'PAPUA SELATAN': ['PAPUA SELATAN'],
+    'PAPUA TENGAH': ['PAPUA TENGAH'],
+    'PAPUA PEGUNUNGAN': ['PAPUA PEGUNUNGAN'],
+    'PAPUA BARAT DAYA': ['PAPUA BARAT DAYA']
+};
+
+// Get province color based on data count
+const getProvinceColor = (provinceName: string): string => {
+    const count = getProvinceDataCount(provinceName);
+
+    if (count === 0) {
+        return '#e5e7eb'; // Gray for no data
+    } else if (count <= 5) {
+        return '#10b981'; // Green for low count (1-5)
+    } else if (count <= 10) {
+        return '#f59e0b'; // Yellow for medium count (6-10)
+    } else {
+        return '#ef4444'; // Red for high count (11+)
+    }
+};
+
+// Get data count for a province
+const getProvinceDataCount = (provinceName: string): number => {
+    // First try exact match
+    let count = filteredMonitoringData.value.filter(data =>
+        data.provinsi.nama.toUpperCase() === provinceName.toUpperCase()
+    ).length;
+
+    // If no exact match, try using mapping
+    if (count === 0) {
+        const svgProvinceName = provinceName.toUpperCase();
+        const apiProvinceAlias = Object.entries(provinceNameMapping).find(([_, aliases]) =>
+            aliases.some(alias => alias.toUpperCase() === svgProvinceName)
+        );
+
+        if (apiProvinceAlias) {
+            const [mappedName] = apiProvinceAlias;
+            count = filteredMonitoringData.value.filter(data => {
+                const apiName = data.provinsi.nama.toUpperCase();
+                return provinceNameMapping[mappedName]?.some(alias =>
+                    apiName.includes(alias.toUpperCase()) || alias.toUpperCase().includes(apiName)
+                );
+            }).length;
+        }
+    }
+
+    // If still no match, try partial matching
+    if (count === 0) {
+        count = filteredMonitoringData.value.filter(data => {
+            const apiName = data.provinsi.nama.toUpperCase();
+            const svgName = provinceName.toUpperCase();
+            return apiName.includes(svgName) || svgName.includes(apiName) ||
+                   apiName.replace(/\s+/g, '').includes(svgName.replace(/\s+/g, '')) ||
+                   svgName.replace(/\s+/g, '').includes(apiName.replace(/\s+/g, ''));
+        }).length;
+    }
+
+    return count;
+};
+
+// Show province detail for SVG map
+const showProvinceDetail = (provinceName: string) => {
+    // Find the first data item for this province
+    let provinceData = filteredMonitoringData.value.find(data =>
+        data.provinsi.nama.toUpperCase() === provinceName.toUpperCase()
+    );
+
+    // If not found, try using mapping
+    if (!provinceData) {
+        const svgProvinceName = provinceName.toUpperCase();
+        const apiProvinceAlias = Object.entries(provinceNameMapping).find(([_, aliases]) =>
+            aliases.some(alias => alias.toUpperCase() === svgProvinceName)
+        );
+
+        if (apiProvinceAlias) {
+            const [mappedName] = apiProvinceAlias;
+            provinceData = filteredMonitoringData.value.find(data => {
+                const apiName = data.provinsi.nama.toUpperCase();
+                return provinceNameMapping[mappedName]?.some(alias =>
+                    apiName.includes(alias.toUpperCase()) || alias.toUpperCase().includes(apiName)
+                );
+            });
+        }
+    }
+
+    // If still not found, try partial matching
+    if (!provinceData) {
+        provinceData = filteredMonitoringData.value.find(data => {
+            const apiName = data.provinsi.nama.toUpperCase();
+            const svgName = provinceName.toUpperCase();
+            return apiName.includes(svgName) || svgName.includes(apiName) ||
+                   apiName.replace(/\s+/g, '').includes(svgName.replace(/\s+/g, '')) ||
+                   svgName.replace(/\s+/g, '').includes(apiName.replace(/\s+/g, ''));
+        });
+    }
+
+    if (provinceData) {
+        selectedProvince.value = provinceData;
+    }
+};
+
+// Watch for map type changes to reinitialize Leaflet map
+watch(isLeafletMap, async (newValue) => {
+    if (newValue && typeof window !== 'undefined') {
+        // When switching to Leaflet map, wait for DOM update then initialize
+        await nextTick();
         if (mapContainer.value) {
-            // Use user's province coordinates if available, otherwise use Indonesia center
+            // Clear existing map if any
+            if (map) {
+                map.remove();
+                map = null;
+            }
+
+            // Dynamic import Leaflet
+            const L = await import('leaflet');
+
+            // Initialize map with proper center and zoom
             let mapCenter: [number, number] = [-2.5489, 118.0149]; // Default: Indonesia center
             let zoomLevel = 5; // Default zoom for Indonesia
 
@@ -727,16 +926,9 @@ onMounted(async () => {
                 attribution: '© OpenStreetMap contributors',
             }).addTo(map);
 
-            // Add initial markers
+            // Add markers
             updateMapMarkers();
         }
-    }
-});
-
-// Cleanup on unmount
-onBeforeUnmount(() => {
-    if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', handleResize);
     }
 });
 
@@ -1207,7 +1399,7 @@ watch(searchQuery, () => {
                     </div>
                     
                     <!-- Filter Action Buttons -->
-                    <div class="border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800/50">
+                    <div class="mt-5 border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800/50">
                         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div class="flex items-start gap-3">
                                 <div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
@@ -1336,17 +1528,108 @@ watch(searchQuery, () => {
                                           : 'Monitoring Data'
                                 }}
                             </h3>
-                            <div class="flex items-center gap-2 text-sm text-gray-500">
-                                <span
-                                    class="h-3 w-3 rounded-full"
-                                    :style="{ backgroundColor: selectedCategory ? currentTheme.color : '#6B7280' }"
-                                ></span>
-                                <span>{{
-                                    selectedSubCategory ? selectedSubCategory.name : selectedCategory ? selectedCategory.name : 'Semua Data'
-                                }}</span>
+                            <div class="flex items-center gap-4">
+                                <!-- Map Toggle Button -->
+                                <div class="flex items-center gap-2">
+                                    <button
+                                        @click="isLeafletMap = !isLeafletMap"
+                                        class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                        :title="isLeafletMap ? 'Beralih ke Peta SVG' : 'Beralih ke Peta Leaflet'"
+                                    >
+                                        <svg v-if="isLeafletMap" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                        </svg>
+                                        <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        {{ isLeafletMap ? 'SVG' : 'Leaflet' }}
+                                    </button>
+                                </div>
+                                <div class="flex items-center gap-2 text-sm text-gray-500">
+                                    <span
+                                        class="h-3 w-3 rounded-full"
+                                        :style="{ backgroundColor: selectedCategory ? currentTheme.color : '#6B7280' }"
+                                    ></span>
+                                    <span>{{
+                                        selectedSubCategory ? selectedSubCategory.name : selectedCategory ? selectedCategory.name : 'Semua Data'
+                                    }}</span>
+                                </div>
                             </div>
                         </div>
-                        <div ref="mapContainer" class="relative z-0 h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
+                        <!-- Leaflet Map -->
+                        <div v-if="isLeafletMap" ref="mapContainer" class="relative z-0 h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
+
+                        <!-- SVG Map Indonesia -->
+                        <div v-else class="relative h-96 rounded-lg border border-gray-200 bg-gradient-to-b from-blue-50 to-green-50 dark:border-gray-700 dark:from-gray-800 dark:to-gray-900">
+                            <!-- Indonesia SVG Map -->
+                            <svg
+                                viewBox="0 0 792.54596 316.66394"
+                                class="absolute inset-0 h-full w-full"
+                                xmlns="http://www.w3.org/2000/svg"
+                                preserveAspectRatio="xMinYMin"
+                            >
+                                <path
+                                    v-for="provinceCode in indonesiaProvinces"
+                                    :key="provinceCode.id"
+                                    :d="provinceCode.path"
+                                    :fill="getProvinceColor(provinceCode.name)"
+                                    stroke="#ffffff"
+                                    stroke-width="1"
+                                    stroke-linejoin="round"
+                                    class="cursor-pointer transition-all hover:stroke-gray-800"
+                                    @click="showProvinceDetail(provinceCode.name)"
+                                >
+                                    <title>{{ provinceCode.name }}</title>
+                                </path>
+                            </svg>
+
+                            <!-- Selected Province Detail -->
+                            <div
+                                v-if="selectedProvince"
+                                class="absolute right-4 top-4 z-30 w-72 rounded-lg bg-white p-4 shadow-lg dark:bg-gray-800"
+                            >
+                                <h4 class="font-semibold text-gray-900 dark:text-white">{{ selectedProvince.provinsi.nama }}</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    Kategori: <span class="font-medium text-blue-600">{{ selectedProvince.category.name }}</span>
+                                </p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    Sub Kategori: <span class="font-medium text-green-600">{{ selectedProvince.sub_category.name }}</span>
+                                </p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    Jumlah Data: <span class="font-medium text-red-600">{{ getProvinceDataCount(selectedProvince.provinsi.nama) }}</span>
+                                </p>
+                                <button
+                                    @click="selectedProvince = null"
+                                    class="mt-2 text-xs text-blue-600 hover:text-blue-800"
+                                >
+                                    Tutup
+                                </button>
+                            </div>
+
+                            <!-- Legend -->
+                            <div class="absolute bottom-4 left-4 z-30 rounded-lg bg-white/90 p-4 shadow-lg dark:bg-gray-800/90">
+                                <h4 class="mb-2 text-sm font-semibold text-gray-900 dark:text-white">Legend Tingkat Data</h4>
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div class="flex items-center">
+                                        <div class="mr-2 h-3 w-3 rounded-full bg-green-500"></div>
+                                        <span class="text-gray-700 dark:text-gray-300">Rendah (1-5)</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="mr-2 h-3 w-3 rounded-full bg-yellow-500"></div>
+                                        <span class="text-gray-700 dark:text-gray-300">Sedang (6-10)</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="mr-2 h-3 w-3 rounded-full bg-red-500"></div>
+                                        <span class="text-gray-700 dark:text-gray-300">Tinggi (11+)</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div class="mr-2 h-3 w-3 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+                                        <span class="text-gray-700 dark:text-gray-300">Tidak Ada Data</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Location Statistics Cards -->

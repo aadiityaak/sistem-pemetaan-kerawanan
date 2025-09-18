@@ -16,6 +16,7 @@ const props = defineProps<Props>();
 const form = useForm({
     name: '',
     email: '',
+    phone: '',
     password: '',
     password_confirmation: '',
     role: 'admin',
@@ -100,6 +101,26 @@ const submit = () => {
                             <div v-if="form.errors.email" class="mt-1 text-sm text-red-600 dark:text-red-400">
                                 {{ form.errors.email }}
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <!-- Phone -->
+                        <div>
+                            <label for="phone" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Nomor Telepon
+                            </label>
+                            <input
+                                v-model="form.phone"
+                                id="phone"
+                                type="tel"
+                                class="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                placeholder="Contoh: 081234567890"
+                            />
+                            <div v-if="form.errors.phone" class="mt-1 text-sm text-red-600 dark:text-red-400">
+                                {{ form.errors.phone }}
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Format: 08xxxxxxxxxx atau +62xxxxxxxxx</p>
                         </div>
                     </div>
 

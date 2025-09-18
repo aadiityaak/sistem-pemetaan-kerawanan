@@ -13,6 +13,7 @@ interface User {
     id: number;
     name: string;
     email: string;
+    phone?: string;
     role: string;
     is_active: boolean;
     last_login_at?: string;
@@ -372,6 +373,9 @@ const toggleUserStatus = (user: User) => {
                                     User
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                    Phone
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
                                     Role
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
@@ -393,13 +397,23 @@ const toggleUserStatus = (user: User) => {
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
                             <tr v-if="users.data.length === 0">
-                                <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No users found</td>
+                                <td colspan="8" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No users found</td>
                             </tr>
                             <tr v-else v-for="user in users.data" :key="user.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <td class="px-6 py-4">
                                     <div class="text-sm">
                                         <div class="font-medium text-gray-900 dark:text-gray-100">{{ user.name }}</div>
                                         <div class="text-gray-500 dark:text-gray-400">{{ user.email }}</div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm">
+                                        <div v-if="user.phone" class="text-gray-900 dark:text-gray-100">
+                                            📞 {{ user.phone }}
+                                        </div>
+                                        <div v-else class="text-gray-400 dark:text-gray-500 italic">
+                                            Tidak tersedia
+                                        </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">

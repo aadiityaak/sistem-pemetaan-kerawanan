@@ -6,6 +6,7 @@ interface User {
     id: number;
     name: string;
     email: string;
+    phone?: string;
     role: string;
     is_active: boolean;
     last_login_at?: string;
@@ -102,6 +103,14 @@ const getStatusBadgeClass = (isActive: boolean): string => {
                             <div>
                                 <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Email Address</label>
                                 <div class="text-gray-900 dark:text-gray-100">{{ user.email }}</div>
+                            </div>
+
+                            <div>
+                                <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Nomor Telepon</label>
+                                <div class="text-gray-900 dark:text-gray-100">
+                                    <span v-if="user.phone">📞 {{ user.phone }}</span>
+                                    <span v-else class="text-gray-400 dark:text-gray-500 italic">Tidak tersedia</span>
+                                </div>
                             </div>
 
                             <div>

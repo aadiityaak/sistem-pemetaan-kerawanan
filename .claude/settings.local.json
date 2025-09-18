@@ -43,7 +43,10 @@
       "Bash(python:*)",
       "mcp__laravel-boost__last-error",
       "mcp__laravel-boost__browser-logs",
-      "mcp__laravel-boost__tinker"
+      "mcp__laravel-boost__tinker",
+      "Bash(npx vue-tsc:*)",
+      "Bash(npx eslint:*)",
+      "mcp__laravel-boost__database-schema"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
