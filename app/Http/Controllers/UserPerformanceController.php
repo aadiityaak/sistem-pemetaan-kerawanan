@@ -24,7 +24,7 @@ class UserPerformanceController extends Controller
 
         // Build base query
         $query = MonitoringData::with(['user', 'provinsi'])
-            ->whereBetween('created_at', [
+            ->whereBetween('monitoring_data.created_at', [
                 Carbon::parse($startDate)->startOfDay(),
                 Carbon::parse($endDate)->endOfDay()
             ]);
@@ -91,11 +91,11 @@ class UserPerformanceController extends Controller
 
         // Data source breakdown by day
         $dataSourceByDay = MonitoringData::query()
-            ->whereBetween('created_at', [
+            ->whereBetween('monitoring_data.created_at', [
                 Carbon::parse($startDate)->startOfDay(),
                 Carbon::parse($endDate)->endOfDay()
             ])
-            ->selectRaw('DATE(created_at) as date, data_source, COUNT(*) as count')
+            ->selectRaw('DATE(monitoring_data.created_at) as date, data_source, COUNT(*) as count')
             ->groupBy('date', 'data_source')
             ->orderBy('date')
             ->get()
