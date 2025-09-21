@@ -6,6 +6,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { type AppPageProps, type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import {
+    AlertTriangle,
     BarChart3,
     Brain,
     Building2,
@@ -92,6 +93,7 @@ const getIconComponent = (iconName?: string) => {
     const iconMap: Record<string, any> = {
         LayoutGrid: LayoutGrid,
         ShieldAlert: ShieldAlert,
+        AlertTriangle: AlertTriangle,
         Calendar: Calendar,
         CalendarDays: CalendarDays,
         ScrollText: ScrollText,
@@ -139,7 +141,19 @@ const loadMenuItems = async () => {
 // Main nav items from database
 const mainNavItems = computed<NavItem[]>(() => {
     if (isLoading.value || !dbMenuItems.value.length) {
-        return [];
+        // Fallback items when database is not available
+        return [
+            {
+                title: 'Dashboard',
+                href: '/dashboard',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Peta Bencana',
+                href: '/peta-bencana',
+                icon: AlertTriangle,
+            },
+        ];
     }
 
     // Get main menu items (excluding PENGATURAN which goes to footer)

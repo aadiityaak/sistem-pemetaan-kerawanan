@@ -11,6 +11,7 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\MonitoringDataController;
 use App\Http\Controllers\PartaiPolitikController;
 use App\Http\Controllers\PasarSahamController;
+use App\Http\Controllers\PetaBencanaController;
 use App\Http\Controllers\ProvinsiController;
 use App\Http\Controllers\SembakoController;
 use App\Http\Controllers\UserPerformanceController;
@@ -91,6 +92,9 @@ Route::middleware('auth')->group(function () {
 Route::get('/api/ketahanan-pangan/harga-peta', [KetahanePanganController::class, 'getHargaPeta'])->name('api.ketahanan-pangan.harga-peta');
 
 Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified', 'province.filter'])->name('dashboard');
+
+// Peta Bencana Route
+Route::get('peta-bencana', [PetaBencanaController::class, 'index'])->middleware(['auth', 'verified'])->name('peta-bencana.index');
 
 // User Performance Dashboard - untuk statistik performa user
 Route::get('user-performance', [\App\Http\Controllers\UserPerformanceController::class, 'index'])->middleware(['auth', 'verified'])->name('user-performance.index');

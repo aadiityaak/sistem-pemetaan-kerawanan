@@ -46,7 +46,9 @@
       "mcp__laravel-boost__tinker",
       "Bash(npx vue-tsc:*)",
       "Bash(npx eslint:*)",
-      "mcp__laravel-boost__database-schema"
+      "mcp__laravel-boost__database-schema",
+      "Read(//c/Users/aadii/Downloads/**)",
+      "WebFetch(domain:gis.bnpb.go.id)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
