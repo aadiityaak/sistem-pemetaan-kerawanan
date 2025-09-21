@@ -101,8 +101,10 @@ Route::get('peta-bencana', [PetaBencanaController::class, 'index'])->middleware(
 // Peta Kriminalitas Route
 Route::get('peta-kriminalitas', [PetaKriminalitasController::class, 'index'])->middleware(['auth', 'verified'])->name('peta-kriminalitas.index');
 
-// Proxy route untuk Pusiknas (tanpa middleware auth agar iframe bisa akses)
-Route::get('proxy/pusiknas', [ProxyController::class, 'pusiknas'])->name('proxy.pusiknas');
+// Proxy route untuk Pusiknas (dengan rate limiting untuk mencegah abuse)
+Route::get('proxy/pusiknas', [ProxyController::class, 'pusiknas'])
+    ->middleware('throttle:10,1') // 10 requests per minute
+    ->name('proxy.pusiknas');
 
 // User Performance Dashboard - untuk statistik performa user
 Route::get('user-performance', [\App\Http\Controllers\UserPerformanceController::class, 'index'])->middleware(['auth', 'verified'])->name('user-performance.index');
