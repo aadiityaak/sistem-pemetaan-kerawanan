@@ -153,6 +153,11 @@ const mainNavItems = computed<NavItem[]>(() => {
                 href: '/peta-bencana',
                 icon: AlertTriangle,
             },
+            {
+                title: 'Peta Kriminalitas',
+                href: '/peta-kriminalitas',
+                icon: Shield,
+            },
         ];
     }
 

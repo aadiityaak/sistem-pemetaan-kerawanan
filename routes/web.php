@@ -12,6 +12,8 @@ use App\Http\Controllers\MonitoringDataController;
 use App\Http\Controllers\PartaiPolitikController;
 use App\Http\Controllers\PasarSahamController;
 use App\Http\Controllers\PetaBencanaController;
+use App\Http\Controllers\PetaKriminalitasController;
+use App\Http\Controllers\ProxyController;
 use App\Http\Controllers\ProvinsiController;
 use App\Http\Controllers\SembakoController;
 use App\Http\Controllers\UserPerformanceController;
@@ -95,6 +97,12 @@ Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['aut
 
 // Peta Bencana Route
 Route::get('peta-bencana', [PetaBencanaController::class, 'index'])->middleware(['auth', 'verified'])->name('peta-bencana.index');
+
+// Peta Kriminalitas Route
+Route::get('peta-kriminalitas', [PetaKriminalitasController::class, 'index'])->middleware(['auth', 'verified'])->name('peta-kriminalitas.index');
+
+// Proxy route untuk Pusiknas (tanpa middleware auth agar iframe bisa akses)
+Route::get('proxy/pusiknas', [ProxyController::class, 'pusiknas'])->name('proxy.pusiknas');
 
 // User Performance Dashboard - untuk statistik performa user
 Route::get('user-performance', [\App\Http\Controllers\UserPerformanceController::class, 'index'])->middleware(['auth', 'verified'])->name('user-performance.index');
