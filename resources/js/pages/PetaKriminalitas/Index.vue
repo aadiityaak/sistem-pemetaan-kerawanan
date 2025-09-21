@@ -269,7 +269,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 ];
 
 // Reactive state
-const displayMode = ref('landing'); // 'proxy' atau 'landing'
+const displayMode = ref('proxy'); // 'proxy' atau 'landing' - default langsung iframe
 const pusikansUrl = ref('https://pusiknas.polri.go.id/peta_kriminalitas');
 const proxyUrl = ref('/proxy/pusiknas');
 const accessCount = ref(0);
@@ -376,6 +376,12 @@ const adjustIframeHeight = () => {
 onMounted(() => {
     adjustIframeHeight();
     window.addEventListener('resize', adjustIframeHeight);
+
+    // Auto-start loading iframe mode
+    if (displayMode.value === 'proxy') {
+        isLoading.value = true;
+        hasError.value = false;
+    }
 });
 
 onBeforeUnmount(() => {
