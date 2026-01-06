@@ -92,6 +92,7 @@ Route::middleware('auth')->group(function () {
 
 // Public API routes
 Route::get('/api/ketahanan-pangan/harga-peta', [KetahanePanganController::class, 'getHargaPeta'])->name('api.ketahanan-pangan.harga-peta');
+Route::get('/api/ketahanan-pangan/harga-informasi', [KetahanePanganController::class, 'getHargaInformasi'])->name('api.ketahanan-pangan.harga-informasi');
 
 Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified', 'province.filter'])->name('dashboard');
 

@@ -30,14 +30,19 @@ class KetahanePanganController extends Controller
             $params = [
                 'level_harga_id' => $request->get('level_harga_id', 3),
                 'komoditas_id' => $request->get('komoditas_id', 35),
-                'period_date' => $request->get('period_date', now()->format('d/m/Y').' - '.now()->format('d/m/Y')),
+                'period_date' => $request->get('period_date', now()->format('d/m/Y') . ' - ' . now()->format('d/m/Y')),
                 'multi_status_map[0]' => $request->get('multi_status_map.0', ''),
                 'multi_province_id[0]' => $request->get('multi_province_id.0', ''),
             ];
 
             $url = 'https://api-panelhargav2.badanpangan.go.id/api/front/harga-peta-provinsi?' . http_build_query($params);
-            
-            $response = Http::timeout(30)->get($url);
+
+            $response = Http::withHeaders([
+                'Origin' => 'https://panelharga.badanpangan.go.id',
+                'Referer' => 'https://panelharga.badanpangan.go.id/beranda',
+                'User-Agent' => 'Mozilla/5.0',
+                'Accept' => 'application/json',
+            ])->timeout(30)->get($url);
 
             if ($response->successful()) {
                 return response()->json($response->json());
@@ -48,6 +53,41 @@ class KetahanePanganController extends Controller
                     'message' => $response->body()
                 ], $response->status());
             }
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'API request failed',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getHargaInformasi(Request $request)
+    {
+        try {
+            $params = [
+                'province_id' => $request->get('province_id', ''),
+                'city_id' => $request->get('city_id', ''),
+                'level_harga_id' => $request->get('level_harga_id', 3),
+            ];
+
+            $url = 'https://api-panelhargav2.badanpangan.go.id/api/front/harga-pangan-informasi?' . http_build_query($params);
+
+            $response = Http::withHeaders([
+                'Origin' => 'https://panelharga.badanpangan.go.id',
+                'Referer' => 'https://panelharga.badanpangan.go.id/beranda',
+                'User-Agent' => 'Mozilla/5.0',
+                'Accept' => 'application/json',
+            ])->timeout(30)->get($url);
+
+            if ($response->successful()) {
+                return response()->json($response->json());
+            }
+
+            return response()->json([
+                'error' => 'External API error',
+                'status' => $response->status(),
+                'message' => $response->body()
+            ], $response->status());
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'API request failed',
