@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use App\Models\FoodPriceSnapshot;
 use Inertia\Inertia;
 
 class KetahanePanganController extends Controller
@@ -44,15 +45,38 @@ class KetahanePanganController extends Controller
                 'Accept' => 'application/json',
             ])->timeout(30)->get($url);
 
+            $endpoint = 'harga_peta_provinsi';
+            $dateKey = now()->toDateString();
+            $paramsHash = md5(json_encode($params));
+
             if ($response->successful()) {
+                FoodPriceSnapshot::updateOrCreate(
+                    ['endpoint' => $endpoint, 'date_key' => $dateKey, 'params_hash' => $paramsHash],
+                    ['params' => $params, 'payload' => $response->json(), 'fetched_at' => now()]
+                );
                 return response()->json($response->json());
-            } else {
-                return response()->json([
-                    'error' => 'External API error',
-                    'status' => $response->status(),
-                    'message' => $response->body()
-                ], $response->status());
             }
+
+            $fallback = FoodPriceSnapshot::where('endpoint', $endpoint)
+                ->where('params_hash', $paramsHash)
+                ->orderByDesc('fetched_at')
+                ->first();
+
+            if (! $fallback) {
+                $fallback = FoodPriceSnapshot::where('endpoint', $endpoint)
+                    ->orderByDesc('fetched_at')
+                    ->first();
+            }
+
+            if ($fallback) {
+                return response()->json($fallback->payload);
+            }
+
+            return response()->json([
+                'error' => 'External API error',
+                'status' => $response->status(),
+                'message' => $response->body()
+            ], $response->status());
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'API request failed',
@@ -79,8 +103,31 @@ class KetahanePanganController extends Controller
                 'Accept' => 'application/json',
             ])->timeout(30)->get($url);
 
+            $endpoint = 'harga_pangan_informasi';
+            $dateKey = now()->toDateString();
+            $paramsHash = md5(json_encode($params));
+
             if ($response->successful()) {
+                FoodPriceSnapshot::updateOrCreate(
+                    ['endpoint' => $endpoint, 'date_key' => $dateKey, 'params_hash' => $paramsHash],
+                    ['params' => $params, 'payload' => $response->json(), 'fetched_at' => now()]
+                );
                 return response()->json($response->json());
+            }
+
+            $fallback = FoodPriceSnapshot::where('endpoint', $endpoint)
+                ->where('params_hash', $paramsHash)
+                ->orderByDesc('fetched_at')
+                ->first();
+
+            if (! $fallback) {
+                $fallback = FoodPriceSnapshot::where('endpoint', $endpoint)
+                    ->orderByDesc('fetched_at')
+                    ->first();
+            }
+
+            if ($fallback) {
+                return response()->json($fallback->payload);
             }
 
             return response()->json([
