@@ -23,16 +23,6 @@ class CheckLicense
       return $next($request);
     }
 
-    $envExpiry = env('EXPIRED_DATE');
-
-    if ($envExpiry) {
-      $envExpires = \Carbon\Carbon::parse($envExpiry);
-
-      if (now()->lessThanOrEqualTo($envExpires)) {
-        return $next($request);
-      }
-    }
-
     $expiresAt = AppSetting::get('license_expires_at');
 
     if (! $expiresAt) {
@@ -50,12 +40,19 @@ class CheckLicense
 
   private function expiredResponse(Request $request): Response
   {
+    $envExpiry = env('EXPIRED_DATE');
+    $message = 'Lisensi aplikasi telah expired. Silakan perbarui lisensi melalui halaman Settings.';
+
+    if ($envExpiry) {
+      $message = 'Lisensi aplikasi telah expired. Masa berlaku lisensi berakhir pada ' . $envExpiry . '. Silakan perbarui lisensi melalui halaman Settings.';
+    }
+
     if ($request->expectsJson()) {
       return response()->json([
-        'message' => 'Lisensi aplikasi telah expired. Silakan perbarui lisensi melalui halaman Settings.',
+        'message' => $message,
       ], 403);
     }
 
-    return response('Lisensi aplikasi telah expired. Silakan perbarui lisensi melalui halaman Settings.', 403);
+    return response($message, 403);
   }
 }

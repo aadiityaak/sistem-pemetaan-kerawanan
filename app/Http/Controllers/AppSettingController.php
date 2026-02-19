@@ -47,10 +47,10 @@ class AppSettingController extends Controller
             'license' => [
                 [
                     'key' => 'license_expires_at',
-                    'label' => 'Tanggal Expired Lisensi',
-                    'description' => 'Klik Simpan untuk mengaktifkan atau memperpanjang lisensi selama 3 tahun dari hari ini.',
-                    'type' => 'text',
-                    'value' => $this->settingsService->getSetting('license_expires_at', null),
+                    'label' => 'License Key',
+                    'description' => 'Masukkan license key yang valid untuk mengaktifkan aplikasi.',
+                    'type' => 'password',
+                    'value' => $this->settingsService->getSetting('license_expires_at', ''),
                 ],
             ],
             'appearance' => [
@@ -187,7 +187,19 @@ class AppSettingController extends Controller
 
         $value = $request->get('value');
         if ($key === 'license_expires_at') {
-            $value = now()->addYears(3)->toDateString();
+            $token = (string) ($value ?? '');
+            $envKey = env('KEY_API');
+
+            if (! $envKey || $token !== $envKey) {
+                Log::warning('Invalid license token provided', [
+                    'provided_token_length' => strlen($token),
+                ]);
+
+                return redirect()->route('settings.index')->with('error', 'Token lisensi tidak valid atau lisensi telah expired.');
+            }
+
+            $envExpiry = env('EXPIRED_DATE');
+            $value = $envExpiry ?: now()->addYears(3)->toDateString();
         }
 
         $data = [
