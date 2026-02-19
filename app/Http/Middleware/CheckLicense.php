@@ -11,8 +11,26 @@ class CheckLicense
 {
   public function handle(Request $request, Closure $next): Response
   {
-    if ($request->routeIs('settings.*') || $request->routeIs('login') || $request->routeIs('password.*') || $request->routeIs('register')) {
+    if (
+      $request->is('login') ||
+      $request->is('register') ||
+      $request->is('forgot-password') ||
+      $request->is('forgot-password/*') ||
+      $request->is('reset-password/*') ||
+      $request->is('settings') ||
+      $request->is('settings/*')
+    ) {
       return $next($request);
+    }
+
+    $envExpiry = env('EXPIRED_DATE');
+
+    if ($envExpiry) {
+      $envExpires = \Carbon\Carbon::parse($envExpiry);
+
+      if (now()->lessThanOrEqualTo($envExpires)) {
+        return $next($request);
+      }
     }
 
     $expiresAt = AppSetting::get('license_expires_at');
