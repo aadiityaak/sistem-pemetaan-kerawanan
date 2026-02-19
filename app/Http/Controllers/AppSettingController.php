@@ -44,6 +44,15 @@ class AppSettingController extends Controller
                     'value' => $this->settingsService->getSetting('footer_text', 'Peta Kriminal Indonesia © 2024'),
                 ],
             ],
+            'license' => [
+                [
+                    'key' => 'license_expires_at',
+                    'label' => 'Tanggal Expired Lisensi',
+                    'description' => 'Klik Simpan untuk mengaktifkan atau memperpanjang lisensi selama 3 tahun dari hari ini.',
+                    'type' => 'text',
+                    'value' => $this->settingsService->getSetting('license_expires_at', null),
+                ],
+            ],
             'appearance' => [
                 [
                     'key' => 'app_favicon',
@@ -123,7 +132,8 @@ class AppSettingController extends Controller
             'login_logo',
             'gemini_enabled',
             'gemini_api_endpoint',
-            'gemini_api_key'
+            'gemini_api_key',
+            'license_expires_at',
         ];
 
         if (! in_array($key, $allowedKeys)) {
@@ -152,6 +162,7 @@ class AppSettingController extends Controller
             'gemini_enabled' => 'Aktifkan Gemini AI',
             'gemini_api_endpoint' => 'Gemini API Endpoint',
             'gemini_api_key' => 'Gemini API Key',
+            'license_expires_at' => 'Tanggal Expired Lisensi',
         ];
 
         // Determine setting type
@@ -170,11 +181,18 @@ class AppSettingController extends Controller
             $settingGroup = 'appearance';
         } elseif (in_array($key, ['gemini_enabled', 'gemini_api_endpoint', 'gemini_api_key'])) {
             $settingGroup = 'ai';
+        } elseif ($key === 'license_expires_at') {
+            $settingGroup = 'license';
+        }
+
+        $value = $request->get('value');
+        if ($key === 'license_expires_at') {
+            $value = now()->addYears(3)->toDateString();
         }
 
         $data = [
             'key' => $key,
-            'value' => $request->get('value'),
+            'value' => $value,
             'type' => $settingType,
             'label' => $settingLabels[$key] ?? ucfirst(str_replace('_', ' ', $key)),
             'group' => $settingGroup,
