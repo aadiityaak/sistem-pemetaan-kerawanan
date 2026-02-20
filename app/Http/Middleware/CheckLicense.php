@@ -23,9 +23,17 @@ class CheckLicense
       return $next($request);
     }
 
+    $envKey = env('KEY_API');
     $expiresAt = AppSetting::get('license_expires_at');
+    $storedHash = AppSetting::get('license_key_hash');
 
-    if (! $expiresAt) {
+    if (! $envKey || ! $expiresAt || ! $storedHash) {
+      return $this->expiredResponse($request);
+    }
+
+    $currentHash = hash('sha256', $envKey);
+
+    if ($currentHash !== $storedHash) {
       return $this->expiredResponse($request);
     }
 

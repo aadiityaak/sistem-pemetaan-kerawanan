@@ -200,6 +200,14 @@ class AppSettingController extends Controller
 
             $envExpiry = env('EXPIRED_DATE');
             $value = $envExpiry ?: now()->addYears(3)->toDateString();
+
+            AppSetting::set(
+                'license_key_hash',
+                hash('sha256', $envKey),
+                'text',
+                'license',
+                'License Key Hash'
+            );
         }
 
         $data = [
