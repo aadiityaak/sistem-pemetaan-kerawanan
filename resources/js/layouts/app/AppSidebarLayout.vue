@@ -17,9 +17,14 @@ withDefaults(defineProps<Props>(), {
 <template>
     <AppShell variant="sidebar">
         <AppSidebar />
-        <AppContent variant="sidebar" class="overflow-x-hidden">
+        <AppContent variant="sidebar" class="flex min-h-screen flex-col overflow-x-hidden">
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />
-            <slot />
+            <div class="flex-1">
+                <slot />
+            </div>
+            <div class="py-4 text-center text-xs text-muted-foreground">
+                Version 4.2.0
+            </div>
         </AppContent>
     </AppShell>
 </template>

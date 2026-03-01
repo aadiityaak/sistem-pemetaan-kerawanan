@@ -169,6 +169,10 @@ onUnmounted(() => {
                     <div class="absolute right-2 bottom-2 h-4 w-4 border-r-2 border-b-2 border-green-500/50"></div>
                 </div>
             </div>
+            
+            <div class="mt-4 text-center">
+                <span class="font-mono text-xs text-green-500/50">Version 4.2.0</span>
+            </div>
         </div>
     </div>
 </template>

@@ -34,6 +34,9 @@ defineProps<{
                     <p class="text-sm text-muted-foreground" v-if="description">{{ description }}</p>
                 </div>
                 <slot />
+                <div class="mt-4 text-center">
+                    <span class="text-xs text-muted-foreground">Version 4.2.0</span>
+                </div>
             </div>
         </div>
     </div>
