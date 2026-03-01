@@ -94,6 +94,7 @@ const props = defineProps<{
     selectedProvinsi?: UserProvinsi | null;
     kabupatenKotaList?: KabupatenKota[];
     selectedKabupatenKota?: KabupatenKota | null;
+    sourceType?: string | null;
 }>();
 
 // Get current user and check edit permissions
@@ -322,6 +323,10 @@ const selectLocalEndDate = (endDate: string | null) => {
     localFilters.value.endDate = endDate;
 };
 
+const selectLocalSourceType = (sourceType: string | null) => {
+    localFilters.value.sourceType = sourceType;
+};
+
 // Function to apply all filters at once
 const applyFilters = () => {
     // Reset pagination to first page when applying filters
@@ -338,6 +343,7 @@ const applyFilters = () => {
             end_date: localFilters.value.endDate,
             provinsi_id: localFilters.value.provinsi?.toString() || null,
             kabupaten_kota_id: localFilters.value.kabupatenKota?.toString() || null,
+            source_type: localFilters.value.sourceType,
         }),
     );
 };
@@ -526,7 +532,8 @@ const localFilters = ref({
     endDate: props.endDate || null,
     provinsi: props.selectedProvinsi?.id || null,
     kabupatenKota: props.selectedKabupatenKota?.id || null,
-    search: ''
+    search: '',
+    sourceType: props.sourceType || null
 });
 
 // Pagination functionality
@@ -1106,75 +1113,21 @@ watch(searchQuery, () => {
                                 Kategori Data
                             </label>
                             <div class="relative">
-                                <button
-                                    @click="categoryDropdownOpen = !categoryDropdownOpen"
-                                    type="button"
-                                    class="flex w-full items-center justify-between gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:border-blue-400"
+                                <select
+                                    :value="localFilters.category || ''"
+                                    @change="(e: any) => selectLocalCategory(e.target.value || null)"
+                                    class="block w-full rounded-lg border border-gray-300 bg-white py-2.5 px-4 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                                 >
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex h-5 w-5 items-center justify-center">
-                                            <img
-                                                v-if="selectedLocalCategory?.image_url"
-                                                :src="selectedLocalCategory.image_url"
-                                                alt="Category"
-                                                class="h-5 w-5 rounded object-contain"
-                                            />
-                                            <span v-else-if="selectedLocalCategory?.icon" class="text-lg">{{ selectedLocalCategory.icon }}</span>
-                                            <div v-else class="h-2 w-2 rounded-full bg-green-500"></div>
-                                        </div>
-                                        <span class="font-medium text-gray-900 dark:text-white">{{ selectedLocalCategory?.name || 'Pilih Kategori' }}</span>
-                                    </div>
-                                    <svg
-                                        class="h-4 w-4 text-gray-400 transition-transform duration-200"
-                                        :class="{ 'rotate-180': categoryDropdownOpen }"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-
-                                <div
-                                    v-if="categoryDropdownOpen"
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700"
-                                >
-                                    <button
-                                        @click="
-                                            selectLocalCategory(null);
-                                            categoryDropdownOpen = false;
-                                        "
-                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                    >
-                                        <span class="text-sm">🟢</span>
-                                        <span>Semua Kategori</span>
-                                    </button>
-                                    <button
-                                        v-for="category in categories"
-                                        :key="category.id"
-                                        @click="
-                                            selectLocalCategory(category.slug);
-                                            categoryDropdownOpen = false;
-                                        "
-                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                    >
-                                        <div class="flex h-4 w-4 items-center justify-center">
-                                            <img
-                                                v-if="category.image_url"
-                                                :src="category.image_url"
-                                                alt="Category"
-                                                class="h-4 w-4 rounded object-contain"
-                                            />
-                                            <span v-else-if="category.icon" class="text-sm">{{ category.icon }}</span>
-                                        </div>
-                                        <span>{{ category.name }}</span>
-                                    </button>
-                                </div>
+                                    <option value="">Semua Kategori</option>
+                                    <option v-for="category in categories" :key="category.id" :value="category.slug">
+                                        {{ category.name }}
+                                    </option>
+                                </select>
                             </div>
                         </div>
 
                         <!-- SubCategory Filter -->
-                        <div v-if="selectedLocalCategory && subCategories.length > 0" class="group">
+                        <div v-if="localFilters.category && subCategories.length > 0" class="group">
                             <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                                 <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
@@ -1182,70 +1135,37 @@ watch(searchQuery, () => {
                                 Sub Kategori
                             </label>
                             <div class="relative">
-                                <button
-                                    @click="subCategoryDropdownOpen = !subCategoryDropdownOpen"
-                                    type="button"
-                                    class="flex w-full items-center justify-between gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:border-blue-400"
+                                <select
+                                    :value="localFilters.subCategory || ''"
+                                    @change="(e: any) => selectLocalSubCategory(e.target.value || null)"
+                                    class="block w-full rounded-lg border border-gray-300 bg-white py-2.5 px-4 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                                 >
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex h-5 w-5 items-center justify-center">
-                                            <img
-                                                v-if="selectedLocalSubCategory?.image_url"
-                                                :src="selectedLocalSubCategory.image_url"
-                                                alt="Subcategory"
-                                                class="h-5 w-5 rounded object-contain"
-                                            />
-                                            <span v-else-if="selectedLocalSubCategory?.icon" class="text-lg">{{ selectedLocalSubCategory.icon }}</span>
-                                            <div v-else class="h-2 w-2 rounded-full bg-green-500"></div>
-                                        </div>
-                                        <span class="font-medium text-gray-900 dark:text-white">{{ selectedLocalSubCategory?.name || 'Pilih Sub Kategori' }}</span>
-                                    </div>
-                                    <svg
-                                        class="h-4 w-4 text-gray-400 transition-transform duration-200"
-                                        :class="{ 'rotate-180': subCategoryDropdownOpen }"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
+                                    <option value="">Semua Sub Kategori</option>
+                                    <option v-for="subCategory in subCategories" :key="subCategory.id" :value="subCategory.slug">
+                                        {{ subCategory.name }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
 
-                                <div
-                                    v-if="subCategoryDropdownOpen"
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700"
+                        <!-- Source Type Filter (Online/Offline) -->
+                        <div class="group">
+                            <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                </svg>
+                                Tipe Data
+                            </label>
+                            <div class="relative">
+                                <select
+                                    :value="localFilters.sourceType || ''"
+                                    @change="(e: any) => selectLocalSourceType(e.target.value || null)"
+                                    class="block w-full rounded-lg border border-gray-300 bg-white py-2.5 px-4 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                                 >
-                                    <button
-                                        @click="
-                                            selectLocalSubCategory(null);
-                                            subCategoryDropdownOpen = false;
-                                        "
-                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                    >
-                                        <span class="text-sm">🟢</span>
-                                        <span>Semua Sub Kategori</span>
-                                    </button>
-                                    <button
-                                        v-for="subCategory in subCategories"
-                                        :key="subCategory.id"
-                                        @click="
-                                            selectLocalSubCategory(subCategory.slug);
-                                            subCategoryDropdownOpen = false;
-                                        "
-                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                    >
-                                        <div class="flex h-4 w-4 items-center justify-center">
-                                            <img
-                                                v-if="subCategory.image_url"
-                                                :src="subCategory.image_url"
-                                                alt="Subcategory"
-                                                class="h-4 w-4 rounded object-contain"
-                                            />
-                                            <span v-else-if="subCategory.icon" class="text-sm">{{ subCategory.icon }}</span>
-                                        </div>
-                                        <span>{{ subCategory.name }}</span>
-                                    </button>
-                                </div>
+                                    <option value="">Semua Tipe</option>
+                                    <option value="online">Online (Media)</option>
+                                    <option value="offline">Offline (Laporan)</option>
+                                </select>
                             </div>
                         </div>
 
@@ -1291,59 +1211,21 @@ watch(searchQuery, () => {
                                 Provinsi
                             </label>
                             <div class="relative">
-                                <button
-                                    @click="provinsiDropdownOpen = !provinsiDropdownOpen"
-                                    type="button"
-                                    class="flex w-full items-center justify-between gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:border-blue-400"
+                                <select
+                                    :value="localFilters.provinsi || ''"
+                                    @change="(e: any) => selectLocalProvinsi(e.target.value ? parseInt(e.target.value) : null)"
+                                    class="block w-full rounded-lg border border-gray-300 bg-white py-2.5 px-4 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                                 >
-                                    <span class="font-medium text-gray-900 dark:text-white">{{ selectedLocalProvinsi?.nama || 'Pilih Provinsi' }}</span>
-                                    <svg
-                                        class="h-4 w-4 text-gray-400 transition-transform duration-200"
-                                        :class="{ 'rotate-180': provinsiDropdownOpen }"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-
-                                <div
-                                    v-if="provinsiDropdownOpen"
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700"
-                                >
-                                    <button
-                                        @click="
-                                            selectLocalProvinsi(null);
-                                            provinsiDropdownOpen = false;
-                                        "
-                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                    >
-                                        <span>Semua Provinsi</span>
-                                    </button>
-                                    <button
-                                        v-for="provinsi in (provinsiList || [])"
-                                        :key="provinsi.id"
-                                        @click="
-                                            selectLocalProvinsi(provinsi.id);
-                                            provinsiDropdownOpen = false;
-                                        "
-                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                    >
-                                        <span>{{ provinsi.nama }}</span>
-                                    </button>
-                                    <div
-                                        v-if="!provinsiList || provinsiList.length === 0"
-                                        class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400"
-                                    >
-                                        Data provinsi tidak tersedia
-                                    </div>
-                                </div>
+                                    <option value="">Semua Provinsi</option>
+                                    <option v-for="provinsi in (provinsiList || [])" :key="provinsi.id" :value="provinsi.id">
+                                        {{ provinsi.nama }}
+                                    </option>
+                                </select>
                             </div>
                         </div>
 
                         <!-- Kabupaten/Kota Filter - Only for kategori-indas when province is selected -->
-                        <div v-if="isKategoriIndas && selectedLocalProvinsi && filteredLocalKabupatenKotaList.length > 0" class="group">
+                        <div v-if="isKategoriIndas && localFilters.provinsi && filteredLocalKabupatenKotaList.length > 0" class="group">
                             <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                                 <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -1351,48 +1233,16 @@ watch(searchQuery, () => {
                                 Kabupaten/Kota
                             </label>
                             <div class="relative">
-                                <button
-                                    @click="kabupatenKotaDropdownOpen = !kabupatenKotaDropdownOpen"
-                                    type="button"
-                                    class="flex w-full items-center justify-between gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:border-blue-400"
+                                <select
+                                    :value="localFilters.kabupatenKota || ''"
+                                    @change="(e: any) => selectLocalKabupatenKota(e.target.value ? parseInt(e.target.value) : null)"
+                                    class="block w-full rounded-lg border border-gray-300 bg-white py-2.5 px-4 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                                 >
-                                    <span class="font-medium text-gray-900 dark:text-white">{{ selectedLocalKabupatenKota?.nama || 'Pilih Kabupaten/Kota' }}</span>
-                                    <svg
-                                        class="h-4 w-4 text-gray-400 transition-transform duration-200"
-                                        :class="{ 'rotate-180': kabupatenKotaDropdownOpen }"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-
-                                <div
-                                    v-if="kabupatenKotaDropdownOpen"
-                                    class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700"
-                                >
-                                    <button
-                                        @click="
-                                            selectLocalKabupatenKota(null);
-                                            kabupatenKotaDropdownOpen = false;
-                                        "
-                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                    >
-                                        <span>Semua Kabupaten/Kota</span>
-                                    </button>
-                                    <button
-                                        v-for="kabupatenKota in filteredLocalKabupatenKotaList"
-                                        :key="kabupatenKota.id"
-                                        @click="
-                                            selectLocalKabupatenKota(kabupatenKota.id);
-                                            kabupatenKotaDropdownOpen = false;
-                                        "
-                                        class="flex w-full items-center gap-2 px-4 py-2 text-left text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                    >
-                                        <span>{{ kabupatenKota.nama }}</span>
-                                    </button>
-                                </div>
+                                    <option value="">Semua Kabupaten/Kota</option>
+                                    <option v-for="kabupaten in filteredLocalKabupatenKotaList" :key="kabupaten.id" :value="kabupaten.id">
+                                        {{ kabupaten.nama }}
+                                    </option>
+                                </select>
                             </div>
                         </div>
 

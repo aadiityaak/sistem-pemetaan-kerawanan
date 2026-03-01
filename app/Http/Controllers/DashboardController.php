@@ -19,6 +19,7 @@ class DashboardController extends Controller
         $subCategorySlug = $request->query('subcategory');
         $provinsiId = $request->query('provinsi_id');
         $kabupatenKotaId = $request->query('kabupaten_kota_id');
+        $sourceType = $request->query('source_type');
         
         // Set default date range to last 6 months if not provided
         $defaultStartDate = now()->subMonths(6)->format('Y-m-d');
@@ -87,6 +88,15 @@ class DashboardController extends Controller
         if ($request->has('search') && $request->filled('search')) {
             $searchTerm = $request->input('search');
             $query->where('title', 'like', '%' . $searchTerm . '%');
+        }
+
+        // Filter berdasarkan source_type jika ada
+        if ($sourceType) {
+            if ($sourceType === 'online') {
+                $query->whereNotNull('url_link');
+            } elseif ($sourceType === 'offline') {
+                $query->whereNull('url_link');
+            }
         }
 
         $monitoringData = $query->get();
@@ -238,6 +248,7 @@ class DashboardController extends Controller
             'selectedProvinsi' => $selectedProvinsi,
             'kabupatenKotaList' => $kabupatenKotaList,
             'selectedKabupatenKota' => $selectedKabupatenKota,
+            'sourceType' => $sourceType,
             'statistics' => [
                 'totalData' => $totalData,
                 'totalProvinsi' => $totalProvinsi,

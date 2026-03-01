@@ -31,6 +31,7 @@ import {
     Tags,
     TrendingUp,
     Users,
+    Activity,
 } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
@@ -116,6 +117,7 @@ const getIconComponent = (iconName?: string) => {
         Globe: Globe,
         TrendingUp: TrendingUp,
         BarChart3: BarChart3,
+        Activity: Activity,
     };
     return iconMap[iconName || ''] || Tags;
 };
@@ -163,6 +165,40 @@ const mainNavItems = computed<NavItem[]>(() => {
 
     // Get main menu items (excluding PENGATURAN which goes to footer)
     const mainItems = dbMenuItems.value.filter((item) => item.title !== 'PENGATURAN');
+
+    // Add BNPB menu to Data Center if exists, or create new Data Center menu
+    const dataCenterMenu = mainItems.find((item) => item.title === 'Data Center' || item.title === 'DATA CENTER');
+    const bnpbItem = {
+        id: 9999, // Temporary ID
+        title: 'BNPB',
+        icon: 'Activity',
+        path: '/data-center/bnpb',
+        is_active: true,
+        sort_order: 1,
+        admin_only: false,
+    };
+
+    if (dataCenterMenu) {
+        if (!dataCenterMenu.children) {
+            dataCenterMenu.children = [];
+        }
+        // Check if BNPB already exists to avoid duplication
+        if (!dataCenterMenu.children.find((child) => child.title === 'BNPB')) {
+            dataCenterMenu.children.push(bnpbItem);
+        }
+    } else {
+        // Create Data Center menu if it doesn't exist
+        mainItems.push({
+            id: 9998,
+            title: 'Data Center',
+            icon: 'Database',
+            path: '#',
+            is_active: true,
+            sort_order: 99,
+            admin_only: false,
+            children: [bnpbItem],
+        });
+    }
 
     return convertMenuItemsToNavItems(mainItems);
 });
