@@ -92,11 +92,7 @@ class DashboardController extends Controller
 
         // Filter berdasarkan source_type jika ada
         if ($sourceType) {
-            if ($sourceType === 'online') {
-                $query->whereNotNull('url_link');
-            } elseif ($sourceType === 'offline') {
-                $query->whereNull('url_link');
-            }
+            $query->where('data_source', $sourceType);
         }
 
         $monitoringData = $query->get();

@@ -813,12 +813,12 @@ const getProvinceColor = (provinceName: string): string => {
 
     if (count === 0) {
         return '#e5e7eb'; // Gray for no data
-    } else if (count <= 5) {
-        return '#10b981'; // Green for low count (1-5)
-    } else if (count <= 10) {
-        return '#f59e0b'; // Yellow for medium count (6-10)
+    } else if (count <= 50) {
+        return '#10b981'; // Green for 1-50
+    } else if (count <= 150) {
+        return '#f97316'; // Orange for 51-150
     } else {
-        return '#ef4444'; // Red for high count (11+)
+        return '#ef4444'; // Red for > 150
     }
 };
 
@@ -1463,19 +1463,19 @@ watch(searchQuery, () => {
                                 <div class="grid grid-cols-2 gap-2 text-xs">
                                     <div class="flex items-center">
                                         <div class="mr-2 h-3 w-3 rounded-full bg-green-500"></div>
-                                        <span class="text-gray-700 dark:text-gray-300">Rendah (1-5)</span>
+                                        <span class="text-gray-700 dark:text-gray-300">Rendah (1-50)</span>
                                     </div>
                                     <div class="flex items-center">
-                                        <div class="mr-2 h-3 w-3 rounded-full bg-yellow-500"></div>
-                                        <span class="text-gray-700 dark:text-gray-300">Sedang (6-10)</span>
+                                        <div class="mr-2 h-3 w-3 rounded-full bg-orange-500"></div>
+                                        <span class="text-gray-700 dark:text-gray-300">Sedang (51-150)</span>
                                     </div>
                                     <div class="flex items-center">
                                         <div class="mr-2 h-3 w-3 rounded-full bg-red-500"></div>
-                                        <span class="text-gray-700 dark:text-gray-300">Tinggi (11+)</span>
+                                        <span class="text-gray-700 dark:text-gray-300">Tinggi (>150)</span>
                                     </div>
                                     <div class="flex items-center">
                                         <div class="mr-2 h-3 w-3 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                                        <span class="text-gray-700 dark:text-gray-300">Tidak Ada Data</span>
+                                        <span class="text-gray-700 dark:text-gray-300">Tidak Ada Data (0)</span>
                                     </div>
                                 </div>
                             </div>
