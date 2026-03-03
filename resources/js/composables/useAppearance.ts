@@ -2,6 +2,8 @@ import { onMounted, ref } from 'vue';
 
 type Appearance = 'light' | 'dark' | 'system';
 
+const DEFAULT_APPEARANCE: Appearance = 'dark';
+
 export function updateTheme(value: Appearance) {
     if (typeof window === 'undefined') {
         return;
@@ -46,7 +48,7 @@ const getStoredAppearance = () => {
 const handleSystemThemeChange = () => {
     const currentAppearance = getStoredAppearance();
 
-    updateTheme(currentAppearance || 'system');
+    updateTheme(currentAppearance || DEFAULT_APPEARANCE);
 };
 
 export function initializeTheme() {
@@ -54,15 +56,15 @@ export function initializeTheme() {
         return;
     }
 
-    // Initialize theme from saved preference or default to system...
+    // Initialize theme from saved preference or default to dark...
     const savedAppearance = getStoredAppearance();
-    updateTheme(savedAppearance || 'system');
+    updateTheme(savedAppearance || DEFAULT_APPEARANCE);
 
     // Set up system theme change listener...
     mediaQuery()?.addEventListener('change', handleSystemThemeChange);
 }
 
-const appearance = ref<Appearance>('system');
+const appearance = ref<Appearance>(DEFAULT_APPEARANCE);
 
 export function useAppearance() {
     onMounted(() => {
