@@ -5,7 +5,7 @@ import {
   SelectPortal,
   SelectViewport,
   type SelectContentProps
-} from 'reka-ui/Select'
+} from 'reka-ui'
 import { cn } from '@/lib/utils'
 
 const props = defineProps<SelectContentProps & { class?: HTMLAttributes['class'] }>()

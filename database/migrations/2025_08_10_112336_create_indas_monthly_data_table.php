@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+return new class() extends Migration
 {
     /**
      * Run the migrations.
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // User yang input/update
             $table->text('notes')->nullable(); // Catatan tambahan
             $table->timestamps();
-            
+
             // Unique constraint untuk mencegah duplicate data per bulan
             $table->unique(['region_id', 'indicator_type_id', 'month', 'year']);
             $table->index(['month', 'year']);

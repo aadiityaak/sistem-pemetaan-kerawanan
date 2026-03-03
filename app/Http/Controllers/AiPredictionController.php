@@ -7,7 +7,6 @@ use App\Models\MonitoringData;
 use App\Services\GeminiService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\DB;
 
 class AiPredictionController extends Controller
 {
@@ -42,7 +41,7 @@ class AiPredictionController extends Controller
             'time_period' => 'required|integer|in:1,3,6,12',
         ]);
 
-        if (!$this->geminiService->isEnabled()) {
+        if (! $this->geminiService->isEnabled()) {
             if ($request->wantsJson()) {
                 return response()->json([
                     'error' => 'Gemini AI tidak aktif. Silakan aktifkan di pengaturan.',
@@ -50,7 +49,7 @@ class AiPredictionController extends Controller
             }
 
             return back()->withErrors([
-                'error' => 'Gemini AI tidak aktif. Silakan aktifkan di pengaturan.'
+                'error' => 'Gemini AI tidak aktif. Silakan aktifkan di pengaturan.',
             ]);
         }
 
@@ -86,7 +85,7 @@ class AiPredictionController extends Controller
             }
 
             return back()->withErrors([
-                'error' => $errorMessage
+                'error' => $errorMessage,
             ]);
         }
 
@@ -95,8 +94,8 @@ class AiPredictionController extends Controller
             return [
                 'category' => $data->category?->name ?? 'Tidak diketahui',
                 'sub_category' => $data->subCategory?->name ?? 'Tidak diketahui',
-                'location' => ($data->provinsi?->nama ?? 'Tidak diketahui') . ', ' . 
-                             ($data->kabupatenKota?->nama ?? 'Tidak diketahui') . ', ' . 
+                'location' => ($data->provinsi?->nama ?? 'Tidak diketahui').', '.
+                             ($data->kabupatenKota?->nama ?? 'Tidak diketahui').', '.
                              ($data->kecamatan?->nama ?? 'Tidak diketahui'),
                 'date' => $data->incident_date->format('Y-m-d'),
                 'severity' => $data->severity_level,
@@ -130,7 +129,7 @@ class AiPredictionController extends Controller
         try {
             $aiAnalysis = $this->geminiService->generateContent($prompt);
 
-            if (!$aiAnalysis) {
+            if (! $aiAnalysis) {
                 if ($request->wantsJson()) {
                     return response()->json([
                         'error' => 'Gagal mendapatkan analisis dari AI. Silakan coba lagi.',
@@ -138,7 +137,7 @@ class AiPredictionController extends Controller
                 }
 
                 return back()->withErrors([
-                    'error' => 'Gagal mendapatkan analisis dari AI. Silakan coba lagi.'
+                    'error' => 'Gagal mendapatkan analisis dari AI. Silakan coba lagi.',
                 ]);
             }
 
@@ -164,12 +163,12 @@ class AiPredictionController extends Controller
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
                 return response()->json([
-                    'error' => 'Terjadi kesalahan saat menganalisis data: ' . $e->getMessage(),
+                    'error' => 'Terjadi kesalahan saat menganalisis data: '.$e->getMessage(),
                 ], 500);
             }
 
             return back()->withErrors([
-                'error' => 'Terjadi kesalahan saat menganalisis data: ' . $e->getMessage()
+                'error' => 'Terjadi kesalahan saat menganalisis data: '.$e->getMessage(),
             ]);
         }
     }
@@ -183,10 +182,10 @@ class AiPredictionController extends Controller
         $prompt = "Sebagai seorang ahli analisis kriminalitas, analisis data kejahatan kategori '{$categoryName}' berikut:\n\n";
 
         $prompt .= "STATISTIK UMUM:\n";
-        $prompt .= "- Total kasus: " . $statistics['total_cases'] . "\n";
+        $prompt .= '- Total kasus: '.$statistics['total_cases']."\n";
         $prompt .= "- Periode: {$periodText}\n";
-        $prompt .= "- Distribusi Tingkat Resiko: " . json_encode($statistics['severity_distribution']) . "\n";
-        $prompt .= "- Trend bulanan: " . json_encode($statistics['monthly_trend']) . "\n\n";
+        $prompt .= '- Distribusi Tingkat Resiko: '.json_encode($statistics['severity_distribution'])."\n";
+        $prompt .= '- Trend bulanan: '.json_encode($statistics['monthly_trend'])."\n\n";
 
         $prompt .= "LOKASI DENGAN KASUS TERBANYAK:\n";
         foreach ($statistics['location_distribution']->take(5) as $location) {
@@ -201,8 +200,8 @@ class AiPredictionController extends Controller
             $prompt .= "  Tingkat: {$data['severity']}\n";
             $prompt .= "  Status: {$data['status']}\n";
             $prompt .= "  Komentar: {$data['affected_count']} orang\n";
-            if (!empty($data['description'])) {
-                $prompt .= "  Deskripsi: " . substr($data['description'], 0, 100) . "\n";
+            if (! empty($data['description'])) {
+                $prompt .= '  Deskripsi: '.substr($data['description'], 0, 100)."\n";
             }
             $prompt .= "\n";
         }
@@ -235,7 +234,7 @@ class AiPredictionController extends Controller
         $prompt .= "   - Kondisi yang meningkatkan kemungkinan kejadian\n";
         $prompt .= "   - Indikator peringatan dini\n\n";
 
-        $prompt .= "Format jawaban dengan struktur yang jelas menggunakan markdown dan berikan insight yang actionable untuk pengambilan keputusan.";
+        $prompt .= 'Format jawaban dengan struktur yang jelas menggunakan markdown dan berikan insight yang actionable untuk pengambilan keputusan.';
 
         return $prompt;
     }
@@ -245,7 +244,7 @@ class AiPredictionController extends Controller
      */
     private function getTimePeriodText(int $months): string
     {
-        return match($months) {
+        return match ($months) {
             1 => '1 bulan terakhir',
             3 => '3 bulan terakhir',
             6 => '6 bulan terakhir',

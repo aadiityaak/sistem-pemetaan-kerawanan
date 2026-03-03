@@ -80,7 +80,7 @@ const autoOpenBasedOnUrl = () => {
     findAndOpenActiveItems(props.items, currentUrl);
 };
 
-const toggleItem = (title: string, siblings: NavItem[], level: number) => {
+const toggleItem = (title: string, siblings: NavItem[]) => {
     if (openItems.value.has(title)) {
         openItems.value.delete(title);
     } else {
@@ -97,8 +97,6 @@ const toggleItem = (title: string, siblings: NavItem[], level: number) => {
     }
     saveOpenState();
 };
-
-const isOpen = (title: string) => openItems.value.has(title);
 
 // Initialize component
 onMounted(() => {
@@ -127,7 +125,7 @@ watch(
                 :level="0"
                 :open-items="openItems"
                 :siblings="items"
-                @toggle="(title, siblings, level) => toggleItem(title, siblings, level)"
+                @toggle="(title, siblings) => toggleItem(title, siblings)"
             />
         </SidebarMenu>
     </SidebarGroup>

@@ -22,9 +22,7 @@ withDefaults(defineProps<Props>(), {
             <div class="flex-1">
                 <slot />
             </div>
-            <div class="py-4 text-center text-xs text-muted-foreground">
-                Version 4.2.0
-            </div>
+            <div class="py-4 text-center text-xs text-muted-foreground">Version 4.2.0</div>
         </AppContent>
     </AppShell>
 </template>

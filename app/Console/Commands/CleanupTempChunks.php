@@ -27,22 +27,23 @@ class CleanupTempChunks extends Command
     {
         $olderThanHours = $this->option('older-than');
         $tempDir = storage_path('app/temp-chunks');
-        
-        if (!is_dir($tempDir)) {
+
+        if (! is_dir($tempDir)) {
             $this->info('No temp-chunks directory found.');
+
             return;
         }
-        
+
         $cutoffTime = time() - ($olderThanHours * 3600);
         $removedDirs = 0;
-        
+
         $directories = scandir($tempDir);
         foreach ($directories as $dir) {
             if ($dir === '.' || $dir === '..') {
                 continue;
             }
-            
-            $dirPath = $tempDir . '/' . $dir;
+
+            $dirPath = $tempDir.'/'.$dir;
             if (is_dir($dirPath)) {
                 // Check if directory is older than cutoff time
                 $dirMTime = filemtime($dirPath);
@@ -53,32 +54,33 @@ class CleanupTempChunks extends Command
                 }
             }
         }
-        
+
         $this->info("Cleanup completed. Removed $removedDirs old chunk directories.");
     }
-    
+
     /**
      * Recursively remove directory and all contents
      */
-    private function removeDirectory($dir) {
-        if (!is_dir($dir)) {
+    private function removeDirectory($dir)
+    {
+        if (! is_dir($dir)) {
             return false;
         }
-        
+
         $files = scandir($dir);
         foreach ($files as $file) {
             if ($file === '.' || $file === '..') {
                 continue;
             }
-            
-            $filePath = $dir . '/' . $file;
+
+            $filePath = $dir.'/'.$file;
             if (is_dir($filePath)) {
                 $this->removeDirectory($filePath);
             } else {
                 unlink($filePath);
             }
         }
-        
+
         return rmdir($dir);
     }
 }

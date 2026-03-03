@@ -29,7 +29,7 @@ withDefaults(
                         <AppLogo />
                     </div>
                 </Link>
-                
+
                 <!-- Breadcrumbs - hidden on mobile, visible on desktop -->
                 <template v-if="breadcrumbs && breadcrumbs.length > 0">
                     <div class="hidden md:block">

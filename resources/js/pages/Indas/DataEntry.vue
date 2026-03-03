@@ -501,7 +501,7 @@ const getExistingValue = (kabupatenKotaId: number, indicatorId: number) => {
             const value = existing.value;
             if (value !== null && value !== undefined) {
                 // Convert to integer to remove decimals
-                return Math.round(parseFloat(value)).toString();
+                return Math.round(parseFloat(String(value))).toString();
             }
         }
     } catch (error) {

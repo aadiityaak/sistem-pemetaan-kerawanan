@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\FoodPriceSnapshot;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
-use App\Models\FoodPriceSnapshot;
 
 class FetchKetahananPangan extends Command
 {
@@ -16,6 +16,7 @@ class FetchKetahananPangan extends Command
     {
         $this->fetchHargaPetaProvinsi();
         $this->fetchHargaInformasi();
+
         return self::SUCCESS;
     }
 
@@ -24,12 +25,12 @@ class FetchKetahananPangan extends Command
         $params = [
             'level_harga_id' => 3,
             'komoditas_id' => 35,
-            'period_date' => now()->format('d/m/Y') . ' - ' . now()->format('d/m/Y'),
+            'period_date' => now()->format('d/m/Y').' - '.now()->format('d/m/Y'),
             'multi_status_map[0]' => '',
             'multi_province_id[0]' => '',
         ];
 
-        $url = 'https://api-panelhargav2.badanpangan.go.id/api/front/harga-peta-provinsi?' . http_build_query($params);
+        $url = 'https://api-panelhargav2.badanpangan.go.id/api/front/harga-peta-provinsi?'.http_build_query($params);
 
         $response = Http::withHeaders([
             'Origin' => 'https://panelharga.badanpangan.go.id',
@@ -57,7 +58,7 @@ class FetchKetahananPangan extends Command
             'level_harga_id' => 3,
         ];
 
-        $url = 'https://api-panelhargav2.badanpangan.go.id/api/front/harga-pangan-informasi?' . http_build_query($params);
+        $url = 'https://api-panelhargav2.badanpangan.go.id/api/front/harga-pangan-informasi?'.http_build_query($params);
 
         $response = Http::withHeaders([
             'Origin' => 'https://panelharga.badanpangan.go.id',
@@ -77,4 +78,3 @@ class FetchKetahananPangan extends Command
         }
     }
 }
-

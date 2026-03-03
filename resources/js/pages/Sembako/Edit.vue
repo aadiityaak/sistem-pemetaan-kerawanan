@@ -201,9 +201,9 @@ const props = defineProps<{
 
 // Breadcrumbs
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', url: '/dashboard' },
-    { title: 'Data Sembako', url: '/sembako' },
-    { title: 'Edit Data', url: '#' },
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Data Sembako', href: '/sembako' },
+    { title: 'Edit Data', href: '#' },
 ];
 
 // Format tanggal untuk input date HTML (YYYY-MM-DD)

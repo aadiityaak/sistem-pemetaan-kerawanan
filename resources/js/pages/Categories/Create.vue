@@ -29,7 +29,7 @@ const form = useForm({
     slug: '',
     description: '',
     icon: '',
-    image: null,
+    image: null as File | null,
     color: '#3B82F6',
     is_active: true,
     sort_order: '',

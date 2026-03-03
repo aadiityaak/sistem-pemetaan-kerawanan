@@ -1,11 +1,11 @@
 <?php
 
 use App\Http\Middleware\CheckEditPermission;
+use App\Http\Middleware\CheckLicense;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\InjectAppSettings;
-use App\Http\Middleware\CheckLicense;
 use App\Http\Middleware\ProvinceFilter;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;

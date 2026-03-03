@@ -13,10 +13,9 @@ use App\Http\Controllers\PartaiPolitikController;
 use App\Http\Controllers\PasarSahamController;
 use App\Http\Controllers\PetaBencanaController;
 use App\Http\Controllers\PetaKriminalitasController;
-use App\Http\Controllers\ProxyController;
 use App\Http\Controllers\ProvinsiController;
+use App\Http\Controllers\ProxyController;
 use App\Http\Controllers\SembakoController;
-use App\Http\Controllers\UserPerformanceController;
 use App\Http\Controllers\VideoUploadController;
 use Illuminate\Support\Facades\Route;
 
@@ -292,7 +291,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Only Super Admin can manage settings and menus
         Route::middleware(['role:super_admin'])->group(function () {
-            Route::match(['POST', 'PUT'], '/settings/{key}', [AppSettingController::class, 'update'])->name('settings.update');
+            Route::match(['POST', 'PUT'], '/settings/{key}', [AppSettingController::class, 'update'])
+                ->where('key', '^(?!password$|profile$|appearance$).+')
+                ->name('settings.update');
 
             // Menu Management Routes - specific routes must come before parameterized routes
             Route::get('admin/menu-items/create', [\App\Http\Controllers\Admin\MenuItemController::class, 'create'])->name('admin.menu-items.create');

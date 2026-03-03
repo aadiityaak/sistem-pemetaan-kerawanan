@@ -321,7 +321,9 @@ const appLogo = computed(() => {
                         </div>
                         <span class="font-semibold text-gray-900 dark:text-white">{{ appName }}</span>
                     </div>
-                    <div class="text-sm text-gray-600 dark:text-gray-400">© 2025 {{ appName }}. Semua hak dilindungi. <span class="ml-2 text-xs text-gray-400">Version 4.2.0</span></div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                        © 2025 {{ appName }}. Semua hak dilindungi. <span class="ml-2 text-xs text-gray-400">Version 4.2.0</span>
+                    </div>
                 </div>
             </div>
         </footer>

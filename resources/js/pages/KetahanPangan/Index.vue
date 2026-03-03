@@ -37,7 +37,6 @@
                                 <option value="3">Harga Eceran</option>
                             </select>
                         </div>
-
                     </div>
 
                     <!-- Baris 2: Tanggal dan Action Button -->
@@ -81,24 +80,19 @@
             </div>
 
             <!-- Map Container -->
-            <div class="relative flex-1 overflow-hidden min-h-96">
+            <div class="relative min-h-96 flex-1 overflow-hidden">
                 <div v-if="loading" class="absolute inset-0 z-10 flex items-center justify-center bg-gray-100 dark:bg-gray-900">
                     <div class="flex flex-col items-center">
                         <RefreshCw class="mb-4 h-8 w-8 animate-spin text-blue-600" />
                         <p class="text-gray-600 dark:text-gray-400">Memuat data peta...</p>
                     </div>
                 </div>
-                
+
                 <div v-else-if="error" class="absolute inset-0 z-10 flex items-center justify-center bg-gray-100 dark:bg-gray-900">
                     <div class="text-center">
                         <AlertCircle class="mx-auto mb-4 h-8 w-8 text-red-600" />
                         <p class="text-red-600 dark:text-red-400">{{ error }}</p>
-                        <button
-                            @click="fetchPriceData"
-                            class="mt-2 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
-                        >
-                            Coba lagi
-                        </button>
+                        <button @click="fetchPriceData" class="mt-2 text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">Coba lagi</button>
                     </div>
                 </div>
 
@@ -126,32 +120,28 @@
                             <title>{{ provinceCode.name }}</title>
                         </path>
                     </svg>
-                
+
                     <!-- Last Updated Info -->
-                    <div v-if="lastUpdated && !selectedProvince" class="absolute right-4 top-4 z-30 rounded-lg bg-white/90 px-3 py-2 shadow-lg dark:bg-gray-800/90">
-                        <div class="text-xs text-gray-500 dark:text-gray-400">
-                            Terakhir diperbarui: {{ formatDateTime(lastUpdated) }}
-                        </div>
+                    <div
+                        v-if="lastUpdated && !selectedProvince"
+                        class="absolute top-4 right-4 z-30 rounded-lg bg-white/90 px-3 py-2 shadow-lg dark:bg-gray-800/90"
+                    >
+                        <div class="text-xs text-gray-500 dark:text-gray-400">Terakhir diperbarui: {{ formatDateTime(lastUpdated) }}</div>
                     </div>
 
                     <!-- Selected Province Detail -->
-                    <div
-                        v-if="selectedProvince"
-                        class="absolute right-4 top-4 z-30 w-72 rounded-lg bg-white p-4 shadow-lg dark:bg-gray-800"
-                    >
+                    <div v-if="selectedProvince" class="absolute top-4 right-4 z-30 w-72 rounded-lg bg-white p-4 shadow-lg dark:bg-gray-800">
                         <h4 class="font-semibold text-gray-900 dark:text-white">{{ selectedProvince.province_name }}</h4>
                         <p class="text-sm text-gray-600 dark:text-gray-400">
                             Harga: <span class="font-medium text-green-600">{{ formatPrice(selectedProvince.price) }}</span>
                         </p>
                         <p class="text-sm text-gray-600 dark:text-gray-400">
-                            Status: <span :class="getPriceStatusClass(selectedProvince.status)" class="rounded px-2 py-1 text-xs">{{ getPriceStatusText(selectedProvince.status) }}</span>
+                            Status:
+                            <span :class="getPriceStatusClass(selectedProvince.status)" class="rounded px-2 py-1 text-xs">{{
+                                getPriceStatusText(selectedProvince.status)
+                            }}</span>
                         </p>
-                        <button
-                            @click="selectedProvince = null"
-                            class="mt-2 text-xs text-blue-600 hover:text-blue-800"
-                        >
-                            Tutup
-                        </button>
+                        <button @click="selectedProvince = null" class="mt-2 text-xs text-blue-600 hover:text-blue-800">Tutup</button>
                     </div>
 
                     <!-- Legend -->
@@ -176,7 +166,6 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -184,7 +173,9 @@
             <div v-if="priceData && priceData.length > 0" class="border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                 <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">📊 Data Harga {{ komoditasList.find(k => k.value === selectedKomoditas)?.label || 'Komoditas' }}</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            📊 Data Harga {{ komoditasList.find((k) => k.value === selectedKomoditas)?.label || 'Komoditas' }}
+                        </h3>
                         <div class="flex items-center space-x-4">
                             <div class="text-sm text-gray-600 dark:text-gray-400">
                                 <span class="font-medium">{{ priceData.length }}</span> Provinsi
@@ -192,7 +183,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Statistik Ringkas -->
                 <div class="px-6 py-4">
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -265,56 +256,95 @@
                         <table class="min-w-full">
                             <thead class="sticky top-0 bg-gray-50 dark:bg-gray-700">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Provinsi</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Harga</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Trend</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">vs HPP/HAP</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                        Provinsi
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                        Harga
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                        Status
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                        Trend
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                        vs HPP/HAP
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                 <tr v-for="item in priceData" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td class="whitespace-nowrap px-6 py-4">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <div class="h-3 w-3 rounded-full mr-3" :style="{ backgroundColor: getMarkerColor(item.map_color, item.status) }"></div>
+                                            <div
+                                                class="mr-3 h-3 w-3 rounded-full"
+                                                :style="{ backgroundColor: getMarkerColor(item.map_color, item.status) }"
+                                            ></div>
                                             <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ item.province_name }}</span>
                                         </div>
                                     </td>
-                                    <td class="whitespace-nowrap px-6 py-4">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ formatPrice(item.price) }}</span>
                                     </td>
-                                    <td class="whitespace-nowrap px-6 py-4">
-                                        <span :class="getPriceStatusClass(item.status)" class="inline-flex rounded-full px-2 py-1 text-xs font-semibold">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span
+                                            :class="getPriceStatusClass(item.status)"
+                                            class="inline-flex rounded-full px-2 py-1 text-xs font-semibold"
+                                        >
                                             {{ getPriceStatusText(item.status) }}
                                         </span>
                                     </td>
-                                    <td class="whitespace-nowrap px-6 py-4">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <svg v-if="getTrendDirection(item) === 'up'" class="h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg
+                                                v-if="getTrendDirection(item) === 'up'"
+                                                class="h-4 w-4 text-red-500"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12" />
                                             </svg>
-                                            <svg v-else-if="getTrendDirection(item) === 'down'" class="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+                                            <svg
+                                                v-else-if="getTrendDirection(item) === 'down'"
+                                                class="h-4 w-4 text-green-500"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    stroke-width="2"
+                                                    d="M17 13l-5 5m0 0l-5-5m5 5V6"
+                                                />
                                             </svg>
                                             <svg v-else class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
                                             </svg>
-                                            <span class="ml-1 text-xs" :class="{
-                                                'text-red-600': getTrendDirection(item) === 'up',
-                                                'text-green-600': getTrendDirection(item) === 'down',
-                                                'text-gray-500': getTrendDirection(item) === 'stable'
-                                            }">
+                                            <span
+                                                class="ml-1 text-xs"
+                                                :class="{
+                                                    'text-red-600': getTrendDirection(item) === 'up',
+                                                    'text-green-600': getTrendDirection(item) === 'down',
+                                                    'text-gray-500': getTrendDirection(item) === 'stable',
+                                                }"
+                                            >
                                                 {{ getTrendText(item) }}
                                             </span>
                                         </div>
                                     </td>
-                                    <td class="whitespace-nowrap px-6 py-4">
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <span class="text-xs font-medium" :class="{
-                                                'text-red-600': getHppHapPercentage(item) > 0,
-                                                'text-green-600': getHppHapPercentage(item) < 0,
-                                                'text-gray-500': getHppHapPercentage(item) === 0
-                                            }">
+                                            <span
+                                                class="text-xs font-medium"
+                                                :class="{
+                                                    'text-red-600': getHppHapPercentage(item) > 0,
+                                                    'text-green-600': getHppHapPercentage(item) < 0,
+                                                    'text-gray-500': getHppHapPercentage(item) === 0,
+                                                }"
+                                            >
                                                 {{ getHppHapPercentage(item) > 0 ? '+' : '' }}{{ getHppHapPercentage(item) }}%
                                             </span>
                                         </div>
@@ -330,17 +360,11 @@
 </template>
 
 <script setup lang="ts">
+import { indonesiaProvinces, type ProvincePathData } from '@/data/indonesiaProvinces';
 import AppLayout from '@/layouts/AppLayout.vue';
+import axios from 'axios';
 import { AlertCircle, RefreshCw, Search } from 'lucide-vue-next';
 import { onMounted, ref, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
-import axios from 'axios';
-import { indonesiaProvinces, type ProvincePathData } from '@/data/indonesiaProvinces';
-
-// Import route helper
-declare global {
-    function route(name: string, params?: any): string;
-}
 
 interface Komoditas {
     value: string;
@@ -390,7 +414,7 @@ const fetchPriceData = async () => {
 
     try {
         const periodDate = `${formatDateForAPI(startDate.value)} - ${formatDateForAPI(endDate.value)}`;
-        
+
         console.log('Fetching price data from API...');
         const response = await axios.get(route('api.ketahanan-pangan.harga-peta'), {
             params: {
@@ -398,8 +422,8 @@ const fetchPriceData = async () => {
                 komoditas_id: selectedKomoditas.value,
                 period_date: periodDate,
                 'multi_status_map[0]': '',
-                'multi_province_id[0]': ''
-            }
+                'multi_province_id[0]': '',
+            },
         });
 
         if (response.data.error) {
@@ -433,7 +457,7 @@ const transformPriceData = (rawData: any): PriceDataItem[] => {
             hpp_hap: item.hpp_hap || '',
             hpp_hap_percentage: parseFloat(item.hpp_hap_percentage || 0),
             hpp_hap_percentage_gap_change: item.hpp_hap_percentage_gap_change || 'stable',
-            hpp_hap_color_gap: item.hpp_hap_color_gap || 'gray'
+            hpp_hap_color_gap: item.hpp_hap_color_gap || 'gray',
         }));
     }
 
@@ -453,7 +477,7 @@ const getMarkerColor = (mapColor?: string | null, status?: string | null): strin
         default:
             break;
     }
-    
+
     // Fallback to status
     switch (status?.toString()?.toLowerCase()) {
         case 'aman':
@@ -464,20 +488,6 @@ const getMarkerColor = (mapColor?: string | null, status?: string | null): strin
             return '#ef4444';
         default:
             return '#6b7280';
-    }
-};
-
-// Get status badge class for popup
-const getStatusBadgeClass = (status: string | null | undefined): string => {
-    switch (status?.toString()?.toLowerCase()) {
-        case 'aman':
-            return 'bg-green-100 text-green-800';
-        case 'waspada':
-            return 'bg-yellow-100 text-yellow-800';
-        case 'intervensi':
-            return 'bg-red-100 text-red-800';
-        default:
-            return 'bg-gray-100 text-gray-800';
     }
 };
 
@@ -495,7 +505,7 @@ const formatDateTime = (date: Date): string => {
         month: 'long',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
     });
 };
 
@@ -525,109 +535,107 @@ const provinceNameMapping: Record<string, string[]> = {
     'SULAWESI SELATAN': ['SULSEL', 'SULAWESI SELATAN'],
     'SULAWESI TENGGARA': ['SULTRA', 'SULAWESI TENGGARA'],
     'SULAWESI BARAT': ['SULBAR', 'SULAWESI BARAT'],
-    'GORONTALO': ['GORONTALO'],
-    'MALUKU': ['MALUKU'],
+    GORONTALO: ['GORONTALO'],
+    MALUKU: ['MALUKU'],
     'MALUKU UTARA': ['MALUT', 'MALUKU UTARA'],
     'JAWA BARAT': ['JABAR', 'JAWA BARAT'],
     'JAWA TENGAH': ['JATENG', 'JAWA TENGAH'],
     'JAWA TIMUR': ['JATIM', 'JAWA TIMUR'],
-    'BANTEN': ['BANTEN'],
+    BANTEN: ['BANTEN'],
     'DKI JAKARTA': ['JAKARTA', 'DKI JAKARTA'],
-    'BALI': ['BALI'],
-    'ACEH': ['ACEH', 'NANGGROE ACEH DARUSSALAM'],
-    'RIAU': ['RIAU'],
+    BALI: ['BALI'],
+    ACEH: ['ACEH', 'NANGGROE ACEH DARUSSALAM'],
+    RIAU: ['RIAU'],
     'KEPULAUAN RIAU': ['KEP. RIAU', 'KEPULAUAN RIAU'],
-    'JAMBI': ['JAMBI'],
-    'BENGKULU': ['BENGKULU'],
-    'LAMPUNG': ['LAMPUNG']
+    JAMBI: ['JAMBI'],
+    BENGKULU: ['BENGKULU'],
+    LAMPUNG: ['LAMPUNG'],
 };
 
 // Get province color based on price data
 const getProvinceMapColor = (provinceName: string): string => {
     // Cari berdasarkan nama langsung
-    let province = priceData.value.find(p => 
-        p.province_name.toUpperCase() === provinceName.toUpperCase()
-    );
-    
+    let province = priceData.value.find((p) => p.province_name.toUpperCase() === provinceName.toUpperCase());
+
     // Jika tidak ditemukan, cari menggunakan mapping
     if (!province) {
         const svgProvinceName = provinceName.toUpperCase();
-        const apiProvinceAlias = Object.entries(provinceNameMapping).find(([_, aliases]) => 
-            aliases.some(alias => alias.toUpperCase() === svgProvinceName)
+        const apiProvinceAlias = Object.entries(provinceNameMapping).find(([, aliases]) =>
+            aliases.some((alias) => alias.toUpperCase() === svgProvinceName),
         );
-        
+
         if (apiProvinceAlias) {
             const [mappedName] = apiProvinceAlias;
-            province = priceData.value.find(p => 
-                provinceNameMapping[mappedName]?.some(alias => 
-                    p.province_name.toUpperCase().includes(alias.toUpperCase()) ||
-                    alias.toUpperCase().includes(p.province_name.toUpperCase())
-                )
+            province = priceData.value.find((p) =>
+                provinceNameMapping[mappedName]?.some(
+                    (alias) =>
+                        p.province_name.toUpperCase().includes(alias.toUpperCase()) || alias.toUpperCase().includes(p.province_name.toUpperCase()),
+                ),
             );
         }
     }
-    
+
     // Jika masih tidak ditemukan, cari dengan partial matching
     if (!province) {
-        province = priceData.value.find(p => {
+        province = priceData.value.find((p) => {
             const apiName = p.province_name.toUpperCase();
             const svgName = provinceName.toUpperCase();
-            return apiName.includes(svgName) || svgName.includes(apiName) ||
-                   apiName.replace(/\s+/g, '').includes(svgName.replace(/\s+/g, '')) ||
-                   svgName.replace(/\s+/g, '').includes(apiName.replace(/\s+/g, ''));
+            return (
+                apiName.includes(svgName) ||
+                svgName.includes(apiName) ||
+                apiName.replace(/\s+/g, '').includes(svgName.replace(/\s+/g, '')) ||
+                svgName.replace(/\s+/g, '').includes(apiName.replace(/\s+/g, ''))
+            );
         });
     }
-    
+
     if (!province) {
         return '#e5e7eb'; // Default gray untuk provinsi tanpa data
     }
-    
+
     return getMarkerColor(province.map_color, province.status);
 };
 
 // Show province detail by name
 const showProvinceByName = (provinceName: string) => {
     // Cari berdasarkan nama langsung
-    let province = priceData.value.find(p => 
-        p.province_name.toUpperCase() === provinceName.toUpperCase()
-    );
-    
+    let province = priceData.value.find((p) => p.province_name.toUpperCase() === provinceName.toUpperCase());
+
     // Jika tidak ditemukan, cari menggunakan mapping
     if (!province) {
         const svgProvinceName = provinceName.toUpperCase();
-        const apiProvinceAlias = Object.entries(provinceNameMapping).find(([_, aliases]) => 
-            aliases.some(alias => alias.toUpperCase() === svgProvinceName)
+        const apiProvinceAlias = Object.entries(provinceNameMapping).find(([, aliases]) =>
+            aliases.some((alias) => alias.toUpperCase() === svgProvinceName),
         );
-        
+
         if (apiProvinceAlias) {
             const [mappedName] = apiProvinceAlias;
-            province = priceData.value.find(p => 
-                provinceNameMapping[mappedName]?.some(alias => 
-                    p.province_name.toUpperCase().includes(alias.toUpperCase()) ||
-                    alias.toUpperCase().includes(p.province_name.toUpperCase())
-                )
+            province = priceData.value.find((p) =>
+                provinceNameMapping[mappedName]?.some(
+                    (alias) =>
+                        p.province_name.toUpperCase().includes(alias.toUpperCase()) || alias.toUpperCase().includes(p.province_name.toUpperCase()),
+                ),
             );
         }
     }
-    
+
     // Jika masih tidak ditemukan, cari dengan partial matching
     if (!province) {
-        province = priceData.value.find(p => {
+        province = priceData.value.find((p) => {
             const apiName = p.province_name.toUpperCase();
             const svgName = provinceName.toUpperCase();
-            return apiName.includes(svgName) || svgName.includes(apiName) ||
-                   apiName.replace(/\s+/g, '').includes(svgName.replace(/\s+/g, '')) ||
-                   svgName.replace(/\s+/g, '').includes(apiName.replace(/\s+/g, ''));
+            return (
+                apiName.includes(svgName) ||
+                svgName.includes(apiName) ||
+                apiName.replace(/\s+/g, '').includes(svgName.replace(/\s+/g, '')) ||
+                svgName.replace(/\s+/g, '').includes(apiName.replace(/\s+/g, ''))
+            );
         });
     }
-    
+
     if (province) {
         selectedProvince.value = province;
     }
-};
-
-const showProvinceDetail = (province: PriceDataItem) => {
-    selectedProvince.value = province;
 };
 
 // Statistics Functions
@@ -639,47 +647,41 @@ const getAveragePrice = (): number => {
 
 const getHighestPrice = (): { price: number; province: string } => {
     if (!priceData.value.length) return { price: 0, province: '' };
-    const highest = priceData.value.reduce((max, item) => 
-        item.price > max.price ? item : max
-    );
+    const highest = priceData.value.reduce((max, item) => (item.price > max.price ? item : max));
     return { price: highest.price, province: highest.province_name };
 };
 
 const getLowestPrice = (): { price: number; province: string } => {
     if (!priceData.value.length) return { price: 0, province: '' };
-    const lowest = priceData.value.reduce((min, item) => 
-        item.price < min.price ? item : min
-    );
+    const lowest = priceData.value.reduce((min, item) => (item.price < min.price ? item : min));
     return { price: lowest.price, province: lowest.province_name };
 };
 
 const getDominantStatus = (): { status: string; count: number; bgClass: string; colorClass: string } => {
     if (!priceData.value.length) return { status: 'N/A', count: 0, bgClass: 'bg-gray-100', colorClass: 'bg-gray-300' };
-    
+
     const statusCount: Record<string, number> = {};
-    priceData.value.forEach(item => {
+    priceData.value.forEach((item) => {
         const status = item.status || 'normal';
         statusCount[status] = (statusCount[status] || 0) + 1;
     });
-    
-    const dominantStatus = Object.keys(statusCount).reduce((a, b) => 
-        statusCount[a] > statusCount[b] ? a : b
-    );
-    
+
+    const dominantStatus = Object.keys(statusCount).reduce((a, b) => (statusCount[a] > statusCount[b] ? a : b));
+
     const statusMapping: Record<string, { label: string; bgClass: string; colorClass: string }> = {
-        'aman': { label: 'Aman', bgClass: 'bg-green-100 dark:bg-green-800', colorClass: 'bg-green-500' },
-        'waspada': { label: 'Waspada', bgClass: 'bg-yellow-100 dark:bg-yellow-800', colorClass: 'bg-yellow-500' },
-        'intervensi': { label: 'Intervensi', bgClass: 'bg-red-100 dark:bg-red-800', colorClass: 'bg-red-500' },
-        'normal': { label: 'Normal', bgClass: 'bg-gray-100 dark:bg-gray-800', colorClass: 'bg-gray-400' }
+        aman: { label: 'Aman', bgClass: 'bg-green-100 dark:bg-green-800', colorClass: 'bg-green-500' },
+        waspada: { label: 'Waspada', bgClass: 'bg-yellow-100 dark:bg-yellow-800', colorClass: 'bg-yellow-500' },
+        intervensi: { label: 'Intervensi', bgClass: 'bg-red-100 dark:bg-red-800', colorClass: 'bg-red-500' },
+        normal: { label: 'Normal', bgClass: 'bg-gray-100 dark:bg-gray-800', colorClass: 'bg-gray-400' },
     };
-    
+
     const mapping = statusMapping[dominantStatus.toLowerCase()] || statusMapping['normal'];
-    
+
     return {
         status: mapping.label,
         count: statusCount[dominantStatus] || 0,
         bgClass: mapping.bgClass,
-        colorClass: mapping.colorClass
+        colorClass: mapping.colorClass,
     };
 };
 
@@ -689,7 +691,7 @@ const getTrendDirection = (item: PriceDataItem): 'up' | 'down' | 'stable' => {
     const gapChange = (item as any).hpp_hap_percentage_gap_change;
     if (gapChange === 'up') return 'up';
     if (gapChange === 'down') return 'down';
-    
+
     // Fallback: bandingkan dengan rata-rata
     const avg = getAveragePrice();
     if (item.price > avg * 1.05) return 'up';
@@ -700,7 +702,7 @@ const getTrendDirection = (item: PriceDataItem): 'up' | 'down' | 'stable' => {
 const getTrendText = (item: PriceDataItem): string => {
     const direction = getTrendDirection(item);
     const percentage = Math.abs(((item.price - getAveragePrice()) / getAveragePrice()) * 100);
-    
+
     switch (direction) {
         case 'up':
             return `+${percentage.toFixed(1)}%`;
@@ -717,7 +719,7 @@ const getHppHapPercentage = (item: PriceDataItem): number => {
     if (typeof hppHapPercentage === 'number') {
         return Math.round(hppHapPercentage * 100) / 100;
     }
-    
+
     // Fallback calculation
     return 0;
 };
@@ -726,7 +728,7 @@ const formatPrice = (price: number): string => {
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
-        minimumFractionDigits: 0
+        minimumFractionDigits: 0,
     }).format(price);
 };
 
@@ -765,7 +767,7 @@ onMounted(() => {
 });
 
 // Watch for changes
-watch([selectedKomoditas, selectedLevelHarga, startDate, endDate], (newValues, oldValues) => {
+watch([selectedKomoditas, selectedLevelHarga, startDate, endDate], () => {
     if (selectedKomoditas.value) {
         // Debounce the API call
         setTimeout(fetchPriceData, 300);

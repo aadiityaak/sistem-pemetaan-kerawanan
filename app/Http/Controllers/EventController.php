@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
-use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Inertia\Inertia;
 
 class EventController extends Controller
 {
@@ -19,63 +19,69 @@ class EventController extends Controller
         // Get current month and year or from request
         $currentDate = $request->get('date', now()->format('Y-m'));
         $date = Carbon::createFromFormat('Y-m', $currentDate)->startOfMonth();
-        
+
         // Get event filter parameter
         $eventFilter = $request->get('event'); // kamtibmas, agenda, etc.
         $categoryFilter = $request->get('category'); // direct category filter
         $agendaType = $request->get('agenda_type'); // nasional, internasional (for agenda filter)
-        
+
         // Get events for the current view (month view - get events for 6 weeks around the month)
         $startDate = $date->copy()->startOfMonth()->startOfWeek();
         $endDate = $date->copy()->endOfMonth()->endOfWeek();
-        
+
         $eventsQuery = Event::active()->inDateRange($startDate, $endDate);
-        
+
         // Filter by direct category if specified
         if ($categoryFilter) {
             $eventsQuery->where('category', $categoryFilter);
         }
         // Filter by event type/category if specified
-        else if ($eventFilter) {
+        elseif ($eventFilter) {
             switch ($eventFilter) {
                 case 'kamtibmas':
                     $eventsQuery->where('category', 'Kamtibmas');
+
                     break;
                 case 'agenda':
                     if ($agendaType) {
                         switch ($agendaType) {
                             case 'nasional':
                                 $eventsQuery->where('category', 'Agenda Nasional');
+
                                 break;
                             case 'internasional':
                                 $eventsQuery->where('category', 'Agenda Internasional');
+
                                 break;
                             default:
                                 $eventsQuery->whereIn('category', ['Agenda Nasional', 'Agenda Internasional']);
+
                                 break;
                         }
                     } else {
                         $eventsQuery->whereIn('category', ['Agenda Nasional', 'Agenda Internasional']);
                     }
+
                     break;
                 default:
                     // Allow specific category filter
                     $eventsQuery->where('category', $eventFilter);
+
                     break;
             }
         }
-        
+
         $events = $eventsQuery->orderBy('start_date')->get();
-        
+
         // Debug: Log the query details
         \Log::info('Calendar Events Query:', [
             'current_date' => $currentDate,
             'start_date' => $startDate->format('Y-m-d H:i:s'),
             'end_date' => $endDate->format('Y-m-d H:i:s'),
             'events_found' => $events->count(),
-            'all_active_events' => Event::active()->count()
+            'all_active_events' => Event::active()->count(),
         ]);
-        
+
         $events = $events
             ->map(function ($event) {
                 return [
@@ -95,46 +101,51 @@ class EventController extends Controller
         $monthlyEventsQuery = Event::active()
             ->whereMonth('start_date', $date->month)
             ->whereYear('start_date', $date->year);
-            
+
         // Apply same filter for statistics
         if ($categoryFilter) {
             $monthlyEventsQuery->where('category', $categoryFilter);
-        }
-        else if ($eventFilter) {
+        } elseif ($eventFilter) {
             switch ($eventFilter) {
                 case 'kamtibmas':
                     $monthlyEventsQuery->where('category', 'Kamtibmas');
+
                     break;
                 case 'agenda':
                     if ($agendaType) {
                         switch ($agendaType) {
                             case 'nasional':
                                 $monthlyEventsQuery->where('category', 'Agenda Nasional');
+
                                 break;
                             case 'internasional':
                                 $monthlyEventsQuery->where('category', 'Agenda Internasional');
+
                                 break;
                             default:
                                 $monthlyEventsQuery->whereIn('category', ['Agenda Nasional', 'Agenda Internasional']);
+
                                 break;
                         }
                     } else {
                         $monthlyEventsQuery->whereIn('category', ['Agenda Nasional', 'Agenda Internasional']);
                     }
+
                     break;
                 default:
                     $monthlyEventsQuery->where('category', $eventFilter);
+
                     break;
             }
         }
-        
+
         $monthlyEvents = $monthlyEventsQuery->get();
 
         $statistics = [
             'totalEvents' => $monthlyEvents->count(),
             'upcomingEvents' => $monthlyEvents->where('start_date', '>=', now()->format('Y-m-d'))->count(),
             'activeEvents' => $monthlyEvents->where('start_date', '<=', now()->format('Y-m-d'))
-                                          ->where('end_date', '>=', now()->format('Y-m-d'))->count(),
+                ->where('end_date', '>=', now()->format('Y-m-d'))->count(),
         ];
 
         // Get Indonesian holidays (only for Kamtibmas view)
@@ -165,7 +176,7 @@ class EventController extends Controller
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'description' => ['nullable', 'string'],
-            'category' => ['required', 'string', 'in:' . implode(',', Event::getCategories())],
+            'category' => ['required', 'string', 'in:'.implode(',', Event::getCategories())],
             'color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{3,6}$/'],
         ]);
 
@@ -183,7 +194,7 @@ class EventController extends Controller
                 'color' => $event->color,
                 'isMultiDay' => $event->is_multi_day,
                 'duration' => $event->duration,
-            ]
+            ],
         ]);
     }
 
@@ -202,7 +213,7 @@ class EventController extends Controller
                 'category' => $event->category,
                 'color' => $event->color,
                 'is_active' => $event->is_active,
-            ]
+            ],
         ]);
     }
 
@@ -216,7 +227,7 @@ class EventController extends Controller
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'description' => ['nullable', 'string'],
-            'category' => ['required', 'string', 'in:' . implode(',', Event::getCategories())],
+            'category' => ['required', 'string', 'in:'.implode(',', Event::getCategories())],
             'color' => ['required', 'string', 'regex:/^#[0-9A-Fa-f]{3,6}$/'],
         ]);
 
@@ -234,7 +245,7 @@ class EventController extends Controller
                 'color' => $event->color,
                 'isMultiDay' => $event->is_multi_day,
                 'duration' => $event->duration,
-            ]
+            ],
         ]);
     }
 
@@ -246,7 +257,7 @@ class EventController extends Controller
         $event->delete();
 
         return response()->json([
-            'message' => 'Event berhasil dihapus.'
+            'message' => 'Event berhasil dihapus.',
         ]);
     }
 
@@ -255,12 +266,12 @@ class EventController extends Controller
      */
     public function toggleStatus(Event $event)
     {
-        $event->update(['is_active' => !$event->is_active]);
+        $event->update(['is_active' => ! $event->is_active]);
 
         $status = $event->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
         return response()->json([
-            'message' => "Event berhasil {$status}."
+            'message' => "Event berhasil {$status}.",
         ]);
     }
 
@@ -271,12 +282,12 @@ class EventController extends Controller
     {
         $year = $year ?? now()->year;
         $cacheKey = "indonesian_holidays_{$year}";
-        
+
         // Cache holidays for 1 day to avoid excessive API calls
         return Cache::remember($cacheKey, now()->addDay(), function () use ($year) {
             try {
                 $response = Http::timeout(10)->get('https://api-harilibur.vercel.app/api');
-                
+
                 if ($response->successful()) {
                     $holidays = collect($response->json())
                         ->filter(function ($holiday) use ($year) {
@@ -285,15 +296,16 @@ class EventController extends Controller
                         })
                         ->map(function ($holiday) {
                             $date = Carbon::parse($holiday['holiday_date']);
+
                             return [
-                                'id' => 'holiday_' . $date->format('Y_m_d'),
+                                'id' => 'holiday_'.$date->format('Y_m_d'),
                                 'title' => $holiday['holiday_name'],
                                 'start' => $date->format('Y-m-d'),
                                 'end' => $date->format('Y-m-d'),
-                                'description' => $holiday['is_national_holiday'] 
-                                    ? 'Hari Libur Nasional' 
+                                'description' => $holiday['is_national_holiday']
+                                    ? 'Hari Libur Nasional'
                                     : 'Hari Besar Agama',
-                                'color' => $holiday['is_national_holiday'] 
+                                'color' => $holiday['is_national_holiday']
                                     ? '#DC2626' // Red for national holidays
                                     : '#F59E0B', // Orange for religious holidays
                                 'isHoliday' => true,
@@ -304,16 +316,16 @@ class EventController extends Controller
                         })
                         ->values()
                         ->toArray();
-                    
+
                     return $holidays;
                 }
-                
+
                 // Return empty array if API fails
                 return [];
-                
             } catch (\Exception $e) {
                 // Log the error and return empty array
-                \Log::warning('Failed to fetch Indonesian holidays: ' . $e->getMessage());
+                \Log::warning('Failed to fetch Indonesian holidays: '.$e->getMessage());
+
                 return [];
             }
         });

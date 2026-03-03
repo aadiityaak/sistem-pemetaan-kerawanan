@@ -59,8 +59,7 @@ const props = defineProps<{
 
 // Get current user and permissions
 const page = usePage();
-const currentUser = computed(() => page.props.auth.user as User);
-const canManageUsers = computed(() => currentUser.value.role === 'super_admin');
+const canManageUsers = computed(() => (page.props.auth.user?.role ?? '') === 'super_admin');
 
 // Reactive data
 const searchQuery = ref(props.filters.search || '');
@@ -408,12 +407,8 @@ const toggleUserStatus = (user: User) => {
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm">
-                                        <div v-if="user.phone" class="text-gray-900 dark:text-gray-100">
-                                            📞 {{ user.phone }}
-                                        </div>
-                                        <div v-else class="text-gray-400 dark:text-gray-500 italic">
-                                            Tidak tersedia
-                                        </div>
+                                        <div v-if="user.phone" class="text-gray-900 dark:text-gray-100">📞 {{ user.phone }}</div>
+                                        <div v-else class="text-gray-400 italic dark:text-gray-500">Tidak tersedia</div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">

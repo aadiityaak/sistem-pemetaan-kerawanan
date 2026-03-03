@@ -109,7 +109,7 @@ const getStatusBadgeClass = (isActive: boolean): string => {
                                 <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Nomor Telepon</label>
                                 <div class="text-gray-900 dark:text-gray-100">
                                     <span v-if="user.phone">📞 {{ user.phone }}</span>
-                                    <span v-else class="text-gray-400 dark:text-gray-500 italic">Tidak tersedia</span>
+                                    <span v-else class="text-gray-400 italic dark:text-gray-500">Tidak tersedia</span>
                                 </div>
                             </div>
 

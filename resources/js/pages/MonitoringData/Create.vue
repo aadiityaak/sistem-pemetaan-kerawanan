@@ -479,12 +479,8 @@ onMounted(async () => {
                                         {{ form.errors.data_source }}
                                     </div>
                                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        <span v-if="form.data_source === 'offline'">
-                                            Data yang ditulis sendiri oleh penanggung jawab
-                                        </span>
-                                        <span v-else>
-                                            Data yang berasal dari portal berita atau sumber online lainnya
-                                        </span>
+                                        <span v-if="form.data_source === 'offline'"> Data yang ditulis sendiri oleh penanggung jawab </span>
+                                        <span v-else> Data yang berasal dari portal berita atau sumber online lainnya </span>
                                     </p>
                                 </div>
 
@@ -501,9 +497,7 @@ onMounted(async () => {
                                     <div v-if="form.errors.jumlah_terdampak" class="mt-1 text-sm text-red-500">
                                         {{ form.errors.jumlah_terdampak }}
                                     </div>
-                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        Jumlah komentar dalam kejadian ini
-                                    </p>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Jumlah komentar dalam kejadian ini</p>
                                 </div>
 
                                 <!-- Incident Date -->

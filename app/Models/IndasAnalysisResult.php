@@ -61,7 +61,7 @@ class IndasAnalysisResult extends Model
     {
         $prevMonth = $this->month - 1;
         $prevYear = $this->year;
-        
+
         if ($prevMonth < 1) {
             $prevMonth = 12;
             $prevYear = $this->year - 1;
@@ -76,25 +76,37 @@ class IndasAnalysisResult extends Model
     // Helper methods for trend status
     public function getEconomicTrendStatusAttribute()
     {
-        if ($this->economic_trend === null) return 'stable';
+        if ($this->economic_trend === null) {
+            return 'stable';
+        }
+
         return $this->economic_trend > 0 ? 'up' : ($this->economic_trend < 0 ? 'down' : 'stable');
     }
 
     public function getTourismTrendStatusAttribute()
     {
-        if ($this->tourism_trend === null) return 'stable';
+        if ($this->tourism_trend === null) {
+            return 'stable';
+        }
+
         return $this->tourism_trend > 0 ? 'up' : ($this->tourism_trend < 0 ? 'down' : 'stable');
     }
 
     public function getSocialTrendStatusAttribute()
     {
-        if ($this->social_trend === null) return 'stable';
+        if ($this->social_trend === null) {
+            return 'stable';
+        }
+
         return $this->social_trend > 0 ? 'up' : ($this->social_trend < 0 ? 'down' : 'stable');
     }
 
     public function getTotalTrendStatusAttribute()
     {
-        if ($this->total_trend === null) return 'stable';
+        if ($this->total_trend === null) {
+            return 'stable';
+        }
+
         return $this->total_trend > 0 ? 'up' : ($this->total_trend < 0 ? 'down' : 'stable');
     }
 }

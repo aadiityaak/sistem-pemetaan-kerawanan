@@ -60,7 +60,7 @@ class IndasMonthlyData extends Model
     {
         $prevMonth = $this->month - 1;
         $prevYear = $this->year;
-        
+
         if ($prevMonth < 1) {
             $prevMonth = 12;
             $prevYear = $this->year - 1;

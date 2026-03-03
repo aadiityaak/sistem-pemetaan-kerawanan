@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 use App\Models\FoodPriceSnapshot;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 
 class KetahanePanganController extends Controller
@@ -31,12 +30,12 @@ class KetahanePanganController extends Controller
             $params = [
                 'level_harga_id' => $request->get('level_harga_id', 3),
                 'komoditas_id' => $request->get('komoditas_id', 35),
-                'period_date' => $request->get('period_date', now()->format('d/m/Y') . ' - ' . now()->format('d/m/Y')),
+                'period_date' => $request->get('period_date', now()->format('d/m/Y').' - '.now()->format('d/m/Y')),
                 'multi_status_map[0]' => $request->get('multi_status_map.0', ''),
                 'multi_province_id[0]' => $request->get('multi_province_id.0', ''),
             ];
 
-            $url = 'https://api-panelhargav2.badanpangan.go.id/api/front/harga-peta-provinsi?' . http_build_query($params);
+            $url = 'https://api-panelhargav2.badanpangan.go.id/api/front/harga-peta-provinsi?'.http_build_query($params);
 
             $response = Http::withHeaders([
                 'Origin' => 'https://panelharga.badanpangan.go.id',
@@ -54,6 +53,7 @@ class KetahanePanganController extends Controller
                     ['endpoint' => $endpoint, 'date_key' => $dateKey, 'params_hash' => $paramsHash],
                     ['params' => $params, 'payload' => $response->json(), 'fetched_at' => now()]
                 );
+
                 return response()->json($response->json());
             }
 
@@ -75,12 +75,12 @@ class KetahanePanganController extends Controller
             return response()->json([
                 'error' => 'External API error',
                 'status' => $response->status(),
-                'message' => $response->body()
+                'message' => $response->body(),
             ], $response->status());
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'API request failed',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -94,7 +94,7 @@ class KetahanePanganController extends Controller
                 'level_harga_id' => $request->get('level_harga_id', 3),
             ];
 
-            $url = 'https://api-panelhargav2.badanpangan.go.id/api/front/harga-pangan-informasi?' . http_build_query($params);
+            $url = 'https://api-panelhargav2.badanpangan.go.id/api/front/harga-pangan-informasi?'.http_build_query($params);
 
             $response = Http::withHeaders([
                 'Origin' => 'https://panelharga.badanpangan.go.id',
@@ -112,6 +112,7 @@ class KetahanePanganController extends Controller
                     ['endpoint' => $endpoint, 'date_key' => $dateKey, 'params_hash' => $paramsHash],
                     ['params' => $params, 'payload' => $response->json(), 'fetched_at' => now()]
                 );
+
                 return response()->json($response->json());
             }
 
@@ -133,12 +134,12 @@ class KetahanePanganController extends Controller
             return response()->json([
                 'error' => 'External API error',
                 'status' => $response->status(),
-                'message' => $response->body()
+                'message' => $response->body(),
             ], $response->status());
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'API request failed',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }

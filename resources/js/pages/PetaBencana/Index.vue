@@ -8,344 +8,351 @@
 
         <div class="p-6">
             <div class="space-y-6">
-            <!-- Header -->
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Peta Bencana Indonesia</h1>
-                    <p class="text-gray-600 dark:text-gray-400">Visualisasi data bencana alam berdasarkan BNPB</p>
+                <!-- Header -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Peta Bencana Indonesia</h1>
+                        <p class="text-gray-600 dark:text-gray-400">Visualisasi data bencana alam berdasarkan BNPB</p>
+                    </div>
+
+                    <!-- Legend Toggle -->
+                    <div class="flex items-center gap-4">
+                        <button
+                            @click="showLegend = !showLegend"
+                            class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700"
+                        >
+                            {{ showLegend ? 'Sembunyikan' : 'Tampilkan' }} Legenda
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Legend Toggle -->
-                <div class="flex items-center gap-4">
-                    <button
-                        @click="showLegend = !showLegend"
-                        class="px-4 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                    >
-                        {{ showLegend ? 'Sembunyikan' : 'Tampilkan' }} Legenda
-                    </button>
-                </div>
-            </div>
-
-            <!-- Statistics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Kejadian</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalIncidents.toLocaleString() }}</p>
+                <!-- Statistics Cards -->
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Kejadian</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalIncidents.toLocaleString() }}</p>
+                            </div>
+                            <div class="rounded-lg bg-red-100 p-3 dark:bg-red-900/20">
+                                <AlertTriangle class="h-6 w-6 text-red-600 dark:text-red-400" />
+                            </div>
                         </div>
-                        <div class="p-3 bg-red-100 dark:bg-red-900/20 rounded-lg">
-                            <AlertTriangle class="h-6 w-6 text-red-600 dark:text-red-400" />
+                    </div>
+
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Korban Meninggal</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalDeaths.toLocaleString() }}</p>
+                            </div>
+                            <div class="rounded-lg bg-gray-100 p-3 dark:bg-gray-900/20">
+                                <Users class="h-6 w-6 text-gray-600 dark:text-gray-400" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Korban Luka</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalInjured.toLocaleString() }}</p>
+                            </div>
+                            <div class="rounded-lg bg-orange-100 p-3 dark:bg-orange-900/20">
+                                <Heart class="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Orang Hilang</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalMissing.toLocaleString() }}</p>
+                            </div>
+                            <div class="rounded-lg bg-yellow-100 p-3 dark:bg-yellow-900/20">
+                                <Search class="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Korban Meninggal</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalDeaths.toLocaleString() }}</p>
-                        </div>
-                        <div class="p-3 bg-gray-100 dark:bg-gray-900/20 rounded-lg">
-                            <Users class="h-6 w-6 text-gray-600 dark:text-gray-400" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Korban Luka</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalInjured.toLocaleString() }}</p>
-                        </div>
-                        <div class="p-3 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
-                            <Heart class="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Orang Hilang</p>
-                            <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalMissing.toLocaleString() }}</p>
-                        </div>
-                        <div class="p-3 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg">
-                            <Search class="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Content -->
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <!-- Map Section -->
-                <div class="lg:col-span-3">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                        <!-- Map Header -->
-                        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                            <div class="flex items-center justify-between">
-                                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Peta Sebaran Bencana</h3>
-                                <div class="text-sm text-gray-500 dark:text-gray-400">
-                                    Data: BNPB Indonesia
+                <!-- Main Content -->
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
+                    <!-- Map Section -->
+                    <div class="lg:col-span-3">
+                        <div class="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                            <!-- Map Header -->
+                            <div class="border-b border-gray-200 p-4 dark:border-gray-700">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Peta Sebaran Bencana</h3>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">Data: BNPB Indonesia</div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Map Container -->
-                        <div class="relative h-[600px]">
-                            <div ref="mapContainer" class="absolute inset-0 w-full h-full"></div>
+                            <!-- Map Container -->
+                            <div class="relative h-[600px]">
+                                <div ref="mapContainer" class="absolute inset-0 h-full w-full"></div>
 
-                            <!-- Loading overlay -->
-                            <div v-if="loadingData" class="absolute inset-0 bg-white/80 dark:bg-gray-800/80 flex items-center justify-center z-[1000]">
-                                <div class="text-center">
-                                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Memuat data bencana...</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sidebar -->
-                <div class="lg:col-span-1 space-y-6">
-                    <!-- Disaster Type Filter -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Filter Jenis Bencana</h3>
-                        <div class="space-y-2">
-                            <label class="flex items-center">
-                                <input
-                                    v-model="selectedDisasters"
-                                    value="all"
-                                    type="checkbox"
-                                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                <!-- Loading overlay -->
+                                <div
+                                    v-if="loadingData"
+                                    class="absolute inset-0 z-[1000] flex items-center justify-center bg-white/80 dark:bg-gray-800/80"
                                 >
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Semua Bencana</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input
-                                    v-model="selectedDisasters"
-                                    value="banjir"
-                                    type="checkbox"
-                                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                >
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Banjir</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input
-                                    v-model="selectedDisasters"
-                                    value="karhutla"
-                                    type="checkbox"
-                                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                >
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Kebakaran Hutan</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input
-                                    v-model="selectedDisasters"
-                                    value="tanah_longsor"
-                                    type="checkbox"
-                                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                >
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Tanah Longsor</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input
-                                    v-model="selectedDisasters"
-                                    value="puting_beliung"
-                                    type="checkbox"
-                                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                >
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Puting Beliung</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Legend -->
-                    <div v-show="showLegend" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Legenda</h3>
-                        <div class="space-y-3">
-                            <div class="flex items-center">
-                                <div class="w-4 h-4 bg-red-500 rounded mr-3"></div>
-                                <span class="text-sm text-gray-700 dark:text-gray-300">Tinggi (>100 kejadian)</span>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="w-4 h-4 bg-orange-500 rounded mr-3"></div>
-                                <span class="text-sm text-gray-700 dark:text-gray-300">Sedang (50-100 kejadian)</span>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="w-4 h-4 bg-yellow-500 rounded mr-3"></div>
-                                <span class="text-sm text-gray-700 dark:text-gray-300">Rendah (10-50 kejadian)</span>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="w-4 h-4 bg-green-500 rounded mr-3"></div>
-                                <span class="text-sm text-gray-700 dark:text-gray-300">Sangat Rendah (<10 kejadian)</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Top Provinces -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Provinsi Teratas</h3>
-                        <div class="space-y-3">
-                            <div v-for="(province, index) in topProvinces" :key="province.wilayah" class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <div class="w-6 h-6 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-xs font-medium text-blue-600 dark:text-blue-400 mr-3">
-                                        {{ index + 1 }}
+                                    <div class="text-center">
+                                        <div class="mx-auto mb-2 h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Memuat data bencana...</p>
                                     </div>
-                                    <span class="text-sm text-gray-700 dark:text-gray-300 truncate">{{ province.wilayah }}</span>
                                 </div>
-                                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ province.jumlah_kejadian }}</span>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Kesimpulan dan Rangkuman -->
-            <div class="space-y-6">
-                <!-- Kesimpulan Utama -->
-                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
-                    <div class="flex items-start gap-4">
-                        <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                            <AlertTriangle class="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Kesimpulan Situasi Bencana Indonesia</h3>
-                            <div class="space-y-2 text-gray-700 dark:text-gray-300">
-                                <p v-if="topProvinces.length > 0">
-                                    <strong>Provinsi dengan risiko tertinggi:</strong> {{ topProvinces[0]?.wilayah }} dengan {{ topProvinces[0]?.jumlah_kejadian.toLocaleString() }} kejadian bencana.
-                                </p>
-                                <p>
-                                    <strong>Total dampak nasional:</strong> {{ totalIncidents.toLocaleString() }} kejadian bencana telah terjadi dengan
-                                    {{ totalDeaths.toLocaleString() }} korban meninggal, {{ totalInjured.toLocaleString() }} korban luka, dan
-                                    {{ totalMissing.toLocaleString() }} orang dilaporkan hilang.
-                                </p>
-                                <p class="text-sm text-blue-700 dark:text-blue-300 mt-3">
-                                    Data ini menunjukkan pentingnya kesiapsiagaan bencana dan sistem peringatan dini yang efektif di seluruh Indonesia.
-                                </p>
+                    <!-- Sidebar -->
+                    <div class="space-y-6 lg:col-span-1">
+                        <!-- Disaster Type Filter -->
+                        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                            <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">Filter Jenis Bencana</h3>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input
+                                        v-model="selectedDisasters"
+                                        value="all"
+                                        type="checkbox"
+                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Semua Bencana</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input
+                                        v-model="selectedDisasters"
+                                        value="banjir"
+                                        type="checkbox"
+                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Banjir</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input
+                                        v-model="selectedDisasters"
+                                        value="karhutla"
+                                        type="checkbox"
+                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Kebakaran Hutan</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input
+                                        v-model="selectedDisasters"
+                                        value="tanah_longsor"
+                                        type="checkbox"
+                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Tanah Longsor</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input
+                                        v-model="selectedDisasters"
+                                        value="puting_beliung"
+                                        type="checkbox"
+                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    />
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Puting Beliung</span>
+                                </label>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Analisis dan Insight -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Jenis Bencana Dominan -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                            <BarChart3 class="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                            Jenis Bencana Dominan
-                        </h4>
-                        <div class="space-y-3">
-                            <div v-for="disaster in dominantDisasters" :key="disaster.type" class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: disaster.color }"></div>
-                                    <span class="text-sm text-gray-700 dark:text-gray-300">{{ disaster.name }}</span>
+                        <!-- Legend -->
+                        <div v-show="showLegend" class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                            <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">Legenda</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center">
+                                    <div class="mr-3 h-4 w-4 rounded bg-red-500"></div>
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">Tinggi (>100 kejadian)</span>
                                 </div>
-                                <span class="text-sm font-medium text-gray-900 dark:text-white">{{ disaster.count.toLocaleString() }}</span>
+                                <div class="flex items-center">
+                                    <div class="mr-3 h-4 w-4 rounded bg-orange-500"></div>
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">Sedang (50-100 kejadian)</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="mr-3 h-4 w-4 rounded bg-yellow-500"></div>
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">Rendah (10-50 kejadian)</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="mr-3 h-4 w-4 rounded bg-green-500"></div>
+                                    <span class="text-sm text-gray-700 dark:text-gray-300">Sangat Rendah (&lt;10 kejadian)</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Rekomendasi -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                            <Shield class="h-5 w-5 text-green-600 dark:text-green-400" />
-                            Rekomendasi Mitigasi
-                        </h4>
-                        <div class="space-y-3">
-                            <div class="flex items-start gap-3">
-                                <div class="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                                <p class="text-sm text-gray-700 dark:text-gray-300">
-                                    Prioritaskan pembangunan infrastruktur tanggap bencana di provinsi dengan kejadian tertinggi
-                                </p>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <div class="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                                <p class="text-sm text-gray-700 dark:text-gray-300">
-                                    Perkuat sistem peringatan dini terutama untuk bencana banjir dan tanah longsor
-                                </p>
-                            </div>
-                            <div class="flex items-start gap-3">
-                                <div class="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                                <p class="text-sm text-gray-700 dark:text-gray-300">
-                                    Tingkatkan kapasitas respons darurat dan evakuasi di daerah rawan bencana
-                                </p>
+                        <!-- Top Provinces -->
+                        <div class="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                            <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">Provinsi Teratas</h3>
+                            <div class="space-y-3">
+                                <div v-for="(province, index) in topProvinces" :key="province.wilayah" class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="mr-3 flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-medium text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+                                        >
+                                            {{ index + 1 }}
+                                        </div>
+                                        <span class="truncate text-sm text-gray-700 dark:text-gray-300">{{ province.wilayah }}</span>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">{{ province.jumlah_kejadian }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Informasi Sumber dan Update -->
-                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center justify-between flex-wrap gap-4">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                                <Database class="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                <!-- Kesimpulan dan Rangkuman -->
+                <div class="space-y-6">
+                    <!-- Kesimpulan Utama -->
+                    <div
+                        class="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 dark:border-blue-800 dark:from-blue-900/20 dark:to-indigo-900/20"
+                    >
+                        <div class="flex items-start gap-4">
+                            <div class="rounded-lg bg-blue-100 p-3 dark:bg-blue-900/30">
+                                <AlertTriangle class="h-6 w-6 text-blue-600 dark:text-blue-400" />
                             </div>
                             <div>
-                                <h5 class="font-medium text-gray-900 dark:text-white">Sumber Data</h5>
-                                <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    Badan Nasional Penanggulangan Bencana (BNPB) Indonesia
-                                </p>
+                                <h3 class="mb-3 text-xl font-bold text-gray-900 dark:text-white">Kesimpulan Situasi Bencana Indonesia</h3>
+                                <div class="space-y-2 text-gray-700 dark:text-gray-300">
+                                    <p v-if="topProvinces.length > 0">
+                                        <strong>Provinsi dengan risiko tertinggi:</strong> {{ topProvinces[0]?.wilayah }} dengan
+                                        {{ topProvinces[0]?.jumlah_kejadian.toLocaleString() }} kejadian bencana.
+                                    </p>
+                                    <p>
+                                        <strong>Total dampak nasional:</strong> {{ totalIncidents.toLocaleString() }} kejadian bencana telah terjadi
+                                        dengan {{ totalDeaths.toLocaleString() }} korban meninggal, {{ totalInjured.toLocaleString() }} korban luka,
+                                        dan {{ totalMissing.toLocaleString() }} orang dilaporkan hilang.
+                                    </p>
+                                    <p class="mt-3 text-sm text-blue-700 dark:text-blue-300">
+                                        Data ini menunjukkan pentingnya kesiapsiagaan bencana dan sistem peringatan dini yang efektif di seluruh
+                                        Indonesia.
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Terakhir diperbarui</p>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ new Date().toLocaleDateString('id-ID') }}</p>
+                    </div>
+
+                    <!-- Analisis dan Insight -->
+                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        <!-- Jenis Bencana Dominan -->
+                        <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                            <h4 class="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
+                                <BarChart3 class="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                                Jenis Bencana Dominan
+                            </h4>
+                            <div class="space-y-3">
+                                <div v-for="disaster in dominantDisasters" :key="disaster.type" class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="h-3 w-3 rounded-full" :style="{ backgroundColor: disaster.color }"></div>
+                                        <span class="text-sm text-gray-700 dark:text-gray-300">{{ disaster.name }}</span>
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">{{ disaster.count.toLocaleString() }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rekomendasi -->
+                        <div class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+                            <h4 class="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-white">
+                                <Shield class="h-5 w-5 text-green-600 dark:text-green-400" />
+                                Rekomendasi Mitigasi
+                            </h4>
+                            <div class="space-y-3">
+                                <div class="flex items-start gap-3">
+                                    <div class="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-green-500"></div>
+                                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                                        Prioritaskan pembangunan infrastruktur tanggap bencana di provinsi dengan kejadian tertinggi
+                                    </p>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-green-500"></div>
+                                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                                        Perkuat sistem peringatan dini terutama untuk bencana banjir dan tanah longsor
+                                    </p>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-green-500"></div>
+                                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                                        Tingkatkan kapasitas respons darurat dan evakuasi di daerah rawan bencana
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-                        <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                            <Info class="h-4 w-4" />
-                            <span>
-                                Data ini mencakup kejadian bencana alam di seluruh Indonesia berdasarkan laporan resmi BNPB.
-                                Peta interaktif menampilkan tingkat risiko per provinsi dengan color coding untuk memudahkan analisis.
-                            </span>
+                    <!-- Informasi Sumber dan Update -->
+                    <div class="rounded-lg border border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-800/50">
+                        <div class="flex flex-wrap items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="rounded-lg bg-gray-100 p-2 dark:bg-gray-700">
+                                    <Database class="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                                </div>
+                                <div>
+                                    <h5 class="font-medium text-gray-900 dark:text-white">Sumber Data</h5>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Badan Nasional Penanggulangan Bencana (BNPB) Indonesia</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Terakhir diperbarui</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ new Date().toLocaleDateString('id-ID') }}</p>
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Call to Action -->
-                <div class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-lg p-6 border border-red-200 dark:border-red-800">
-                    <div class="text-center">
-                        <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Siaga Bencana, Selamatkan Nyawa</h4>
-                        <p class="text-gray-700 dark:text-gray-300 mb-4">
-                            Kenali risiko bencana di daerah Anda dan persiapkan rencana tanggap darurat bersama keluarga
-                        </p>
-                        <div class="flex items-center justify-center gap-4 flex-wrap">
-                            <a
-                                href="https://bnpb.go.id"
-                                target="_blank"
-                                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
-                            >
-                                Portal Resmi BNPB
-                            </a>
-                            <a
-                                href="https://magma.esdm.go.id/"
-                                target="_blank"
-                                class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg transition-colors"
-                            >
-                                Info Gunung Api
-                            </a>
+                        <div class="mt-4 border-t border-gray-200 pt-4 dark:border-gray-600">
+                            <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                <Info class="h-4 w-4" />
+                                <span>
+                                    Data ini mencakup kejadian bencana alam di seluruh Indonesia berdasarkan laporan resmi BNPB. Peta interaktif
+                                    menampilkan tingkat risiko per provinsi dengan color coding untuk memudahkan analisis.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Call to Action -->
+                    <div
+                        class="rounded-lg border border-red-200 bg-gradient-to-r from-red-50 to-orange-50 p-6 dark:border-red-800 dark:from-red-900/20 dark:to-orange-900/20"
+                    >
+                        <div class="text-center">
+                            <h4 class="mb-2 text-lg font-bold text-gray-900 dark:text-white">Siaga Bencana, Selamatkan Nyawa</h4>
+                            <p class="mb-4 text-gray-700 dark:text-gray-300">
+                                Kenali risiko bencana di daerah Anda dan persiapkan rencana tanggap darurat bersama keluarga
+                            </p>
+                            <div class="flex flex-wrap items-center justify-center gap-4">
+                                <a
+                                    href="https://bnpb.go.id"
+                                    target="_blank"
+                                    class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
+                                >
+                                    Portal Resmi BNPB
+                                </a>
+                                <a
+                                    href="https://magma.esdm.go.id/"
+                                    target="_blank"
+                                    class="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-700"
+                                >
+                                    Info Gunung Api
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
             </div>
         </div>
     </AppLayout>
 </template>
 
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
-import AppLayout from '@/layouts/AppLayout.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { AlertTriangle, Users, Heart, Search, BarChart3, Shield, Database, Info } from 'lucide-vue-next';
+import { Head } from '@inertiajs/vue3';
+import { AlertTriangle, BarChart3, Database, Heart, Info, Search, Shield, Users } from 'lucide-vue-next';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 // Types
 interface DisasterFeature {
@@ -377,7 +384,7 @@ interface DisasterData {
 // Breadcrumbs
 const breadcrumbItems: BreadcrumbItem[] = [
     { title: 'Dashboard', href: route('dashboard') },
-    { title: 'Peta Bencana', href: '#' }
+    { title: 'Peta Bencana', href: '#' },
 ];
 
 // Reactive state
@@ -415,9 +422,9 @@ const totalMissing = computed(() => {
 const topProvinces = computed(() => {
     if (!disasterData.value) return [];
     return disasterData.value.features
-        .map(feature => ({
+        .map((feature) => ({
             wilayah: feature.properties.wilayah,
-            jumlah_kejadian: feature.properties.jumlah_kejadian || 0
+            jumlah_kejadian: feature.properties.jumlah_kejadian || 0,
         }))
         .sort((a, b) => b.jumlah_kejadian - a.jumlah_kejadian)
         .slice(0, 10);
@@ -431,10 +438,10 @@ const dominantDisasters = computed(() => {
         banjir: 0,
         karhutla: 0,
         tanah_longsor: 0,
-        puting_beliung: 0
+        puting_beliung: 0,
     };
 
-    disasterData.value.features.forEach(feature => {
+    disasterData.value.features.forEach((feature) => {
         totals.banjir += feature.properties.banjir || 0;
         totals.karhutla += feature.properties.karhutla || 0;
         totals.tanah_longsor += feature.properties.tanah_longsor || 0;
@@ -445,7 +452,7 @@ const dominantDisasters = computed(() => {
         { type: 'banjir', name: 'Banjir', count: totals.banjir, color: '#3b82f6' },
         { type: 'karhutla', name: 'Kebakaran Hutan', count: totals.karhutla, color: '#dc2626' },
         { type: 'tanah_longsor', name: 'Tanah Longsor', count: totals.tanah_longsor, color: '#92400e' },
-        { type: 'puting_beliung', name: 'Puting Beliung', count: totals.puting_beliung, color: '#6b7280' }
+        { type: 'puting_beliung', name: 'Puting Beliung', count: totals.puting_beliung, color: '#6b7280' },
     ].sort((a, b) => b.count - a.count);
 });
 
@@ -482,7 +489,7 @@ const initializeMap = async () => {
         // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
-            maxZoom: 18
+            maxZoom: 18,
         }).addTo(map);
 
         // Load and display disaster data
@@ -512,7 +519,7 @@ const updateMapData = async () => {
                 opacity: 1,
                 color: '#fff',
                 dashArray: '',
-                fillOpacity: 0.7
+                fillOpacity: 0.7,
             };
         },
         onEachFeature: (feature, layer) => {
@@ -538,21 +545,21 @@ const updateMapData = async () => {
 
             // Hover effects
             layer.on({
-                mouseover: function(e) {
+                mouseover: function (e) {
                     const layer = e.target;
                     layer.setStyle({
                         weight: 3,
                         color: '#666',
                         dashArray: '',
-                        fillOpacity: 0.9
+                        fillOpacity: 0.9,
                     });
                     layer.bringToFront();
                 },
-                mouseout: function(e) {
+                mouseout: function (e) {
                     geoJsonLayer.resetStyle(e.target);
-                }
+                },
             });
-        }
+        },
     }).addTo(map);
 
     // Fit map to bounds

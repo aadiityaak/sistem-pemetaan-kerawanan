@@ -15,7 +15,7 @@ class IndasSeeder extends Seeder
         $this->call([
             IndasIndicatorTypeSeeder::class,
         ]);
-        
+
         $this->command->info('INDAS seeding completed successfully!');
         $this->command->info('- Created comprehensive indicator types for Economic, Tourism, and Social categories');
         $this->command->info('- Generated sample monthly data for 10 regions over the last 6 months');

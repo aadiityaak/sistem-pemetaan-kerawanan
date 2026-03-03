@@ -18,19 +18,19 @@ class CategorySeeder extends Seeder
                 'color' => '#3B82F6',
                 'children' => [
                     [
-                        'name' => 'Ideologi Kanan', 
+                        'name' => 'Ideologi Kanan',
                         'icon' => '🟦',
-                        'description' => 'Contoh: Front Pembela Islam (FPI), Jamaah Islamiah (JI), Jamaah Ansharut Daulah (JAD), Negara Islam Indonesia (NII), Mujahidin Indonesia Barat (MIB), Mujahidin Indonesia Timur (MIT)'
+                        'description' => 'Contoh: Front Pembela Islam (FPI), Jamaah Islamiah (JI), Jamaah Ansharut Daulah (JAD), Negara Islam Indonesia (NII), Mujahidin Indonesia Barat (MIB), Mujahidin Indonesia Timur (MIT)',
                     ],
                     [
-                        'name' => 'Ideologi Kiri', 
+                        'name' => 'Ideologi Kiri',
                         'icon' => '🟥',
-                        'description' => 'Contoh: Partai Komunis Indonesia (PKI), Gerwani Pemuda Rakyat, Lekra, Serikat Buruh'
+                        'description' => 'Contoh: Partai Komunis Indonesia (PKI), Gerwani Pemuda Rakyat, Lekra, Serikat Buruh',
                     ],
                     [
-                        'name' => 'Isu Menonjol', 
+                        'name' => 'Isu Menonjol',
                         'icon' => '📌',
-                        'description' => 'Isu-isu ideologi yang sedang menonjol dan mendapat perhatian publik'
+                        'description' => 'Isu-isu ideologi yang sedang menonjol dan mendapat perhatian publik',
                     ],
                 ],
             ],
@@ -40,19 +40,19 @@ class CategorySeeder extends Seeder
                 'color' => '#8B5CF6',
                 'children' => [
                     [
-                        'name' => 'Dalam Negeri', 
+                        'name' => 'Dalam Negeri',
                         'icon' => '🏠',
-                        'description' => 'Isu politik domestik, termasuk pemilu, pilkada, dan dinamika pemerintahan dalam negeri'
+                        'description' => 'Isu politik domestik, termasuk pemilu, pilkada, dan dinamika pemerintahan dalam negeri',
                     ],
                     [
-                        'name' => 'Luar Negeri', 
+                        'name' => 'Luar Negeri',
                         'icon' => '🌍',
-                        'description' => 'Politik luar negeri, hubungan diplomatik, dan isu internasional yang mempengaruhi Indonesia'
+                        'description' => 'Politik luar negeri, hubungan diplomatik, dan isu internasional yang mempengaruhi Indonesia',
                     ],
                     [
-                        'name' => 'Isu Menonjol', 
+                        'name' => 'Isu Menonjol',
                         'icon' => '📌',
-                        'description' => 'Isu politik yang sedang mendapat sorotan dan perhatian khusus'
+                        'description' => 'Isu politik yang sedang mendapat sorotan dan perhatian khusus',
                     ],
                 ],
             ],
@@ -62,44 +62,44 @@ class CategorySeeder extends Seeder
                 'color' => '#10B981',
                 'children' => [
                     [
-                        'name' => 'Export Import', 
+                        'name' => 'Export Import',
                         'icon' => '🚢',
-                        'description' => 'Pajak, Arus Barang & Jasa Antar Negara, Perdagangan, Dampak Ekonomi'
+                        'description' => 'Pajak, Arus Barang & Jasa Antar Negara, Perdagangan, Dampak Ekonomi',
                     ],
                     [
-                        'name' => 'Harga Sembako', 
+                        'name' => 'Harga Sembako',
                         'icon' => '🛒',
-                        'description' => 'Harga Beras, Sagu dan Jagung, Gula Pasir, Sayur-sayuran dan Buah-buahan, Daging Sapi dan Ayam, Minyak Goreng dan Margarin, Susu, Telur dll'
+                        'description' => 'Harga Beras, Sagu dan Jagung, Gula Pasir, Sayur-sayuran dan Buah-buahan, Daging Sapi dan Ayam, Minyak Goreng dan Margarin, Susu, Telur dll',
                     ],
                     [
-                        'name' => 'Index Pendapatan masyarakat', 
+                        'name' => 'Index Pendapatan masyarakat',
                         'icon' => '📈',
-                        'description' => 'UMR/UMK, Harga Saham, Daya Beli Masyarakat'
+                        'description' => 'UMR/UMK, Harga Saham, Daya Beli Masyarakat',
                     ],
                     [
-                        'name' => 'Kesenjangan Sosial', 
+                        'name' => 'Kesenjangan Sosial',
                         'icon' => '⚖️',
-                        'description' => 'Kesenjangan Ekonomi, Kesenjangan Pendidikan, Akses Kesehatan, Kesenjangan Geografis, Kesenjangan Akses Layanan Publik'
+                        'description' => 'Kesenjangan Ekonomi, Kesenjangan Pendidikan, Akses Kesehatan, Kesenjangan Geografis, Kesenjangan Akses Layanan Publik',
                     ],
                     [
-                        'name' => 'Ekonomi Asing', 
+                        'name' => 'Ekonomi Asing',
                         'icon' => '💱',
-                        'description' => 'Inflasi, Deflasi, Kebijakan Pajak'
+                        'description' => 'Inflasi, Deflasi, Kebijakan Pajak',
                     ],
                     [
-                        'name' => 'Pro Kontra Proyek Strategis Nasional', 
+                        'name' => 'Pro Kontra Proyek Strategis Nasional',
                         'icon' => '🏗️',
-                        'description' => 'Gejolak Masyarakat terkait proyek-proyek strategis nasional'
+                        'description' => 'Gejolak Masyarakat terkait proyek-proyek strategis nasional',
                     ],
                     [
-                        'name' => 'Korupsi', 
+                        'name' => 'Korupsi',
                         'icon' => '🕳️',
-                        'description' => 'Isu Korupsi, OTT (Operasi tangkap tangan)'
+                        'description' => 'Isu Korupsi, OTT (Operasi tangkap tangan)',
                     ],
                     [
-                        'name' => 'Isu Menonjol', 
+                        'name' => 'Isu Menonjol',
                         'icon' => '📌',
-                        'description' => 'Isu ekonomi yang sedang mendapat perhatian khusus'
+                        'description' => 'Isu ekonomi yang sedang mendapat perhatian khusus',
                     ],
                 ],
             ],
@@ -109,39 +109,39 @@ class CategorySeeder extends Seeder
                 'color' => '#EC4899',
                 'children' => [
                     [
-                        'name' => 'Ormas', 
+                        'name' => 'Ormas',
                         'icon' => '👥',
-                        'description' => 'Organisasi masyarakat: Umum, Keagamaan, AMP (Asosiasi Papua Merdeka)'
+                        'description' => 'Organisasi masyarakat: Umum, Keagamaan, AMP (Asosiasi Papua Merdeka)',
                     ],
                     [
-                        'name' => 'Bencana Alam', 
+                        'name' => 'Bencana Alam',
                         'icon' => '🌪️',
-                        'description' => 'Tanah Longsor, Banjir, Gunung Meletus'
+                        'description' => 'Tanah Longsor, Banjir, Gunung Meletus',
                     ],
                     [
-                        'name' => 'Unjuk rasa', 
+                        'name' => 'Unjuk rasa',
                         'icon' => '📢',
-                        'description' => 'Demonstrasi dan aksi protes masyarakat'
+                        'description' => 'Demonstrasi dan aksi protes masyarakat',
                     ],
                     [
-                        'name' => 'Konflik sosial', 
+                        'name' => 'Konflik sosial',
                         'icon' => '⚔️',
-                        'description' => 'Konflik: Pertambangan, Perkebunan, Antar kelompok & agama, Antar Negara'
+                        'description' => 'Konflik: Pertambangan, Perkebunan, Antar kelompok & agama, Antar Negara',
                     ],
                     [
-                        'name' => 'PHK', 
+                        'name' => 'PHK',
                         'icon' => '📉',
-                        'description' => 'Isu Pemutusan Hubungan Kerja dan dampaknya'
+                        'description' => 'Isu Pemutusan Hubungan Kerja dan dampaknya',
                     ],
                     [
-                        'name' => 'SARA', 
+                        'name' => 'SARA',
                         'icon' => '🧬',
-                        'description' => 'Isu Suku, Ras, Agama yang berpotensi menimbulkan konflik'
+                        'description' => 'Isu Suku, Ras, Agama yang berpotensi menimbulkan konflik',
                     ],
                     [
-                        'name' => 'Isu Menonjol', 
+                        'name' => 'Isu Menonjol',
                         'icon' => '📌',
-                        'description' => 'Isu sosial budaya yang sedang mendapat perhatian khusus'
+                        'description' => 'Isu sosial budaya yang sedang mendapat perhatian khusus',
                     ],
                 ],
             ],
@@ -151,19 +151,19 @@ class CategorySeeder extends Seeder
                 'color' => '#F59E0B',
                 'children' => [
                     [
-                        'name' => 'Teror', 
+                        'name' => 'Teror',
                         'icon' => '💣',
-                        'description' => 'Teroris, Ancaman Bom, Ledakan BOM'
+                        'description' => 'Teroris, Ancaman Bom, Ledakan BOM',
                     ],
                     [
-                        'name' => 'Keamanan Negara', 
+                        'name' => 'Keamanan Negara',
                         'icon' => '🚓',
-                        'description' => 'KKB, RMS (Republik Maluku Selatan), Isu Aceh Merdeka, Bentrok TNI POLRI'
+                        'description' => 'KKB, RMS (Republik Maluku Selatan), Isu Aceh Merdeka, Bentrok TNI POLRI',
                     ],
                     [
-                        'name' => 'Isu Menonjol', 
+                        'name' => 'Isu Menonjol',
                         'icon' => '📌',
-                        'description' => 'Isu keamanan yang sedang mendapat perhatian khusus'
+                        'description' => 'Isu keamanan yang sedang mendapat perhatian khusus',
                     ],
                 ],
             ],
@@ -187,7 +187,7 @@ class CategorySeeder extends Seeder
             $sub_sort = 1;
             foreach ($mainCategoryData['children'] as $child) {
                 SubCategory::updateOrCreate(
-                    ['slug' => Str::slug($mainCategoryName . '-' . $child['name'])],
+                    ['slug' => Str::slug($mainCategoryName.'-'.$child['name'])],
                     [
                         'name' => $child['name'],
                         'description' => $child['description'] ?? null,

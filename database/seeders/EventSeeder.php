@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Event;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class EventSeeder extends Seeder
 {
@@ -160,7 +159,7 @@ class EventSeeder extends Seeder
                 'is_active' => true,
             ],
 
-            // Conference Events  
+            // Conference Events
             [
                 'title' => 'Konferensi Keamanan Nasional 2024',
                 'description' => 'Konferensi tahunan tentang strategi keamanan nasional',

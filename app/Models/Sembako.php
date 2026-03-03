@@ -31,7 +31,7 @@ class Sembako extends Model
     // Format harga untuk display
     public function getFormattedHargaAttribute(): string
     {
-        return 'Rp ' . number_format($this->harga, 0, ',', '.');
+        return 'Rp '.number_format($this->harga, 0, ',', '.');
     }
 
     protected $appends = ['formatted_harga'];

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class VideoUploadController extends Controller
@@ -31,20 +31,20 @@ class VideoUploadController extends Controller
 
         try {
             // Create temporary directory for chunks
-            $tempDir = storage_path('app/temp-chunks/' . $uploadId);
-            if (!is_dir($tempDir)) {
+            $tempDir = storage_path('app/temp-chunks/'.$uploadId);
+            if (! is_dir($tempDir)) {
                 mkdir($tempDir, 0755, true);
             }
 
             // Save chunk
             $chunkFile = $request->file('chunk');
-            $chunkPath = $tempDir . '/chunk_' . $chunkIndex;
-            $chunkFile->move($tempDir, 'chunk_' . $chunkIndex);
+            $chunkPath = $tempDir.'/chunk_'.$chunkIndex;
+            $chunkFile->move($tempDir, 'chunk_'.$chunkIndex);
 
             // Check if all chunks are uploaded
             $uploadedChunks = 0;
             for ($i = 0; $i < $totalChunks; $i++) {
-                if (file_exists($tempDir . '/chunk_' . $i)) {
+                if (file_exists($tempDir.'/chunk_'.$i)) {
                     $uploadedChunks++;
                 }
             }
@@ -52,20 +52,20 @@ class VideoUploadController extends Controller
             // If all chunks are uploaded, combine them
             if ($uploadedChunks === $totalChunks) {
                 $fileExtension = pathinfo($originalFileName, PATHINFO_EXTENSION);
-                $safeFileName = Str::slug(pathinfo($originalFileName, PATHINFO_FILENAME)) . '_' . time() . '.' . $fileExtension;
-                $finalPath = 'monitoring-data/videos/' . $safeFileName;
-                $fullPath = storage_path('app/public/' . $finalPath);
+                $safeFileName = Str::slug(pathinfo($originalFileName, PATHINFO_FILENAME)).'_'.time().'.'.$fileExtension;
+                $finalPath = 'monitoring-data/videos/'.$safeFileName;
+                $fullPath = storage_path('app/public/'.$finalPath);
 
                 // Create videos directory if it doesn't exist
                 $videoDir = dirname($fullPath);
-                if (!is_dir($videoDir)) {
+                if (! is_dir($videoDir)) {
                     mkdir($videoDir, 0755, true);
                 }
 
                 // Combine chunks
                 $finalFile = fopen($fullPath, 'wb');
                 for ($i = 0; $i < $totalChunks; $i++) {
-                    $chunkPath = $tempDir . '/chunk_' . $i;
+                    $chunkPath = $tempDir.'/chunk_'.$i;
                     $chunkData = file_get_contents($chunkPath);
                     fwrite($finalFile, $chunkData);
                     unlink($chunkPath); // Delete chunk after combining
@@ -77,8 +77,9 @@ class VideoUploadController extends Controller
 
                 // Verify file size
                 $combinedFileSize = filesize($fullPath);
-                if ($combinedFileSize !== (int)$fileSize) {
+                if ($combinedFileSize !== (int) $fileSize) {
                     unlink($fullPath);
+
                     return response()->json([
                         'success' => false,
                         'message' => 'File size mismatch. Upload may be corrupted.',
@@ -99,13 +100,12 @@ class VideoUploadController extends Controller
                 'uploadedChunks' => $uploadedChunks,
                 'totalChunks' => $totalChunks,
             ]);
-
         } catch (\Exception $e) {
-            Log::error('Video chunk upload error: ' . $e->getMessage());
-            
+            Log::error('Video chunk upload error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Upload failed: ' . $e->getMessage(),
+                'message' => 'Upload failed: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -120,11 +120,11 @@ class VideoUploadController extends Controller
         ]);
 
         $videoPath = $request->input('videoPath');
-        
+
         try {
             if (Storage::disk('public')->exists($videoPath)) {
                 Storage::disk('public')->delete($videoPath);
-                
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Video deleted successfully',
@@ -135,39 +135,39 @@ class VideoUploadController extends Controller
                 'success' => false,
                 'message' => 'Video not found',
             ], 404);
-
         } catch (\Exception $e) {
-            Log::error('Video delete error: ' . $e->getMessage());
-            
+            Log::error('Video delete error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Delete failed: ' . $e->getMessage(),
+                'message' => 'Delete failed: '.$e->getMessage(),
             ], 500);
         }
     }
-    
+
     /**
      * Recursively remove directory and all contents
      */
-    private function removeDirectory($dir) {
-        if (!is_dir($dir)) {
+    private function removeDirectory($dir)
+    {
+        if (! is_dir($dir)) {
             return false;
         }
-        
+
         $files = scandir($dir);
         foreach ($files as $file) {
             if ($file === '.' || $file === '..') {
                 continue;
             }
-            
-            $filePath = $dir . '/' . $file;
+
+            $filePath = $dir.'/'.$file;
             if (is_dir($filePath)) {
                 $this->removeDirectory($filePath);
             } else {
                 unlink($filePath);
             }
         }
-        
+
         return rmdir($dir);
     }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PartaiPolitik;
 use App\Models\JumlahSuara;
+use App\Models\PartaiPolitik;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -12,14 +12,14 @@ class PartaiPolitikController extends Controller
 {
     public function index(Request $request)
     {
-        $query = PartaiPolitik::with(['jumlahSuara' => function($query) {
+        $query = PartaiPolitik::with(['jumlahSuara' => function ($query) {
             $query->orderBy('tahun_pemilu', 'desc');
         }]);
 
         if ($request->has('search') && $request->search != '') {
             $query->where(function ($q) use ($request) {
-                $q->where('nama_partai', 'like', '%' . $request->search . '%')
-                  ->orWhere('singkatan', 'like', '%' . $request->search . '%');
+                $q->where('nama_partai', 'like', '%'.$request->search.'%')
+                    ->orWhere('singkatan', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -31,7 +31,7 @@ class PartaiPolitikController extends Controller
 
         return Inertia::render('PartaiPolitik/Index', [
             'partaiPolitik' => $partaiPolitik,
-            'filters' => $request->only(['search', 'status_filter'])
+            'filters' => $request->only(['search', 'status_filter']),
         ]);
     }
 
@@ -49,11 +49,11 @@ class PartaiPolitikController extends Controller
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'nama_ketua' => 'nullable|string|max:100',
             'foto_ketua' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status_aktif' => 'sometimes|boolean'
+            'status_aktif' => 'sometimes|boolean',
         ]);
 
         // Handle checkbox default value
-        if (!isset($validated['status_aktif'])) {
+        if (! isset($validated['status_aktif'])) {
             $validated['status_aktif'] = false;
         }
 
@@ -76,19 +76,19 @@ class PartaiPolitikController extends Controller
 
     public function show(PartaiPolitik $partaiPolitik)
     {
-        $partaiPolitik->load(['jumlahSuara' => function($query) {
+        $partaiPolitik->load(['jumlahSuara' => function ($query) {
             $query->orderBy('tahun_pemilu', 'desc');
         }]);
 
         return Inertia::render('PartaiPolitik/Show', [
-            'partaiPolitik' => $partaiPolitik
+            'partaiPolitik' => $partaiPolitik,
         ]);
     }
 
     public function edit(PartaiPolitik $partaiPolitik)
     {
         return Inertia::render('PartaiPolitik/Edit', [
-            'partaiPolitik' => $partaiPolitik
+            'partaiPolitik' => $partaiPolitik,
         ]);
     }
 
@@ -97,24 +97,24 @@ class PartaiPolitikController extends Controller
         $validated = $request->validate([
             'nama_partai' => 'required|string|max:100',
             'singkatan' => 'required|string|max:50',
-            'nomor_urut' => 'required|integer|unique:partai_politik,nomor_urut,' . $partaiPolitik->id,
+            'nomor_urut' => 'required|integer|unique:partai_politik,nomor_urut,'.$partaiPolitik->id,
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'nama_ketua' => 'nullable|string|max:100',
             'foto_ketua' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status_aktif' => 'sometimes|boolean'
+            'status_aktif' => 'sometimes|boolean',
         ]);
 
         // Handle checkbox default value
-        if (!isset($validated['status_aktif'])) {
+        if (! isset($validated['status_aktif'])) {
             $validated['status_aktif'] = false;
         }
 
         if ($request->hasFile('logo')) {
             // Delete old logo if exists
             if ($partaiPolitik->logo_path) {
-                Storage::delete('public/' . $partaiPolitik->logo_path);
+                Storage::delete('public/'.$partaiPolitik->logo_path);
             }
-            
+
             $logoPath = $request->file('logo')->store('partai-logos', 'public');
             $validated['logo_path'] = $logoPath;
         }
@@ -122,9 +122,9 @@ class PartaiPolitikController extends Controller
         if ($request->hasFile('foto_ketua')) {
             // Delete old chairman photo if exists
             if ($partaiPolitik->foto_ketua) {
-                Storage::delete('public/' . $partaiPolitik->foto_ketua);
+                Storage::delete('public/'.$partaiPolitik->foto_ketua);
             }
-            
+
             $fotoKetuaPath = $request->file('foto_ketua')->store('ketua-fotos', 'public');
             $validated['foto_ketua'] = $fotoKetuaPath;
         }
@@ -140,12 +140,12 @@ class PartaiPolitikController extends Controller
     {
         // Delete logo file if exists
         if ($partaiPolitik->logo_path) {
-            Storage::delete('public/' . $partaiPolitik->logo_path);
+            Storage::delete('public/'.$partaiPolitik->logo_path);
         }
 
         // Delete chairman photo file if exists
         if ($partaiPolitik->foto_ketua) {
-            Storage::delete('public/' . $partaiPolitik->foto_ketua);
+            Storage::delete('public/'.$partaiPolitik->foto_ketua);
         }
 
         $partaiPolitik->delete();
@@ -158,7 +158,7 @@ class PartaiPolitikController extends Controller
     {
         $validated = $request->validate([
             'tahun_pemilu' => 'required|integer|digits:4',
-            'jumlah_suara' => 'required|integer|min:0'
+            'jumlah_suara' => 'required|integer|min:0',
         ]);
 
         $validated['partai_id'] = $partaiPolitik->id;
@@ -176,7 +176,7 @@ class PartaiPolitikController extends Controller
     {
         $validated = $request->validate([
             'tahun_pemilu' => 'required|integer|digits:4',
-            'jumlah_suara' => 'required|integer|min:0'
+            'jumlah_suara' => 'required|integer|min:0',
         ]);
 
         $jumlahSuara->update($validated);

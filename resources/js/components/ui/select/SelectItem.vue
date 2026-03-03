@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
-import { SelectItem as SelectItemPrimitive, SelectItemIndicator, SelectItemText, type SelectItemProps } from 'reka-ui/Select'
+import { SelectItem as SelectItemPrimitive, SelectItemIndicator, SelectItemText, type SelectItemProps } from 'reka-ui'
 import { Check } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 

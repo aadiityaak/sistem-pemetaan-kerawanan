@@ -2,12 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\Sembako;
 use App\Models\KabupatenKota;
-use Illuminate\Support\Facades\DB;
+use App\Models\Sembako;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class SembakoSeeder extends Seeder
 {
@@ -20,7 +18,7 @@ class SembakoSeeder extends Seeder
         $sampleRegions = KabupatenKota::with('provinsi')
             ->whereIn('nama', [
                 'KOTA JAKARTA PUSAT',
-                'KOTA SURABAYA', 
+                'KOTA SURABAYA',
                 'KOTA BANDUNG',
                 'KOTA MEDAN',
                 'KOTA MAKASSAR',
@@ -33,7 +31,7 @@ class SembakoSeeder extends Seeder
                 'KOTA MANADO',
                 'KOTA PONTIANAK',
                 'KOTA BANJARMASIN',
-                'KOTA PEKANBARU'
+                'KOTA PEKANBARU',
             ])
             ->get();
 
@@ -95,19 +93,21 @@ class SembakoSeeder extends Seeder
         // Generate data for last 3 months
         $sembakoData = [];
         $currentDate = Carbon::now();
-        
+
         foreach ($sampleRegions as $region) {
             // Generate data for each commodity
             foreach ($commodities as $commodity) {
                 // Generate 3 months of data (with some gaps for realism)
                 for ($i = 2; $i >= 0; $i--) {
                     $recordDate = $currentDate->copy()->subMonths($i)->subDays(rand(0, 15));
-                    
+
                     // Skip some records randomly to create realistic gaps
-                    if (rand(1, 10) <= 2) continue; // 20% chance to skip
-                    
+                    if (rand(1, 10) <= 2) {
+                        continue;
+                    } // 20% chance to skip
+
                     $price = $this->calculatePrice($commodity, $region->nama, $recordDate);
-                    
+
                     $sembakoData[] = [
                         'nama_komoditas' => $commodity['nama'],
                         'satuan' => $commodity['satuan'],
@@ -121,15 +121,15 @@ class SembakoSeeder extends Seeder
                 }
             }
         }
-        
+
         // Insert in chunks for better performance
         foreach (array_chunk($sembakoData, 50) as $chunk) {
             Sembako::insert($chunk);
         }
-        
-        $this->command->info('Created ' . count($sembakoData) . ' Sembako commodity price records for ' . $sampleRegions->count() . ' regions.');
+
+        $this->command->info('Created '.count($sembakoData).' Sembako commodity price records for '.$sampleRegions->count().' regions.');
     }
-    
+
     /**
      * Calculate realistic price based on region, commodity, and date
      */
@@ -137,23 +137,23 @@ class SembakoSeeder extends Seeder
     {
         $basePrice = $commodity['base_price'];
         $variance = $commodity['variance'];
-        
+
         // Regional price adjustments
         $regionalMultiplier = $this->getRegionalPriceMultiplier($regionName);
-        
+
         // Seasonal adjustments for certain commodities
         $seasonalAdjustment = $this->getSeasonalAdjustment($commodity['nama'], $date);
-        
+
         // Market fluctuation (random but realistic)
         $marketFluctuation = rand(-$variance, $variance);
-        
+
         // Calculate final price
         $finalPrice = ($basePrice * $regionalMultiplier) + $seasonalAdjustment + $marketFluctuation;
-        
+
         // Ensure minimum price and round to nearest 100 for realism
         return max(500, round($finalPrice / 100) * 100);
     }
-    
+
     /**
      * Get regional price multiplier based on economic conditions
      */
@@ -171,84 +171,84 @@ class SembakoSeeder extends Seeder
             'KOTA MALANG' => 0.95,        // Lower cost
             'KOTA PALEMBANG' => 0.95,     // Lower cost
         ];
-        
+
         return $priceMultipliers[$regionName] ?? 1.0; // Default multiplier
     }
-    
+
     /**
      * Get seasonal price adjustment for certain commodities
      */
     private function getSeasonalAdjustment(string $commodityName, Carbon $date): int
     {
         $month = $date->month;
-        
+
         // Seasonal patterns for Indonesian commodities
         $seasonalPatterns = [
             'Cabai Merah' => [
                 1 => 2000, 2 => 3000, 3 => 1000,   // Dry season - higher prices
                 4 => -1000, 5 => -2000, 6 => -1000, // Harvest season - lower prices
                 7 => 1000, 8 => 2000, 9 => 3000,   // Dry season - higher prices
-                10 => -1000, 11 => -2000, 12 => 1000 // Rainy season variation
+                10 => -1000, 11 => -2000, 12 => 1000, // Rainy season variation
             ],
             'Cabai Rawit' => [
                 1 => 3000, 2 => 4000, 3 => 2000,
                 4 => -2000, 5 => -3000, 6 => -1000,
                 7 => 2000, 8 => 3000, 9 => 4000,
-                10 => -1000, 11 => -2000, 12 => 1000
+                10 => -1000, 11 => -2000, 12 => 1000,
             ],
             'Bawang Merah' => [
                 1 => 1000, 2 => 2000, 3 => 3000,   // Before harvest
                 4 => -3000, 5 => -4000, 6 => -2000, // Harvest season
                 7 => 1000, 8 => 2000, 9 => 3000,
-                10 => -1000, 11 => -2000, 12 => 0
+                10 => -1000, 11 => -2000, 12 => 0,
             ],
             'Tomat' => [
                 1 => 500, 2 => 1000, 3 => 500,
                 4 => -1000, 5 => -1500, 6 => -500,
                 7 => 500, 8 => 1000, 9 => 1500,
-                10 => -500, 11 => -1000, 12 => 0
+                10 => -500, 11 => -1000, 12 => 0,
             ],
         ];
-        
+
         return $seasonalPatterns[$commodityName][$month] ?? 0;
     }
-    
+
     /**
      * Generate realistic notes based on price conditions
      */
     private function generateKeterangan(string $commodityName, int $actualPrice, int $basePrice): ?string
     {
         $priceRatio = $actualPrice / $basePrice;
-        
+
         $keteranganOptions = [];
-        
+
         if ($priceRatio > 1.3) {
             $keteranganOptions = [
                 'Harga meningkat tajam karena kelangkaan pasokan',
                 'Dampak cuaca ekstrem pada produksi',
                 'Tingginya permintaan pasar',
                 'Gangguan distribusi dari daerah produsen',
-                'Kenaikan harga BBM mempengaruhi biaya transportasi'
+                'Kenaikan harga BBM mempengaruhi biaya transportasi',
             ];
         } elseif ($priceRatio > 1.1) {
             $keteranganOptions = [
                 'Harga sedikit naik mengikuti musim',
                 'Permintaan pasar cukup tinggi',
                 'Biaya distribusi meningkat',
-                'Kualitas produk baik, harga stabil naik'
+                'Kualitas produk baik, harga stabil naik',
             ];
         } elseif ($priceRatio < 0.8) {
             $keteranganOptions = [
                 'Panen raya, pasokan melimpah',
                 'Harga turun karena oversupply',
                 'Musim panen tiba, harga turun',
-                'Kompetisi antar pedagang menurunkan harga'
+                'Kompetisi antar pedagang menurunkan harga',
             ];
         } elseif ($priceRatio < 0.9) {
             $keteranganOptions = [
                 'Harga stabil dengan sedikit penurunan',
                 'Pasokan cukup dari daerah produsen',
-                'Kondisi pasar normal'
+                'Kondisi pasar normal',
             ];
         } else {
             // Normal price range - sometimes no notes
@@ -256,12 +256,12 @@ class SembakoSeeder extends Seeder
                 $keteranganOptions = [
                     'Harga stabil sesuai kondisi pasar',
                     'Kualitas baik, harga normal',
-                    'Pasokan dan permintaan seimbang'
+                    'Pasokan dan permintaan seimbang',
                 ];
             }
         }
-        
-        return !empty($keteranganOptions) 
+
+        return ! empty($keteranganOptions)
             ? $keteranganOptions[array_rand($keteranganOptions)]
             : null;
     }

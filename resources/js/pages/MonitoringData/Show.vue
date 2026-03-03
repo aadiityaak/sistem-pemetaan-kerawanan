@@ -175,9 +175,9 @@ const formatDateTime = (dateString: string): string => {
 
 const getRoleLabel = (role: string): string => {
     const roles: Record<string, string> = {
-        'super_admin': 'Super Administrator',
-        'admin_vip': 'Administrator VIP',
-        'admin': 'Administrator',
+        super_admin: 'Super Administrator',
+        admin_vip: 'Administrator VIP',
+        admin: 'Administrator',
     };
     return roles[role] || role;
 };
@@ -185,7 +185,7 @@ const getRoleLabel = (role: string): string => {
 // Format description dengan auto paragraph
 const formatDescription = (description: string): string => {
     if (!description) return '';
-    
+
     // Jika sudah mengandung tag HTML, pastikan spacing yang baik antar paragraf
     if (/<[a-z][\s\S]*>/i.test(description)) {
         // Bersihkan paragraf kosong yang tidak perlu dan perbaiki spacing
@@ -193,13 +193,13 @@ const formatDescription = (description: string): string => {
             .replace(/<p><\/p>/g, '<p>&nbsp;</p>') // Convert empty p tags to space
             .replace(/(<\/p>\s*<p>)/g, '</p><p>'); // Ensure consistent p tag spacing
     }
-    
+
     // Konversi line breaks menjadi paragraf
     // Split berdasarkan double line breaks untuk paragraf baru
     const paragraphs = description.split(/\n\s*\n/);
-    
+
     // Konversi setiap paragraf dan ganti single line breaks dengan <br>
-    const formattedParagraphs = paragraphs.map(paragraph => {
+    const formattedParagraphs = paragraphs.map((paragraph) => {
         const trimmed = paragraph.trim();
         if (!trimmed) {
             return '<p>&nbsp;</p>'; // Empty paragraph with non-breaking space
@@ -207,7 +207,7 @@ const formatDescription = (description: string): string => {
         const formattedParagraph = trimmed.replace(/\n/g, '<br>');
         return `<p>${formattedParagraph}</p>`;
     });
-    
+
     return formattedParagraphs.join('');
 };
 
@@ -353,13 +353,23 @@ onMounted(async () => {
                             <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                                 <div class="flex items-center gap-2">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                        />
                                     </svg>
                                     <time>{{ formatDate(monitoringData.incident_date) }}</time>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                        />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
                                     <span>{{ monitoringData.kecamatan?.nama }}, {{ monitoringData.kabupaten_kota?.nama }}</span>
@@ -387,7 +397,7 @@ onMounted(async () => {
 
                         <!-- Article Title -->
                         <header class="px-6 py-6">
-                            <h1 class="text-3xl font-bold leading-tight text-gray-900 dark:text-white lg:text-4xl">
+                            <h1 class="text-3xl leading-tight font-bold text-gray-900 lg:text-4xl dark:text-white">
                                 {{ monitoringData.title }}
                             </h1>
                         </header>
@@ -395,7 +405,7 @@ onMounted(async () => {
                         <!-- Article Content -->
                         <div v-if="monitoringData.description" class="px-6 pb-6">
                             <div
-                                class="prose prose-lg dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 [&>p]:mb-6 [&>p:empty]:mb-8 [&>p:last-child]:mb-0 [&>p]:leading-relaxed [&>p]:text-lg"
+                                class="prose prose-lg dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 [&>p]:mb-6 [&>p]:text-lg [&>p]:leading-relaxed [&>p:empty]:mb-8 [&>p:last-child]:mb-0"
                                 v-html="formatDescription(monitoringData.description)"
                             ></div>
                         </div>
@@ -410,7 +420,9 @@ onMounted(async () => {
                             <div v-if="monitoringData.jumlah_terdampak">
                                 <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah Komentar</label>
                                 <div class="flex items-baseline gap-2">
-                                    <span class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ monitoringData.jumlah_terdampak.toLocaleString() }}</span>
+                                    <span class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{
+                                        monitoringData.jumlah_terdampak.toLocaleString()
+                                    }}</span>
                                     <span class="text-gray-600 dark:text-gray-400">orang</span>
                                 </div>
                             </div>
@@ -418,7 +430,7 @@ onMounted(async () => {
                             <!-- Koordinat -->
                             <div>
                                 <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-400">Koordinat</label>
-                                <div class="font-mono text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-md">
+                                <div class="rounded-md bg-gray-50 px-3 py-2 font-mono text-sm text-gray-900 dark:bg-gray-700 dark:text-white">
                                     {{ monitoringData.latitude }}, {{ monitoringData.longitude }}
                                 </div>
                             </div>
@@ -444,9 +456,7 @@ onMounted(async () => {
                                     <span v-if="monitoringData.data_source === 'online'">
                                         Data berasal dari portal berita atau sumber online lainnya
                                     </span>
-                                    <span v-else>
-                                        Data ditulis sendiri oleh penanggung jawab
-                                    </span>
+                                    <span v-else> Data ditulis sendiri oleh penanggung jawab </span>
                                 </p>
                             </div>
 
@@ -648,7 +658,10 @@ onMounted(async () => {
                     </div>
 
                     <!-- Author Information -->
-                    <div v-if="monitoringData.user" class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                    <div
+                        v-if="monitoringData.user"
+                        class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                    >
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">👤 Penulis Berita</h3>
 
                         <div class="space-y-4">
@@ -657,14 +670,21 @@ onMounted(async () => {
                                 <div class="flex-shrink-0">
                                     <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
                                         <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                            />
                                         </svg>
                                     </div>
                                 </div>
                                 <div>
                                     <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ monitoringData.user.name }}</h4>
                                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ getRoleLabel(monitoringData.user.role) }}</p>
-                                    <p v-if="monitoringData.user.provinsi" class="text-xs text-gray-400 dark:text-gray-500">📍 {{ monitoringData.user.provinsi.nama }}</p>
+                                    <p v-if="monitoringData.user.provinsi" class="text-xs text-gray-400 dark:text-gray-500">
+                                        📍 {{ monitoringData.user.provinsi.nama }}
+                                    </p>
                                 </div>
                             </div>
 
@@ -672,21 +692,36 @@ onMounted(async () => {
                             <div class="space-y-2 border-t border-gray-100 pt-4 dark:border-gray-700">
                                 <div class="flex items-center space-x-2">
                                     <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                        />
                                     </svg>
                                     <span class="text-sm text-gray-600 dark:text-gray-300">{{ monitoringData.user.email }}</span>
                                 </div>
                                 <div v-if="monitoringData.user.phone" class="flex items-center space-x-2">
                                     <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                                        />
                                     </svg>
                                     <span class="text-sm text-gray-600 dark:text-gray-300">{{ monitoringData.user.phone }}</span>
                                 </div>
                                 <div v-else class="flex items-center space-x-2">
                                     <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                                        />
                                     </svg>
-                                    <span class="text-sm text-gray-400 dark:text-gray-500 italic">Nomor telepon tidak tersedia</span>
+                                    <span class="text-sm text-gray-400 italic dark:text-gray-500">Nomor telepon tidak tersedia</span>
                                 </div>
                             </div>
                         </div>

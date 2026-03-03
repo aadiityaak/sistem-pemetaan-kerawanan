@@ -104,9 +104,9 @@
                                     <label class="text-sm font-medium">Tampil untuk Role:</label>
                                     <div class="space-y-2">
                                         <div class="flex items-center space-x-2">
-                                            <input 
+                                            <input
                                                 type="checkbox"
-                                                id="role_super_admin" 
+                                                id="role_super_admin"
                                                 v-model="form.permissions"
                                                 value="super_admin"
                                                 class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
@@ -114,9 +114,9 @@
                                             <label for="role_super_admin" class="text-sm font-medium">Super Admin</label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <input 
+                                            <input
                                                 type="checkbox"
-                                                id="role_admin_vip" 
+                                                id="role_admin_vip"
                                                 v-model="form.permissions"
                                                 value="admin_vip"
                                                 class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
@@ -124,9 +124,9 @@
                                             <label for="role_admin_vip" class="text-sm font-medium">Admin VIP</label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <input 
+                                            <input
                                                 type="checkbox"
-                                                id="role_admin" 
+                                                id="role_admin"
                                                 v-model="form.permissions"
                                                 value="admin"
                                                 class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
@@ -134,7 +134,9 @@
                                             <label for="role_admin" class="text-sm font-medium">Admin</label>
                                         </div>
                                     </div>
-                                    <p class="text-xs text-muted-foreground">Pilih role yang dapat melihat menu ini. Jika tidak ada yang dipilih, menu akan tampil untuk semua user.</p>
+                                    <p class="text-xs text-muted-foreground">
+                                        Pilih role yang dapat melihat menu ini. Jika tidak ada yang dipilih, menu akan tampil untuk semua user.
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -166,7 +168,6 @@ import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue';
 // Removed Checkbox import - using native checkbox instead
 // Removed Select components - using native select instead
 import { Link, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
 
 interface MenuItem {
     id: number;
@@ -203,9 +204,7 @@ const form = useForm({
     sort_order: props.menuItem.sort_order || 0,
     parent_id: props.menuItem.parent_id || null,
     admin_only: props.menuItem.admin_only ?? false,
-    permissions: (props.menuItem.permissions && Array.isArray(props.menuItem.permissions) 
-        ? props.menuItem.permissions 
-        : []) as string[],
+    permissions: (props.menuItem.permissions && Array.isArray(props.menuItem.permissions) ? props.menuItem.permissions : []) as string[],
     description: props.menuItem.description || '',
 });
 

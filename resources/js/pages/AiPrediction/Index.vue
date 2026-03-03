@@ -99,7 +99,11 @@
 
                     <!-- Analysis Button -->
                     <div>
-                        <Button type="submit" :disabled="!selectedCategory || !selectedTimePeriod || isAnalyzing || !geminiEnabled" class="w-full sm:w-auto">
+                        <Button
+                            type="submit"
+                            :disabled="!selectedCategory || !selectedTimePeriod || isAnalyzing || !geminiEnabled"
+                            class="w-full sm:w-auto"
+                        >
                             <svg v-if="isAnalyzing" class="mr-3 -ml-1 h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path
@@ -514,7 +518,7 @@ const initializeCharts = async () => {
 
         // Initialize Location Distribution Chart
         if (locationChartRef.value && stats.location_distribution) {
-            const locationData = Object.values(stats.location_distribution).slice(0, 5) as Array<{location: string, count: number}>;
+            const locationData = Object.values(stats.location_distribution).slice(0, 5) as Array<{ location: string; count: number }>;
 
             locationChart = new Chart(locationChartRef.value, {
                 type: 'bar',

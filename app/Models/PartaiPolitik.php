@@ -16,16 +16,16 @@ class PartaiPolitik extends Model
         'logo_path',
         'foto_ketua',
         'nama_ketua',
-        'status_aktif'
+        'status_aktif',
     ];
 
     protected $casts = [
-        'status_aktif' => 'boolean'
+        'status_aktif' => 'boolean',
     ];
 
     protected $appends = [
         'logo_url',
-        'foto_ketua_url'
+        'foto_ketua_url',
     ];
 
     public function jumlahSuara(): HasMany
@@ -41,16 +41,16 @@ class PartaiPolitik extends Model
     public function getLogoUrlAttribute()
     {
         if ($this->logo_path) {
-            return asset('storage/' . $this->logo_path);
+            return asset('storage/'.$this->logo_path);
         }
-        return null;
+
     }
 
     public function getFotoKetuaUrlAttribute()
     {
         if ($this->foto_ketua) {
-            return asset('storage/' . $this->foto_ketua);
+            return asset('storage/'.$this->foto_ketua);
         }
-        return null;
+
     }
 }

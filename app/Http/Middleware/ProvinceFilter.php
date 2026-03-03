@@ -17,11 +17,11 @@ class ProvinceFilter
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
-        
+
         if ($user && $user->role === 'admin') {
             // Only 'admin' role gets province filter - super_admin and admin_vip see all data
             $request->merge([
-                'province_filter' => $user->provinsi_id
+                'province_filter' => $user->provinsi_id,
             ]);
         }
 

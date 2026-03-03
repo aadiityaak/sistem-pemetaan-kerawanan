@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
-import { SelectTrigger as SelectTriggerPrimitive, type SelectTriggerProps } from 'reka-ui/Select'
+import { SelectTrigger as SelectTriggerPrimitive, type SelectTriggerProps } from 'reka-ui'
 import { ChevronDown } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 

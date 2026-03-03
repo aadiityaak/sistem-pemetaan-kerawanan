@@ -16,20 +16,20 @@ class MenuItemController extends Controller
     {
         // Get all menu items
         $menuItems = MenuItem::with('parent')->orderBy('sort_order')->get();
-        
+
         // Recursive function to build unlimited depth hierarchy
         $buildHierarchy = function ($items, $allItems) use (&$buildHierarchy) {
             foreach ($items as $item) {
                 // Get all children regardless of is_active status
                 $item->children = $allItems->where('parent_id', $item->id)->values();
-                
+
                 // Recursively build children's hierarchy
                 if ($item->children->count() > 0) {
                     $buildHierarchy($item->children, $allItems);
                 }
             }
         };
-        
+
         // Build hierarchy for all items
         $buildHierarchy($menuItems, $menuItems);
 
@@ -125,7 +125,6 @@ class MenuItemController extends Controller
             'description' => 'nullable|string',
         ]);
 
-
         $menuItem->update($request->all());
 
         return redirect()->route('admin.menu-items.index')
@@ -152,14 +151,14 @@ class MenuItemController extends Controller
             'id' => $menuItem->id,
             'title' => $menuItem->title,
             'current_status' => $menuItem->is_active,
-            'new_status' => !$menuItem->is_active
+            'new_status' => ! $menuItem->is_active,
         ]);
 
-        $menuItem->update(['is_active' => !$menuItem->is_active]);
+        $menuItem->update(['is_active' => ! $menuItem->is_active]);
 
         \Log::info('toggleStatus completed', [
             'id' => $menuItem->id,
-            'updated_status' => $menuItem->fresh()->is_active
+            'updated_status' => $menuItem->fresh()->is_active,
         ]);
 
         return redirect()->back()
@@ -179,7 +178,7 @@ class MenuItemController extends Controller
 
         foreach ($request->items as $itemData) {
             MenuItem::where('id', $itemData['id'])->update([
-                'sort_order' => $itemData['sort_order']
+                'sort_order' => $itemData['sort_order'],
             ]);
         }
 
@@ -202,9 +201,9 @@ class MenuItemController extends Controller
             // Make this menu a child of the previous sibling
             $menuItem->update([
                 'parent_id' => $previousSibling->id,
-                'sort_order' => $this->getNextSortOrder($previousSibling->id)
+                'sort_order' => $this->getNextSortOrder($previousSibling->id),
             ]);
-            
+
             return redirect()->back()
                 ->with('success', "Menu '{$menuItem->title}' berhasil dijadikan sub-menu dari '{$previousSibling->title}'.");
         }
@@ -219,29 +218,29 @@ class MenuItemController extends Controller
     public function outdent(MenuItem $menuItem)
     {
         // Can only outdent if it has a parent
-        if (!$menuItem->parent_id) {
+        if (! $menuItem->parent_id) {
             return redirect()->back()
                 ->with('error', 'Menu ini sudah berada di level tertinggi.');
         }
 
         $parent = $menuItem->parent;
-        
+
         // Find the appropriate sort order to maintain logical positioning
         // Place it right after the parent at the same level as parent
         $newParentId = $parent->parent_id;
-        
+
         // Get the parent's sort order and increment by 1
         $newSortOrder = $parent->sort_order + 1;
-        
+
         // Shift other items at the same level that come after this position
         MenuItem::where('parent_id', $newParentId)
             ->where('sort_order', '>=', $newSortOrder)
             ->increment('sort_order');
-        
+
         // Move to same level as parent, positioned right after parent
         $menuItem->update([
             'parent_id' => $newParentId,
-            'sort_order' => $newSortOrder
+            'sort_order' => $newSortOrder,
         ]);
 
         return redirect()->back()
@@ -257,14 +256,14 @@ class MenuItemController extends Controller
             // Run the seeder to reset menu to default state
             \Artisan::call('db:seed', [
                 '--class' => 'Database\\Seeders\\MenuItemSeeder',
-                '--force' => true
+                '--force' => true,
             ]);
 
             return redirect()->back()
                 ->with('success', 'Menu berhasil direset ke pengaturan default!');
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Gagal reset menu: ' . $e->getMessage());
+                ->with('error', 'Gagal reset menu: '.$e->getMessage());
         }
     }
 
@@ -274,6 +273,7 @@ class MenuItemController extends Controller
     private function getNextSortOrder($parentId = null)
     {
         $maxOrder = MenuItem::where('parent_id', $parentId)->max('sort_order');
+
         return ($maxOrder ?? 0) + 1;
     }
 }

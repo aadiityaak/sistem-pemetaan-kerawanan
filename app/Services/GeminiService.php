@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Services\SettingsService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -21,8 +20,8 @@ class GeminiService
     public function isEnabled(): bool
     {
         return $this->settingsService->getSetting('gemini_enabled', 'false') === 'true' &&
-            !empty($this->getApiKey()) &&
-            !empty($this->getEndpoint());
+            ! empty($this->getApiKey()) &&
+            ! empty($this->getEndpoint());
     }
 
     /**
@@ -46,8 +45,9 @@ class GeminiService
      */
     public function generateContent(string $prompt, array $context = []): ?string
     {
-        if (!$this->isEnabled()) {
+        if (! $this->isEnabled()) {
             Log::warning('Gemini AI is not enabled or not properly configured');
+
             return null;
         }
 
@@ -56,15 +56,15 @@ class GeminiService
                 ->withHeaders([
                     'Content-Type' => 'application/json',
                 ])
-                ->post($this->getEndpoint() . '?key=' . $this->getApiKey(), [
+                ->post($this->getEndpoint().'?key='.$this->getApiKey(), [
                     'contents' => [
                         [
                             'parts' => [
                                 [
-                                    'text' => $prompt
-                                ]
-                            ]
-                        ]
+                                    'text' => $prompt,
+                                ],
+                            ],
+                        ],
                     ],
                     'generationConfig' => [
                         'temperature' => 0.7,
@@ -75,21 +75,21 @@ class GeminiService
                     'safetySettings' => [
                         [
                             'category' => 'HARM_CATEGORY_HARASSMENT',
-                            'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'
+                            'threshold' => 'BLOCK_MEDIUM_AND_ABOVE',
                         ],
                         [
                             'category' => 'HARM_CATEGORY_HATE_SPEECH',
-                            'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'
+                            'threshold' => 'BLOCK_MEDIUM_AND_ABOVE',
                         ],
                         [
                             'category' => 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-                            'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'
+                            'threshold' => 'BLOCK_MEDIUM_AND_ABOVE',
                         ],
                         [
                             'category' => 'HARM_CATEGORY_DANGEROUS_CONTENT',
-                            'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'
-                        ]
-                    ]
+                            'threshold' => 'BLOCK_MEDIUM_AND_ABOVE',
+                        ],
+                    ],
                 ]);
 
             if ($response->successful()) {
@@ -99,10 +99,12 @@ class GeminiService
                 }
             }
 
-            Log::error('Gemini API error: ' . $response->body());
+            Log::error('Gemini API error: '.$response->body());
+
             return null;
         } catch (\Exception $e) {
-            Log::error('Gemini API exception: ' . $e->getMessage());
+            Log::error('Gemini API exception: '.$e->getMessage());
+
             return null;
         }
     }

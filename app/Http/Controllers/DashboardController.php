@@ -19,11 +19,11 @@ class DashboardController extends Controller
         $subCategorySlug = $request->query('subcategory');
         $provinsiId = $request->query('provinsi_id');
         $kabupatenKotaId = $request->query('kabupaten_kota_id');
-        
+
         // Set default date range to last 6 months if not provided
         $defaultStartDate = now()->subMonths(6)->format('Y-m-d');
         $defaultEndDate = now()->format('Y-m-d');
-        
+
         $startDate = $request->query('start_date', $defaultStartDate);
         $endDate = $request->query('end_date', $defaultEndDate);
         $selectedCategory = null;
@@ -45,9 +45,9 @@ class DashboardController extends Controller
             if ($selectedCategory) {
                 // Append image URL to selected category
                 $selectedCategory->append(['image_url']);
-                
+
                 $query->where('category_id', $selectedCategory->id);
-                
+
                 // Filter berdasarkan subcategory jika ada
                 if ($subCategorySlug) {
                     $selectedSubCategory = SubCategory::where('slug', $subCategorySlug)
@@ -78,7 +78,7 @@ class DashboardController extends Controller
         if ($startDate) {
             $query->whereDate('incident_date', '>=', $startDate);
         }
-        
+
         if ($endDate) {
             $query->whereDate('incident_date', '<=', $endDate);
         }
@@ -86,11 +86,11 @@ class DashboardController extends Controller
         // Filter berdasarkan search (title) jika ada
         if ($request->has('search') && $request->filled('search')) {
             $searchTerm = $request->input('search');
-            $query->where('title', 'like', '%' . $searchTerm . '%');
+            $query->where('title', 'like', '%'.$searchTerm.'%');
         }
 
         $monitoringData = $query->get();
-        
+
         // Append image URLs to subcategories
         $monitoringData->each(function ($data) {
             if ($data->subCategory) {
@@ -141,17 +141,17 @@ class DashboardController extends Controller
 
         // Hitung berdasarkan semua sub kategori dalam kategori (untuk analytics card)
         // Ini akan selalu menampilkan semua subcategories berdasarkan kategori yang dipilih
-        $allSubCategoriesQuery = $selectedCategory 
+        $allSubCategoriesQuery = $selectedCategory
           ? MonitoringData::with(['subCategory'])
               ->where('category_id', $selectedCategory->id)
           : MonitoringData::with(['subCategory']);
-          
+
         // Apply province filter for non-admin users in subcategory analytics
         if ($request->has('province_filter')) {
             $allSubCategoriesQuery->where('provinsi_id', $request->input('province_filter'));
         }
-        
-        $allSubCategoriesData = $selectedCategory 
+
+        $allSubCategoriesData = $selectedCategory
           ? $allSubCategoriesQuery->get()
               ->groupBy('sub_category_id')
               ->map(function ($data) {
@@ -159,6 +159,7 @@ class DashboardController extends Controller
                   if ($subCategory) {
                       $subCategory->append(['image_url']);
                   }
+
                   return [
                       'name' => $subCategory->name ?? 'Unknown',
                       'icon' => $subCategory->icon ?? '📊',
@@ -193,12 +194,12 @@ class DashboardController extends Controller
         $categories->each(function ($category) {
             $category->append(['image_url']);
         });
-        
+
         // Ambil subcategories jika ada kategori yang dipilih
-        $subCategories = $selectedCategory 
+        $subCategories = $selectedCategory
             ? $selectedCategory->subCategories()->active()->ordered()->get()
             : collect();
-            
+
         // Append image URLs to subcategories
         $subCategories->each(function ($subCategory) {
             $subCategory->append(['image_url']);
@@ -214,12 +215,12 @@ class DashboardController extends Controller
         // Get province list for kategori-indas filter
         $provinsiList = null;
         $kabupatenKotaList = null;
-        
+
         if ($categorySlug === 'kategori-indas') {
             $provinsiList = Provinsi::select('id', 'nama', 'latitude', 'longitude')
                 ->orderBy('nama')
                 ->get();
-                
+
             $kabupatenKotaList = KabupatenKota::select('id', 'nama', 'provinsi_id')
                 ->orderBy('nama')
                 ->get();

@@ -23,7 +23,7 @@ class IndasIndicatorTypeSeeder extends Seeder
             IndasMonthlyData::query()->delete();
             IndasIndicatorType::query()->delete();
         }
-        
+
         $indicators = [
             // Economic Indicators
             [
@@ -136,21 +136,22 @@ class IndasIndicatorTypeSeeder extends Seeder
     {
         // Get some sample kabupaten/kota (limit to first 10 for demo)
         $kabupatenKotaList = KabupatenKota::take(10)->get();
-        
+
         if ($kabupatenKotaList->isEmpty()) {
             $this->command->info('No kabupaten/kota found. Skipping sample data generation.');
+
             return;
         }
 
         // Generate data for last 6 months
         $currentDate = now();
         $months = [];
-        
+
         for ($i = 0; $i < 6; $i++) {
             $date = $currentDate->copy()->subMonths($i);
             $months[] = [
                 'month' => $date->month,
-                'year' => $date->year
+                'year' => $date->year,
             ];
         }
 
@@ -158,7 +159,7 @@ class IndasIndicatorTypeSeeder extends Seeder
             foreach ($months as $period) {
                 foreach ($indicators as $indicator) {
                     $value = $this->generateSampleValue($indicator);
-                    
+
                     IndasMonthlyData::create([
                         'kabupaten_kota_id' => $kabupatenKota->id,
                         'indicator_type_id' => $indicator->id,
@@ -166,13 +167,13 @@ class IndasIndicatorTypeSeeder extends Seeder
                         'month' => $period['month'],
                         'year' => $period['year'],
                         'user_id' => 1, // Assume first user exists
-                        'notes' => 'Data sampel untuk testing dan demo sistem INDAS'
+                        'notes' => 'Data sampel untuk testing dan demo sistem INDAS',
                     ]);
                 }
             }
         }
 
-        $this->command->info('Generated sample monthly data for ' . count($kabupatenKotaList) . ' regions over 6 months');
+        $this->command->info('Generated sample monthly data for '.count($kabupatenKotaList).' regions over 6 months');
     }
 
     private function generateSampleValue($indicator)

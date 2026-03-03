@@ -26,7 +26,7 @@ class UserPerformanceController extends Controller
         $query = MonitoringData::with(['user', 'provinsi'])
             ->whereBetween('monitoring_data.created_at', [
                 Carbon::parse($startDate)->startOfDay(),
-                Carbon::parse($endDate)->endOfDay()
+                Carbon::parse($endDate)->endOfDay(),
             ]);
 
         // Apply filters
@@ -60,7 +60,7 @@ class UserPerformanceController extends Controller
             $dateRange[] = [
                 'date' => $dateStr,
                 'count' => $dayData ? $dayData->count : 0,
-                'formatted_date' => $currentDate->format('d M')
+                'formatted_date' => $currentDate->format('d M'),
             ];
             $currentDate->addDay();
         }
@@ -93,7 +93,7 @@ class UserPerformanceController extends Controller
         $dataSourceByDay = MonitoringData::query()
             ->whereBetween('monitoring_data.created_at', [
                 Carbon::parse($startDate)->startOfDay(),
-                Carbon::parse($endDate)->endOfDay()
+                Carbon::parse($endDate)->endOfDay(),
             ])
             ->selectRaw('DATE(monitoring_data.created_at) as date, data_source, COUNT(*) as count')
             ->groupBy('date', 'data_source')
@@ -111,7 +111,7 @@ class UserPerformanceController extends Controller
             $dataSourceChart[] = [
                 'date' => $day['formatted_date'],
                 'online' => $online,
-                'offline' => $offline
+                'offline' => $offline,
             ];
         }
 

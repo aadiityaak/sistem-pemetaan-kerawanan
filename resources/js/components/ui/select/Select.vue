@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SelectRoot, type SelectRootProps } from 'reka-ui/Select'
+import { SelectRoot, type SelectRootProps } from 'reka-ui'
 
 const props = defineProps<SelectRootProps>()
 </script>

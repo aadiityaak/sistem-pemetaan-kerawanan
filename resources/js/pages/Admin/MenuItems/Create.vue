@@ -104,31 +104,33 @@
                                     <label class="text-sm font-medium">Tampil untuk Role:</label>
                                     <div class="space-y-2">
                                         <div class="flex items-center space-x-2">
-                                            <Checkbox 
-                                                id="role_super_admin" 
+                                            <Checkbox
+                                                id="role_super_admin"
                                                 :checked="form.permissions.includes('super_admin')"
                                                 @update:checked="updatePermission('super_admin', $event)"
                                             />
                                             <label for="role_super_admin" class="text-sm font-medium">Super Admin</label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <Checkbox 
-                                                id="role_admin_vip" 
+                                            <Checkbox
+                                                id="role_admin_vip"
                                                 :checked="form.permissions.includes('admin_vip')"
                                                 @update:checked="updatePermission('admin_vip', $event)"
                                             />
                                             <label for="role_admin_vip" class="text-sm font-medium">Admin VIP</label>
                                         </div>
                                         <div class="flex items-center space-x-2">
-                                            <Checkbox 
-                                                id="role_admin" 
+                                            <Checkbox
+                                                id="role_admin"
                                                 :checked="form.permissions.includes('admin')"
                                                 @update:checked="updatePermission('admin', $event)"
                                             />
                                             <label for="role_admin" class="text-sm font-medium">Admin</label>
                                         </div>
                                     </div>
-                                    <p class="text-xs text-muted-foreground">Pilih role yang dapat melihat menu ini. Jika tidak ada yang dipilih, menu akan tampil untuk semua user.</p>
+                                    <p class="text-xs text-muted-foreground">
+                                        Pilih role yang dapat melihat menu ini. Jika tidak ada yang dipilih, menu akan tampil untuk semua user.
+                                    </p>
                                 </div>
                             </div>
                         </div>

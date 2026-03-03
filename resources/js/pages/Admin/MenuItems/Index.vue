@@ -81,7 +81,7 @@
                                             <h3
                                                 :class="[
                                                     'truncate font-medium',
-                                                    item.level === 0 ? 'text-base text-gray-900' : 'text-sm text-gray-700'
+                                                    item.level === 0 ? 'text-base text-gray-900' : 'text-sm text-gray-700',
                                                 ]"
                                             >
                                                 {{ item.title }}
@@ -96,12 +96,14 @@
                                                     <span> <strong>Order:</strong> {{ item.sort_order }} </span>
                                                     <span v-if="item.parent_id"> <strong>Parent ID:</strong> {{ item.parent_id }} </span>
                                                 </div>
-                                                
+
                                                 <!-- Role Visibility Badges -->
-                                                <div class="flex items-center gap-1 mt-2">
-                                                    <span class="text-xs text-gray-500 mr-1"><strong>Tampil untuk:</strong></span>
+                                                <div class="mt-2 flex items-center gap-1">
+                                                    <span class="mr-1 text-xs text-gray-500"><strong>Tampil untuk:</strong></span>
                                                     <div v-if="getRoleVisibility(item).length === 0" class="flex items-center">
-                                                        <span class="inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                                        <span
+                                                            class="inline-flex items-center rounded border border-green-200 bg-green-100 px-1.5 py-0.5 text-xs font-medium text-green-800"
+                                                        >
                                                             Semua User
                                                         </span>
                                                     </div>
@@ -202,7 +204,10 @@
                                     3 (border ungu), Level 4 (border pink), Level 5+ (border abu-abu) - Support unlimited depth
                                 </li>
                                 <li>• <strong>Toggle Status:</strong> Gunakan tombol ON/OFF untuk mengatur visibilitas menu</li>
-                                <li>• <strong>Role Badges:</strong> Badge berwarna menunjukkan siapa yang dapat melihat menu (Super Admin, Admin VIP, Admin)</li>
+                                <li>
+                                    • <strong>Role Badges:</strong> Badge berwarna menunjukkan siapa yang dapat melihat menu (Super Admin, Admin VIP,
+                                    Admin)
+                                </li>
                                 <li>• <strong>Kontrol Terpisah:</strong> Drag untuk urutan, tombol panah untuk hierarki</li>
                                 <li>• <strong>Reset Menu:</strong> Tombol "Reset Menu" untuk mengembalikan ke pengaturan default sistem</li>
                             </ul>
@@ -361,29 +366,29 @@ const getRoleVisibility = (item: MenuItem): string[] => {
     if (item.permissions && item.permissions.length > 0) {
         return item.permissions;
     }
-    
+
     // Fallback for backward compatibility with admin_only field
     if (item.admin_only) {
         return ['super_admin', 'admin'];
     }
-    
+
     return [];
 };
 
 const getRoleLabel = (role: string): string => {
     const labels: Record<string, string> = {
-        'super_admin': 'Super Admin',
-        'admin_vip': 'Admin VIP',
-        'admin': 'Admin'
+        super_admin: 'Super Admin',
+        admin_vip: 'Admin VIP',
+        admin: 'Admin',
     };
     return labels[role] || role;
 };
 
 const getRoleBadgeClass = (role: string): string => {
     const classes: Record<string, string> = {
-        'super_admin': 'bg-purple-100 text-purple-800 border border-purple-200',
-        'admin_vip': 'bg-blue-100 text-blue-800 border border-blue-200',
-        'admin': 'bg-orange-100 text-orange-800 border border-orange-200'
+        super_admin: 'bg-purple-100 text-purple-800 border border-purple-200',
+        admin_vip: 'bg-blue-100 text-blue-800 border border-blue-200',
+        admin: 'bg-orange-100 text-orange-800 border border-orange-200',
     };
     return classes[role] || 'bg-gray-100 text-gray-800 border border-gray-200';
 };

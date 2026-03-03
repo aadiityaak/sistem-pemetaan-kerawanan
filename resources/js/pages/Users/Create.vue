@@ -107,9 +107,7 @@ const submit = () => {
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <!-- Phone -->
                         <div>
-                            <label for="phone" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Nomor Telepon
-                            </label>
+                            <label for="phone" class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"> Nomor Telepon </label>
                             <input
                                 v-model="form.phone"
                                 id="phone"

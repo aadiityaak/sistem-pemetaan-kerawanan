@@ -73,7 +73,7 @@ class SubCategory extends Model
      */
     public function getImageUrlAttribute()
     {
-        return $this->image_path ? asset('storage/' . $this->image_path) : null;
+        return $this->image_path ? asset('storage/'.$this->image_path) : null;
     }
 
     /**
@@ -84,7 +84,7 @@ class SubCategory extends Model
         if ($this->image_path) {
             return $this->getImageUrlAttribute();
         }
-        
+
         return $this->icon ?? $this->category->effective_icon ?? $this->category->icon;
     }
 
@@ -93,6 +93,6 @@ class SubCategory extends Model
      */
     public function hasCustomImage()
     {
-        return !empty($this->image_path);
+        return ! empty($this->image_path);
     }
 }

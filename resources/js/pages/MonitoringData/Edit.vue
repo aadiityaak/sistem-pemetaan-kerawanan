@@ -569,14 +569,22 @@ const submit = () => {
     }
 
     // Transform form data directly in form object
-    form.provinsi_id = parseInt(form.provinsi_id) || props.monitoringData.provinsi_id;
-    form.kabupaten_kota_id = parseInt(form.kabupaten_kota_id) || props.monitoringData.kabupaten_kota_id;
-    form.kecamatan_id = form.kecamatan_id ? parseInt(form.kecamatan_id) : props.monitoringData.kecamatan_id;
-    form.category_id = parseInt(form.category_id) || props.monitoringData.category_id;
-    form.sub_category_id = parseInt(form.sub_category_id) || props.monitoringData.sub_category_id;
-    form.latitude = parseFloat(form.latitude) || props.monitoringData.latitude;
-    form.longitude = parseFloat(form.longitude) || props.monitoringData.longitude;
-    form.jumlah_terdampak = form.jumlah_terdampak ? parseInt(form.jumlah_terdampak) : props.monitoringData.jumlah_terdampak;
+    form.provinsi_id = String(parseInt(form.provinsi_id) || props.monitoringData.provinsi_id);
+    form.kabupaten_kota_id = String(parseInt(form.kabupaten_kota_id) || props.monitoringData.kabupaten_kota_id);
+    form.kecamatan_id = form.kecamatan_id
+        ? String(parseInt(form.kecamatan_id) || props.monitoringData.kecamatan_id || '')
+        : props.monitoringData.kecamatan_id
+          ? props.monitoringData.kecamatan_id.toString()
+          : '';
+    form.category_id = String(parseInt(form.category_id) || props.monitoringData.category_id);
+    form.sub_category_id = String(parseInt(form.sub_category_id) || props.monitoringData.sub_category_id);
+    form.latitude = String(parseFloat(form.latitude) || props.monitoringData.latitude);
+    form.longitude = String(parseFloat(form.longitude) || props.monitoringData.longitude);
+    form.jumlah_terdampak = form.jumlah_terdampak
+        ? String(parseInt(form.jumlah_terdampak) || props.monitoringData.jumlah_terdampak || '')
+        : props.monitoringData.jumlah_terdampak
+          ? props.monitoringData.jumlah_terdampak.toString()
+          : '';
 
     console.log('Form data before submit:', form.data());
 
@@ -688,12 +696,8 @@ onMounted(() => {
                                         {{ form.errors.data_source }}
                                     </div>
                                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        <span v-if="form.data_source === 'offline'">
-                                            Data yang ditulis sendiri oleh penanggung jawab
-                                        </span>
-                                        <span v-else>
-                                            Data yang berasal dari portal berita atau sumber online lainnya
-                                        </span>
+                                        <span v-if="form.data_source === 'offline'"> Data yang ditulis sendiri oleh penanggung jawab </span>
+                                        <span v-else> Data yang berasal dari portal berita atau sumber online lainnya </span>
                                     </p>
                                 </div>
 
@@ -710,9 +714,7 @@ onMounted(() => {
                                     <div v-if="form.errors.jumlah_terdampak" class="mt-1 text-sm text-red-500">
                                         {{ form.errors.jumlah_terdampak }}
                                     </div>
-                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        Jumlah komentar dalam kejadian ini
-                                    </p>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Jumlah komentar dalam kejadian ini</p>
                                 </div>
 
                                 <!-- Incident Date -->

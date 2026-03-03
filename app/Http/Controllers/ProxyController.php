@@ -78,7 +78,7 @@ class ProxyController extends Controller
                     .iframe-container { width: 100%; height: 100vh; overflow: auto; }
                 </style>';
 
-                $content = str_replace('</head>', $additionalCSS . '</head>', $content);
+                $content = str_replace('</head>', $additionalCSS.'</head>', $content);
 
                 // Simpan ke cache untuk 1 hari (1440 menit)
                 Cache::put($cacheKey, $content, now()->addDay());
@@ -91,9 +91,8 @@ class ProxyController extends Controller
             }
 
             return response('Gagal mengambil data dari Pusiknas', 500);
-
         } catch (\Exception $e) {
-            return response('Error: ' . $e->getMessage(), 500);
+            return response('Error: '.$e->getMessage(), 500);
         }
     }
 }

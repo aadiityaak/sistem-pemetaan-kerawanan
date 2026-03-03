@@ -29,10 +29,11 @@ class CategoryController extends Controller
         }
 
         $categories = $query->orderBy('sort_order')->paginate(10);
-        
+
         // Append image URL to each category
         $categories->through(function ($category) {
             $category->append(['image_url']);
+
             return $category;
         });
 
@@ -97,7 +98,7 @@ class CategoryController extends Controller
         $category->load(['subCategories' => function ($query) {
             $query->orderBy('sort_order');
         }]);
-        
+
         // Append image URLs to category and subcategories
         $category->append(['image_url']);
         if ($category->subCategories) {
@@ -118,7 +119,7 @@ class CategoryController extends Controller
     {
         // Load the category with image URL attribute
         $category->append(['image_url']);
-        
+
         return Inertia::render('Categories/Edit', [
             'category' => $category,
         ]);
@@ -149,7 +150,7 @@ class CategoryController extends Controller
             if ($category->image_path) {
                 Storage::disk('public')->delete($category->image_path);
             }
-            
+
             $imagePath = $request->file('image')->store('categories', 'public');
             $validated['image_path'] = $imagePath;
         }

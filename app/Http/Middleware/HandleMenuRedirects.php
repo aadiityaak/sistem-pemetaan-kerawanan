@@ -15,8 +15,8 @@ class HandleMenuRedirects
     public function handle(Request $request, Closure $next): Response
     {
         // Get current path
-        $currentPath = '/' . trim($request->path(), '/');
-        
+        $currentPath = '/'.trim($request->path(), '/');
+
         // Check if there's a menu item with a redirect path for this route
         $menuItem = MenuItem::where('is_active', true)
             ->whereNotNull('path')
@@ -27,14 +27,14 @@ class HandleMenuRedirects
                 // Check if the current route matches any menu item that needs redirect
                 return $this->routeMatches($currentPath, $item);
             });
-        
+
         if ($menuItem && $menuItem->path && $menuItem->path !== $currentPath) {
             return redirect($menuItem->path, 302);
         }
 
         return $next($request);
     }
-    
+
     /**
      * Check if the route matches a menu item that should be redirected
      */
@@ -50,11 +50,11 @@ class HandleMenuRedirects
             'INDAS' => ['/indas'],
             'PREDIKSI AI' => ['/ai-prediction'],
         ];
-        
+
         if (isset($redirectRules[$menuItem->title])) {
             return in_array($currentPath, $redirectRules[$menuItem->title]);
         }
-        
+
         return false;
     }
 }

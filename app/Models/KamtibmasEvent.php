@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class KamtibmasEvent extends Model
 {
@@ -36,18 +35,18 @@ class KamtibmasEvent extends Model
     {
         return $query->where(function ($q) use ($start, $end) {
             $q->whereBetween('start_date', [$start, $end])
-              ->orWhereBetween('end_date', [$start, $end])
-              ->orWhere(function ($q2) use ($start, $end) {
-                  $q2->where('start_date', '<=', $start)
-                     ->where('end_date', '>=', $end);
-              });
+                ->orWhereBetween('end_date', [$start, $end])
+                ->orWhere(function ($q2) use ($start, $end) {
+                    $q2->where('start_date', '<=', $start)
+                        ->where('end_date', '>=', $end);
+                });
         });
     }
 
     // Check if event is multi-day
     public function getIsMultiDayAttribute()
     {
-        return !$this->start_date->isSameDay($this->end_date);
+        return ! $this->start_date->isSameDay($this->end_date);
     }
 
     // Get duration in days

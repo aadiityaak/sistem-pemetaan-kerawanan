@@ -1,14 +1,9 @@
 <script setup lang="ts">
+import { indonesiaProvinces } from '@/data/indonesiaProvinces';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue';
-import { indonesiaProvinces, type ProvincePathData } from '@/data/indonesiaProvinces';
-
-// Import route helper
-declare global {
-    function route(name: string, params?: any): string;
-}
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 interface MonitoringData {
     id: number;
@@ -326,10 +321,10 @@ const selectLocalEndDate = (endDate: string | null) => {
 const applyFilters = () => {
     // Reset pagination to first page when applying filters
     currentPage.value = 1;
-    
+
     // Update search query for filtering
     searchQuery.value = localFilters.value.search;
-    
+
     router.get(
         buildFilterUrl({
             category: localFilters.value.category,
@@ -346,7 +341,7 @@ const applyFilters = () => {
 const resetFilters = () => {
     // Reset pagination to first page when resetting filters
     currentPage.value = 1;
-    
+
     localFilters.value = {
         category: null,
         subCategory: null,
@@ -354,10 +349,10 @@ const resetFilters = () => {
         endDate: null,
         provinsi: null,
         kabupatenKota: null,
-        search: ''
+        search: '',
     };
     searchQuery.value = '';
-    
+
     // Navigate to base dashboard URL (clear all filters)
     router.get('/dashboard');
 };
@@ -526,7 +521,7 @@ const localFilters = ref({
     endDate: props.endDate || null,
     provinsi: props.selectedProvinsi?.id || null,
     kabupatenKota: props.selectedKabupatenKota?.id || null,
-    search: ''
+    search: '',
 });
 
 // Pagination functionality
@@ -535,19 +530,19 @@ const itemsPerPage = ref(10);
 
 // Computed properties for local filter display
 const selectedLocalCategory = computed(() => {
-    return props.categories.find(cat => cat.slug === localFilters.value.category) || null;
+    return props.categories.find((cat) => cat.slug === localFilters.value.category) || null;
 });
 
 const selectedLocalSubCategory = computed(() => {
-    return props.subCategories.find(sub => sub.slug === localFilters.value.subCategory) || null;
+    return props.subCategories.find((sub) => sub.slug === localFilters.value.subCategory) || null;
 });
 
 const selectedLocalProvinsi = computed(() => {
-    return props.provinsiList?.find(prov => prov.id === localFilters.value.provinsi) || null;
+    return props.provinsiList?.find((prov) => prov.id === localFilters.value.provinsi) || null;
 });
 
 const selectedLocalKabupatenKota = computed(() => {
-    return props.kabupatenKotaList?.find(kab => kab.id === localFilters.value.kabupatenKota) || null;
+    return props.kabupatenKotaList?.find((kab) => kab.id === localFilters.value.kabupatenKota) || null;
 });
 
 // Computed property for filtered kabupaten/kota based on selected province (for local filters)
@@ -555,9 +550,7 @@ const filteredLocalKabupatenKotaList = computed(() => {
     if (!localFilters.value.provinsi || !props.kabupatenKotaList) {
         return props.kabupatenKotaList || [];
     }
-    return props.kabupatenKotaList.filter(kabupatenKota => 
-        kabupatenKota.provinsi_id === localFilters.value.provinsi
-    );
+    return props.kabupatenKotaList.filter((kabupatenKota) => kabupatenKota.provinsi_id === localFilters.value.provinsi);
 });
 
 // Computed property for filtered kabupaten/kota based on selected province (original)
@@ -565,9 +558,7 @@ const filteredKabupatenKotaList = computed(() => {
     if (!props.selectedProvinsi || !props.kabupatenKotaList) {
         return props.kabupatenKotaList || [];
     }
-    return props.kabupatenKotaList.filter(kabupatenKota => 
-        kabupatenKota.provinsi_id === props.selectedProvinsi!.id
-    );
+    return props.kabupatenKotaList.filter((kabupatenKota) => kabupatenKota.provinsi_id === props.selectedProvinsi!.id);
 });
 
 // Computed property for filtered monitoring data
@@ -575,10 +566,8 @@ const filteredMonitoringData = computed(() => {
     if (!searchQuery.value.trim()) {
         return props.monitoringData;
     }
-    
-    return props.monitoringData.filter(data =>
-        data.title.toLowerCase().includes(searchQuery.value.toLowerCase().trim())
-    );
+
+    return props.monitoringData.filter((data) => data.title.toLowerCase().includes(searchQuery.value.toLowerCase().trim()));
 });
 
 // Computed properties for pagination
@@ -597,20 +586,20 @@ const validCurrentPage = computed({
     },
     set(value) {
         currentPage.value = value;
-    }
+    },
 });
 
 // Function to update map markers
 const updateMapMarkers = async () => {
     if (!map || !isLeafletMap.value) return;
-    
+
     // Clear existing markers
-    mapMarkers.value.forEach(marker => map.removeLayer(marker));
+    mapMarkers.value.forEach((marker) => map.removeLayer(marker));
     mapMarkers.value = [];
-    
+
     // Dynamic import Leaflet
     const L = await import('leaflet');
-    
+
     // Add markers for filtered data
     filteredMonitoringData.value.forEach((data: MonitoringData) => {
         const severityConfig = severityIcons[data.severity_level] || severityIcons['medium'];
@@ -700,7 +689,7 @@ const updateMapMarkers = async () => {
                 </div>
             </div>
         `);
-        
+
         mapMarkers.value.push(marker);
     });
 };
@@ -710,10 +699,10 @@ onMounted(async () => {
     if (typeof window !== 'undefined') {
         // Initialize filter visibility based on screen size
         initializeFilterVisibility();
-        
+
         // Add resize event listener
         window.addEventListener('resize', handleResize);
-        
+
         // Initialize map only if in Leaflet mode
         if (isLeafletMap.value) {
             // Dynamic import Leaflet
@@ -777,27 +766,27 @@ const provinceNameMapping: Record<string, string[]> = {
     'SULAWESI SELATAN': ['SULSEL', 'SULAWESI SELATAN'],
     'SULAWESI TENGGARA': ['SULTRA', 'SULAWESI TENGGARA'],
     'SULAWESI BARAT': ['SULBAR', 'SULAWESI BARAT'],
-    'GORONTALO': ['GORONTALO'],
-    'MALUKU': ['MALUKU'],
+    GORONTALO: ['GORONTALO'],
+    MALUKU: ['MALUKU'],
     'MALUKU UTARA': ['MALUT', 'MALUKU UTARA'],
     'JAWA BARAT': ['JABAR', 'JAWA BARAT'],
     'JAWA TENGAH': ['JATENG', 'JAWA TENGAH'],
     'JAWA TIMUR': ['JATIM', 'JAWA TIMUR'],
-    'BANTEN': ['BANTEN'],
+    BANTEN: ['BANTEN'],
     'DKI JAKARTA': ['JAKARTA', 'DKI JAKARTA'],
-    'BALI': ['BALI'],
-    'ACEH': ['ACEH', 'NANGGROE ACEH DARUSSALAM'],
-    'RIAU': ['RIAU'],
+    BALI: ['BALI'],
+    ACEH: ['ACEH', 'NANGGROE ACEH DARUSSALAM'],
+    RIAU: ['RIAU'],
     'KEPULAUAN RIAU': ['KEP. RIAU', 'KEPULAUAN RIAU'],
-    'JAMBI': ['JAMBI'],
-    'BENGKULU': ['BENGKULU'],
-    'LAMPUNG': ['LAMPUNG'],
-    'PAPUA': ['PAPUA'],
+    JAMBI: ['JAMBI'],
+    BENGKULU: ['BENGKULU'],
+    LAMPUNG: ['LAMPUNG'],
+    PAPUA: ['PAPUA'],
     'PAPUA BARAT': ['PAPUA BARAT'],
     'PAPUA SELATAN': ['PAPUA SELATAN'],
     'PAPUA TENGAH': ['PAPUA TENGAH'],
     'PAPUA PEGUNUNGAN': ['PAPUA PEGUNUNGAN'],
-    'PAPUA BARAT DAYA': ['PAPUA BARAT DAYA']
+    'PAPUA BARAT DAYA': ['PAPUA BARAT DAYA'],
 };
 
 // Get province color based on data count
@@ -818,23 +807,21 @@ const getProvinceColor = (provinceName: string): string => {
 // Get data count for a province
 const getProvinceDataCount = (provinceName: string): number => {
     // First try exact match
-    let count = filteredMonitoringData.value.filter(data =>
-        data.provinsi.nama.toUpperCase() === provinceName.toUpperCase()
-    ).length;
+    let count = filteredMonitoringData.value.filter((data) => data.provinsi.nama.toUpperCase() === provinceName.toUpperCase()).length;
 
     // If no exact match, try using mapping
     if (count === 0) {
         const svgProvinceName = provinceName.toUpperCase();
         const apiProvinceAlias = Object.entries(provinceNameMapping).find(([_, aliases]) =>
-            aliases.some(alias => alias.toUpperCase() === svgProvinceName)
+            aliases.some((alias) => alias.toUpperCase() === svgProvinceName),
         );
 
         if (apiProvinceAlias) {
             const [mappedName] = apiProvinceAlias;
-            count = filteredMonitoringData.value.filter(data => {
+            count = filteredMonitoringData.value.filter((data) => {
                 const apiName = data.provinsi.nama.toUpperCase();
-                return provinceNameMapping[mappedName]?.some(alias =>
-                    apiName.includes(alias.toUpperCase()) || alias.toUpperCase().includes(apiName)
+                return provinceNameMapping[mappedName]?.some(
+                    (alias) => apiName.includes(alias.toUpperCase()) || alias.toUpperCase().includes(apiName),
                 );
             }).length;
         }
@@ -842,12 +829,15 @@ const getProvinceDataCount = (provinceName: string): number => {
 
     // If still no match, try partial matching
     if (count === 0) {
-        count = filteredMonitoringData.value.filter(data => {
+        count = filteredMonitoringData.value.filter((data) => {
             const apiName = data.provinsi.nama.toUpperCase();
             const svgName = provinceName.toUpperCase();
-            return apiName.includes(svgName) || svgName.includes(apiName) ||
-                   apiName.replace(/\s+/g, '').includes(svgName.replace(/\s+/g, '')) ||
-                   svgName.replace(/\s+/g, '').includes(apiName.replace(/\s+/g, ''));
+            return (
+                apiName.includes(svgName) ||
+                svgName.includes(apiName) ||
+                apiName.replace(/\s+/g, '').includes(svgName.replace(/\s+/g, '')) ||
+                svgName.replace(/\s+/g, '').includes(apiName.replace(/\s+/g, ''))
+            );
         }).length;
     }
 
@@ -857,23 +847,21 @@ const getProvinceDataCount = (provinceName: string): number => {
 // Show province detail for SVG map
 const showProvinceDetail = (provinceName: string) => {
     // Find the first data item for this province
-    let provinceData = filteredMonitoringData.value.find(data =>
-        data.provinsi.nama.toUpperCase() === provinceName.toUpperCase()
-    );
+    let provinceData = filteredMonitoringData.value.find((data) => data.provinsi.nama.toUpperCase() === provinceName.toUpperCase());
 
     // If not found, try using mapping
     if (!provinceData) {
         const svgProvinceName = provinceName.toUpperCase();
         const apiProvinceAlias = Object.entries(provinceNameMapping).find(([_, aliases]) =>
-            aliases.some(alias => alias.toUpperCase() === svgProvinceName)
+            aliases.some((alias) => alias.toUpperCase() === svgProvinceName),
         );
 
         if (apiProvinceAlias) {
             const [mappedName] = apiProvinceAlias;
-            provinceData = filteredMonitoringData.value.find(data => {
+            provinceData = filteredMonitoringData.value.find((data) => {
                 const apiName = data.provinsi.nama.toUpperCase();
-                return provinceNameMapping[mappedName]?.some(alias =>
-                    apiName.includes(alias.toUpperCase()) || alias.toUpperCase().includes(apiName)
+                return provinceNameMapping[mappedName]?.some(
+                    (alias) => apiName.includes(alias.toUpperCase()) || alias.toUpperCase().includes(apiName),
                 );
             });
         }
@@ -881,12 +869,15 @@ const showProvinceDetail = (provinceName: string) => {
 
     // If still not found, try partial matching
     if (!provinceData) {
-        provinceData = filteredMonitoringData.value.find(data => {
+        provinceData = filteredMonitoringData.value.find((data) => {
             const apiName = data.provinsi.nama.toUpperCase();
             const svgName = provinceName.toUpperCase();
-            return apiName.includes(svgName) || svgName.includes(apiName) ||
-                   apiName.replace(/\s+/g, '').includes(svgName.replace(/\s+/g, '')) ||
-                   svgName.replace(/\s+/g, '').includes(apiName.replace(/\s+/g, ''));
+            return (
+                apiName.includes(svgName) ||
+                svgName.includes(apiName) ||
+                apiName.replace(/\s+/g, '').includes(svgName.replace(/\s+/g, '')) ||
+                svgName.replace(/\s+/g, '').includes(apiName.replace(/\s+/g, ''))
+            );
         });
     }
 
@@ -933,11 +924,15 @@ watch(isLeafletMap, async (newValue) => {
 });
 
 // Watch for changes in filtered data and update map markers
-watch(filteredMonitoringData, () => {
-    updateMapMarkers();
-    // Reset to first page when data changes due to filtering
-    currentPage.value = 1;
-}, { deep: true });
+watch(
+    filteredMonitoringData,
+    () => {
+        updateMapMarkers();
+        // Reset to first page when data changes due to filtering
+        currentPage.value = 1;
+    },
+    { deep: true },
+);
 
 // Watch for totalPages changes to ensure currentPage is valid
 watch(totalPages, (newTotalPages) => {
@@ -966,10 +961,10 @@ watch(searchQuery, () => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-1 flex-col gap-6 rounded-xl p-6">
             <!-- Header -->
-            <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6">
+            <div class="rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:p-6 dark:border-gray-700 dark:bg-gray-800">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <!-- Icon & Title Section -->
-                    <div class="flex items-center min-w-0 flex-1">
+                    <div class="flex min-w-0 flex-1 items-center">
                         <div
                             class="mr-3 flex h-10 w-10 items-center justify-center rounded-lg sm:mr-4 sm:h-12 sm:w-12"
                             :class="
@@ -988,8 +983,8 @@ watch(searchQuery, () => {
                             />
                             <span v-else class="text-lg sm:text-2xl">{{ selectedCategory ? selectedCategory.icon || currentTheme.icon : '📊' }}</span>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <h1 class="flex flex-wrap items-center gap-1 text-lg font-bold text-gray-900 dark:text-white sm:gap-2 sm:text-2xl">
+                        <div class="min-w-0 flex-1">
+                            <h1 class="flex flex-wrap items-center gap-1 text-lg font-bold text-gray-900 sm:gap-2 sm:text-2xl dark:text-white">
                                 <span class="whitespace-nowrap">Dashboard</span>
                                 <span v-if="selectedCategory" class="truncate">{{ selectedCategory.name }}</span>
                                 <template v-if="selectedSubCategory">
@@ -1006,7 +1001,7 @@ watch(searchQuery, () => {
                                 </template>
                                 <span v-if="!selectedCategory" class="whitespace-nowrap">Monitoring</span>
                             </h1>
-                            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400 sm:text-base">
+                            <p class="mt-1 text-sm text-gray-600 sm:text-base dark:text-gray-400">
                                 {{
                                     selectedSubCategory
                                         ? `Monitoring khusus subcategory ${selectedSubCategory.name}`
@@ -1017,25 +1012,30 @@ watch(searchQuery, () => {
                             </p>
                         </div>
                     </div>
-                    
+
                     <!-- Action Buttons -->
                     <div class="flex items-center justify-end gap-3 sm:flex-shrink-0">
                         <!-- Filter Toggle Button -->
                         <button
                             @click="showFilters = !showFilters"
-                            class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 dark:focus:ring-offset-gray-800 sm:px-4"
+                            class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none sm:px-4 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 dark:focus:ring-offset-gray-800"
                         >
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                                />
                             </svg>
                             <span class="whitespace-nowrap">{{ showFilters ? 'Sembunyikan Filter' : 'Tampilkan Filter' }}</span>
                         </button>
-                        
+
                         <!-- Add Data Button -->
                         <Link
                             v-if="canEdit"
                             :href="buildCreateUrl()"
-                            class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:focus:ring-offset-gray-800 sm:px-4"
+                            class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none sm:px-4 dark:focus:ring-offset-gray-800"
                         >
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -1048,13 +1048,20 @@ watch(searchQuery, () => {
 
             <!-- Filters Card -->
             <div v-if="showFilters" class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                <div class="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 dark:border-gray-700 dark:from-gray-800 dark:to-gray-700">
+                <div
+                    class="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 dark:border-gray-700 dark:from-gray-800 dark:to-gray-700"
+                >
                     <div class="flex items-center justify-between">
                         <div>
                             <h3 class="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
                                 <div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
                                     <svg class="h-4 w-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                                        />
                                     </svg>
                                 </div>
                                 Filter & Pencarian Data
@@ -1063,25 +1070,49 @@ watch(searchQuery, () => {
                                 Atur filter yang diinginkan, lalu terapkan untuk melihat hasil pencarian
                             </p>
                         </div>
-                        <div v-if="selectedCategory || selectedSubCategory" class="rounded-full bg-white px-3 py-1 text-sm font-medium text-blue-700 shadow-sm dark:bg-gray-800 dark:text-blue-300">
+                        <div
+                            v-if="selectedCategory || selectedSubCategory"
+                            class="rounded-full bg-white px-3 py-1 text-sm font-medium text-blue-700 shadow-sm dark:bg-gray-800 dark:text-blue-300"
+                        >
                             {{ selectedSubCategory ? selectedSubCategory.name : selectedCategory ? selectedCategory.name : '' }}
                         </div>
                     </div>
                 </div>
                 <div class="p-6">
-                    <div :class="isKategoriIndas ? 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4' : 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5'">
+                    <div
+                        :class="
+                            isKategoriIndas
+                                ? 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4'
+                                : 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5'
+                        "
+                    >
                         <!-- Search Filter -->
                         <div class="group">
                             <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                                 <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                    />
                                 </svg>
                                 Pencarian Judul
                             </label>
                             <div class="relative">
                                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                                    <svg class="h-4 w-4 text-gray-400 group-focus-within:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    <svg
+                                        class="h-4 w-4 text-gray-400 group-focus-within:text-blue-500"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                        />
                                     </svg>
                                 </div>
                                 <input
@@ -1092,7 +1123,10 @@ watch(searchQuery, () => {
                                     class="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pr-4 pl-11 text-sm text-gray-900 placeholder-gray-500 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-blue-400"
                                 />
                                 <div v-if="localFilters.search" class="absolute inset-y-0 right-0 flex items-center pr-3">
-                                    <kbd class="inline-flex items-center rounded border border-gray-200 px-1 text-xs font-sans text-gray-500 dark:border-gray-600 dark:text-gray-400">Enter</kbd>
+                                    <kbd
+                                        class="inline-flex items-center rounded border border-gray-200 px-1 font-sans text-xs text-gray-500 dark:border-gray-600 dark:text-gray-400"
+                                        >Enter</kbd
+                                    >
                                 </div>
                             </div>
                         </div>
@@ -1101,7 +1135,12 @@ watch(searchQuery, () => {
                         <div class="group">
                             <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                                 <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                                    />
                                 </svg>
                                 Kategori Data
                             </label>
@@ -1122,7 +1161,9 @@ watch(searchQuery, () => {
                                             <span v-else-if="selectedLocalCategory?.icon" class="text-lg">{{ selectedLocalCategory.icon }}</span>
                                             <div v-else class="h-2 w-2 rounded-full bg-green-500"></div>
                                         </div>
-                                        <span class="font-medium text-gray-900 dark:text-white">{{ selectedLocalCategory?.name || 'Pilih Kategori' }}</span>
+                                        <span class="font-medium text-gray-900 dark:text-white">{{
+                                            selectedLocalCategory?.name || 'Pilih Kategori'
+                                        }}</span>
                                     </div>
                                     <svg
                                         class="h-4 w-4 text-gray-400 transition-transform duration-200"
@@ -1177,7 +1218,12 @@ watch(searchQuery, () => {
                         <div v-if="selectedLocalCategory && subCategories.length > 0" class="group">
                             <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                                 <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                                    />
                                 </svg>
                                 Sub Kategori
                             </label>
@@ -1195,10 +1241,14 @@ watch(searchQuery, () => {
                                                 alt="Subcategory"
                                                 class="h-5 w-5 rounded object-contain"
                                             />
-                                            <span v-else-if="selectedLocalSubCategory?.icon" class="text-lg">{{ selectedLocalSubCategory.icon }}</span>
+                                            <span v-else-if="selectedLocalSubCategory?.icon" class="text-lg">{{
+                                                selectedLocalSubCategory.icon
+                                            }}</span>
                                             <div v-else class="h-2 w-2 rounded-full bg-green-500"></div>
                                         </div>
-                                        <span class="font-medium text-gray-900 dark:text-white">{{ selectedLocalSubCategory?.name || 'Pilih Sub Kategori' }}</span>
+                                        <span class="font-medium text-gray-900 dark:text-white">{{
+                                            selectedLocalSubCategory?.name || 'Pilih Sub Kategori'
+                                        }}</span>
                                     </div>
                                     <svg
                                         class="h-4 w-4 text-gray-400 transition-transform duration-200"
@@ -1253,7 +1303,12 @@ watch(searchQuery, () => {
                         <div v-if="!isKategoriIndas" class="group">
                             <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                                 <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    />
                                 </svg>
                                 Tanggal Mulai
                             </label>
@@ -1269,7 +1324,12 @@ watch(searchQuery, () => {
                         <div v-if="!isKategoriIndas" class="group">
                             <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                                 <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    />
                                 </svg>
                                 Tanggal Akhir
                             </label>
@@ -1285,7 +1345,12 @@ watch(searchQuery, () => {
                         <div v-if="isKategoriIndas" class="group">
                             <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                                 <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                    />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                                 Provinsi
@@ -1296,7 +1361,9 @@ watch(searchQuery, () => {
                                     type="button"
                                     class="flex w-full items-center justify-between gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:border-blue-400"
                                 >
-                                    <span class="font-medium text-gray-900 dark:text-white">{{ selectedLocalProvinsi?.nama || 'Pilih Provinsi' }}</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">{{
+                                        selectedLocalProvinsi?.nama || 'Pilih Provinsi'
+                                    }}</span>
                                     <svg
                                         class="h-4 w-4 text-gray-400 transition-transform duration-200"
                                         :class="{ 'rotate-180': provinsiDropdownOpen }"
@@ -1322,7 +1389,7 @@ watch(searchQuery, () => {
                                         <span>Semua Provinsi</span>
                                     </button>
                                     <button
-                                        v-for="provinsi in (provinsiList || [])"
+                                        v-for="provinsi in provinsiList || []"
                                         :key="provinsi.id"
                                         @click="
                                             selectLocalProvinsi(provinsi.id);
@@ -1332,10 +1399,7 @@ watch(searchQuery, () => {
                                     >
                                         <span>{{ provinsi.nama }}</span>
                                     </button>
-                                    <div
-                                        v-if="!provinsiList || provinsiList.length === 0"
-                                        class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400"
-                                    >
+                                    <div v-if="!provinsiList || provinsiList.length === 0" class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
                                         Data provinsi tidak tersedia
                                     </div>
                                 </div>
@@ -1346,7 +1410,12 @@ watch(searchQuery, () => {
                         <div v-if="isKategoriIndas && selectedLocalProvinsi && filteredLocalKabupatenKotaList.length > 0" class="group">
                             <label class="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                                 <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                                    />
                                 </svg>
                                 Kabupaten/Kota
                             </label>
@@ -1356,7 +1425,9 @@ watch(searchQuery, () => {
                                     type="button"
                                     class="flex w-full items-center justify-between gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:focus:border-blue-400"
                                 >
-                                    <span class="font-medium text-gray-900 dark:text-white">{{ selectedLocalKabupatenKota?.nama || 'Pilih Kabupaten/Kota' }}</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">{{
+                                        selectedLocalKabupatenKota?.nama || 'Pilih Kabupaten/Kota'
+                                    }}</span>
                                     <svg
                                         class="h-4 w-4 text-gray-400 transition-transform duration-200"
                                         :class="{ 'rotate-180': kabupatenKotaDropdownOpen }"
@@ -1395,22 +1466,24 @@ watch(searchQuery, () => {
                                 </div>
                             </div>
                         </div>
-
                     </div>
-                    
+
                     <!-- Filter Action Buttons -->
                     <div class="mt-5 border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800/50">
                         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div class="flex items-start gap-3">
                                 <div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
                                     <svg class="h-4 w-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
                                     </svg>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        Siap untuk menerapkan filter?
-                                    </p>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Siap untuk menerapkan filter?</p>
                                     <p class="text-xs text-gray-600 dark:text-gray-400">
                                         Ubah filter di atas, lalu klik "Terapkan Filter" untuk melihat hasil pencarian
                                     </p>
@@ -1420,10 +1493,15 @@ watch(searchQuery, () => {
                                 <button
                                     @click="resetFilters"
                                     type="button"
-                                    class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 dark:focus:ring-offset-gray-800"
+                                    class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-400 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 dark:focus:ring-offset-gray-800"
                                 >
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                        />
                                     </svg>
                                     Reset Semua
                                 </button>
@@ -1433,7 +1511,12 @@ watch(searchQuery, () => {
                                     class="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:focus:ring-offset-gray-800"
                                 >
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                        />
                                     </svg>
                                     Terapkan Filter
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1533,15 +1616,30 @@ watch(searchQuery, () => {
                                 <div class="flex items-center gap-2">
                                     <button
                                         @click="isLeafletMap = !isLeafletMap"
-                                        class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                        class="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                                         :title="isLeafletMap ? 'Beralih ke Peta SVG' : 'Beralih ke Peta Leaflet'"
                                     >
                                         <svg v-if="isLeafletMap" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                                            />
                                         </svg>
                                         <svg v-else class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                            />
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                            />
                                         </svg>
                                         {{ isLeafletMap ? 'SVG' : 'Leaflet' }}
                                     </button>
@@ -1558,10 +1656,17 @@ watch(searchQuery, () => {
                             </div>
                         </div>
                         <!-- Leaflet Map -->
-                        <div v-if="isLeafletMap" ref="mapContainer" class="relative z-0 h-96 rounded-lg border border-gray-200 dark:border-gray-700"></div>
+                        <div
+                            v-if="isLeafletMap"
+                            ref="mapContainer"
+                            class="relative z-0 h-96 rounded-lg border border-gray-200 dark:border-gray-700"
+                        ></div>
 
                         <!-- SVG Map Indonesia -->
-                        <div v-else class="relative h-96 rounded-lg border border-gray-200 bg-gradient-to-b from-blue-50 to-green-50 dark:border-gray-700 dark:from-gray-800 dark:to-gray-900">
+                        <div
+                            v-else
+                            class="relative h-96 rounded-lg border border-gray-200 bg-gradient-to-b from-blue-50 to-green-50 dark:border-gray-700 dark:from-gray-800 dark:to-gray-900"
+                        >
                             <!-- Indonesia SVG Map -->
                             <svg
                                 viewBox="0 0 792.54596 316.66394"
@@ -1585,10 +1690,7 @@ watch(searchQuery, () => {
                             </svg>
 
                             <!-- Selected Province Detail -->
-                            <div
-                                v-if="selectedProvince"
-                                class="absolute right-4 top-4 z-30 w-72 rounded-lg bg-white p-4 shadow-lg dark:bg-gray-800"
-                            >
+                            <div v-if="selectedProvince" class="absolute top-4 right-4 z-30 w-72 rounded-lg bg-white p-4 shadow-lg dark:bg-gray-800">
                                 <h4 class="font-semibold text-gray-900 dark:text-white">{{ selectedProvince.provinsi.nama }}</h4>
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
                                     Kategori: <span class="font-medium text-blue-600">{{ selectedProvince.category.name }}</span>
@@ -1597,14 +1699,10 @@ watch(searchQuery, () => {
                                     Sub Kategori: <span class="font-medium text-green-600">{{ selectedProvince.sub_category.name }}</span>
                                 </p>
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    Jumlah Data: <span class="font-medium text-red-600">{{ getProvinceDataCount(selectedProvince.provinsi.nama) }}</span>
+                                    Jumlah Data:
+                                    <span class="font-medium text-red-600">{{ getProvinceDataCount(selectedProvince.provinsi.nama) }}</span>
                                 </p>
-                                <button
-                                    @click="selectedProvince = null"
-                                    class="mt-2 text-xs text-blue-600 hover:text-blue-800"
-                                >
-                                    Tutup
-                                </button>
+                                <button @click="selectedProvince = null" class="mt-2 text-xs text-blue-600 hover:text-blue-800">Tutup</button>
                             </div>
 
                             <!-- Legend -->
@@ -1784,19 +1882,14 @@ watch(searchQuery, () => {
                                                         searchQuery.trim()
                                                             ? `Tidak ada data yang ditemukan untuk pencarian "${searchQuery}"`
                                                             : selectedCategory
-                                                            ? `Tidak ada data untuk kategori ${selectedCategory.name}`
-                                                            : 'Tidak ada data yang sesuai dengan filter yang dipilih'
+                                                              ? `Tidak ada data untuk kategori ${selectedCategory.name}`
+                                                              : 'Tidak ada data yang sesuai dengan filter yang dipilih'
                                                     }}
                                                 </p>
                                             </div>
                                         </td>
                                     </tr>
-                                    <tr
-                                        v-else
-                                        v-for="data in paginatedMonitoringData"
-                                        :key="data.id"
-                                        class="hover:bg-gray-50 dark:hover:bg-gray-700"
-                                    >
+                                    <tr v-else v-for="data in paginatedMonitoringData" :key="data.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                         <td class="px-6 py-4">
                                             <div class="text-sm">
                                                 <div class="font-semibold text-gray-900 dark:text-white">{{ data.title }}</div>
@@ -1841,7 +1934,7 @@ watch(searchQuery, () => {
                                             <div class="flex items-center justify-end space-x-2">
                                                 <Link
                                                     :href="`/monitoring-data/${data.id}`"
-                                                    class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-600"
+                                                    class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none dark:bg-blue-500 dark:hover:bg-blue-600"
                                                 >
                                                     <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path
@@ -1862,7 +1955,7 @@ watch(searchQuery, () => {
                                                 <Link
                                                     v-if="canEdit"
                                                     :href="`/monitoring-data/${data.id}/edit`"
-                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none dark:bg-indigo-500 dark:hover:bg-indigo-600"
                                                 >
                                                     <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path
@@ -1882,14 +1975,14 @@ watch(searchQuery, () => {
                         </div>
 
                         <!-- Pagination Controls -->
-                        <div
-                            v-if="totalPages > 1"
-                            class="border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-700"
-                        >
+                        <div v-if="totalPages > 1" class="border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-700">
                             <div class="flex items-center justify-between">
                                 <!-- Results Info -->
                                 <div class="text-sm text-gray-700 dark:text-gray-300">
-                                    Menampilkan {{ (validCurrentPage - 1) * itemsPerPage + 1 }}-{{ Math.min(validCurrentPage * itemsPerPage, filteredMonitoringData.length) }} dari {{ filteredMonitoringData.length }} data
+                                    Menampilkan {{ (validCurrentPage - 1) * itemsPerPage + 1 }}-{{
+                                        Math.min(validCurrentPage * itemsPerPage, filteredMonitoringData.length)
+                                    }}
+                                    dari {{ filteredMonitoringData.length }} data
                                 </div>
 
                                 <!-- Pagination Navigation -->
@@ -1899,9 +1992,11 @@ watch(searchQuery, () => {
                                         @click="goToPreviousPage"
                                         :disabled="validCurrentPage <= 1"
                                         class="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                                        :class="validCurrentPage <= 1 
-                                            ? 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500' 
-                                            : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
+                                        :class="
+                                            validCurrentPage <= 1
+                                                ? 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500'
+                                                : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'
+                                        "
                                     >
                                         <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -1915,9 +2010,11 @@ watch(searchQuery, () => {
                                         <template v-for="page in Math.min(3, totalPages)" :key="`start-${page}`">
                                             <button
                                                 @click="goToPage(page)"
-                                                :class="validCurrentPage === page 
-                                                    ? 'bg-blue-600 text-white shadow-sm' 
-                                                    : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
+                                                :class="
+                                                    validCurrentPage === page
+                                                        ? 'bg-blue-600 text-white shadow-sm'
+                                                        : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'
+                                                "
                                                 class="inline-flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors"
                                             >
                                                 {{ page }}
@@ -1928,13 +2025,18 @@ watch(searchQuery, () => {
                                         <span v-if="validCurrentPage > 6" class="px-2 text-gray-500 dark:text-gray-400">...</span>
 
                                         <!-- Pages around current page -->
-                                        <template v-for="page in [validCurrentPage - 1, validCurrentPage, validCurrentPage + 1]" :key="`middle-${page}`">
+                                        <template
+                                            v-for="page in [validCurrentPage - 1, validCurrentPage, validCurrentPage + 1]"
+                                            :key="`middle-${page}`"
+                                        >
                                             <button
                                                 v-if="page > 3 && page <= totalPages - 3 && page > 0"
                                                 @click="goToPage(page)"
-                                                :class="validCurrentPage === page 
-                                                    ? 'bg-blue-600 text-white shadow-sm' 
-                                                    : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
+                                                :class="
+                                                    validCurrentPage === page
+                                                        ? 'bg-blue-600 text-white shadow-sm'
+                                                        : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'
+                                                "
                                                 class="inline-flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors"
                                             >
                                                 {{ page }}
@@ -1949,9 +2051,11 @@ watch(searchQuery, () => {
                                             <button
                                                 v-if="page > 3 && page > 0 && totalPages > 6"
                                                 @click="goToPage(page)"
-                                                :class="validCurrentPage === page 
-                                                    ? 'bg-blue-600 text-white shadow-sm' 
-                                                    : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
+                                                :class="
+                                                    validCurrentPage === page
+                                                        ? 'bg-blue-600 text-white shadow-sm'
+                                                        : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'
+                                                "
                                                 class="inline-flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors"
                                             >
                                                 {{ page }}
@@ -1964,9 +2068,11 @@ watch(searchQuery, () => {
                                         @click="goToNextPage"
                                         :disabled="validCurrentPage >= totalPages"
                                         class="inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                                        :class="validCurrentPage >= totalPages 
-                                            ? 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500' 
-                                            : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'"
+                                        :class="
+                                            validCurrentPage >= totalPages
+                                                ? 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500'
+                                                : 'bg-white text-gray-700 shadow-sm ring-1 ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-gray-700'
+                                        "
                                     >
                                         Selanjutnya
                                         <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1976,7 +2082,6 @@ watch(searchQuery, () => {
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
@@ -2116,7 +2221,10 @@ watch(searchQuery, () => {
                     </div>
 
                     <!-- Severity Level Distribution - Hidden for kategori-indas -->
-                    <div v-if="!isKategoriIndas" class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                    <div
+                        v-if="!isKategoriIndas"
+                        class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                    >
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">📊 Tingkat Resiko</h3>
                         <div class="space-y-3">
                             <div v-for="(config, severity) in severityIcons" :key="severity" class="flex items-center gap-3">

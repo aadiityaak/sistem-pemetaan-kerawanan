@@ -18,9 +18,9 @@ class UserController extends Controller
         // Search functionality
         if ($request->has('search') && $request->search != '') {
             $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('email', 'like', '%' . $request->search . '%')
-                    ->orWhere('phone', 'like', '%' . $request->search . '%');
+                $q->where('name', 'like', '%'.$request->search.'%')
+                    ->orWhere('email', 'like', '%'.$request->search.'%')
+                    ->orWhere('phone', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -56,7 +56,7 @@ class UserController extends Controller
     public function create()
     {
         $provinsiList = Provinsi::orderBy('nama')->get();
-        
+
         return Inertia::render('Users/Create', [
             'provinsiList' => $provinsiList,
         ]);
@@ -86,9 +86,9 @@ class UserController extends Controller
     public function show(User $user)
     {
         $user->load('provinsi');
-        
+
         return Inertia::render('Users/Show', [
-            'user' => $user
+            'user' => $user,
         ]);
     }
 
@@ -96,7 +96,7 @@ class UserController extends Controller
     {
         $user->load('provinsi');
         $provinsiList = Provinsi::orderBy('nama')->get();
-        
+
         return Inertia::render('Users/Edit', [
             'user' => $user,
             'provinsiList' => $provinsiList,
@@ -127,11 +127,11 @@ class UserController extends Controller
         }
 
         // Don't allow users to deactivate themselves
-        if ($user->id === auth()->id() && !($validated['is_active'] ?? true)) {
+        if ($user->id === auth()->id() && ! ($validated['is_active'] ?? true)) {
             return back()->withErrors(['is_active' => 'You cannot deactivate your own account.']);
         }
 
-        if (!empty($validated['password'])) {
+        if (! empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']);
@@ -168,7 +168,7 @@ class UserController extends Controller
             return back()->withErrors(['user' => 'You cannot change your own account status.']);
         }
 
-        $user->update(['is_active' => !$user->is_active]);
+        $user->update(['is_active' => ! $user->is_active]);
 
         $status = $user->is_active ? 'activated' : 'deactivated';
 

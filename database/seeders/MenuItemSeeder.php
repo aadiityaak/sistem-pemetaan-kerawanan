@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class MenuItemSeeder extends Seeder
@@ -29,7 +28,7 @@ class MenuItemSeeder extends Seeder
         // IPOLEKSOSBUDKAM submenus berdasarkan kategori dan sub kategori dari database
         // Ambil data categories dengan sub categories
         $categories = \App\Models\Category::with('subCategories')->orderBy('sort_order')->get();
-        
+
         foreach ($categories as $index => $category) {
             // Buat menu kategori sebagai sub menu dari IPOLEKSOSBUDKAM
             $categoryMenu = \App\Models\MenuItem::create([
@@ -42,7 +41,7 @@ class MenuItemSeeder extends Seeder
                 'admin_only' => false,
                 'description' => $category->description,
             ]);
-            
+
             // Buat sub kategori sebagai sub menu dari kategori
             foreach ($category->subCategories as $subIndex => $subCategory) {
                 \App\Models\MenuItem::create([
@@ -321,12 +320,12 @@ class MenuItemSeeder extends Seeder
     {
         $iconMap = [
             'ideologi' => 'Users',
-            'politik' => 'Landmark', 
+            'politik' => 'Landmark',
             'ekonomi' => 'DollarSign',
             'sosial-budaya' => 'Heart',
             'keamanan' => 'Shield',
         ];
-        
+
         return $iconMap[$slug] ?? 'Tags';
     }
 }

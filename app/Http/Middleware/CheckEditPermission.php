@@ -15,14 +15,15 @@ class CheckEditPermission
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return redirect('/login');
         }
 
         $user = auth()->user();
 
-        if (!$user->isActive()) {
+        if (! $user->isActive()) {
             auth()->logout();
+
             return redirect('/login')->with('error', 'Akun Anda telah dinonaktifkan.');
         }
 
@@ -32,7 +33,7 @@ class CheckEditPermission
         }
 
         // Check if user can edit (only super_admin and admin can edit)
-        if (!$user->canEdit()) {
+        if (! $user->canEdit()) {
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk mengedit data.');
         }
 

@@ -31,7 +31,7 @@ defineProps<{
                     </CardContent>
                 </Card>
             </div>
-            
+
             <div class="text-center">
                 <span class="text-xs text-muted-foreground">Version 4.2.0</span>
             </div>

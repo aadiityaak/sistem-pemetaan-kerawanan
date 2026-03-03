@@ -85,9 +85,9 @@ class ProvinsiController extends Controller
     public function edit($id)
     {
         $provinsi = Provinsi::findOrFail($id);
-        
+
         return Inertia::render('Provinsi/Edit', [
-            'provinsi' => $provinsi
+            'provinsi' => $provinsi,
         ]);
     }
 

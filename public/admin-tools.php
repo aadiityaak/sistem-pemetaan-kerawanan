@@ -35,6 +35,7 @@ function getAdminPasswordFromEnv()
     foreach ($possiblePaths as $path) {
         if (is_dir($path) && file_exists($path.'/artisan')) {
             $laravelRoot = $path;
+
             break;
         }
     }
@@ -169,6 +170,7 @@ function executeCommand($command)
             foreach ($commonPaths as $path) {
                 if (is_executable($path)) {
                     $phpPath = $path;
+
                     break;
                 }
             }
@@ -478,6 +480,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         throw new Exception("Custom handler not found: {$handler}");
                     }
                 }
+
                 break;
             }
         }
@@ -485,7 +488,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         if (! $actionFound) {
             throw new Exception("Unknown action: {$action}");
         }
-
     } catch (Exception $e) {
         $error = 'Error: '.$e->getMessage();
     }

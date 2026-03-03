@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -37,7 +37,7 @@ class DatabaseSeeder extends Seeder
             IndasIndicatorTypeSeeder::class,
             IndasAnalysisResultSeeder::class,
             SembakoSeeder::class,
-            MenuItemSeeder::class
+            MenuItemSeeder::class,
         ]);
     }
 }

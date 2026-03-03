@@ -46,7 +46,7 @@ const form = useForm({
     slug: props.category.slug || '',
     description: props.category.description || '',
     icon: props.category.icon || '',
-    image: null,
+    image: null as File | null,
     color: props.category.color || '#3B82F6',
     is_active: props.category.is_active !== undefined ? props.category.is_active : true,
     sort_order: props.category.sort_order || 0,

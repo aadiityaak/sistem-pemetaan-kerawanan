@@ -60,25 +60,26 @@ class MenuItem extends Model
 
         // If user is not authenticated, only show items with no specific permissions
         if (! $user) {
-            $query->where(function($q) {
+            $query->where(function ($q) {
                 $q->whereNull('permissions')
-                  ->orWhereJsonLength('permissions', 0);
+                    ->orWhereJsonLength('permissions', 0);
             });
+
             return $query;
         }
 
         // If permissions field is populated, check against user's role
-        $query->where(function($q) use ($user) {
-            $q->where(function($subQ) use ($user) {
+        $query->where(function ($q) use ($user) {
+            $q->where(function ($subQ) use ($user) {
                 // Items with specific permissions - check if user role is included
                 $subQ->whereNotNull('permissions')
-                     ->whereJsonLength('permissions', '>', 0)
-                     ->whereJsonContains('permissions', $user->role);
-            })->orWhere(function($subQ) {
+                    ->whereJsonLength('permissions', '>', 0)
+                    ->whereJsonContains('permissions', $user->role);
+            })->orWhere(function ($subQ) {
                 // Items with no specific permissions (available to all)
-                $subQ->where(function($innerQ) {
+                $subQ->where(function ($innerQ) {
                     $innerQ->whereNull('permissions')
-                           ->orWhereJsonLength('permissions', 0);
+                        ->orWhereJsonLength('permissions', 0);
                 });
             });
         });

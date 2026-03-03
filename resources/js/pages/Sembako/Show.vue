@@ -140,9 +140,9 @@ const props = defineProps<{
 
 // Breadcrumbs
 const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', url: '/dashboard' },
-    { title: 'Data Sembako', url: '/sembako' },
-    { title: 'Detail Data', url: '#' },
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Data Sembako', href: '/sembako' },
+    { title: 'Detail Data', href: '#' },
 ];
 
 const formatDate = (dateString: string) => {

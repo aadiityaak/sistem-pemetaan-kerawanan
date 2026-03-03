@@ -118,7 +118,7 @@
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
                         🔍 Filter & Pencarian
                         <span v-if="selectedCategory || selectedSubCategory" class="text-sm font-normal text-gray-600 dark:text-gray-400">
-                            - {{ selectedSubCategory ? selectedSubCategory.name : selectedCategory ? selectedCategory.name : '' }}
+                            - {{ selectedSubCategoryDisplay || selectedCategoryDisplay }}
                         </span>
                     </h3>
                 </div>
@@ -658,11 +658,13 @@ import { computed, ref, watch } from 'vue';
 interface Category {
     id: number;
     name: string;
+    slug: string;
 }
 
 interface SubCategory {
     id: number;
     name: string;
+    slug: string;
 }
 
 interface KabupatenKota {
@@ -682,12 +684,17 @@ interface MonitoringDataItem {
     id: number;
     title?: string;
     category: Category;
+    sub_category?: SubCategory;
     subCategory?: SubCategory;
     kecamatan: Kecamatan;
+    kabupatenKota?: { nama?: string };
+    kabupaten_kota?: { nama?: string };
     tanggal_laporan: string;
     level_kejadian: string;
     status: string;
     jumlah_korban?: number;
+    sumber_berita?: string;
+    data_source?: string;
 }
 
 interface PaginatedData {
@@ -782,6 +789,9 @@ const canEdit = computed(() => {
     return currentUser && currentUser.role && ['super_admin', 'admin'].includes(currentUser.role);
 });
 
+const selectedCategoryDisplay = computed(() => props.categories.find((c) => c.slug === selectedCategory.value)?.name ?? '');
+const selectedSubCategoryDisplay = computed(() => props.subCategories.find((s) => s.slug === selectedSubCategory.value)?.name ?? '');
+
 // Computed properties for regional filtering
 const filteredKabupaten = computed(() => {
     if (!selectedProvinsi.value || selectedProvinsi.value === '' || selectedProvinsi.value === '0') {
@@ -833,7 +843,7 @@ const resetFilters = () => {
     endDate.value = '';
     selectedProvinsi.value = '';
     selectedKabupaten.value = '';
-    
+
     // Apply filters will automatically reset pagination to page 1
     applyFilters();
 };
@@ -841,7 +851,7 @@ const resetFilters = () => {
 // Helper function to get current filter parameters
 const getCurrentFilterParams = () => {
     const params: Record<string, any> = {};
-    
+
     if (searchQuery.value) params.search = searchQuery.value;
     if (selectedStatus.value) params.status = selectedStatus.value;
     if (selectedLevel.value) params.level = selectedLevel.value;
@@ -851,25 +861,25 @@ const getCurrentFilterParams = () => {
     if (endDate.value) params.end_date = endDate.value;
     if (selectedProvinsi.value) params.provinsi_id = selectedProvinsi.value;
     if (selectedKabupaten.value) params.kabupaten_kota_id = selectedKabupaten.value;
-    
+
     return params;
 };
 
 // Helper function to add current filters to pagination URL
 const addFiltersToUrl = (url: string) => {
     if (!url) return url;
-    
+
     try {
         const urlObj = new URL(url, window.location.origin);
         const currentFilters = getCurrentFilterParams();
-        
+
         // Add current filters to the URL
-        Object.keys(currentFilters).forEach(key => {
+        Object.keys(currentFilters).forEach((key) => {
             if (currentFilters[key]) {
                 urlObj.searchParams.set(key, currentFilters[key]);
             }
         });
-        
+
         return urlObj.toString();
     } catch (error) {
         console.error('Error adding filters to URL:', error);
@@ -898,9 +908,12 @@ const applyFilters = () => {
 };
 
 // Watch for filter changes with debounce (all filters)
-watch([searchQuery, selectedStatus, selectedLevel, selectedCategory, selectedSubCategory, selectedProvinsi, selectedKabupaten, startDate, endDate], () => {
-    applyFilters();
-});
+watch(
+    [searchQuery, selectedStatus, selectedLevel, selectedCategory, selectedSubCategory, selectedProvinsi, selectedKabupaten, startDate, endDate],
+    () => {
+        applyFilters();
+    },
+);
 
 // Methods
 const formatDate = (dateString: string) => {

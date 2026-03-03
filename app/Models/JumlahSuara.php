@@ -12,12 +12,12 @@ class JumlahSuara extends Model
     protected $fillable = [
         'partai_id',
         'tahun_pemilu',
-        'jumlah_suara'
+        'jumlah_suara',
     ];
 
     protected $casts = [
         'jumlah_suara' => 'integer',
-        'tahun_pemilu' => 'integer'
+        'tahun_pemilu' => 'integer',
     ];
 
     public function partaiPolitik(): BelongsTo

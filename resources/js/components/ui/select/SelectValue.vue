@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SelectValue as SelectValuePrimitive, type SelectValueProps } from 'reka-ui/Select'
+import { SelectValue as SelectValuePrimitive, type SelectValueProps } from 'reka-ui'
 
 const props = defineProps<SelectValueProps>()
 </script>

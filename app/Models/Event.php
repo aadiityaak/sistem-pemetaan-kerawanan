@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
 
 class Event extends Model
 {
@@ -41,11 +40,11 @@ class Event extends Model
     {
         return $query->where(function ($query) use ($startDate, $endDate) {
             $query->whereBetween('start_date', [$startDate, $endDate])
-                  ->orWhereBetween('end_date', [$startDate, $endDate])
-                  ->orWhere(function ($query) use ($startDate, $endDate) {
-                      $query->where('start_date', '<=', $startDate)
-                            ->where('end_date', '>=', $endDate);
-                  });
+                ->orWhereBetween('end_date', [$startDate, $endDate])
+                ->orWhere(function ($query) use ($startDate, $endDate) {
+                    $query->where('start_date', '<=', $startDate)
+                        ->where('end_date', '>=', $endDate);
+                });
         });
     }
 
@@ -71,7 +70,7 @@ class Event extends Model
     public function scopeInMonth($query, $month, $year)
     {
         return $query->whereMonth('start_date', $month)
-                     ->whereYear('start_date', $year);
+            ->whereYear('start_date', $year);
     }
 
     /**
@@ -88,8 +87,9 @@ class Event extends Model
     public function scopeCurrentlyActive($query)
     {
         $today = now()->format('Y-m-d');
+
         return $query->where('start_date', '<=', $today)
-                     ->where('end_date', '>=', $today);
+            ->where('end_date', '>=', $today);
     }
 
     /**
@@ -107,7 +107,7 @@ class Event extends Model
     {
         return [
             'Agenda Nasional',
-            'Agenda Internasional', 
+            'Agenda Internasional',
             'Agenda Internal Korp Brimob POLRI',
             'Kamtibmas',
             'Meeting',
@@ -115,7 +115,7 @@ class Event extends Model
             'Conference',
             'Workshop',
             'Seminar',
-            'Other'
+            'Other',
         ];
     }
 }

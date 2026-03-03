@@ -49,18 +49,6 @@ interface MenuItem {
 
 const page = usePage<AppPageProps>();
 
-// Check if current user can manage settings (Super Admin and Admin only, not Admin VIP)
-const canManageSettings = computed(() => {
-    const userRole = page.props.auth?.user?.role;
-    return userRole === 'super_admin' || userRole === 'admin';
-});
-
-// Check if current user has admin access (includes all admin types)
-const hasAdminAccess = computed(() => {
-    const userRole = page.props.auth?.user?.role;
-    return userRole === 'super_admin' || userRole === 'admin_vip' || userRole === 'admin';
-});
-
 // Check if current user is super admin only (for sidebar footer)
 const isSuperAdmin = computed(() => {
     const userRole = page.props.auth?.user?.role;

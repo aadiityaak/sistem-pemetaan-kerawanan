@@ -38,10 +38,11 @@ class SubCategoryController extends Controller
         }
 
         $subCategories = $query->orderBy('category_id')->orderBy('sort_order')->paginate(15);
-        
+
         // Append image URL to each subcategory
         $subCategories->through(function ($subCategory) {
             $subCategory->append(['image_url']);
+
             return $subCategory;
         });
 
@@ -135,7 +136,7 @@ class SubCategoryController extends Controller
     public function show(SubCategory $subCategory)
     {
         $subCategory->load('category');
-        
+
         // Append image URLs to subcategory and category
         $subCategory->append(['image_url']);
         $subCategory->category->append(['image_url']);
@@ -151,7 +152,7 @@ class SubCategoryController extends Controller
     public function edit(SubCategory $subCategory)
     {
         $categories = Category::active()->orderBy('sort_order')->get();
-        
+
         // Load the subcategory with image URL attribute
         $subCategory->append(['image_url']);
 
@@ -211,7 +212,7 @@ class SubCategoryController extends Controller
             if ($subCategory->image_path) {
                 Storage::disk('public')->delete($subCategory->image_path);
             }
-            
+
             $imagePath = $request->file('image')->store('sub_categories', 'public');
             $validated['image_path'] = $imagePath;
         }
