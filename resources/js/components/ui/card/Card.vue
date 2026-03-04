@@ -12,11 +12,12 @@ const props = defineProps<{
     data-slot="card"
     :class="
       cn(
-        'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
+        'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm relative overflow-hidden card',
         props.class,
       )
     "
   >
+    <div class="scanline hidden dark:block"></div>
     <slot />
   </div>
 </template>

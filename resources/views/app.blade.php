@@ -98,6 +98,11 @@
 </head>
 
 <body class="font-sans antialiased">
+    {{-- Global Hacker Backgrounds (only visible in dark mode) --}}
+    <div class="matrix-bg hidden dark:block"></div>
+    <div class="ai-circuit-bg hidden dark:block"></div>
+    <div class="scanline-global hidden dark:block"></div>
+    <div class="scanline-beam hidden dark:block"></div>
     @inertia
 </body>
 

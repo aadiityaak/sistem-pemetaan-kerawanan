@@ -41,6 +41,11 @@ const isOpen = (title: string) => {
                 <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>
                 <div class="sparkle" style="top: 80%; left: 10%; animation-delay: 1.5s;"></div>
             </div>
+            <!-- Hacker Corner Accents -->
+            <div class="corner-accent corner-top-left hidden dark:block"></div>
+            <div class="corner-accent corner-top-right hidden dark:block"></div>
+            <div class="corner-accent corner-bottom-left hidden dark:block"></div>
+            <div class="corner-accent corner-bottom-right hidden dark:block"></div>
         </SidebarMenuButton>
 
         <SidebarMenuSubButton v-else @click="handleToggle(item.title)" class="cursor-pointer sidebar-item-button">
@@ -52,6 +57,11 @@ const isOpen = (title: string) => {
                 <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>
                 <div class="sparkle" style="top: 80%; left: 10%; animation-delay: 1.5s;"></div>
             </div>
+            <!-- Hacker Corner Accents -->
+            <div class="corner-accent corner-top-left hidden dark:block"></div>
+            <div class="corner-accent corner-top-right hidden dark:block"></div>
+            <div class="corner-accent corner-bottom-left hidden dark:block"></div>
+            <div class="corner-accent corner-bottom-right hidden dark:block"></div>
         </SidebarMenuSubButton>
 
         <div v-show="isOpen(item.title)" class="mt-1">
@@ -80,6 +90,11 @@ const isOpen = (title: string) => {
                     <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>
                     <div class="sparkle" style="top: 80%; left: 10%; animation-delay: 1.5s;"></div>
                 </div>
+                <!-- Hacker Corner Accents -->
+                <div class="corner-accent corner-top-left hidden dark:block"></div>
+                <div class="corner-accent corner-top-right hidden dark:block"></div>
+                <div class="corner-accent corner-bottom-left hidden dark:block"></div>
+                <div class="corner-accent corner-bottom-right hidden dark:block"></div>
             </Link>
         </SidebarMenuSubButton>
     </SidebarMenuSubItem>
@@ -95,6 +110,11 @@ const isOpen = (title: string) => {
                     <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>
                     <div class="sparkle" style="top: 80%; left: 10%; animation-delay: 1.5s;"></div>
                 </div>
+                <!-- Hacker Corner Accents -->
+                <div class="corner-accent corner-top-left hidden dark:block"></div>
+                <div class="corner-accent corner-top-right hidden dark:block"></div>
+                <div class="corner-accent corner-bottom-left hidden dark:block"></div>
+                <div class="corner-accent corner-bottom-right hidden dark:block"></div>
             </Link>
         </SidebarMenuButton>
     </SidebarMenuItem>
