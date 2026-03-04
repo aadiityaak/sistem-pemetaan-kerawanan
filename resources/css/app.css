@@ -123,43 +123,43 @@
 }
 
 .dark {
-    --background: hsl(240 10% 2%);
-    --foreground: hsl(142 100% 50%);
-    --card: hsl(240 10% 4%);
-    --card-foreground: hsl(142 100% 50%);
-    --popover: hsl(240 10% 4%);
-    --popover-foreground: hsl(142 100% 50%);
-    --primary: hsl(142 100% 50%);
-    --primary-foreground: hsl(240 10% 2%);
-    --secondary: hsl(240 10% 8%);
-    --secondary-foreground: hsl(142 100% 50%);
-    --muted: hsl(240 10% 10%);
-    --muted-foreground: hsl(142 50% 30%);
-    --accent: hsl(240 10% 12%);
-    --accent-foreground: hsl(142 100% 50%);
-    --destructive: hsl(0 100% 50%);
-    --destructive-foreground: hsl(240 10% 2%);
-    --border: hsl(142 100% 50% / 0.2);
-    --input: hsl(142 100% 50% / 0.1);
-    --ring: hsl(142 100% 50%);
-    --chart-1: hsl(142 100% 50%);
-    --chart-2: hsl(142 100% 40%);
-    --chart-3: hsl(142 100% 60%);
-    --chart-4: hsl(142 100% 30%);
-    --chart-5: hsl(142 100% 70%);
-    --sidebar-background: hsla(240, 10%, 3%, 0.8);
-    --sidebar-foreground: hsl(142 100% 50%);
-    --sidebar-primary: hsl(142 100% 50%);
-    --sidebar-primary-foreground: hsl(240 10% 2%);
-    --sidebar-accent: hsl(142 100% 50% / 0.1);
-    --sidebar-accent-foreground: hsl(142 100% 50%);
-    --sidebar-border: hsl(142 100% 50% / 0.15);
-    --sidebar-ring: hsl(142 100% 50%);
-    --sidebar: hsla(240, 10%, 3%, 0.8);
+    --background: hsl(222 47% 4%);
+    --foreground: hsl(210 100% 66%);
+    --card: hsl(222 47% 6%);
+    --card-foreground: hsl(210 100% 66%);
+    --popover: hsl(222 47% 6%);
+    --popover-foreground: hsl(210 100% 66%);
+    --primary: hsl(210 100% 66%);
+    --primary-foreground: hsl(222 47% 4%);
+    --secondary: hsl(222 47% 12%);
+    --secondary-foreground: hsl(210 100% 66%);
+    --muted: hsl(222 47% 15%);
+    --muted-foreground: hsl(210 40% 50%);
+    --accent: hsl(222 47% 15%);
+    --accent-foreground: hsl(210 100% 66%);
+    --destructive: hsl(0 100% 60%);
+    --destructive-foreground: hsl(222 47% 4%);
+    --border: hsl(210 100% 66% / 0.2);
+    --input: hsl(210 100% 66% / 0.1);
+    --ring: hsl(210 100% 66%);
+    --chart-1: hsl(210 100% 66%);
+    --chart-2: hsl(210 100% 50%);
+    --chart-3: hsl(210 100% 75%);
+    --chart-4: hsl(210 100% 40%);
+    --chart-5: hsl(210 100% 85%);
+    --sidebar-background: hsla(222, 47%, 5%, 0.85);
+    --sidebar-foreground: hsl(210 100% 66%);
+    --sidebar-primary: hsl(210 100% 66%);
+    --sidebar-primary-foreground: hsl(222 47% 4%);
+    --sidebar-accent: hsl(210 100% 66% / 0.1);
+    --sidebar-accent-foreground: hsl(210 100% 66%);
+    --sidebar-border: hsl(210 100% 66% / 0.15);
+    --sidebar-ring: hsl(210 100% 66%);
+    --sidebar: hsla(222, 47%, 5%, 0.85);
 
-    /* Hacker effects */
-    --hacker-glow: 0 0 10px hsla(142, 100%, 50%, 0.5);
-    --hacker-border-glow: 0 0 5px hsla(142, 100%, 50%, 0.3);
+    /* Hacker effects (Blue) */
+    --hacker-glow: 0 0 10px hsla(210, 100%, 66%, 0.5);
+    --hacker-border-glow: 0 0 5px hsla(210, 100%, 66%, 0.3);
 }
 
 @layer base {
@@ -171,10 +171,16 @@
     }
     .dark body {
         font-family: 'Fira Code', monospace;
-        text-shadow: 0 0 2px hsla(142, 100%, 50%, 0.3);
+        text-shadow: 0 0 2px hsla(210, 100%, 66%, 0.3);
+        background-color: hsl(222 47% 4%);
+        /* Hexagon Pattern (Blue) */
         background-image:
-            linear-gradient(hsla(142, 100%, 50%, 0.03) 1px, transparent 1px), linear-gradient(90deg, hsla(142, 100%, 50%, 0.03) 1px, transparent 1px);
-        background-size: 30px 30px;
+            radial-gradient(circle at 2px 2px, hsla(210, 100%, 66%, 0.05) 1px, transparent 0),
+            linear-gradient(hsla(210, 100%, 66%, 0.02) 1px, transparent 1px), linear-gradient(90deg, hsla(210, 100%, 66%, 0.02) 1px, transparent 1px);
+        background-size:
+            40px 40px,
+            40px 40px,
+            40px 40px;
     }
     .dark body::after {
         content: '';
@@ -183,15 +189,20 @@
         left: 0;
         width: 100vw;
         height: 100vh;
+        /* Vignette + Noise Effect */
         background:
-            linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
-            linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.5) 100%),
+            url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E"),
+            linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
+            linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.04));
         background-size:
+            100% 100%,
+            150px 150px,
             100% 3px,
             3px 100%;
         pointer-events: none;
         z-index: 9999;
-        opacity: 0.3;
+        opacity: 0.2;
     }
 }
 
@@ -239,7 +250,7 @@
     position: absolute;
     width: 6px;
     height: 6px;
-    border: 2px solid hsl(142 100% 50%);
+    border: 2px solid hsl(210 100% 66%);
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -278,11 +289,38 @@
 .dark [class*='bg-white'][class*='dark:bg-gray-800'],
 .dark [class*='bg-zinc-50'][class*='dark:bg-zinc-900'],
 .dark .rounded-lg.border.bg-card {
-    background-color: hsla(240, 10%, 4%, 0.8) !important;
-    backdrop-filter: blur(4px);
-    border: 1px solid hsla(142, 100%, 50%, 0.1) !important;
+    background-color: hsla(240, 10%, 4%, 0.85) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid hsla(142, 100%, 50%, 0.2) !important;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.5);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Cyber Corners for Cards */
+.dark .card::after,
+.dark [class*='bg-white'][class*='dark:bg-gray-800']::after,
+.dark [class*='bg-zinc-50'][class*='dark:bg-zinc-900']::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        linear-gradient(to right, hsl(210 100% 66%) 2px, transparent 2px), linear-gradient(to bottom, hsl(210 100% 66%) 2px, transparent 2px),
+        linear-gradient(to left, hsl(210 100% 66%) 2px, transparent 2px), linear-gradient(to top, hsl(210 100% 66%) 2px, transparent 2px);
+    background-size: 15px 15px;
+    background-repeat: no-repeat;
+    background-position:
+        0 0,
+        0 0,
+        100% 100%,
+        100% 100%;
+    pointer-events: none;
+    opacity: 0.6;
+    z-index: 20;
 }
 
 .dark .card::before,
@@ -292,18 +330,42 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 2px;
-    height: 100%;
-    background: hsl(142 100% 50%);
-    box-shadow: var(--hacker-glow);
-    opacity: 0.5;
-    z-index: 10;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, hsl(210 100% 66%), transparent);
+    box-shadow: 0 0 10px hsla(210, 100%, 66%, 0.8);
+    opacity: 0.8;
+    z-index: 30;
+    animation: scanline-horizontal 3s linear infinite;
+}
+
+@keyframes scanline-horizontal {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
 }
 
 .dark .card:hover,
 .dark [class*='bg-white'][class*='dark:bg-gray-800']:hover {
-    border-color: hsla(142, 100%, 50%, 0.3) !important;
-    box-shadow: var(--hacker-border-glow);
+    border-color: hsla(210, 100%, 66%, 0.6) !important;
+    box-shadow:
+        0 0 25px hsla(210, 100%, 66%, 0.2),
+        inset 0 0 10px hsla(210, 100%, 66%, 0.1);
+}
+
+/* Digital Header Style for Card Titles */
+.dark .card h1,
+.dark .card h2,
+.dark .card h3,
+.dark [class*='bg-white'] h1,
+.dark [class*='bg-white'] h2 {
+    background: linear-gradient(90deg, hsla(210, 100%, 66%, 0.1), transparent);
+    padding-left: 0.5rem;
+    border-left: 3px solid hsl(210 100% 66%);
+    text-shadow: 0 0 5px hsla(210, 100%, 66%, 0.5);
 }
 
 /* Matrix-like animation for titles */
@@ -384,16 +446,16 @@
 
 @keyframes border-pulse {
     0% {
-        border-color: hsla(142, 100%, 50%, 0.5);
-        box-shadow: 0 0 5px hsla(142, 100%, 50%, 0.5);
+        border-color: hsla(210, 100%, 66%, 0.5);
+        box-shadow: 0 0 5px hsla(210, 100%, 66%, 0.5);
     }
     50% {
-        border-color: hsla(142, 100%, 50%, 1);
-        box-shadow: 0 0 20px hsla(142, 100%, 50%, 0.8);
+        border-color: hsla(210, 100%, 66%, 1);
+        box-shadow: 0 0 20px hsla(210, 100%, 66%, 0.8);
     }
     100% {
-        border-color: hsla(142, 100%, 50%, 0.5);
-        box-shadow: 0 0 5px hsla(142, 100%, 50%, 0.5);
+        border-color: hsla(210, 100%, 66%, 0.5);
+        box-shadow: 0 0 5px hsla(210, 100%, 66%, 0.5);
     }
 }
 
@@ -415,12 +477,12 @@
     pointer-events: none;
     z-index: 1;
     overflow: hidden;
-    opacity: 0.1;
+    opacity: 0.12;
     background:
-        linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.9)),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ctext x='10' y='20' fill='%2300ff00' font-family='monospace' font-size='10' opacity='0.5'%3E01%3C/text%3E%3Ctext x='50' y='40' fill='%2300ff00' font-family='monospace' font-size='10' opacity='0.3'%3E10%3C/text%3E%3Ctext x='30' y='70' fill='%2300ff00' font-family='monospace' font-size='10' opacity='0.4'%3E11%3C/text%3E%3Ctext x='80' y='10' fill='%2300ff00' font-family='monospace' font-size='10' opacity='0.2'%3E00%3C/text%3E%3Ctext x='70' y='80' fill='%2300ff00' font-family='monospace' font-size='10' opacity='0.5'%3EAI%3C/text%3E%3C/svg%3E");
+        linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.9)),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ctext x='10' y='20' fill='%2300aaff' font-family='monospace' font-size='10' opacity='0.8'%3E01%3C/text%3E%3Ctext x='50' y='40' fill='%2300aaff' font-family='monospace' font-size='10' opacity='0.5'%3E10%3C/text%3E%3Ctext x='30' y='70' fill='%2300aaff' font-family='monospace' font-size='10' opacity='0.6'%3E11%3C/text%3E%3Ctext x='80' y='10' fill='%2300aaff' font-family='monospace' font-size='10' opacity='0.4'%3E00%3C/text%3E%3Ctext x='70' y='80' fill='%2300aaff' font-family='monospace' font-size='10' opacity='0.8'%3EAI%3C/text%3E%3C/svg%3E");
     background-size: 150px 150px;
-    animation: matrix-rain 120s linear infinite;
+    animation: matrix-rain 60s linear infinite;
 }
 
 .dark .ai-circuit-bg {
@@ -432,7 +494,7 @@
     pointer-events: none;
     z-index: 1;
     opacity: 0.03;
-    background-image: radial-gradient(circle at 2px 2px, hsl(142 100% 50%) 1px, transparent 0);
+    background-image: radial-gradient(circle at 2px 2px, hsl(210 100% 66%) 1px, transparent 0);
     background-size: 24px 24px;
     animation: ai-pulse 4s ease-in-out infinite;
 }
@@ -443,7 +505,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: linear-gradient(to bottom, transparent, hsla(142, 100%, 50%, 0.05) 50%, transparent 51%);
+    background: linear-gradient(to bottom, transparent, hsla(210, 100%, 66%, 0.05) 50%, transparent 51%);
     background-size: 100% 4px;
     pointer-events: none;
     z-index: 2;
@@ -456,8 +518,8 @@
     left: 0;
     width: 100vw;
     height: 2px;
-    background: hsla(142, 100%, 50%, 0.1);
-    box-shadow: 0 0 15px hsla(142, 100%, 50%, 0.3);
+    background: hsla(210, 100%, 66%, 0.1);
+    box-shadow: 0 0 15px hsla(210, 100%, 66%, 0.3);
     animation: scanline-global 8s linear infinite;
     z-index: 3;
     pointer-events: none;
@@ -468,7 +530,7 @@
 .dark h3 {
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: hsl(142 100% 50%);
+    color: hsl(210 100% 66%);
     font-weight: 700;
 }
 
@@ -479,7 +541,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to bottom, transparent, hsla(142, 100%, 50%, 0.05) 50%, transparent 51%);
+    background: linear-gradient(to bottom, transparent, hsla(210, 100%, 66%, 0.05) 50%, transparent 51%);
     background-size: 100% 4px;
     pointer-events: none;
     opacity: 0.5;
@@ -491,8 +553,8 @@
     left: 0;
     width: 100%;
     height: 2px;
-    background: hsla(142, 100%, 50%, 0.2);
-    box-shadow: 0 0 10px hsla(142, 100%, 50%, 0.5);
+    background: hsla(210, 100%, 66%, 0.2);
+    box-shadow: 0 0 10px hsla(210, 100%, 66%, 0.5);
     animation: scanline 4s linear infinite;
     z-index: 10;
     pointer-events: none;
@@ -505,16 +567,16 @@
 }
 
 .dark ::-webkit-scrollbar-track {
-    background: hsl(240 10% 2%);
+    background: hsl(222 47% 4%);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-    background: hsla(142, 100%, 50%, 0.2);
+    background: hsla(210, 100%, 66%, 0.2);
     border-radius: 3px;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-    background: hsla(142, 100%, 50%, 0.5);
+    background: hsla(210, 100%, 66%, 0.5);
     box-shadow: var(--hacker-glow);
 }
 
@@ -559,7 +621,32 @@
     }
 }
 
-/* Leaflet Map Styles */
+/* Dark Mode Text Colors for Contrast */
+.dark .text-gray-900,
+.dark .text-zinc-900 {
+    color: hsl(210 100% 66%) !important;
+}
+
+.dark .text-gray-600,
+.dark .text-zinc-600,
+.dark .text-gray-400,
+.dark .text-zinc-400 {
+    color: hsla(210, 100%, 66%, 0.7) !important;
+}
+
+.dark .bg-gray-100,
+.dark .bg-zinc-100,
+.dark .bg-gray-50,
+.dark .bg-zinc-50 {
+    background-color: hsla(210, 100%, 66%, 0.05) !important;
+}
+
+.dark .border-gray-200,
+.dark .border-zinc-200,
+.dark .border-gray-300,
+.dark .border-zinc-300 {
+    border-color: hsla(210, 100%, 66%, 0.2) !important;
+}
 
 .leaflet-container {
     font: inherit;
