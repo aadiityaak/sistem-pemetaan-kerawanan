@@ -266,9 +266,14 @@ onMounted(() => {
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton size="lg" as-child>
+                    <SidebarMenuButton size="lg" as-child class="sidebar-item-button">
                         <Link :href="route('dashboard')">
                             <AppLogo />
+                            <div class="sparkle-container">
+                                <div class="sparkle" style="top: 20%; left: 30%; animation-delay: 0.5s;"></div>
+                                <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>
+                                <div class="sparkle" style="top: 80%; left: 10%; animation-delay: 1.5s;"></div>
+                            </div>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

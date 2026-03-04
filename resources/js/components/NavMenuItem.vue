@@ -32,16 +32,26 @@ const isOpen = (title: string) => {
     <!-- Item with sub-items (recursive) -->
     <SidebarMenuItem v-if="item.items && item.items.length > 0">
         <!-- Top level uses SidebarMenuButton, nested levels use SidebarMenuSubButton -->
-        <SidebarMenuButton v-if="level === 0" @click="handleToggle(item.title)" :tooltip="item.title" class="cursor-pointer">
+        <SidebarMenuButton v-if="level === 0" @click="handleToggle(item.title)" :tooltip="item.title" class="cursor-pointer sidebar-item-button">
             <component :is="item.icon" />
             <span>{{ item.title }}</span>
             <ChevronRight class="ml-auto transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
+            <div class="sparkle-container">
+                <div class="sparkle" style="top: 20%; left: 30%; animation-delay: 0.5s;"></div>
+                <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>
+                <div class="sparkle" style="top: 80%; left: 10%; animation-delay: 1.5s;"></div>
+            </div>
         </SidebarMenuButton>
 
-        <SidebarMenuSubButton v-else @click="handleToggle(item.title)" class="cursor-pointer">
+        <SidebarMenuSubButton v-else @click="handleToggle(item.title)" class="cursor-pointer sidebar-item-button">
             <component :is="item.icon" />
             <span>{{ item.title }}</span>
             <ChevronRight class="ml-auto transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
+            <div class="sparkle-container">
+                <div class="sparkle" style="top: 20%; left: 30%; animation-delay: 0.5s;"></div>
+                <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>
+                <div class="sparkle" style="top: 80%; left: 10%; animation-delay: 1.5s;"></div>
+            </div>
         </SidebarMenuSubButton>
 
         <div v-show="isOpen(item.title)" class="mt-1">
@@ -61,20 +71,30 @@ const isOpen = (title: string) => {
 
     <!-- Regular item without sub-items -->
     <SidebarMenuSubItem v-else-if="level > 0">
-        <SidebarMenuSubButton as-child :is-active="item.href === page.url">
+        <SidebarMenuSubButton as-child :is-active="item.href === page.url" class="sidebar-item-button">
             <Link :href="item.href">
                 <component :is="item.icon" />
                 <span>{{ item.title }}</span>
+                <div class="sparkle-container">
+                    <div class="sparkle" style="top: 20%; left: 30%; animation-delay: 0.5s;"></div>
+                    <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>
+                    <div class="sparkle" style="top: 80%; left: 10%; animation-delay: 1.5s;"></div>
+                </div>
             </Link>
         </SidebarMenuSubButton>
     </SidebarMenuSubItem>
 
     <!-- Top level item without sub-items -->
     <SidebarMenuItem v-else>
-        <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title">
+        <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title" class="sidebar-item-button">
             <Link :href="item.href">
                 <component :is="item.icon" />
                 <span>{{ item.title }}</span>
+                <div class="sparkle-container">
+                    <div class="sparkle" style="top: 20%; left: 30%; animation-delay: 0.5s;"></div>
+                    <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>
+                    <div class="sparkle" style="top: 80%; left: 10%; animation-delay: 1.5s;"></div>
+                </div>
             </Link>
         </SidebarMenuButton>
     </SidebarMenuItem>

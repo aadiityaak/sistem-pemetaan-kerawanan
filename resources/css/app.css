@@ -195,6 +195,91 @@
     }
 }
 
+/* Custom Dark Mode Sidebar Styles */
+.dark .sidebar-item-button:hover,
+.dark .sidebar-item-button[data-active="true"] {
+    background-color: rgba(0, 128, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 128, 255, 0.5);
+    box-shadow: 0 0 15px 5px rgba(0, 128, 255, 0.7);
+    background-image: radial-gradient(circle at top left, rgba(0, 128, 255, 0.3), transparent),
+                      radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.5), transparent);
+    transition: all 0.3s ease-in-out;
+}
+
+.dark .sidebar-item-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px 10px rgba(0, 128, 255, 1);
+}
+
+/* Pulsing Aura Effect */
+.dark .sidebar-item-button:hover::before,
+.dark .sidebar-item-button[data-active="true"]::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 128, 255, 0.5);
+    border-radius: inherit;
+    transform: translate(-50%, -50%);
+    animation: pulse 2s infinite;
+    z-index: -1;
+}
+
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.7;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+
+/* Sparkle Effect */
+.sparkle-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.dark .sidebar-item-button:hover .sparkle-container,
+.dark .sidebar-item-button[data-active="true"] .sparkle-container {
+    opacity: 1;
+}
+
+.sparkle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background-color: white;
+    border-radius: 50%;
+    animation: sparkle-animation 1.5s infinite;
+}
+
+@keyframes sparkle-animation {
+    0% {
+        transform: scale(0) rotate(0deg);
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.5) rotate(360deg);
+        opacity: 0;
+    }
+}
+
 /* Leaflet Map Styles */
 
 .leaflet-container {
