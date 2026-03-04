@@ -68,7 +68,19 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
-    @laravelPWA
+    {{-- PWA Manifest & Meta Tags --}}
+    @php
+    $appVersion = config('app.version', '1.0.0');
+    // Jika file manifest.webmanifest ada di public/, gunakan itu. 
+    // Jika tidak, asumsikan ada di public/build/.
+    $manifestFile = public_path('manifest.webmanifest');
+    $manifestPath = file_exists($manifestFile) ? '/manifest.webmanifest' : '/build/manifest.webmanifest';
+    @endphp
+    <link rel="manifest" href="{{ $manifestPath }}?v={{ $appVersion }}">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Crime Map">
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
