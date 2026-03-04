@@ -266,7 +266,7 @@ onMounted(() => {
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton size="lg" as-child>
+                    <SidebarMenuButton size="lg" as-child class="sidebar-menu-button-premium">
                         <Link :href="route('dashboard')">
                             <AppLogo />
                         </Link>

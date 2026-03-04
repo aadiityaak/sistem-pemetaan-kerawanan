@@ -167,6 +167,116 @@
 }
 
 /* Leaflet Map Styles */
+/* Premium Sidebar Effects (Dark Mode Only) */
+.dark .sidebar-premium-bg {
+    background-color: #000000;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(88, 28, 135, 0.2) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(30, 10, 50, 0.2) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(88, 28, 135, 0.1) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(30, 10, 50, 0.2) 0px, transparent 50%);
+}
+
+.dark .sidebar-menu-button-premium {
+    position: relative;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(4px);
+    overflow: visible !important; /* Allow aura and sparkles to show */
+}
+
+.dark .sidebar-menu-button-premium[data-active="true"],
+.dark .sidebar-menu-button-premium:hover {
+    background: rgba(168, 85, 247, 0.1);
+    border-color: rgba(168, 85, 247, 0.3);
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+    transform: scale(1.02);
+}
+
+/* Pulsing Aura */
+.dark .sidebar-menu-button-premium::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: rgba(168, 85, 247, 0.15);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.dark .sidebar-menu-button-premium[data-active="true"]::before,
+.dark .sidebar-menu-button-premium:hover::before {
+    opacity: 1;
+    animation: premium-pulse-aura 2s infinite;
+}
+
+@keyframes premium-pulse-aura {
+    0% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.05, 1.15);
+        opacity: 0.2;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+}
+
+/* Sparkle Effect */
+.dark .sidebar-menu-button-premium::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0;
+    background-image: 
+        radial-gradient(circle, #fff 1px, transparent 1px),
+        radial-gradient(circle, #fff 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%;
+    background-position: 0 0, 0 0;
+    transition: opacity 0.3s ease;
+}
+
+.dark .sidebar-menu-button-premium[data-active="true"]::after,
+.dark .sidebar-menu-button-premium:hover::after {
+    opacity: 1;
+    animation: premium-sparkle 1.5s infinite linear;
+}
+
+@keyframes premium-sparkle {
+    0% {
+        background-image: 
+            radial-gradient(circle at 20% 30%, #a855f7 1px, transparent 1px),
+            radial-gradient(circle at 80% 70%, #fff 1px, transparent 1px);
+    }
+    25% {
+        background-image: 
+            radial-gradient(circle at 40% 80%, #fff 1px, transparent 1px),
+            radial-gradient(circle at 10% 10%, #a855f7 1px, transparent 1px);
+    }
+    50% {
+        background-image: 
+            radial-gradient(circle at 70% 20%, #a855f7 1px, transparent 1px),
+            radial-gradient(circle at 30% 60%, #fff 1px, transparent 1px);
+    }
+    75% {
+        background-image: 
+            radial-gradient(circle at 90% 90%, #fff 1px, transparent 1px),
+            radial-gradient(circle at 50% 40%, #a855f7 1px, transparent 1px);
+    }
+    100% {
+        background-image: 
+            radial-gradient(circle at 20% 30%, #a855f7 1px, transparent 1px),
+            radial-gradient(circle at 80% 70%, #fff 1px, transparent 1px);
+    }
+}
+
 .leaflet-container {
     font: inherit;
 }
