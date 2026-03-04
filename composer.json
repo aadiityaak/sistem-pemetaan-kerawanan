@@ -66,6 +66,10 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
+        ],
+        "build:production": [
+            "Composer\\Config::disableProcessTimeout",
+            "npm run build:production"
         ]
     },
     "extra": {
