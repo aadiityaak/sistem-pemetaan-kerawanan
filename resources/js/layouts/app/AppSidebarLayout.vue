@@ -4,6 +4,7 @@ import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
 import type { BreadcrumbItemType } from '@/types';
+import { Head } from '@inertiajs/vue3';
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[];
@@ -15,6 +16,14 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
+    <Head>
+        <link rel="manifest" href="/manifest.webmanifest">
+        <meta name="theme-color" content="#3b82f6">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="CrimeMap">
+        <link rel="apple-touch-icon" href="/img/icons/pwa-192x192.svg">
+    </Head>
     <AppShell variant="sidebar">
         <AppSidebar />
         <AppContent variant="sidebar" class="flex min-h-screen flex-col overflow-x-hidden">

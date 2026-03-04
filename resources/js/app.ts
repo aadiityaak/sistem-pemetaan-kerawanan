@@ -6,6 +6,10 @@ import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
+import { registerSW } from 'virtual:pwa-register';
+
+// Register Service Worker for PWA
+registerSW({ immediate: true });
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
