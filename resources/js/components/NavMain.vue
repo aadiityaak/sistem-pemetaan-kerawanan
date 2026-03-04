@@ -7,6 +7,7 @@ import { onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
     items: NavItem[];
+    collapseOnInactive?: boolean;
 }>();
 
 const page = usePage();
@@ -77,7 +78,16 @@ const findAndOpenActiveItems = (items: NavItem[], currentUrl: string): boolean =
 // Check if current URL matches any item and auto-open parent items
 const autoOpenBasedOnUrl = () => {
     const currentUrl = page.url;
-    findAndOpenActiveItems(props.items, currentUrl);
+    const hasActiveItem = findAndOpenActiveItems(props.items, currentUrl);
+
+    // If collapseOnInactive is true and no item is active, close all top-level items
+    if (props.collapseOnInactive && !hasActiveItem) {
+        props.items.forEach((item) => {
+            if (item.items && item.items.length > 0) {
+                openItems.value.delete(item.title);
+            }
+        });
+    }
 };
 
 const toggleItem = (title: string, siblings: NavItem[], level: number) => {

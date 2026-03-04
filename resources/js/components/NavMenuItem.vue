@@ -32,13 +32,13 @@ const isOpen = (title: string) => {
     <!-- Item with sub-items (recursive) -->
     <SidebarMenuItem v-if="item.items && item.items.length > 0">
         <!-- Top level uses SidebarMenuButton, nested levels use SidebarMenuSubButton -->
-        <SidebarMenuButton v-if="level === 0" @click="handleToggle(item.title)" :tooltip="item.title" class="cursor-pointer sidebar-menu-button-premium">
+        <SidebarMenuButton v-if="level === 0" @click="handleToggle(item.title)" :tooltip="item.title" class="cursor-pointer">
             <component :is="item.icon" />
             <span>{{ item.title }}</span>
             <ChevronRight class="ml-auto transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
         </SidebarMenuButton>
 
-        <SidebarMenuSubButton v-else @click="handleToggle(item.title)" class="cursor-pointer sidebar-menu-button-premium">
+        <SidebarMenuSubButton v-else @click="handleToggle(item.title)" class="cursor-pointer">
             <component :is="item.icon" />
             <span>{{ item.title }}</span>
             <ChevronRight class="ml-auto transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
@@ -61,7 +61,7 @@ const isOpen = (title: string) => {
 
     <!-- Regular item without sub-items -->
     <SidebarMenuSubItem v-else-if="level > 0">
-        <SidebarMenuSubButton as-child :is-active="item.href === page.url" class="sidebar-menu-button-premium">
+        <SidebarMenuSubButton as-child :is-active="item.href === page.url">
             <Link :href="item.href">
                 <component :is="item.icon" />
                 <span>{{ item.title }}</span>
@@ -71,7 +71,7 @@ const isOpen = (title: string) => {
 
     <!-- Top level item without sub-items -->
     <SidebarMenuItem v-else>
-        <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title" class="sidebar-menu-button-premium">
+        <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title">
             <Link :href="item.href">
                 <component :is="item.icon" />
                 <span>{{ item.title }}</span>

@@ -266,7 +266,7 @@ onMounted(() => {
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton size="lg" as-child class="sidebar-menu-button-premium">
+                    <SidebarMenuButton size="lg" as-child>
                         <Link :href="route('dashboard')">
                             <AppLogo />
                         </Link>
@@ -280,7 +280,7 @@ onMounted(() => {
         </SidebarContent>
 
         <SidebarFooter>
-            <NavMain v-if="isSuperAdmin" :items="settingsNavItems" />
+            <NavMain v-if="isSuperAdmin" :items="settingsNavItems" :collapse-on-inactive="true" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>
