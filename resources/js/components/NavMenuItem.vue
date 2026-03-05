@@ -34,8 +34,8 @@ const isOpen = (title: string) => {
         <!-- Top level uses SidebarMenuButton, nested levels use SidebarMenuSubButton -->
         <SidebarMenuButton v-if="level === 0" @click="handleToggle(item.title)" :tooltip="item.title" class="cursor-pointer sidebar-item-button">
             <component :is="item.icon" />
-            <span>{{ item.title }}</span>
-            <ChevronRight class="ml-auto transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
+            <span class="truncate">{{ item.title }}</span>
+            <ChevronRight class="ml-auto flex-shrink-0 transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
             <div class="sparkle-container">
                 <div class="sparkle" style="top: 20%; left: 30%; animation-delay: 0.5s;"></div>
                 <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>
@@ -50,8 +50,8 @@ const isOpen = (title: string) => {
 
         <SidebarMenuSubButton v-else @click="handleToggle(item.title)" class="cursor-pointer sidebar-item-button">
             <component :is="item.icon" />
-            <span>{{ item.title }}</span>
-            <ChevronRight class="ml-auto transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
+            <span class="truncate">{{ item.title }}</span>
+            <ChevronRight class="ml-auto flex-shrink-0 transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
             <div class="sparkle-container">
                 <div class="sparkle" style="top: 20%; left: 30%; animation-delay: 0.5s;"></div>
                 <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>
@@ -84,7 +84,7 @@ const isOpen = (title: string) => {
         <SidebarMenuSubButton as-child :is-active="item.href === page.url" class="sidebar-item-button">
             <Link :href="item.href">
                 <component :is="item.icon" />
-                <span>{{ item.title }}</span>
+                <span class="truncate">{{ item.title }}</span>
                 <div class="sparkle-container">
                     <div class="sparkle" style="top: 20%; left: 30%; animation-delay: 0.5s;"></div>
                     <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>
@@ -104,7 +104,7 @@ const isOpen = (title: string) => {
         <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title" class="sidebar-item-button">
             <Link :href="item.href">
                 <component :is="item.icon" />
-                <span>{{ item.title }}</span>
+                <span class="truncate">{{ item.title }}</span>
                 <div class="sparkle-container">
                     <div class="sparkle" style="top: 20%; left: 30%; animation-delay: 0.5s;"></div>
                     <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>

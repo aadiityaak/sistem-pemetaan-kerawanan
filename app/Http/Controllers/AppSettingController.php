@@ -47,9 +47,9 @@ class AppSettingController extends Controller
             'license' => [
                 [
                     'key' => 'license_expires_at',
-                    'label' => 'License Key',
-                    'description' => 'Masukkan license key yang valid untuk mengaktifkan aplikasi.',
-                    'type' => 'password',
+                    'label' => 'License Key / Expiry Date',
+                    'description' => 'Masukkan license key yang valid untuk memperbarui masa aktif lisensi.',
+                    'type' => 'text',
                     'value' => $this->settingsService->getSetting('license_expires_at', ''),
                 ],
             ],
@@ -188,26 +188,41 @@ class AppSettingController extends Controller
         $value = $request->get('value');
         if ($key === 'license_expires_at') {
             $token = (string) ($value ?? '');
-            $envKey = env('KEY_API');
+            $envKey = config('app.license_key') ?: env('KEY_API');
+            $currentValue = $this->settingsService->getSetting('license_expires_at', '');
 
-            if (! $envKey || $token !== $envKey) {
+            // Jika token cocok dengan KEY_API, perbarui tanggal expired (Prioritas Utama)
+            if ($envKey && $token === $envKey) {
+                $envExpiry = config('app.license_expired_date') ?: env('EXPIRED_DATE');
+                $value = $envExpiry ?: now()->addYears(3)->toDateString();
+
+                AppSetting::set(
+                    'license_key_hash',
+                    hash('sha256', $envKey),
+                    'text',
+                    'license',
+                    'License Key Hash'
+                );
+            }
+            // Jika token adalah tanggal yang sudah tersimpan (format YYYY-MM-DD), biarkan
+            elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $token)) {
+                $value = $token;
+            }
+            // Jika token kosong tapi sudah ada data tersimpan, biarkan (jangan dihapus)
+            elseif (empty($token) && ! empty($currentValue)) {
+                $value = $currentValue;
+            }
+            // Selain itu, anggap token tidak valid
+            else {
                 Log::warning('Invalid license token provided', [
                     'provided_token_length' => strlen($token),
+                    'is_empty' => empty($token),
+                    'env_key_set' => ! empty($envKey),
+                    'env_key_length' => $envKey ? strlen($envKey) : 0,
                 ]);
 
                 return redirect()->route('settings.index')->with('error', 'Token lisensi tidak valid atau lisensi telah expired.');
             }
-
-            $envExpiry = env('EXPIRED_DATE');
-            $value = $envExpiry ?: now()->addYears(3)->toDateString();
-
-            AppSetting::set(
-                'license_key_hash',
-                hash('sha256', $envKey),
-                'text',
-                'license',
-                'License Key Hash'
-            );
         }
 
         $data = [

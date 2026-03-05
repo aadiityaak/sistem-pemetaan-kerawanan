@@ -23,23 +23,48 @@ class CheckLicense
       return $next($request);
     }
 
-    $envKey = env('KEY_API');
+    $envKey = config('app.license_key') ?: env('KEY_API');
     $expiresAt = AppSetting::get('license_expires_at');
     $storedHash = AppSetting::get('license_key_hash');
 
     if (! $envKey || ! $expiresAt || ! $storedHash) {
+      \Illuminate\Support\Facades\Log::warning('License check failed: missing data', [
+        'has_env_key' => ! empty($envKey),
+        'has_expires_at' => ! empty($expiresAt),
+        'has_stored_hash' => ! empty($storedHash),
+      ]);
+
       return $this->expiredResponse($request);
     }
 
     $currentHash = hash('sha256', $envKey);
 
     if ($currentHash !== $storedHash) {
+      \Illuminate\Support\Facades\Log::warning('License check failed: hash mismatch', [
+        'current_hash' => $currentHash,
+        'stored_hash' => $storedHash,
+      ]);
+
       return $this->expiredResponse($request);
     }
 
-    $expires = \Carbon\Carbon::parse($expiresAt);
+    try {
+      $expires = \Carbon\Carbon::parse($expiresAt);
 
-    if (now()->greaterThan($expires)) {
+      if (now()->greaterThan($expires)) {
+        \Illuminate\Support\Facades\Log::warning('License check failed: expired', [
+          'expires_at' => $expiresAt,
+          'now' => now()->toDateTimeString(),
+        ]);
+
+        return $this->expiredResponse($request);
+      }
+    } catch (\Exception $e) {
+      \Illuminate\Support\Facades\Log::error('License check failed: parse error', [
+        'expires_at' => $expiresAt,
+        'error' => $e->getMessage(),
+      ]);
+
       return $this->expiredResponse($request);
     }
 
@@ -48,7 +73,7 @@ class CheckLicense
 
   private function expiredResponse(Request $request): Response
   {
-    $envExpiry = env('EXPIRED_DATE');
+    $envExpiry = config('app.license_expired_date');
     $message = 'Lisensi aplikasi telah expired. Silakan perbarui lisensi melalui halaman Settings.';
 
     if ($envExpiry) {

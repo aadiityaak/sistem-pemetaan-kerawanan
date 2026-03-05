@@ -208,7 +208,7 @@
 
 /* Custom Dark Mode Sidebar Styles */
 .dark .sidebar-item-button {
-    border: 1px solid transparent;
+    border: 1px solid hsla(210, 100%, 66%, 0.1);
     transition: all 0.2s ease;
     position: relative;
 }

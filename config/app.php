@@ -99,6 +99,10 @@ return [
 
     'key' => env('APP_KEY'),
 
+    'license_key' => env('KEY_API'),
+
+    'license_expired_date' => env('EXPIRED_DATE'),
+
     'version' => env('APP_VERSION', '1.0.0'),
 
     'previous_keys' => [
