@@ -124,7 +124,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
 let map: any;
 const mapContainer = ref();
 const mapMarkers = ref<any[]>([]);
-const isLeafletMap = ref(true); // Toggle between Leaflet and SVG map
+const isLeafletMap = ref(false); // Toggle between Leaflet and SVG map
 const selectedProvince = ref<MonitoringData | null>(null); // For SVG map province selection
 
 // Category color mapping for theming
@@ -1458,7 +1458,7 @@ watch(searchQuery, () => {
                             </div>
 
                             <!-- Legend -->
-                            <div class="absolute bottom-4 left-4 z-30 rounded-lg bg-white/90 p-4 shadow-lg dark:bg-gray-800/90">
+                            <div class="bottom-0 z-30 rounded-lg bg-white/90 p-4 shadow-lg dark:bg-gray-800/90" style="position:absolute;width:100%;">
                                 <h4 class="mb-2 text-sm font-semibold text-gray-900 dark:text-white">Legend Tingkat Data</h4>
                                 <div class="grid grid-cols-2 gap-2 text-xs">
                                     <div class="flex items-center">
