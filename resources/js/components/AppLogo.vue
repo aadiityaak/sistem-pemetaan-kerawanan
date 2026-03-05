@@ -18,9 +18,9 @@ const appLogo = computed(() => {
 </script>
 
 <template>
-    <div class="flex w-full h-full items-center justify-center rounded-md bg-zinc-900">
+    <div class="flex w-full h-full items-center justify-start rounded-md bg-zinc-900 px-2 overflow-hidden">
         <!-- Custom logo if available -->
-        <img v-if="appLogo" :src="appLogo" :alt="appName + ' Logo'" class="max-h-full max-w-full object-contain" />
+        <img v-if="appLogo" :src="appLogo" :alt="appName + ' Logo'" class="h-8 w-8 object-contain shrink-0" />
 
         <!-- Default SVG icon if no custom logo -->
         <svg
@@ -34,7 +34,7 @@ const appLogo = computed(() => {
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
-            class="lucide lucide-swords-icon lucide-swords"
+            class="lucide lucide-swords-icon lucide-swords shrink-0"
         >
             <polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5" />
             <line x1="13" x2="19" y1="19" y2="13" />
@@ -45,8 +45,9 @@ const appLogo = computed(() => {
             <line x1="7" x2="4" y1="17" y2="20" />
             <line x1="3" x2="5" y1="19" y2="21" />
         </svg>
+
+        <div class="ml-2 grid flex-1 text-left text-sm leading-tight min-w-0">
+            <span class="truncate font-semibold text-white">{{ appName }}</span>
+        </div>
     </div>
-    <!-- <div class="ml-1 grid flex-1 text-left text-sm">
-        <span class="mb-0.5 truncate leading-tight font-semibold">{{ appName }}</span>
-    </div> -->
 </template>

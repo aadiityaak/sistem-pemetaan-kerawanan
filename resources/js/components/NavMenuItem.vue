@@ -33,9 +33,9 @@ const isOpen = (title: string) => {
     <SidebarMenuItem v-if="item.items && item.items.length > 0">
         <!-- Top level uses SidebarMenuButton, nested levels use SidebarMenuSubButton -->
         <SidebarMenuButton v-if="level === 0" @click="handleToggle(item.title)" :tooltip="item.title" class="cursor-pointer sidebar-item-button">
-            <component :is="item.icon" />
-            <span class="truncate">{{ item.title }}</span>
-            <ChevronRight class="ml-auto flex-shrink-0 transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
+            <component :is="item.icon" class="shrink-0" />
+            <span class="truncate min-w-0 flex-1 whitespace-nowrap">{{ item.title }}</span>
+            <ChevronRight class="ml-auto shrink-0 transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
             <div class="sparkle-container">
                 <div class="sparkle" style="top: 20%; left: 30%; animation-delay: 0.5s;"></div>
                 <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>
@@ -49,9 +49,9 @@ const isOpen = (title: string) => {
         </SidebarMenuButton>
 
         <SidebarMenuSubButton v-else @click="handleToggle(item.title)" class="cursor-pointer sidebar-item-button">
-            <component :is="item.icon" />
-            <span class="truncate">{{ item.title }}</span>
-            <ChevronRight class="ml-auto flex-shrink-0 transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
+            <component :is="item.icon" class="shrink-0" />
+            <span class="truncate min-w-0 flex-1 whitespace-nowrap">{{ item.title }}</span>
+            <ChevronRight class="ml-auto shrink-0 transition-transform" :class="{ 'rotate-90': isOpen(item.title) }" />
             <div class="sparkle-container">
                 <div class="sparkle" style="top: 20%; left: 30%; animation-delay: 0.5s;"></div>
                 <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>
@@ -83,8 +83,8 @@ const isOpen = (title: string) => {
     <SidebarMenuSubItem v-else-if="level > 0">
         <SidebarMenuSubButton as-child :is-active="item.href === page.url" class="sidebar-item-button">
             <Link :href="item.href">
-                <component :is="item.icon" />
-                <span class="truncate">{{ item.title }}</span>
+                <component :is="item.icon" class="shrink-0" />
+                <span class="truncate min-w-0 flex-1 whitespace-nowrap">{{ item.title }}</span>
                 <div class="sparkle-container">
                     <div class="sparkle" style="top: 20%; left: 30%; animation-delay: 0.5s;"></div>
                     <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>
@@ -103,8 +103,8 @@ const isOpen = (title: string) => {
     <SidebarMenuItem v-else>
         <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title" class="sidebar-item-button">
             <Link :href="item.href">
-                <component :is="item.icon" />
-                <span class="truncate">{{ item.title }}</span>
+                <component :is="item.icon" class="shrink-0" />
+                <span class="truncate min-w-0 flex-1">{{ item.title }}</span>
                 <div class="sparkle-container">
                     <div class="sparkle" style="top: 20%; left: 30%; animation-delay: 0.5s;"></div>
                     <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>

@@ -28,11 +28,11 @@ const showAvatar = computed(() => props.user.avatar && props.user.avatar !== '')
         </AvatarFallback>
     </Avatar>
 
-    <div class="grid flex-1 text-left text-sm leading-tight">
+    <div class="grid flex-1 text-left text-sm leading-tight min-w-0">
         <span class="truncate font-medium">{{ user.name }}</span>
         <span v-if="showEmail" class="truncate text-xs text-muted-foreground">{{ user.email }}</span>
         <span v-else-if="user.role === 'user' && user.provinsi" class="truncate text-xs text-muted-foreground">
-            <LocateIcon class="mr-1 inline-block h-4 w-4" /> {{ user.provinsi.nama }}
+            <LocateIcon class="mr-1 inline-block h-4 w-4 shrink-0" /> {{ user.provinsi.nama }}
         </span>
     </div>
 </template>
