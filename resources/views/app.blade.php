@@ -70,25 +70,7 @@
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
     {{-- PWA Manifest & Meta Tags --}}
-    @php
-    $appVersion = config('app.version', '1.0.0');
-    // For Vite-PWA in Laravel:
-    // 1. In development, manifest is served by Vite dev server.
-    // 2. In production, manifest is in public/build/.
-    $manifestPath = null;
-    if (file_exists(public_path('hot'))) {
-        $hotUrl = rtrim(file_get_contents(public_path('hot')), " \t\n\r\0\x0B/");
-        $manifestPath = $hotUrl . '/manifest.webmanifest';
-    } elseif (file_exists(public_path('build/manifest.webmanifest'))) {
-        $manifestPath = '/build/manifest.webmanifest';
-    } elseif (file_exists(public_path('manifest.webmanifest'))) {
-        $manifestPath = '/manifest.webmanifest';
-    }
-    @endphp
-
-    @if($manifestPath)
-    <link rel="manifest" href="{{ $manifestPath }}?v={{ $appVersion }}">
-    @endif
+    <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">
     <meta name="theme-color" content="#3b82f6">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">

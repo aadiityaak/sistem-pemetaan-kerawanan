@@ -254,4 +254,74 @@ class AppSettingController extends Controller
 
         return redirect()->route('settings.index')->with('success', 'Setting berhasil diperbarui');
     }
+
+    public function getManifest()
+    {
+        $appName = $this->settingsService->getSetting('app_name', config('app.name', 'Crime Map'));
+        $appDescription = $this->settingsService->getSetting('app_description', 'Aplikasi Peta Kriminalitas & Bencana');
+        $favicon = $this->settingsService->getSetting('app_favicon', '/favicon.ico');
+
+        $manifest = [
+            'id' => '/',
+            'name' => $appName,
+            'short_name' => str_replace(' ', '', $appName),
+            'description' => $appDescription,
+            'theme_color' => '#3b82f6',
+            'background_color' => '#000000',
+            'display' => 'standalone',
+            'start_url' => '/',
+            'scope' => '/',
+            'orientation' => 'portrait',
+            'icons' => [
+                [
+                    'src' => '/img/icons/pwa-192x192.svg',
+                    'sizes' => '192x192',
+                    'type' => 'image/svg+xml',
+                    'purpose' => 'any'
+                ],
+                [
+                    'src' => '/img/icons/pwa-512x512.svg',
+                    'sizes' => '512x512',
+                    'type' => 'image/svg+xml',
+                    'purpose' => 'any'
+                ],
+                [
+                    'src' => '/img/icons/pwa-192x192.svg',
+                    'sizes' => '192x192',
+                    'type' => 'image/svg+xml',
+                    'purpose' => 'maskable'
+                ],
+                [
+                    'src' => '/img/icons/pwa-512x512.svg',
+                    'sizes' => '512x512',
+                    'type' => 'image/svg+xml',
+                    'purpose' => 'maskable'
+                ]
+            ]
+        ];
+
+        return response()->json($manifest)
+            ->header('Content-Type', 'application/manifest+json');
+    }
+
+    public function getServiceWorker()
+    {
+        $swPath = public_path('build/sw.js');
+
+        if (file_exists(public_path('hot'))) {
+            $hotUrl = rtrim(file_get_contents(public_path('hot')), " \t\n\r\0\x0B/");
+            try {
+                $swContent = file_get_contents($hotUrl . '/sw.js');
+                return response($swContent)->header('Content-Type', 'application/javascript');
+            } catch (\Exception $e) {
+                // Fallback if dev server is not serving sw.js
+            }
+        }
+
+        if (file_exists($swPath)) {
+            return response()->file($swPath, ['Content-Type' => 'application/javascript']);
+        }
+
+        return abort(404);
+    }
 }

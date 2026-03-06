@@ -6,7 +6,6 @@ import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
-import { registerSW } from 'virtual:pwa-register';
 import axios from 'axios';
 import { router } from '@inertiajs/vue3';
 
@@ -76,7 +75,17 @@ axios.interceptors.response.use(
 );
 
 // Register Service Worker for PWA
-registerSW({ immediate: true });
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('SW Registered:', registration.scope);
+            })
+            .catch(error => {
+                console.error('SW Registration Error:', error);
+            });
+    });
+}
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 

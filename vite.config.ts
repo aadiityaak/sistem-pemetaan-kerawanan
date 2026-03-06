@@ -25,7 +25,7 @@ export default defineConfig({
             injectRegister: 'auto',
             strategies: 'generateSW',
             devOptions: {
-                enabled: false,
+                enabled: true,
                 type: 'module',
             },
             workbox: {
@@ -66,6 +66,7 @@ export default defineConfig({
                 ],
             },
             manifest: {
+                id: '/',
                 name: 'Crime Map',
                 short_name: 'CrimeMap',
                 description: 'Aplikasi Peta Kriminalitas & Bencana',
@@ -74,6 +75,7 @@ export default defineConfig({
                 display: 'standalone',
                 start_url: '/',
                 scope: '/',
+                orientation: 'portrait',
                 icons: [
                     {
                         src: '/img/icons/pwa-192x192.svg',

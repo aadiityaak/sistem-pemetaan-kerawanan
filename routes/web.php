@@ -99,6 +99,10 @@ Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['aut
 // Peta Bencana Route
 Route::get('peta-bencana', [PetaBencanaController::class, 'index'])->middleware(['auth', 'verified'])->name('peta-bencana.index');
 
+// PWA Routes
+Route::get('/manifest.webmanifest', [AppSettingController::class, 'getManifest'])->name('pwa.manifest');
+Route::get('/sw.js', [AppSettingController::class, 'getServiceWorker'])->name('pwa.sw');
+
 // Data Center Routes
 Route::middleware(['auth', 'verified'])->prefix('data-center')->name('data-center.')->group(function () {
     Route::get('bnpb', function () {
