@@ -23,7 +23,7 @@ class ProxyController extends Controller
                 return response($cachedContent)
                     ->header('Content-Type', 'text/html; charset=utf-8')
                     ->header('X-Frame-Options', 'ALLOWALL')
-                    ->header('Content-Security-Policy', 'frame-ancestors *;')
+                    ->header('Content-Security-Policy', "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data:; frame-ancestors *;")
                     ->header('X-Cache-Status', 'HIT'); // Header untuk debugging
             }
 
@@ -71,6 +71,14 @@ class ProxyController extends Controller
                 // Hapus X-Frame-Options headers yang bisa konflik
                 $content = preg_replace('/<meta[^>]*http-equiv=["\']X-Frame-Options["\'][^>]*>/i', '', $content);
 
+                // Hapus Content Security Policy meta tags
+                $content = preg_replace('/<meta[^>]*http-equiv=["\']Content-Security-Policy["\'][^>]*>/i', '', $content);
+                $content = preg_replace('/<meta[^>]*http-equiv=["\']Content-Security-Policy-Report-Only["\'][^>]*>/i', '', $content);
+
+                // Hapus integrity attributes (hashes that might break due to proxying/modifications)
+                $content = preg_replace('/\sintegrity=["\'][^"\']*["\']/i', '', $content);
+                $content = preg_replace('/\scrossorigin=["\'][^"\']*["\']/i', '', $content);
+
                 // Inject CSS untuk memastikan styling tetap bekerja
                 $additionalCSS = '
                 <style>
@@ -86,7 +94,7 @@ class ProxyController extends Controller
                 return response($content)
                     ->header('Content-Type', 'text/html; charset=utf-8')
                     ->header('X-Frame-Options', 'ALLOWALL') // Override X-Frame-Options
-                    ->header('Content-Security-Policy', 'frame-ancestors *;') // Allow framing
+                    ->header('Content-Security-Policy', "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data:; frame-ancestors *;") // Allow framing
                     ->header('X-Cache-Status', 'MISS'); // Header untuk debugging
             }
 
@@ -106,7 +114,7 @@ class ProxyController extends Controller
                 return response($cachedContent)
                     ->header('Content-Type', 'text/html; charset=utf-8')
                     ->header('X-Frame-Options', 'ALLOWALL')
-                    ->header('Content-Security-Policy', 'frame-ancestors *;')
+                    ->header('Content-Security-Policy', "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data:; frame-ancestors *;")
                     ->header('X-Cache-Status', 'HIT');
             }
 
@@ -142,12 +150,20 @@ class ProxyController extends Controller
                 // Remove frame protection
                 $content = preg_replace('/<meta[^>]*http-equiv=["\']X-Frame-Options["\'][^>]*>/i', '', $content);
 
+                // Remove Content Security Policy meta tags
+                $content = preg_replace('/<meta[^>]*http-equiv=["\']Content-Security-Policy["\'][^>]*>/i', '', $content);
+                $content = preg_replace('/<meta[^>]*http-equiv=["\']Content-Security-Policy-Report-Only["\'][^>]*>/i', '', $content);
+
+                // Remove integrity attributes (hashes that might break due to proxying/modifications)
+                $content = preg_replace('/\sintegrity=["\'][^"\']*["\']/i', '', $content);
+                $content = preg_replace('/\scrossorigin=["\'][^"\']*["\']/i', '', $content);
+
                 Cache::put($cacheKey, $content, now()->addHours(1)); // Cache for 1 hour
 
                 return response($content)
                     ->header('Content-Type', 'text/html; charset=utf-8')
                     ->header('X-Frame-Options', 'ALLOWALL')
-                    ->header('Content-Security-Policy', 'frame-ancestors *;')
+                    ->header('Content-Security-Policy', "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data:; frame-ancestors *;")
                     ->header('X-Cache-Status', 'MISS');
             }
 

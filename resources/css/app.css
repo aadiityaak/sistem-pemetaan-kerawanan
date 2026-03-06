@@ -650,6 +650,23 @@
 .dark .border-zinc-300 {
     border-color: hsla(210, 100%, 66%, 0.2) !important;
 }
+.dark span {
+    color: hsl(0, 0%, 77%) !important;
+}
+
+/* Fix for inline styles in dark mode prose content */
+.dark .prose span,
+.dark .prose p,
+.dark .prose strong,
+.dark .prose em,
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose h4,
+.dark .prose li,
+.dark .prose a {
+    color: inherit !important;
+}
 
 .leaflet-container {
     font: inherit;

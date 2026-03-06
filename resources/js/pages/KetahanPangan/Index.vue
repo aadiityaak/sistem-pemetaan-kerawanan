@@ -155,7 +155,7 @@
                     </div>
 
                     <!-- Legend -->
-                    <div class="absolute bottom-4 left-4 z-30 rounded-lg bg-white/90 p-4 shadow-lg dark:bg-gray-800/90">
+                    <div class="absolute bottom-4 left-4 z-30 rounded-lg bg-white/90 p-4 shadow-lg dark:bg-gray-800/90" style="position:absolute">
                         <h4 class="mb-2 text-sm font-semibold text-gray-900 dark:text-white">Legend Status Harga</h4>
                         <div class="grid grid-cols-2 gap-2 text-xs">
                             <div class="flex items-center">
