@@ -100,8 +100,13 @@ Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['aut
 Route::get('peta-bencana', [PetaBencanaController::class, 'index'])->middleware(['auth', 'verified'])->name('peta-bencana.index');
 
 // PWA Routes
-Route::get('/manifest.webmanifest', [AppSettingController::class, 'getManifest'])->name('pwa.manifest');
-Route::get('/sw.js', [AppSettingController::class, 'getServiceWorker'])->name('pwa.sw');
+Route::get('/manifest.webmanifest', function () {
+    return response()->file(public_path('manifest.webmanifest'));
+});
+
+Route::get('/sw.js', function () {
+    return response()->file(public_path('build/sw.js'));
+});
 
 // Data Center Routes
 Route::middleware(['auth', 'verified'])->prefix('data-center')->name('data-center.')->group(function () {
