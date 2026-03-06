@@ -11,10 +11,13 @@ import axios from 'axios';
 
 // Set CSRF token for all Axios requests
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
 if (csrfToken) {
-    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+    if (axios.defaults.headers.common) {
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+    }
 } else {
-    console.error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
+    throw new Error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
 }
 
 // Register Service Worker for PWA

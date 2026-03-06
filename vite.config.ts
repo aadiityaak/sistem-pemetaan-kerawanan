@@ -25,7 +25,7 @@ export default defineConfig({
             injectRegister: 'auto',
             strategies: 'generateSW',
             devOptions: {
-                enabled: true,
+                enabled: false,
                 type: 'module',
             },
             workbox: {
