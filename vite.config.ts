@@ -35,6 +35,31 @@ export default defineConfig({
                 skipWaiting: true,
                 navigateFallback: '/',
                 navigateFallbackAllowlist: [/^(?!\/__).*/],
+                runtimeCaching: [
+                    {
+                        urlPattern: ({ request }) => request.mode === 'navigate',
+                        handler: 'NetworkFirst',
+                        options: {
+                            cacheName: 'pages',
+                            networkTimeoutSeconds: 5,
+                            expiration: {
+                                maxEntries: 10,
+                                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
+                            },
+                            cacheableResponse: {
+                                statuses: [0, 200],
+                            },
+                        },
+                    },
+                    {
+                        urlPattern: ({ request }) => request.headers.get('X-Inertia') === 'true',
+                        handler: 'NetworkFirst',
+                        options: {
+                            cacheName: 'inertia-data',
+                            networkTimeoutSeconds: 5,
+                        },
+                    },
+                ],
             },
             manifest: {
                 name: 'Crime Map',

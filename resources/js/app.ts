@@ -8,6 +8,7 @@ import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
 import { registerSW } from 'virtual:pwa-register';
 import axios from 'axios';
+import { router } from '@inertiajs/vue3';
 
 // Set CSRF token for all Axios requests
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -19,6 +20,26 @@ if (csrfToken) {
 } else {
     throw new Error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
 }
+
+// Global 419 error handler to refresh page automatically
+router.on('error', (event) => {
+    // Check if any error is 419
+    const errors = event.detail.errors;
+    if (errors && Object.values(errors).some(e => String(e).includes('419'))) {
+        window.location.reload();
+    }
+});
+
+// Handle axios errors for 419 specifically
+axios.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response?.status === 419) {
+            window.location.reload();
+        }
+        return Promise.reject(error);
+    }
+);
 
 // Register Service Worker for PWA
 registerSW({ immediate: true });

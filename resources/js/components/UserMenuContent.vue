@@ -12,6 +12,9 @@ interface Props {
 const handleLogout = (e: MouseEvent) => {
     e.preventDefault();
     router.post(route('logout'), {}, {
+        onSuccess: () => {
+            window.location.href = '/';
+        },
         onFinish: () => router.flushAll()
     });
 };
