@@ -37,7 +37,7 @@ const onIframeLoad = () => {
 
                 <!-- Iframe Content -->
                 <iframe
-                    src="https://tech.worldmonitor.app/?lat=-2.4178&lon=118.0872&zoom=3.35&view=global&timeRange=7d&layers=cables%2Cweather%2Ceconomic%2Coutages%2Cdatacenters%2Cnatural%2CstartupHubs%2CcloudRegions%2CtechHQs%2CtechEvents&country=ID"
+                    src="/proxy/war-monitor"
                     class="h-full w-full border-0"
                     allow="geolocation; clipboard-write; encrypted-media; picture-in-picture"
                     @load="onIframeLoad"

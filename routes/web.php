@@ -121,6 +121,10 @@ Route::get('proxy/pusiknas', [ProxyController::class, 'pusiknas'])
     ->middleware('throttle:10,1') // 10 requests per minute
     ->name('proxy.pusiknas');
 
+Route::get('proxy/war-monitor', [ProxyController::class, 'warMonitor'])
+    ->middleware('throttle:10,1')
+    ->name('proxy.war-monitor');
+
 // User Performance Dashboard - untuk statistik performa user
 Route::get('user-performance', [\App\Http\Controllers\UserPerformanceController::class, 'index'])->middleware(['auth', 'verified'])->name('user-performance.index');
 
