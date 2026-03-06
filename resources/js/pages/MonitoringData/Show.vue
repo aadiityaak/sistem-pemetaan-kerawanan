@@ -350,19 +350,19 @@ onMounted(async () => {
                     <article class="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
                         <!-- Meta Information -->
                         <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-                            <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                            <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-200">
                                 <div class="flex items-center gap-2">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    <time>{{ formatDate(monitoringData.incident_date) }}</time>
+                                    <time class="dark:text-white">{{ formatDate(monitoringData.incident_date) }}</time>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
-                                    <span>{{ monitoringData.kecamatan?.nama }}, {{ monitoringData.kabupaten_kota?.nama }}</span>
+                                    <span class="dark:text-white">{{ monitoringData.kecamatan?.nama }}, {{ monitoringData.kabupaten_kota?.nama }}</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <span
@@ -395,7 +395,7 @@ onMounted(async () => {
                         <!-- Article Content -->
                         <div v-if="monitoringData.description" class="px-6 pb-6">
                             <div
-                                class="prose prose-lg dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 [&>p]:mb-6 [&>p:empty]:mb-8 [&>p:last-child]:mb-0 [&>p]:leading-relaxed [&>p]:text-lg"
+                                class="prose prose-lg dark:prose-invert max-w-none text-gray-700 dark:text-gray-100 [&>p]:mb-6 [&>p:empty]:mb-8 [&>p:last-child]:mb-0 [&>p]:leading-relaxed [&>p]:text-lg"
                                 v-html="formatDescription(monitoringData.description)"
                             ></div>
                         </div>
@@ -408,16 +408,16 @@ onMounted(async () => {
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <!-- Jumlah Terdampak -->
                             <div v-if="monitoringData.jumlah_terdampak">
-                                <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-400">Jumlah Komentar</label>
+                                <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-200">Jumlah Komentar</label>
                                 <div class="flex items-baseline gap-2">
                                     <span class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ monitoringData.jumlah_terdampak.toLocaleString() }}</span>
-                                    <span class="text-gray-600 dark:text-gray-400">orang</span>
+                                    <span class="text-gray-600 dark:text-gray-200">orang</span>
                                 </div>
                             </div>
 
                             <!-- Koordinat -->
                             <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-400">Koordinat</label>
+                                <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-200">Koordinat</label>
                                 <div class="font-mono text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-md">
                                     {{ monitoringData.latitude }}, {{ monitoringData.longitude }}
                                 </div>
@@ -425,22 +425,22 @@ onMounted(async () => {
 
                             <!-- Jenis Data -->
                             <div>
-                                <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-400">Jenis Data</label>
+                                <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-200">Jenis Data</label>
                                 <div class="flex items-center gap-2">
                                     <span
                                         v-if="monitoringData.data_source === 'online'"
-                                        class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                        class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-100"
                                     >
                                         🌐 Online (Portal Berita)
                                     </span>
                                     <span
                                         v-else
-                                        class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-300"
+                                        class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-100"
                                     >
                                         📝 Offline (Ditulis Sendiri)
                                     </span>
                                 </div>
-                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-200">
                                     <span v-if="monitoringData.data_source === 'online'">
                                         Data berasal dari portal berita atau sumber online lainnya
                                     </span>
@@ -452,9 +452,9 @@ onMounted(async () => {
 
                             <!-- Sumber Berita -->
                             <div v-if="monitoringData.sumber_berita" class="md:col-span-2">
-                                <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-400">Sumber Berita</label>
+                                <label class="mb-2 block text-sm font-medium text-gray-500 dark:text-gray-200">Sumber Berita</label>
                                 <div class="flex items-center gap-2 text-gray-900 dark:text-white">
-                                    <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="h-4 w-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path
                                             stroke-linecap="round"
                                             stroke-linejoin="round"
@@ -488,7 +488,7 @@ onMounted(async () => {
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Kategori Utama</label>
+                                <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-200">Kategori Utama</label>
                                 <div class="flex items-center gap-2">
                                     <div class="flex h-8 w-8 items-center justify-center">
                                         <img
@@ -508,7 +508,7 @@ onMounted(async () => {
                                 </div>
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Sub Kategori</label>
+                                <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-200">Sub Kategori</label>
                                 <div class="flex items-center gap-2">
                                     <div class="flex h-6 w-6 items-center justify-center">
                                         <img
@@ -533,15 +533,15 @@ onMounted(async () => {
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Provinsi</label>
+                                <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-200">Provinsi</label>
                                 <div class="text-gray-900 dark:text-white">{{ monitoringData.provinsi?.nama || 'N/A' }}</div>
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Kabupaten/Kota</label>
+                                <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-200">Kabupaten/Kota</label>
                                 <div class="text-gray-900 dark:text-white">{{ monitoringData.kabupaten_kota?.nama || 'N/A' }}</div>
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-400">Kecamatan</label>
+                                <label class="mb-1 block text-sm font-medium text-gray-500 dark:text-gray-200">Kecamatan</label>
                                 <div class="text-gray-900 dark:text-white">{{ monitoringData.kecamatan?.nama || 'N/A' }}</div>
                             </div>
                         </div>
@@ -556,7 +556,7 @@ onMounted(async () => {
 
                         <div class="space-y-2">
                             <div v-for="(value, key) in monitoringData.additional_data" :key="key" class="grid grid-cols-3 gap-4">
-                                <div class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ key }}</div>
+                                <div class="text-sm font-medium text-gray-500 dark:text-gray-200">{{ key }}</div>
                                 <div class="col-span-2 text-sm text-gray-900 dark:text-white">
                                     {{ typeof value === 'object' ? JSON.stringify(value, null, 2) : value }}
                                 </div>
@@ -663,30 +663,30 @@ onMounted(async () => {
                                 </div>
                                 <div>
                                     <h4 class="text-base font-semibold text-gray-900 dark:text-white">{{ monitoringData.user.name }}</h4>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ getRoleLabel(monitoringData.user.role) }}</p>
-                                    <p v-if="monitoringData.user.provinsi" class="text-xs text-gray-400 dark:text-gray-500">📍 {{ monitoringData.user.provinsi.nama }}</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-200">{{ getRoleLabel(monitoringData.user.role) }}</p>
+                                    <p v-if="monitoringData.user.provinsi" class="text-xs text-gray-400 dark:text-gray-200">📍 {{ monitoringData.user.provinsi.nama }}</p>
                                 </div>
                             </div>
 
                             <!-- Contact Information -->
                             <div class="space-y-2 border-t border-gray-100 pt-4 dark:border-gray-700">
                                 <div class="flex items-center space-x-2">
-                                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="h-4 w-4 text-gray-400 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                     </svg>
-                                    <span class="text-sm text-gray-600 dark:text-gray-300">{{ monitoringData.user.email }}</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-100">{{ monitoringData.user.email }}</span>
                                 </div>
                                 <div v-if="monitoringData.user.phone" class="flex items-center space-x-2">
-                                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="h-4 w-4 text-gray-400 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                     </svg>
-                                    <span class="text-sm text-gray-600 dark:text-gray-300">{{ monitoringData.user.phone }}</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-100">{{ monitoringData.user.phone }}</span>
                                 </div>
                                 <div v-else class="flex items-center space-x-2">
-                                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="h-4 w-4 text-gray-400 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                     </svg>
-                                    <span class="text-sm text-gray-400 dark:text-gray-500 italic">Nomor telepon tidak tersedia</span>
+                                    <span class="text-sm text-gray-400 dark:text-gray-200 italic">Nomor telepon tidak tersedia</span>
                                 </div>
                             </div>
                         </div>
@@ -698,15 +698,15 @@ onMounted(async () => {
 
                         <div class="space-y-3">
                             <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-500 dark:text-gray-400">ID Data</span>
+                                <span class="text-sm text-gray-500 dark:text-gray-200">ID Data</span>
                                 <span class="text-sm font-medium text-gray-900 dark:text-white">#{{ monitoringData.id }}</span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-500 dark:text-gray-400">Didapat</span>
+                                <span class="text-sm text-gray-500 dark:text-gray-200">Didapat</span>
                                 <span class="text-sm text-gray-900 dark:text-white">{{ formatDateTime(monitoringData.created_at) }}</span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-500 dark:text-gray-400">Diperbarui</span>
+                                <span class="text-sm text-gray-500 dark:text-gray-200">Diperbarui</span>
                                 <span class="text-sm text-gray-900 dark:text-white">{{ formatDateTime(monitoringData.updated_at) }}</span>
                             </div>
                         </div>
