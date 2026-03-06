@@ -199,13 +199,35 @@ class MenuItemSeeder extends Seeder
             'description' => 'Data kurs mata uang dan pasar saham',
         ]);
 
+        \App\Models\MenuItem::create([
+            'title' => 'BNPB',
+            'icon' => 'ShieldAlert',
+            'path' => '/data-center/bnpb',
+            'is_active' => true,
+            'sort_order' => 5,
+            'parent_id' => $dataCenter->id,
+            'admin_only' => false,
+            'description' => 'Data monitoring BNPB',
+        ]);
+
+        \App\Models\MenuItem::create([
+            'title' => 'War Monitor',
+            'icon' => 'Crosshair',
+            'path' => '/data-center/war-monitor',
+            'is_active' => true,
+            'sort_order' => 6,
+            'parent_id' => $dataCenter->id,
+            'admin_only' => false,
+            'description' => 'Monitoring konflik dan industri teknologi real-time',
+        ]);
+
         // Admin-only submenus for DATA CENTER
         \App\Models\MenuItem::create([
             'title' => 'Kategori',
             'icon' => 'Tags',
             'path' => '/categories',
             'is_active' => true,
-            'sort_order' => 5,
+            'sort_order' => 7,
             'parent_id' => $dataCenter->id,
             'admin_only' => true,
             'description' => 'Kelola kategori',
@@ -216,7 +238,7 @@ class MenuItemSeeder extends Seeder
             'icon' => 'FileText',
             'path' => '/sub-categories',
             'is_active' => true,
-            'sort_order' => 6,
+            'sort_order' => 8,
             'parent_id' => $dataCenter->id,
             'admin_only' => true,
             'description' => 'Kelola sub kategori',

@@ -108,6 +108,9 @@ Route::middleware(['auth', 'verified'])->prefix('data-center')->name('data-cente
     Route::get('bnpb', function () {
         return inertia('DataCenter/Bnpb');
     })->name('bnpb');
+    Route::get('war-monitor', function () {
+        return inertia('DataCenter/WarMonitor');
+    })->name('war-monitor');
 });
 
 // Peta Kriminalitas Route
