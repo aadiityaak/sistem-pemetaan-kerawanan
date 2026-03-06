@@ -35,15 +35,6 @@ if (initialCsrfToken) {
     updateCsrfToken(initialCsrfToken);
 }
 
-// Global 419 error handler to refresh page automatically
-router.on('error', (event) => {
-    // Check if any error is 419
-    const errors = event.detail.errors;
-    if (errors && Object.values(errors).some(e => String(e).includes('419'))) {
-        window.location.reload();
-    }
-});
-
 // Update CSRF token dynamically on every Inertia navigation
 router.on('finish', (event) => {
     const props = event.detail.page.props;
@@ -55,10 +46,31 @@ router.on('finish', (event) => {
 // Handle axios errors for 419 specifically
 axios.interceptors.response.use(
     response => response,
-    error => {
-        if (error.response?.status === 419) {
-            window.location.reload();
+    async error => {
+        const originalRequest = error.config;
+
+        // Check if error is 419 and we haven't already retried
+        if (error.response?.status === 419 && !originalRequest._retry) {
+            originalRequest._retry = true; // Mark that we are retrying
+
+            try {
+                // Fetch a new CSRF token
+                const response = await axios.get('/csrf-token');
+                const newCsrfToken = response.data.token;
+
+                // Update the CSRF token in our helper and the original request
+                updateCsrfToken(newCsrfToken);
+                originalRequest.headers['X-CSRF-TOKEN'] = newCsrfToken;
+
+                // Retry the original request with the new token
+                return axios(originalRequest);
+            } catch (e) {
+                // If fetching the new token fails, just reject
+                return Promise.reject(error);
+            }
         }
+
+        // For other errors, just reject
         return Promise.reject(error);
     }
 );

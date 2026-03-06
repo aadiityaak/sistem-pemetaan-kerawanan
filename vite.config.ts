@@ -59,6 +59,10 @@ export default defineConfig({
                             networkTimeoutSeconds: 5,
                         },
                     },
+                    {
+                        urlPattern: ({ url }) => url.pathname === '/csrf-token',
+                        handler: 'NetworkOnly',
+                    },
                 ],
             },
             manifest: {
