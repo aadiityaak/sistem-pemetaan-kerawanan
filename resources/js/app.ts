@@ -10,15 +10,29 @@ import { registerSW } from 'virtual:pwa-register';
 import axios from 'axios';
 import { router } from '@inertiajs/vue3';
 
-// Set CSRF token for all Axios requests
-const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+// Function to update CSRF token in meta tag and axios headers
+const updateCsrfToken = (token: string) => {
+    if (!token) return;
 
-if (csrfToken) {
-    if (axios.defaults.headers.common) {
-        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+    // Update meta tag
+    let meta = document.querySelector('meta[name="csrf-token"]');
+    if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute('name', 'csrf-token');
+        document.head.appendChild(meta);
     }
-} else {
-    throw new Error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
+    meta.setAttribute('content', token);
+
+    // Update axios defaults
+    if (axios.defaults.headers.common) {
+        axios.defaults.headers.common['X-CSRF-TOKEN'] = token;
+    }
+};
+
+// Set initial CSRF token for all Axios requests
+const initialCsrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+if (initialCsrfToken) {
+    updateCsrfToken(initialCsrfToken);
 }
 
 // Global 419 error handler to refresh page automatically
@@ -27,6 +41,14 @@ router.on('error', (event) => {
     const errors = event.detail.errors;
     if (errors && Object.values(errors).some(e => String(e).includes('419'))) {
         window.location.reload();
+    }
+});
+
+// Update CSRF token dynamically on every Inertia navigation
+router.on('finish', (event) => {
+    const props = event.detail.page.props;
+    if (props.csrf_token) {
+        updateCsrfToken(props.csrf_token as string);
     }
 });
 
