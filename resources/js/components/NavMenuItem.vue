@@ -3,6 +3,7 @@ import { SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubButto
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import { ChevronRight } from 'lucide-vue-next';
+import { usePWA } from '@/composables/usePWA';
 
 interface Props {
     item: NavItem;
@@ -22,6 +23,14 @@ const handleToggle = (title: string) => {
 };
 
 const page = usePage();
+const { installPWA, isInstallable } = usePWA();
+
+const handleItemClick = (e: MouseEvent, item: NavItem) => {
+    if (item.title === 'Install App') {
+        e.preventDefault();
+        installPWA();
+    }
+};
 
 const isOpen = (title: string) => {
     return props.openItems.has(title);
@@ -81,7 +90,7 @@ const isOpen = (title: string) => {
 
     <!-- Regular item without sub-items -->
     <SidebarMenuSubItem v-else-if="level > 0">
-        <SidebarMenuSubButton as-child :is-active="item.href === page.url" class="sidebar-item-button">
+        <SidebarMenuSubButton as-child :is-active="item.href === page.url" class="sidebar-item-button" @click="(e: MouseEvent) => handleItemClick(e, item)">
             <Link :href="item.href">
                 <component :is="item.icon" class="shrink-0" />
                 <span class="truncate min-w-0 flex-1 whitespace-nowrap">{{ item.title }}</span>
@@ -99,12 +108,11 @@ const isOpen = (title: string) => {
         </SidebarMenuSubButton>
     </SidebarMenuSubItem>
 
-    <!-- Top level item without sub-items -->
     <SidebarMenuItem v-else>
-        <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title" class="sidebar-item-button">
+        <SidebarMenuButton as-child :is-active="item.href === page.url" :tooltip="item.title" class="sidebar-item-button" @click="(e: MouseEvent) => handleItemClick(e, item)">
             <Link :href="item.href">
                 <component :is="item.icon" class="shrink-0" />
-                <span class="truncate min-w-0 flex-1">{{ item.title }}</span>
+                <span class="truncate min-w-0 flex-1 whitespace-nowrap">{{ item.title }}</span>
                 <div class="sparkle-container">
                     <div class="sparkle" style="top: 20%; left: 30%; animation-delay: 0.5s;"></div>
                     <div class="sparkle" style="top: 50%; left: 80%; animation-delay: 1s;"></div>

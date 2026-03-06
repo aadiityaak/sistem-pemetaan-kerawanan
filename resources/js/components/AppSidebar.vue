@@ -33,7 +33,9 @@ import {
     Users,
     Activity,
     Crosshair,
+    Download,
 } from 'lucide-vue-next';
+import { usePWA } from '@/composables/usePWA';
 import { computed, onMounted, ref } from 'vue';
 
 // Interface for database menu items
@@ -72,22 +74,31 @@ const isSuperAdmin = computed(() => {
 // Reactive menu items from database
 const dbMenuItems = ref<MenuItem[]>([]);
 const isLoading = ref(true);
+const { isInstallable } = usePWA();
 
 // Convert database menu items to NavItem format (recursive for unlimited depth)
 const convertMenuItemsToNavItems = (menuItems: MenuItem[]): NavItem[] => {
-    return menuItems.map((item) => {
-        const navItem: NavItem = {
-            title: item.title,
-            href: item.path || '#',
-            icon: getIconComponent(item.icon),
-        };
+    return menuItems
+        .filter((item) => {
+            // Hide "Install App" if not installable
+            if (item.title === 'Install App') {
+                return isInstallable.value;
+            }
+            return true;
+        })
+        .map((item) => {
+            const navItem: NavItem = {
+                title: item.title,
+                href: item.path || '#',
+                icon: getIconComponent(item.icon),
+            };
 
-        if (item.children && item.children.length > 0) {
-            navItem.items = convertMenuItemsToNavItems(item.children);
-        }
+            if (item.children && item.children.length > 0) {
+                navItem.items = convertMenuItemsToNavItems(item.children);
+            }
 
-        return navItem;
-    });
+            return navItem;
+        });
 };
 
 // Get icon component from icon name
@@ -120,6 +131,7 @@ const getIconComponent = (iconName?: string) => {
         BarChart3: BarChart3,
         Activity: Activity,
         Crosshair: Crosshair,
+        Download: Download,
     };
     return iconMap[iconName || ''] || Tags;
 };
@@ -171,9 +183,9 @@ const mainNavItems = computed<NavItem[]>(() => {
     return convertMenuItemsToNavItems(mainItems);
 });
 
-// Settings nav items for sidebar footer (Super Admin only)
+// Settings nav items for sidebar footer
 const settingsNavItems = computed<NavItem[]>(() => {
-    if (isLoading.value || !dbMenuItems.value.length || !isSuperAdmin.value) {
+    if (isLoading.value || !dbMenuItems.value.length) {
         return [];
     }
 
@@ -184,41 +196,59 @@ const settingsNavItems = computed<NavItem[]>(() => {
         return convertMenuItemsToNavItems([pengaturanMenu]);
     }
 
-    // Fallback if PENGATURAN not found in database - Super Admin gets all settings
+    // Fallback if PENGATURAN not found in database
     const baseItems = [
         {
             title: 'Pengaturan Aplikasi',
             href: '/settings',
             icon: Settings,
+            adminOnly: true,
         },
         {
             title: 'User Management',
             href: '/users',
             icon: Users,
+            adminOnly: true,
         },
         {
             title: 'Provinsi',
             href: '/provinsi',
             icon: Map,
+            adminOnly: false,
         },
         {
             title: 'Kabupaten/Kota',
             href: '/kabupaten-kota',
             icon: Building2,
+            adminOnly: false,
         },
         {
             title: 'Kecamatan',
             href: '/kecamatan',
             icon: MapPin,
+            adminOnly: false,
+        },
+        {
+            title: 'Install App',
+            href: '#',
+            icon: Download,
+            adminOnly: false,
         },
     ];
+
+    // Filter fallback items by role and installability
+    const filteredBaseItems = baseItems.filter(item => {
+        if (item.adminOnly && !isSuperAdmin.value) return false;
+        if (item.title === 'Install App' && !isInstallable.value) return false;
+        return true;
+    });
 
     return [
         {
             title: 'PENGATURAN',
             href: '/settings',
             icon: Settings,
-            items: baseItems,
+            items: filteredBaseItems,
         },
     ];
 });

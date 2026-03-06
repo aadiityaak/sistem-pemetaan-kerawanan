@@ -322,6 +322,17 @@ class MenuItemSeeder extends Seeder
             'description' => 'Data kecamatan',
         ]);
 
+        \App\Models\MenuItem::create([
+            'title' => 'Install App',
+            'icon' => 'Download',
+            'path' => '#',
+            'is_active' => true,
+            'sort_order' => 7,
+            'parent_id' => $pengaturan->id,
+            'admin_only' => false,
+            'description' => 'Install aplikasi ke desktop/HP',
+        ]);
+
         // Admin-only menu
         \App\Models\MenuItem::create([
             'title' => 'PREDIKSI AI',

@@ -6,6 +6,7 @@ import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { initializeTheme } from './composables/useAppearance';
+import { usePWA } from './composables/usePWA';
 import axios from 'axios';
 import { router } from '@inertiajs/vue3';
 
@@ -88,6 +89,10 @@ if ('serviceWorker' in navigator) {
 }
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+// Initialize PWA install prompt listener
+const { initPWA } = usePWA();
+initPWA();
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
