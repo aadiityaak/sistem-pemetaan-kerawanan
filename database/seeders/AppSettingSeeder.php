@@ -15,49 +15,15 @@ class AppSettingSeeder extends Seeder
     $settings = [
       // General Settings
       [
-        'key' => 'site_name',
-        'value' => 'Crime Map',
-        'type' => 'text',
-        'group' => 'general',
-        'label' => 'Site Name',
-        'description' => 'The name of the website displayed in the header and title',
-      ],
-      [
-        'key' => 'site_description',
-        'value' => 'Platform pemetaan data kriminalitas untuk analisis dan monitoring keamanan wilayah',
-        'type' => 'text',
-        'group' => 'general',
-        'label' => 'Site Description',
-        'description' => 'Brief description of the website',
-      ],
-      [
-        'key' => 'contact_email',
-        'value' => 'admin@crimemap.com',
-        'type' => 'text',
-        'group' => 'general',
-        'label' => 'Contact Email',
-        'description' => 'Main contact email for the site',
-      ],
-      [
-        'key' => 'maintenance_mode',
-        'value' => 'false',
-        'type' => 'boolean',
-        'group' => 'general',
-        'label' => 'Maintenance Mode',
-        'description' => 'Enable/disable maintenance mode',
-      ],
-
-      // Appearance Settings
-      [
-        'key' => 'primary_color',
-        'value' => '#3b82f6',
-        'type' => 'text',
+        'key' => 'app_favicon',
+        'value' => 'fav.png',
+        'type' => 'image',
         'group' => 'appearance',
-        'label' => 'Primary Color',
-        'description' => 'Main theme color used throughout the site',
+        'label' => 'Favicon',
+        'description' => 'Small icon displayed in browser tab',
       ],
       [
-        'key' => 'logo_url',
+        'key' => 'app_logo',
         'value' => 'Logo.webp',
         'type' => 'image',
         'group' => 'appearance',
@@ -65,12 +31,20 @@ class AppSettingSeeder extends Seeder
         'description' => 'Logo displayed in the header',
       ],
       [
-        'key' => 'favicon_url',
-        'value' => 'fav.png',
-        'type' => 'image',
-        'group' => 'appearance',
-        'label' => 'Favicon',
-        'description' => 'Small icon displayed in browser tab',
+        'key' => 'app_name',
+        'value' => 'Sistem Pemetaan Kerawanan Daerah di Indonesia',
+        'type' => 'text',
+        'group' => 'general',
+        'label' => 'App Name',
+        'description' => 'The name of the website displayed in the header and title',
+      ],
+      [
+        'key' => 'app_description',
+        'value' => 'Sistem Pemetaan Kerawanan Daerah di Indonesia - Platform pemetaan data kriminalitas untuk analisis dan monitoring keamanan wilayah',
+        'type' => 'text',
+        'group' => 'general',
+        'label' => 'App Description',
+        'description' => 'Brief description of the website',
       ],
 
       // Map Settings

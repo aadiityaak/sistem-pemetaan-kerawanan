@@ -88,7 +88,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'Sistem Pemetaan Kerawanan Daerah di Indonesia';
 
 // Initialize PWA install prompt listener
 const { initPWA } = usePWA();

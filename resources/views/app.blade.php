@@ -33,21 +33,45 @@
         }
     </style>
 
-    <title inertia>{{ config('app.name', 'Laravel') }}</title>
+    <title inertia>{{ config('app.name', 'Sistem Pemetaan Kerawanan Daerah di Indonesia') }}</title>
 
     @php
     $faviconSetting = \App\Models\AppSetting::where('key', 'app_favicon')->first();
     $faviconPath = $faviconSetting ? $faviconSetting->value : '/favicon.ico';
 
+    $logoSetting = \App\Models\AppSetting::where('key', 'app_logo')->first();
+    $logoPath = $logoSetting ? $logoSetting->value : '/Logo.webp';
+
+    $appNameSetting = \App\Models\AppSetting::where('key', 'app_name')->first();
+    $appName = $appNameSetting ? $appNameSetting->value : config('app.name', 'Sistem Pemetaan Kerawanan Daerah di Indonesia');
+
+    $appDescSetting = \App\Models\AppSetting::where('key', 'app_description')->first();
+    $appDesc = $appDescSetting ? $appDescSetting->value : 'Sistem Pemetaan Kerawanan Daerah di Indonesia - Platform pemetaan data kriminalitas untuk analisis dan monitoring keamanan wilayah';
+
     // Use setting's updated_at timestamp for cache busting
     $timestamp = $faviconSetting ? $faviconSetting->updated_at->timestamp : time();
-    $faviconWithTimestamp = $faviconPath . '?v=' . $timestamp;
+    $faviconWithTimestamp = $faviconPath . (str_contains($faviconPath, '?') ? '&' : '?') . 'v=' . $timestamp;
+    $logoWithTimestamp = $logoPath . (str_contains($logoPath, '?') ? '&' : '?') . 'v=' . $timestamp;
 
     // Determine file type
     $isSvg = str_ends_with($faviconPath, '.svg');
     $isPng = str_ends_with($faviconPath, '.png');
     $isJpg = str_ends_with($faviconPath, '.jpg') || str_ends_with($faviconPath, '.jpeg');
     @endphp
+
+    {{-- Open Graph / Facebook --}}
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:title" content="{{ $appName }}">
+    <meta property="og:description" content="{{ $appDesc }}">
+    <meta property="og:image" content="{{ asset($logoPath) }}">
+
+    {{-- Twitter --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{{ url()->current() }}">
+    <meta name="twitter:title" content="{{ $appName }}">
+    <meta name="twitter:description" content="{{ $appDesc }}">
+    <meta name="twitter:image" content="{{ asset($logoPath) }}">
 
     @if($isSvg)
     <link rel="icon" href="{{ $faviconWithTimestamp }}" type="image/svg+xml" sizes="any">
