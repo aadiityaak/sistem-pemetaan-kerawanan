@@ -101,7 +101,9 @@ Route::get('peta-bencana', [PetaBencanaController::class, 'index'])->middleware(
 
 // PWA Routes
 Route::get('/manifest.webmanifest', function () {
-    return response()->file(public_path('manifest.webmanifest'));
+    return response()->file(public_path('build/manifest.webmanifest'), [
+        'Content-Type' => 'application/manifest+json',
+    ]);
 });
 
 Route::get('/sw.js', function () {
