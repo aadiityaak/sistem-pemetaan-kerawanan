@@ -52,29 +52,9 @@ interface MenuItem {
 }
 
 const page = usePage<AppPageProps>();
-
-// Check if current user can manage settings (Super Admin and Admin only, not Admin VIP)
-const canManageSettings = computed(() => {
-    const userRole = page.props.auth?.user?.role;
-    return userRole === 'super_admin' || userRole === 'admin';
-});
-
-// Check if current user has admin access (includes all admin types)
-const hasAdminAccess = computed(() => {
-    const userRole = page.props.auth?.user?.role;
-    return userRole === 'super_admin' || userRole === 'admin_vip' || userRole === 'admin';
-});
-
-// Check if current user is super admin only (for sidebar footer)
-const isSuperAdmin = computed(() => {
-    const userRole = page.props.auth?.user?.role;
-    return userRole === 'super_admin';
-});
-
-// Reactive menu items from database
-const dbMenuItems = ref<MenuItem[]>([]);
-const isLoading = ref(true);
 const { isInstallable } = usePWA();
+
+const isSuperAdmin = computed(() => page.props.auth?.user?.role === 'super_admin');
 
 // Convert database menu items to NavItem format (recursive for unlimited depth)
 const convertMenuItemsToNavItems = (menuItems: MenuItem[]): NavItem[] => {
@@ -83,6 +63,10 @@ const convertMenuItemsToNavItems = (menuItems: MenuItem[]): NavItem[] => {
             // Hide "Install App" if not installable
             if (item.title === 'Install App') {
                 return isInstallable.value;
+            }
+            // Hide admin-only items from non-admins
+            if (item.admin_only && !isSuperAdmin.value) {
+                return false;
             }
             return true;
         })
@@ -136,126 +120,24 @@ const getIconComponent = (iconName?: string) => {
     return iconMap[iconName || ''] || Tags;
 };
 
-// Load menu items from database
-const loadMenuItems = async () => {
-    try {
-        isLoading.value = true;
-        const response = await fetch('/api/menu-items');
-        if (!response.ok) {
-            throw new Error('Failed to load menu items');
-        }
-        dbMenuItems.value = await response.json();
-    } catch (error) {
-        console.error('Error loading menu items:', error);
-        // Set fallback menu items in case of error
-        dbMenuItems.value = [];
-    } finally {
-        isLoading.value = false;
-    }
-};
-
-// Main nav items from database
+// Main nav items from shared props
 const mainNavItems = computed<NavItem[]>(() => {
-    if (isLoading.value || !dbMenuItems.value.length) {
-        // Fallback items when database is not available
-        return [
-            {
-                title: 'Dashboard',
-                href: '/dashboard',
-                icon: LayoutGrid,
-            },
-            {
-                title: 'Peta Bencana',
-                href: '/peta-bencana',
-                icon: AlertTriangle,
-            },
-            {
-                title: 'Peta Kriminalitas',
-                href: '/peta-kriminalitas',
-                icon: Shield,
-            },
-        ];
-    }
-
-    // Get main menu items (excluding PENGATURAN which goes to footer)
-    const mainItems = dbMenuItems.value.filter((item) => item.title !== 'PENGATURAN');
-
+    const menuItems = page.props.menuItems || [];
+    const mainItems = menuItems.filter((item) => item.title !== 'PENGATURAN');
     return convertMenuItemsToNavItems(mainItems);
 });
 
 // Settings nav items for sidebar footer
 const settingsNavItems = computed<NavItem[]>(() => {
-    if (isLoading.value || !dbMenuItems.value.length) {
-        return [];
-    }
-
-    // Get PENGATURAN menu item from database
-    const pengaturanMenu = dbMenuItems.value.find((item) => item.title === 'PENGATURAN');
-
-    if (pengaturanMenu) {
-        return convertMenuItemsToNavItems([pengaturanMenu]);
-    }
-
-    // Fallback if PENGATURAN not found in database
-    const baseItems = [
-        {
-            title: 'Pengaturan Aplikasi',
-            href: '/settings',
-            icon: Settings,
-            adminOnly: true,
-        },
-        {
-            title: 'User Management',
-            href: '/users',
-            icon: Users,
-            adminOnly: true,
-        },
-        {
-            title: 'Provinsi',
-            href: '/provinsi',
-            icon: Map,
-            adminOnly: false,
-        },
-        {
-            title: 'Kabupaten/Kota',
-            href: '/kabupaten-kota',
-            icon: Building2,
-            adminOnly: false,
-        },
-        {
-            title: 'Kecamatan',
-            href: '/kecamatan',
-            icon: MapPin,
-            adminOnly: false,
-        },
-        {
-            title: 'Install App',
-            href: '#',
-            icon: Download,
-            adminOnly: false,
-        },
-    ];
-
-    // Filter fallback items by role and installability
-    const filteredBaseItems = baseItems.filter(item => {
-        if (item.adminOnly && !isSuperAdmin.value) return false;
-        if (item.title === 'Install App' && !isInstallable.value) return false;
-        return true;
-    });
-
-    return [
-        {
-            title: 'PENGATURAN',
-            href: '/settings',
-            icon: Settings,
-            items: filteredBaseItems,
-        },
-    ];
+    const menuItems = page.props.menuItems || [];
+    const pengaturanMenu = menuItems.find((item) => item.title === 'PENGATURAN');
+    return pengaturanMenu ? convertMenuItemsToNavItems([pengaturanMenu]) : [];
 });
 
-// Load data on component mount
-onMounted(() => {
-    loadMenuItems();
+// Check if current user can manage settings (Super Admin and Admin only, not Admin VIP)
+const canManageSettings = computed(() => {
+    const userRole = page.props.auth?.user?.role;
+    return userRole === 'super_admin' || userRole === 'admin';
 });
 </script>
 
@@ -283,7 +165,7 @@ onMounted(() => {
         </SidebarContent>
 
         <SidebarFooter>
-            <NavMain v-if="isSuperAdmin" :items="settingsNavItems" :collapse-on-inactive="true" />
+            <NavMain v-if="canManageSettings" :items="settingsNavItems" :collapse-on-inactive="true" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

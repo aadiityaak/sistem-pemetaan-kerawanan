@@ -47,15 +47,25 @@ const laravelAppPublicFiles = [
 
 const includePublicFiles = [
     'public/build',
+    'public/img',
+    'public/assets',
     'public/favicon.ico',
     'public/favicon.svg',
     'public/apple-touch-icon.png',
     'public/robots.txt',
     'public/.htaccess',
     'public/index.php',
+    'public/Logo.webp',
     'public/create-symlink.php',
     'public/create-symlink-advanced.php',
     'public/clear-cache.php',
+];
+
+// PWA specific files that should be at the root of public_html
+const pwaFiles = [
+    'public/build/manifest.webmanifest',
+    'public/build/sw.js',
+    'public/build/registerSW.js',
 ];
 
 // Create laravel-app folder (untuk di atas public_html)
@@ -151,6 +161,39 @@ includePublicFiles.forEach((file) => {
         console.log(`   ⚠ ${file} not found, skipping...`);
     }
 });
+
+// Copy PWA files to the root of public_html
+pwaFiles.forEach((file) => {
+    const srcPath = join(projectRoot, file);
+    const fileName = file.replace('public/build/', '').replace('public\\build\\', '');
+    const destPath = join(publicHtmlDir, fileName);
+
+    if (existsSync(srcPath)) {
+        try {
+            cpSync(srcPath, destPath);
+            process.stdout.write('.');
+        } catch (error) {
+            console.log(`\n   ✗ Failed to copy PWA file ${fileName}: ${error.message}`);
+        }
+    }
+});
+
+// Also copy any workbox-*.js files to the root of public_html
+if (existsSync(join(projectRoot, 'public/build'))) {
+    const buildFiles = readdirSync(join(projectRoot, 'public/build'));
+    buildFiles.forEach((file) => {
+        if (file.startsWith('workbox-') && file.endsWith('.js')) {
+            const srcPath = join(projectRoot, 'public/build', file);
+            const destPath = join(publicHtmlDir, file);
+            try {
+                cpSync(srcPath, destPath);
+                process.stdout.write('.');
+            } catch (error) {
+                console.log(`\n   ✗ Failed to copy ${file}: ${error.message}`);
+            }
+        }
+    });
+}
 console.log(' ✓\n');
 
 // Modify index.php for shared hosting

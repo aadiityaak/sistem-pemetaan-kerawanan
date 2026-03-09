@@ -114,4 +114,25 @@ class MenuItem extends Model
         // Return root items with their full hierarchy as values (not keys)
         return $buildHierarchy($allMenuItems, $allMenuItems)->values();
     }
+
+    /**
+     * Get the full menu structure for a given user.
+     *
+     * @param \App\Models\User $user
+     * @return \Illuminate\Support\Collection
+     */
+    public static function getMenuItemsForUser(User $user)
+    {
+        return self::getMenuTree($user);
+    }
+
+    /**
+     * Get the menu structure for guest users (not logged in).
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public static function getGuestMenu()
+    {
+        return self::getMenuTree(null);
+    }
 }

@@ -94,7 +94,7 @@
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
     {{-- PWA Manifest & Meta Tags --}}
-    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="manifest" href="{{ asset('/manifest.webmanifest') }}">
     <meta name="theme-color" content="#3b82f6">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
