@@ -16,13 +16,6 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-    <Head>
-        <meta name="theme-color" content="#3b82f6">
-        <meta name="mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="apple-mobile-web-app-title" content="CrimeMap">
-        <link rel="apple-touch-icon" href="/img/icons/pwa-192x192.svg">
-    </Head>
     <AppShell variant="sidebar">
         <AppSidebar />
         <AppContent variant="sidebar" class="flex min-h-screen flex-col overflow-x-hidden">

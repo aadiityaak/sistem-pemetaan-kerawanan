@@ -99,15 +99,62 @@ Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['aut
 // Peta Bencana Route
 Route::get('peta-bencana', [PetaBencanaController::class, 'index'])->middleware(['auth', 'verified'])->name('peta-bencana.index');
 
-// PWA Routes
+// PWA Routes - Serve from root
+Route::get('/sw.js', function () {
+    $path = public_path('build/sw.js');
+    if (!file_exists($path)) {
+        return response()->noContent(404);
+    }
+    return response()->file($path, [
+        'Content-Type' => 'application/javascript',
+        'Service-Worker-Allowed' => '/',
+    ]);
+});
+
 Route::get('/manifest.webmanifest', function () {
-    return response()->file(public_path('build/manifest.webmanifest'), [
+    $path = public_path('build/manifest.webmanifest');
+    if (!file_exists($path)) {
+        // Fallback to static manifest if build doesn't exist
+        $staticPath = public_path('manifest.webmanifest');
+        if (file_exists($staticPath)) {
+            return response()->file($staticPath, [
+                'Content-Type' => 'application/manifest+json',
+            ]);
+        }
+        return response()->noContent(404);
+    }
+    return response()->file($path, [
         'Content-Type' => 'application/manifest+json',
     ]);
 });
 
-Route::get('/sw.js', function () {
-    return response()->file(public_path('build/sw.js'), [
+Route::get('/manifest.json', function () {
+    $path = public_path('build/manifest.json');
+    if (!file_exists($path)) {
+        return response()->noContent(404);
+    }
+    return response()->file($path, [
+        'Content-Type' => 'application/json',
+    ]);
+});
+
+// Workbox files
+Route::get('/workbox-{hash}.js', function ($hash) {
+    $path = public_path("build/workbox-{$hash}.js");
+    if (!file_exists($path)) {
+        return response()->noContent(404);
+    }
+    return response()->file($path, [
+        'Content-Type' => 'application/javascript',
+    ]);
+});
+
+Route::get('/registerSW.js', function () {
+    $path = public_path('build/registerSW.js');
+    if (!file_exists($path)) {
+        return response()->noContent(404);
+    }
+    return response()->file($path, [
         'Content-Type' => 'application/javascript',
     ]);
 });
