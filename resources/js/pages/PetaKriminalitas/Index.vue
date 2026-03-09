@@ -25,7 +25,7 @@
                             {{ displayMode === 'proxy' ? 'Mode Landing' : 'Mode Iframe' }}
                         </button>
                         <a
-                            href="https://pusiknas.polri.go.id/peta_kriminalitas"
+                            :href="pusikansUrl"
                             target="_blank"
                             class="px-4 py-2 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors flex items-center gap-2"
                         >
@@ -45,8 +45,8 @@
                                     <Shield class="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <div>
-                                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Pusiknas Dashboard (Via Proxy)</h3>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Peta Kriminalitas Indonesia - Data Real-time</p>
+                                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Dashboard Peta Kriminalitas</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Peta Kriminalitas Indonesia - Data Interaktif</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
@@ -70,8 +70,8 @@
                         <div v-if="isLoading" class="absolute inset-0 bg-white/90 dark:bg-gray-800/90 flex items-center justify-center z-10">
                             <div class="text-center">
                                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                                <p class="text-gray-600 dark:text-gray-400">Memuat via Proxy...</p>
-                                <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">Menghubungkan ke server Pusiknas Polri</p>
+                                <p class="text-gray-600 dark:text-gray-400">Memuat Dashboard...</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">Menghubungkan ke server data...</p>
                             </div>
                         </div>
 
@@ -84,7 +84,7 @@
                             class="w-full border-0"
                             :style="{ height: iframeHeight + 'px' }"
                             loading="lazy"
-                            title="Peta Kriminalitas Indonesia - Pusiknas Bareskrim Polri"
+                            title="Peta Kriminalitas Indonesia"
                         ></iframe>
 
                         <!-- Error State -->
@@ -93,9 +93,9 @@
                                 <div class="p-4 bg-red-100 dark:bg-red-900/30 rounded-lg mb-4 inline-block">
                                     <AlertTriangle class="h-8 w-8 text-red-600 dark:text-red-400" />
                                 </div>
-                                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Gagal Memuat via Proxy</h3>
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Gagal Memuat Dashboard</h3>
                                 <p class="text-gray-600 dark:text-gray-400 mb-4">
-                                    Server proxy tidak dapat mengakses website Pusiknas Polri.
+                                    Tidak dapat memuat dashboard interaktif.
                                 </p>
                                 <div class="space-y-2">
                                     <button
@@ -216,8 +216,7 @@
                             <!-- Additional Info -->
                             <div class="mt-6 text-sm text-gray-500 dark:text-gray-400">
                                 <p>
-                                    Link akan membuka tab baru ke
-                                    <code class="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">pusiknas.polri.go.id</code>
+                                    Link akan membuka tab baru ke dashboard interaktif Power BI
                                 </p>
                             </div>
                         </div>
@@ -270,8 +269,8 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 // Reactive state
 const displayMode = ref('proxy'); // 'proxy' atau 'landing' - default langsung iframe
-const pusikansUrl = ref('https://pusiknas.polri.go.id/peta_kriminalitas');
-const proxyUrl = ref('/proxy/pusiknas');
+const pusikansUrl = ref('https://app.powerbi.com/view?r=eyJrIjoiMjQ5MDMxMmQtMDcyNC00ZWI3LWI3NjAtNjYyM2MxZjZmYmY0IiwidCI6IjNjYjUwZGViLWUxNTctNGY0OS1hMWIwLWI4MWJmOWQyOTJiNCIsImMiOjEwfQ%3D%3D');
+const proxyUrl = ref('https://app.powerbi.com/view?r=eyJrIjoiMjQ5MDMxMmQtMDcyNC00ZWI3LWI3NjAtNjYyM2MxZjZmYmY0IiwidCI6IjNjYjUwZGViLWUxNTctNGY0OS1hMWIwLWI4MWJmOWQyOTJiNCIsImMiOjEwfQ%3D%3D');
 const accessCount = ref(0);
 const crimeMapIframe = ref<HTMLIFrameElement>();
 const isLoading = ref(false);

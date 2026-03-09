@@ -108,7 +108,10 @@ class ProxyController extends Controller
     {
         try {
             $cacheKey = 'war_monitor_content';
-            $cachedContent = Cache::get($cacheKey);
+            
+            // Disable cache during development to see changes immediately
+            // $cachedContent = Cache::get($cacheKey);
+            $cachedContent = null;
 
             if ($cachedContent) {
                 return response($cachedContent)
@@ -136,9 +139,30 @@ class ProxyController extends Controller
                     $content
                 );
 
-                // Add Base tag for JS/CSS and API requests that might be relative
-                $baseTag = '<base href="https://tech.worldmonitor.app/">';
-                $content = str_replace('<head>', '<head>' . $baseTag, $content);
+                // Add Base tag and a script to handle dynamic relative requests
+                $injectedHead = '
+                <base href="https://tech.worldmonitor.app/">
+                <script>
+                    (function() {
+                        const originalFetch = window.fetch;
+                        window.fetch = function(url, options) {
+                            if (typeof url === "string" && url.startsWith("/") && !url.startsWith("//")) {
+                                url = "https://tech.worldmonitor.app" + url;
+                            }
+                            return originalFetch(url, options);
+                        };
+
+                        const originalOpen = XMLHttpRequest.prototype.open;
+                        XMLHttpRequest.prototype.open = function(method, url) {
+                            if (typeof url === "string" && url.startsWith("/") && !url.startsWith("//")) {
+                                url = "https://tech.worldmonitor.app" + url;
+                            }
+                            return originalOpen.apply(this, arguments);
+                        };
+                    })();
+                </script>';
+                
+                $content = str_replace('<head>', '<head>' . $injectedHead, $content);
 
                 // Inject some style to handle the iframe view
                 $additionalStyle = '
