@@ -105,7 +105,9 @@ Route::get('/manifest.webmanifest', function () {
 });
 
 Route::get('/sw.js', function () {
-    return response()->file(public_path('build/sw.js'));
+    return response()->file(public_path('build/sw.js'), [
+        'Content-Type' => 'application/javascript',
+    ]);
 });
 
 // Data Center Routes
@@ -129,6 +131,9 @@ Route::get('proxy/pusiknas', [ProxyController::class, 'pusiknas'])
 Route::get('proxy/war-monitor', [ProxyController::class, 'warMonitor'])
     ->middleware('throttle:10,1')
     ->name('proxy.war-monitor');
+
+Route::match(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], 'proxy/api', [ProxyController::class, 'genericProxy'])
+    ->name('proxy.api');
 
 // User Performance Dashboard - untuk statistik performa user
 Route::get('user-performance', [\App\Http\Controllers\UserPerformanceController::class, 'index'])->middleware(['auth', 'verified'])->name('user-performance.index');
