@@ -67,8 +67,8 @@ export default defineConfig({
             },
             manifest: {
                 id: '/',
-                name: 'Crime Map',
-                short_name: 'CrimeMap',
+                name: 'Pemetaan Kerawanan',
+                short_name: 'PetaKerawanan',
                 description: 'Aplikasi Peta Kriminalitas & Bencana',
                 theme_color: '#3b82f6',
                 background_color: '#000000',

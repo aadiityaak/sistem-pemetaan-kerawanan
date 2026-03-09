@@ -33,7 +33,7 @@
         }
     </style>
 
-    <title inertia>{{ config('app.name', 'Sistem Pemetaan Kerawanan Daerah di Indonesia') }}</title>
+    <title inertia>{{ config('app.name', 'Pemetaan Kerawanan') }}</title>
 
     @php
     $faviconSetting = \App\Models\AppSetting::where('key', 'app_favicon')->first();
@@ -43,10 +43,10 @@
     $logoPath = $logoSetting ? $logoSetting->value : '/Logo.webp';
 
     $appNameSetting = \App\Models\AppSetting::where('key', 'app_name')->first();
-    $appName = $appNameSetting ? $appNameSetting->value : config('app.name', 'Sistem Pemetaan Kerawanan Daerah di Indonesia');
+    $appName = $appNameSetting ? $appNameSetting->value : config('app.name', 'Pemetaan Kerawanan');
 
     $appDescSetting = \App\Models\AppSetting::where('key', 'app_description')->first();
-    $appDesc = $appDescSetting ? $appDescSetting->value : 'Sistem Pemetaan Kerawanan Daerah di Indonesia - Platform pemetaan data kriminalitas untuk analisis dan monitoring keamanan wilayah';
+    $appDesc = $appDescSetting ? $appDescSetting->value : 'Platform pemetaan data untuk analisis dan monitoring keamanan wilayah';
 
     // Use setting's updated_at timestamp for cache busting
     $timestamp = $faviconSetting ? $faviconSetting->updated_at->timestamp : time();
