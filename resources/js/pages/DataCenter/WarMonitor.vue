@@ -37,7 +37,7 @@ const onIframeLoad = () => {
 
                 <!-- Iframe Content -->
                 <iframe
-                    src="/proxy/war-monitor"
+                    src="https://world.pemetaankerawanan.my.id/"
                     class="h-full w-full border-0"
                     allow="geolocation; clipboard-write; encrypted-media; picture-in-picture"
                     @load="onIframeLoad"
