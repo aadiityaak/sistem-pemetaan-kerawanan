@@ -10,6 +10,10 @@ use App\Models\Provinsi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+use FFMpeg\FFMpeg;
+use FFMpeg\Format\Video\X264;
 
 class MonitoringDataController extends Controller
 {
@@ -25,7 +29,7 @@ class MonitoringDataController extends Controller
         // Set default date range to last 6 months if not provided
         $defaultStartDate = now()->subMonths(6)->format('Y-m-d');
         $defaultEndDate = now()->format('Y-m-d');
-        
+
         $startDate = $request->query('start_date', $defaultStartDate);
         $endDate = $request->query('end_date', $defaultEndDate);
 
@@ -33,7 +37,7 @@ class MonitoringDataController extends Controller
         if ($startDate) {
             $query->whereDate('incident_date', '>=', $startDate);
         }
-        
+
         if ($endDate) {
             $query->whereDate('incident_date', '<=', $endDate);
         }
@@ -127,7 +131,7 @@ class MonitoringDataController extends Controller
             $item->level_kejadian = $levelMapping[$item->severity_level] ?? $item->severity_level;
             $item->tanggal_laporan = $item->incident_date;
             $item->jumlah_korban = $item->jumlah_terdampak;
-            
+
             // Process gallery data
             if ($item->gallery && is_array($item->gallery)) {
                 $item->gallery = collect($item->gallery)->map(function ($path) {
@@ -145,12 +149,12 @@ class MonitoringDataController extends Controller
 
         // Statistik sesuai dengan yang diharapkan Vue component - apply date filters
         $statsQuery = MonitoringData::query();
-        
+
         // Apply province filter for non-admin users in statistics
         if ($request->has('province_filter')) {
             $statsQuery->where('provinsi_id', $request->input('province_filter'));
         }
-        
+
         if ($startDate) {
             $statsQuery->whereDate('incident_date', '>=', $startDate);
         }
@@ -170,7 +174,7 @@ class MonitoringDataController extends Controller
                 $q->where('slug', $request->subcategory);
             });
         }
-        
+
         $totalData = (clone $statsQuery)->count();
         $activeData = (clone $statsQuery)->where('status', 'active')->count();
         $completedData = (clone $statsQuery)->where('status', 'resolved')->count();
@@ -204,7 +208,7 @@ class MonitoringDataController extends Controller
         // Get all categories and subcategories for filter dropdowns
         $categories = \App\Models\Category::active()->ordered()->get();
         $subCategories = collect();
-        
+
         if ($selectedCategory) {
             $subCategories = \App\Models\SubCategory::where('category_id', $selectedCategory->id)
                 ->active()
@@ -239,7 +243,7 @@ class MonitoringDataController extends Controller
     public function create(Request $request)
     {
         $categories = Category::active()->ordered()->with('subCategories')->get();
-        
+
         // Append image URLs to categories and subcategories
         $categories->each(function ($category) {
             $category->append(['image_url']);
@@ -247,36 +251,36 @@ class MonitoringDataController extends Controller
                 $subCategory->append(['image_url']);
             });
         });
-        
+
         // Filter provinces based on user's permission
         $provinsiQuery = Provinsi::select('id', 'nama', 'latitude', 'longitude')->orderBy('nama');
         if ($request->has('province_filter')) {
             $provinsiQuery->where('id', $request->input('province_filter'));
         }
         $provinsiList = $provinsiQuery->get();
-        
+
         // Filter kabupaten/kota and kecamatan based on user's province
         $kabupatenKotaQuery = KabupatenKota::orderBy('nama');
         $kecamatanQuery = Kecamatan::orderBy('nama');
-        
+
         if ($request->has('province_filter')) {
             $kabupatenKotaQuery->where('provinsi_id', $request->input('province_filter'));
             $kecamatanQuery->whereHas('kabupatenKota', function ($q) use ($request) {
                 $q->where('provinsi_id', $request->input('province_filter'));
             });
         }
-        
+
         $kabupatenKotaList = $kabupatenKotaQuery->get();
         $kecamatanList = $kecamatanQuery->get();
 
         // Get pre-selected category and subcategory from URL parameters
         $selectedCategory = null;
         $selectedSubCategory = null;
-        
+
         if ($request->has('category')) {
             $selectedCategory = $categories->firstWhere('slug', $request->get('category'));
         }
-        
+
         if ($request->has('subcategory') && $selectedCategory) {
             $selectedSubCategory = $selectedCategory->subCategories->firstWhere('slug', $request->get('subcategory'));
         }
@@ -327,16 +331,24 @@ class MonitoringDataController extends Controller
         // Handle gallery upload
         $galleryPaths = [];
         if ($request->hasFile('gallery')) {
+            $manager = new ImageManager(new Driver());
             foreach ($request->file('gallery') as $file) {
                 $path = $file->store('monitoring-data/gallery', 'public');
+                $image = $manager->read(storage_path('app/public/' . $path));
+                $image->save(quality: 75);
                 $galleryPaths[] = $path;
             }
         }
-        
+
         // Handle video upload
         $videoPath = null;
         if ($request->hasFile('video')) {
             $videoPath = $request->file('video')->store('monitoring-data/videos', 'public');
+            $ffmpeg = FFMpeg::create();
+            $video = $ffmpeg->open(storage_path('app/public/' . $videoPath));
+            $format = new X264();
+            $format->setKiloBitrate(1000);
+            $video->save($format, storage_path('app/public/' . $videoPath));
         } elseif ($request->filled('uploaded_video_path')) {
             $videoPath = $request->input('uploaded_video_path');
         }
@@ -345,7 +357,7 @@ class MonitoringDataController extends Controller
         if (empty($validated['kecamatan_id'])) {
             $validated['kecamatan_id'] = null;
         }
-        
+
         $validated['gallery'] = $galleryPaths;
         $validated['video_path'] = $videoPath;
         $validated['user_id'] = auth()->id(); // Set the current user as the author
@@ -387,7 +399,7 @@ class MonitoringDataController extends Controller
         $monitoringData->level_kejadian = $levelMapping[$monitoringData->severity_level] ?? $monitoringData->severity_level;
         $monitoringData->tanggal_laporan = $monitoringData->incident_date;
         $monitoringData->jumlah_korban = $monitoringData->jumlah_terdampak;
-        
+
         // Process gallery data
         if ($monitoringData->gallery && is_array($monitoringData->gallery)) {
             $monitoringData->gallery = collect($monitoringData->gallery)->map(function ($path) {
@@ -399,7 +411,7 @@ class MonitoringDataController extends Controller
         } else {
             $monitoringData->gallery = [];
         }
-        
+
         // Process video data
         if ($monitoringData->video_path) {
             $monitoringData->video_url = asset('storage/' . $monitoringData->video_path);
@@ -414,7 +426,7 @@ class MonitoringDataController extends Controller
     {
         $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])->findOrFail($id);
         $categories = Category::active()->ordered()->with('subCategories')->get();
-        
+
         // Append image URLs to categories and subcategories
         $categories->each(function ($category) {
             $category->append(['image_url']);
@@ -422,7 +434,7 @@ class MonitoringDataController extends Controller
                 $subCategory->append(['image_url']);
             });
         });
-        
+
         // Process gallery data
         if ($monitoringData->gallery && is_array($monitoringData->gallery)) {
             $monitoringData->gallery = collect($monitoringData->gallery)->map(function ($path) {
@@ -434,12 +446,12 @@ class MonitoringDataController extends Controller
         } else {
             $monitoringData->gallery = [];
         }
-        
+
         // Process video data
         if ($monitoringData->video_path) {
             $monitoringData->video_url = asset('storage/' . $monitoringData->video_path);
         }
-        
+
         // Filter provinces based on user's permission
         $provinsiQuery = Provinsi::select('id', 'nama', 'latitude', 'longitude')->orderBy('nama');
         if ($request->has('province_filter')) {
@@ -450,14 +462,14 @@ class MonitoringDataController extends Controller
         // Filter kabupaten/kota and kecamatan based on user's province
         $kabupatenKotaQuery = KabupatenKota::orderBy('nama');
         $kecamatanQuery = Kecamatan::orderBy('nama');
-        
+
         if ($request->has('province_filter')) {
             $kabupatenKotaQuery->where('provinsi_id', $request->input('province_filter'));
             $kecamatanQuery->whereHas('kabupatenKota', function ($q) use ($request) {
                 $q->where('provinsi_id', $request->input('province_filter'));
             });
         }
-        
+
         $kabupatenKota = $kabupatenKotaQuery->get();
         $kecamatan = $kecamatanQuery->get();
 
@@ -510,13 +522,16 @@ class MonitoringDataController extends Controller
         // Handle gallery upload
         $galleryPaths = $monitoringData->gallery ?? [];
         if ($request->hasFile('gallery')) {
+            $manager = new ImageManager(new Driver());
             // Upload new files and append to existing ones
             foreach ($request->file('gallery') as $file) {
                 $path = $file->store('monitoring-data/gallery', 'public');
+                $image = $manager->read(storage_path('app/public/' . $path));
+                $image->save(quality: 75);
                 $galleryPaths[] = $path;
             }
         }
-        
+
         // Handle video upload
         if ($request->hasFile('video')) {
             // Delete existing video if present
@@ -524,6 +539,11 @@ class MonitoringDataController extends Controller
                 Storage::disk('public')->delete($monitoringData->video_path);
             }
             $validated['video_path'] = $request->file('video')->store('monitoring-data/videos', 'public');
+            $ffmpeg = FFMpeg::create();
+            $video = $ffmpeg->open(storage_path('app/public/' . $validated['video_path']));
+            $format = new X264();
+            $format->setKiloBitrate(1000);
+            $video->save($format, storage_path('app/public/' . $validated['video_path']));
         } elseif ($request->filled('uploaded_video_path')) {
             // Handle chunked uploaded video
             // Delete existing video if present and different from uploaded one
@@ -535,12 +555,12 @@ class MonitoringDataController extends Controller
             // Preserve existing video if no new video is uploaded
             $validated['video_path'] = $monitoringData->video_path;
         }
-        
+
         // Remove uploaded_video_path from validated data as it's not a database field
         if (isset($validated['uploaded_video_path'])) {
             unset($validated['uploaded_video_path']);
         }
-        
+
         // Convert empty kecamatan_id to null
         if (empty($validated['kecamatan_id'])) {
             $validated['kecamatan_id'] = null;
@@ -556,19 +576,19 @@ class MonitoringDataController extends Controller
     public function destroy($id)
     {
         $monitoringData = MonitoringData::findOrFail($id);
-        
+
         // Delete gallery files from storage
         if (!empty($monitoringData->gallery)) {
             foreach ($monitoringData->gallery as $filePath) {
                 Storage::disk('public')->delete($filePath);
             }
         }
-        
+
         // Delete video file from storage
         if (!empty($monitoringData->video_path)) {
             Storage::disk('public')->delete($monitoringData->video_path);
         }
-        
+
         $monitoringData->delete();
 
         return redirect()->route('monitoring-data.index')
@@ -579,23 +599,23 @@ class MonitoringDataController extends Controller
     {
         $monitoringData = MonitoringData::findOrFail($id);
         $imagePath = $request->input('image_path');
-        
+
         if ($imagePath && $monitoringData->gallery && is_array($monitoringData->gallery)) {
             // Remove from array
             $gallery = $monitoringData->gallery;
-            $updatedGallery = array_filter($gallery, function($path) use ($imagePath) {
+            $updatedGallery = array_filter($gallery, function ($path) use ($imagePath) {
                 return $path !== $imagePath;
             });
-            
+
             // Update database
             $monitoringData->update(['gallery' => array_values($updatedGallery)]);
-            
+
             // Delete physical file
             Storage::disk('public')->delete($imagePath);
-            
+
             return response()->json(['message' => 'Image deleted successfully']);
         }
-        
+
         return response()->json(['error' => 'Image not found'], 404);
     }
 }
