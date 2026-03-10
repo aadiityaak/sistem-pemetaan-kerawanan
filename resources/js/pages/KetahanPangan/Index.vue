@@ -373,6 +373,7 @@ const endDate = ref(new Date().toISOString().split('T')[0]);
 const loading = ref(false);
 const error = ref('');
 const priceData = ref<PriceDataItem[]>([]);
+const summaryData = ref<any>(null);
 const lastUpdated = ref<Date | null>(null);
 
 // Map controls
@@ -405,9 +406,11 @@ const fetchPriceData = async () => {
         if (response.data.error) {
             error.value = response.data.error;
             priceData.value = [];
+            summaryData.value = null;
         } else {
             // Transform the API response to match our interface
             priceData.value = transformPriceData(response.data);
+            summaryData.value = response.data.detail || null;
             lastUpdated.value = new Date();
         }
     } catch (err: any) {
@@ -632,12 +635,21 @@ const showProvinceDetail = (province: PriceDataItem) => {
 
 // Statistics Functions
 const getAveragePrice = (): number => {
+    if (summaryData.value && summaryData.value.hargaratarata) {
+        return parseFloat(summaryData.value.hargaratarata);
+    }
     if (!priceData.value.length) return 0;
     const total = priceData.value.reduce((sum, item) => sum + item.price, 0);
     return total / priceData.value.length;
 };
 
 const getHighestPrice = (): { price: number; province: string } => {
+    if (summaryData.value && summaryData.value.hargatertinggi) {
+        return { 
+            price: parseFloat(summaryData.value.hargatertinggi), 
+            province: summaryData.value.provinsitertinggi || '' 
+        };
+    }
     if (!priceData.value.length) return { price: 0, province: '' };
     const highest = priceData.value.reduce((max, item) => 
         item.price > max.price ? item : max
@@ -646,6 +658,12 @@ const getHighestPrice = (): { price: number; province: string } => {
 };
 
 const getLowestPrice = (): { price: number; province: string } => {
+    if (summaryData.value && summaryData.value.hargaterendah) {
+        return { 
+            price: parseFloat(summaryData.value.hargaterendah), 
+            province: summaryData.value.provinsiterendah || '' 
+        };
+    }
     if (!priceData.value.length) return { price: 0, province: '' };
     const lowest = priceData.value.reduce((min, item) => 
         item.price < min.price ? item : min
