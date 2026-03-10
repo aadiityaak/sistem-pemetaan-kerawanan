@@ -41,7 +41,7 @@ Fitur utama pemetaan aplikasi ini menggunakan kombinasi teknologi:
 
 Aplikasi ini mengintegrasikan berbagai sumber data eksternal melalui mekanisme proxy dan embedding:
 
-### 🛡️ Peta Kriminalitas (Pusiknas)
+### 🛡️ Pemetaan Kerawanan (Pusiknas)
 
 - **Sumber**: [Pusiknas Polri](https://pusiknas.polri.go.id/peta_kriminalitas)
 - **Teknologi**: Backend Proxy (`ProxyController.php`)

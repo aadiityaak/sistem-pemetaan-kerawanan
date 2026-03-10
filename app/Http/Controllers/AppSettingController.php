@@ -27,21 +27,21 @@ class AppSettingController extends Controller
                     'label' => 'Nama Aplikasi',
                     'description' => 'Nama aplikasi yang akan ditampilkan di header dan title',
                     'type' => 'text',
-                    'value' => $this->settingsService->getSetting('app_name', 'Peta Kriminal Indonesia'),
+                    'value' => $this->settingsService->getSetting('app_name', 'Pemetaan Kerawanan'),
                 ],
                 [
                     'key' => 'app_description',
                     'label' => 'Deskripsi Aplikasi',
                     'description' => 'Deskripsi singkat tentang aplikasi',
                     'type' => 'text',
-                    'value' => $this->settingsService->getSetting('app_description', 'Sistem Informasi Pemetaan Data Kriminal Indonesia'),
+                    'value' => $this->settingsService->getSetting('app_description', 'Sistem Informasi Pemetaan Kerawanan Indonesia'),
                 ],
                 [
                     'key' => 'footer_text',
                     'label' => 'Teks Footer',
                     'description' => 'Teks yang ditampilkan di footer aplikasi',
                     'type' => 'text',
-                    'value' => $this->settingsService->getSetting('footer_text', 'Peta Kriminal Indonesia © 2024'),
+                    'value' => $this->settingsService->getSetting('footer_text', 'Pemetaan Kerawanan © 2024'),
                 ],
             ],
             'license' => [
@@ -261,8 +261,8 @@ class AppSettingController extends Controller
 
     public function getManifest()
     {
-        $appName = $this->settingsService->getSetting('app_name', config('app.name', 'Crime Map'));
-        $appDescription = $this->settingsService->getSetting('app_description', 'Aplikasi Peta Kriminalitas & Bencana');
+        $appName = $this->settingsService->getSetting('app_name', config('app.name', 'Pemetaan Kerawanan'));
+        $appDescription = $this->settingsService->getSetting('app_description', 'Aplikasi Pemetaan Kerawanan');
         $favicon = $this->settingsService->getSetting('app_favicon', '/favicon.ico');
 
         $manifest = [

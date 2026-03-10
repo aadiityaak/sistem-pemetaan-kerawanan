@@ -1,7 +1,7 @@
 @echo off
 REM Script untuk menjalankan semua tests dan linting di Windows
 
-echo 🚀 Running Crime Map Test Suite
+echo 🚀 Running Pemetaan Kerawanan Test Suite
 echo ================================
 
 REM 1. PHP Code Style Check

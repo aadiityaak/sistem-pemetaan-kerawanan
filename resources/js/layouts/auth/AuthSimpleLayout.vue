@@ -139,7 +139,7 @@ onUnmounted(() => {
                     </div>
                     <div class="text-center">
                         <h1 class="glitch-text font-mono text-3xl font-bold tracking-wider text-green-400">
-                            {{ appSettings.app_name || 'CRIME MAP' }}
+                            {{ appSettings.app_name || 'PEMETAAN KERAWANAN' }}
                         </h1>
                     </div>
                 </Link>

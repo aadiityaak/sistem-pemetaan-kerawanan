@@ -8,7 +8,7 @@ const page = usePage<AppPageProps>();
 
 // Computed values for app settings with fallbacks
 const appName = computed(() => {
-    return page.props.appSettings?.app_name || 'Peta Kriminal Indonesia';
+    return page.props.appSettings?.app_name || 'Pemetaan Kerawanan';
 });
 
 const appLogo = computed(() => {

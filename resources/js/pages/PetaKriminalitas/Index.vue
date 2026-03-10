@@ -1,5 +1,5 @@
 <template>
-    <Head title="Peta Kriminalitas Indonesia" />
+    <Head title="Pemetaan Kerawanan Indonesia" />
 
     <AppLayout>
         <template #breadcrumbs>
@@ -11,7 +11,7 @@
                 <!-- Header -->
                 <div class="flex items-center justify-between">
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Peta Kriminalitas Indonesia</h1>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Pemetaan Kerawanan Indonesia</h1>
                         <p class="text-gray-600 dark:text-gray-400">Data resmi dari Pusiknas Bareskrim Polri</p>
                     </div>
 
@@ -45,8 +45,8 @@
                                     <Shield class="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <div>
-                                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Dashboard Peta Kriminalitas</h3>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Peta Kriminalitas Indonesia - Data Interaktif</p>
+                                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Dashboard Pemetaan Kerawanan</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Pemetaan Kerawanan Indonesia - Data Interaktif</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
@@ -127,7 +127,7 @@
                                 </div>
                                 <div>
                                     <h3 class="text-xl font-bold text-gray-900 dark:text-white">Pusiknas Bareskrim Polri</h3>
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Peta Kriminalitas Indonesia - Dashboard Resmi</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Pemetaan Kerawanan Indonesia - Dashboard Resmi</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
@@ -156,7 +156,7 @@
                                 <div class="aspect-video bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-lg flex items-center justify-center">
                                     <div class="text-center">
                                         <Map class="h-16 w-16 text-blue-500 dark:text-blue-400 mx-auto mb-3" />
-                                        <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Peta Kriminalitas Interaktif</h4>
+                                        <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Pemetaan Kerawanan Interaktif</h4>
                                         <p class="text-sm text-gray-500 dark:text-gray-400">Visualisasi data real-time keamanan Indonesia</p>
                                     </div>
                                 </div>
@@ -264,7 +264,7 @@ import { Shield, ExternalLink, RefreshCw, AlertTriangle, Info, Map, BarChart3, T
 // Breadcrumbs
 const breadcrumbItems: BreadcrumbItem[] = [
     { title: 'Dashboard', href: route('dashboard') },
-    { title: 'Peta Kriminalitas', href: '#' }
+    { title: 'Pemetaan Kerawanan', href: '#' }
 ];
 
 // Reactive state

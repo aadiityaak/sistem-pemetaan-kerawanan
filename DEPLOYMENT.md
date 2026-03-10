@@ -1,4 +1,4 @@
-# Crime Map - Deployment Guide untuk Shared Hosting
+# Pemetaan Kerawanan - Deployment Guide untuk Shared Hosting
 
 ## Quick Start - Automated Build
 
@@ -157,7 +157,7 @@ Jika ingin deploy manual tanpa script otomatis:
 1. **Edit file .env di /home/username/laravel-app/.env**
 
     ```env
-    APP_NAME="Crime Map"
+    APP_NAME="Pemetaan Kerawanan"
     APP_ENV=production
     APP_KEY=base64:GENERATE_NEW_KEY
     APP_DEBUG=false

@@ -1,8 +1,8 @@
-# 🗺️ Crime Map - Sistem Pemetaan Kejahatan Indonesia
+# 🗺️ Pemetaan Kerawanan - Sistem Pemetaan Kerawanan Indonesia
 
 <div align="center">
 
-![Crime Map Dashboard](https://img.shields.io/badge/Crime%20Map-Dashboard-red?style=for-the-badge)
+![Pemetaan Kerawanan Dashboard](https://img.shields.io/badge/Pemetaan%20Kerawanan-Dashboard-red?style=for-the-badge)
 ![Laravel](https://img.shields.io/badge/Laravel-11.x-red?style=for-the-badge&logo=laravel)
 ![Vue.js](https://img.shields.io/badge/Vue.js-3.x-green?style=for-the-badge&logo=vue.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript)
@@ -18,23 +18,23 @@ _Sistem informasi pemetaan dan monitoring kejahatan berbasis web dengan visualis
 
 ## 📋 Deskripsi
 
-**Crime Map** adalah aplikasi web modern untuk pemetaan dan monitoring data kejahatan di Indonesia. Aplikasi ini menyediakan visualisasi interaktif menggunakan peta Leaflet, dashboard statistik komprehensif, dan sistem manajemen data yang user-friendly.
+**Pemetaan Kerawanan** adalah aplikasi web modern untuk pemetaan dan monitoring data kerawanan di Indonesia. Aplikasi ini menyediakan visualisasi interaktif menggunakan peta Leaflet, dashboard statistik komprehensif, dan sistem manajemen data yang user-friendly.
 
 ### 🎯 Tujuan Aplikasi
 
-- **Visualisasi Data Kejahatan**: Menampilkan data kejahatan secara visual pada peta interaktif
-- **Monitoring Real-time**: Dashboard statistik untuk monitoring tren kejahatan
-- **Manajemen Data**: Interface admin untuk mengelola data wilayah dan kejahatan
-- **Analisis Geografis**: Analisis sebaran kejahatan berdasarkan wilayah administratif
+- **Visualisasi Data Kerawanan**: Menampilkan data kerawanan secara visual pada peta interaktif
+- **Monitoring Real-time**: Dashboard statistik untuk monitoring tren kerawanan
+- **Manajemen Data**: Interface admin untuk mengelola data wilayah dan kerawanan
+- **Analisis Geografis**: Analisis sebaran kerawanan berdasarkan wilayah administratif
 
 ---
 
 ## ✨ Fitur Unggulan
 
-### 🗺️ **Interactive Crime Mapping**
+### 🗺️ **Interactive Mapping**
 
 - Peta Indonesia interaktif dengan Leaflet.js
-- 16+ ikon kejahatan berbeda per jenis crime
+- 16+ ikon kerawanan berbeda per jenis
 - Click & drag untuk lokasi coordinates
 - Auto-center berdasarkan provinsi
 - Responsive design untuk mobile & desktop
@@ -52,7 +52,7 @@ _Sistem informasi pemetaan dan monitoring kejahatan berbasis web dengan visualis
 - Pagination 50 items per halaman
 - Advanced filtering berdasarkan:
     - Provinsi, Kabupaten/Kota, Kecamatan
-    - Jenis kejahatan
+    - Jenis kerawanan
     - Koordinat geografis
 
 ### 🏛️ **Comprehensive Data Management**
@@ -60,7 +60,7 @@ _Sistem informasi pemetaan dan monitoring kejahatan berbasis web dengan visualis
 - **Provinsi**: 38 provinsi Indonesia lengkap
 - **Kabupaten/Kota**: 514+ kabupaten/kota
 - **Kecamatan**: 7,288+ kecamatan
-- **Data Kejahatan**: CRUD lengkap dengan coordinate mapping
+- **Data Kerawanan**: CRUD lengkap dengan coordinate mapping
 
 ### 📊 **INDAS - Intelligence Data Analysis System**
 

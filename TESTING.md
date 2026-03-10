@@ -1,6 +1,6 @@
-# 🧪 Crime Map - Test & Lint Configuration
+# 🧪 Pemetaan Kerawanan - Test & Lint Configuration
 
-Konfigurasi ini mencakup setup lengkap untuk testing dan linting pada proyek Crime Map Laravel + Vue.js.
+Konfigurasi ini mencakup setup lengkap untuk testing dan linting pada proyek Pemetaan Kerawanan Laravel + Vue.js.
 
 ## 📋 Overview
 

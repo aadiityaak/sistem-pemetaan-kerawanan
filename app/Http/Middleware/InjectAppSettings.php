@@ -19,9 +19,9 @@ class InjectAppSettings
     {
         // Get app settings with defaults and inject to all Inertia responses
         $defaultSettings = [
-            'app_name' => 'Peta Kriminal Indonesia',
-            'app_description' => 'Sistem Informasi Pemetaan Data Kriminal Indonesia',
-            'footer_text' => 'Peta Kriminal Indonesia © 2024',
+            'app_name' => 'Pemetaan Kerawanan',
+            'app_description' => 'Sistem Informasi Pemetaan Kerawanan Indonesia',
+            'footer_text' => 'Pemetaan Kerawanan © 2024',
             'app_favicon' => '/favicon.ico',
             'app_logo' => '',
             'login_logo' => '',

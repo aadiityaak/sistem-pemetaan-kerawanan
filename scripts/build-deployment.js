@@ -4,7 +4,7 @@ import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, write
 import JSZip from 'jszip';
 import { dirname, join, resolve } from 'path';
 
-console.log('🚀 Building deployment package for Crime Map...\n');
+console.log('🚀 Building deployment package for Pemetaan Kerawanan...\n');
 
 const projectRoot = resolve(process.cwd());
 const buildDir = join(projectRoot, 'build-deployment');
@@ -225,7 +225,7 @@ if (existsSync(sourceEnvProd)) {
     console.log('   ✓ Copied existing .env.production');
 } else {
     // Create .env.production template if not exists
-    const envTemplate = `APP_NAME="Crime Map"
+    const envTemplate = `APP_NAME="Pemetaan Kerawanan"
 APP_ENV=production
 APP_KEY=base64:GENERATE_NEW_KEY_HERE
 APP_DEBUG=false
@@ -295,7 +295,7 @@ console.log('📝 Creating deployment instructions...');
 const instructions = `// Create deployment instructions
 console.log('📝 Creating deployment instructions...');
 const deploymentInstructions = [
-    '# Crime Map Deployment Instructions',
+    '# Pemetaan Kerawanan Deployment Instructions',
     '',
     '## File Structure Setelah Upload:',
     '/root-hosting-directory/',

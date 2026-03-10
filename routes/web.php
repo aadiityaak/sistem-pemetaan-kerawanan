@@ -169,7 +169,7 @@ Route::middleware(['auth', 'verified'])->prefix('data-center')->name('data-cente
     })->name('war-monitor');
 });
 
-// Peta Kriminalitas Route
+// Pemetaan Kerawanan Route
 Route::get('peta-kriminalitas', [PetaKriminalitasController::class, 'index'])->middleware(['auth', 'verified'])->name('peta-kriminalitas.index');
 
 // Proxy route untuk Pusiknas (dengan rate limiting untuk mencegah abuse)

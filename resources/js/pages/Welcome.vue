@@ -8,7 +8,7 @@ const page = usePage<AppPageProps>();
 
 // Computed values for app settings with fallbacks
 const appName = computed(() => {
-    return page.props.appSettings?.app_name || 'Peta Kriminal Indonesia';
+    return page.props.appSettings?.app_name || 'Pemetaan Kerawanan';
 });
 
 const appDescription = computed(() => {
@@ -45,7 +45,7 @@ const appLogo = computed(() => {
                     </div>
                     <div>
                         <h1 class="text-xl font-bold text-gray-900 dark:text-white">{{ appName }}</h1>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Crime Mapping System</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Sistem Pemetaan Kerawanan</p>
                     </div>
                 </div>
 

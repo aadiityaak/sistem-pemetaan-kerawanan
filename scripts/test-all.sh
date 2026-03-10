@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Script untuk menjalankan semua tests dan linting
 
-echo "🚀 Running Crime Map Test Suite"
+echo "🚀 Running Pemetaan Kerawanan Test Suite"
 echo "================================"
 
 # Colors for output

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Crime Map is a Laravel-Vue crime mapping application for Indonesia with interactive Leaflet maps, dashboard analytics, and comprehensive regional data management. The app visualizes crime data on an interactive map of Indonesia with statistics and filtering capabilities.
+Pemetaan Kerawanan is a Laravel-Vue mapping application for Indonesia with interactive Leaflet maps, dashboard analytics, and comprehensive regional data management. The app visualizes data on an interactive map of Indonesia with statistics and filtering capabilities.
 
 **IMPORTANT LANGUAGE REQUIREMENT**: This is an Indonesian web system. All user-facing text, labels, buttons, messages, and content should be in Indonesian (Bahasa Indonesia). Only use English for technical code comments, variable names, and internal documentation.
 
