@@ -32,7 +32,7 @@ class AppSettingSeeder extends Seeder
       ],
       [
         'key' => 'app_name',
-        'value' => 'Sistem Pemetaan Kerawanan Daerah di Indonesia',
+        'value' => 'Pemetaan Kerawanan',
         'type' => 'text',
         'group' => 'general',
         'label' => 'App Name',
@@ -40,7 +40,7 @@ class AppSettingSeeder extends Seeder
       ],
       [
         'key' => 'app_description',
-        'value' => 'Sistem Pemetaan Kerawanan Daerah di Indonesia - Platform pemetaan data kriminalitas untuk analisis dan monitoring keamanan wilayah',
+        'value' => 'Sistem Pemetaan Kerawanan - Platform pemetaan data kerawanan untuk analisis dan monitoring keamanan wilayah',
         'type' => 'text',
         'group' => 'general',
         'label' => 'App Description',

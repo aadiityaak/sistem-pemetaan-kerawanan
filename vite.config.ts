@@ -29,12 +29,11 @@ export default defineConfig({
                 type: 'module',
             },
             workbox: {
-                globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+                globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
                 cleanupOutdatedCaches: true,
                 clientsClaim: true,
                 skipWaiting: true,
-                navigateFallback: '/',
-                navigateFallbackAllowlist: [/^(?!\/__).*/],
+                navigateFallback: null, // Matikan fallback ke / jika tidak di-precache
                 runtimeCaching: [
                     {
                         urlPattern: ({ request }) => request.mode === 'navigate',

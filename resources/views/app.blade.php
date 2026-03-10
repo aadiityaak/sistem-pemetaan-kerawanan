@@ -35,8 +35,6 @@
         }
     </style>
 
-    <title inertia>{{ config('app.name', 'Pemetaan Kerawanan') }}</title>
-
     @php
     $faviconSetting = \App\Models\AppSetting::where('key', 'app_favicon')->first();
     $faviconPath = $faviconSetting ? $faviconSetting->value : '/favicon.ico';
@@ -52,14 +50,16 @@
 
     // Use setting's updated_at timestamp for cache busting
     $timestamp = $faviconSetting ? $faviconSetting->updated_at->timestamp : time();
-    $faviconWithTimestamp = $faviconPath . (str_contains($faviconPath, '?') ? '&' : '?') . 'v=' . $timestamp;
-    $logoWithTimestamp = $logoPath . (str_contains($logoPath, '?') ? '&' : '?') . 'v=' . $timestamp;
+    $faviconWithTimestamp = asset($faviconPath) . (str_contains($faviconPath, '?') ? '&' : '?') . 'v=' . $timestamp;
+    $logoWithTimestamp = asset($logoPath) . (str_contains($logoPath, '?') ? '&' : '?') . 'v=' . $timestamp;
 
     // Determine file type
     $isSvg = str_ends_with($faviconPath, '.svg');
     $isPng = str_ends_with($faviconPath, '.png');
     $isJpg = str_ends_with($faviconPath, '.jpg') || str_ends_with($faviconPath, '.jpeg');
     @endphp
+
+    <title inertia>{{ $appName }}</title>
 
     {{-- Open Graph / Facebook --}}
     <meta property="og:type" content="website">
