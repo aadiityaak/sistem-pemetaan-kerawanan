@@ -88,7 +88,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-const appName = import.meta.env.VITE_APP_NAME || 'Pemetaan Kerawanan';
+const appName = 'Pemetaan Kerawanan';
 
 // Initialize PWA install prompt listener
 const { initPWA } = usePWA();

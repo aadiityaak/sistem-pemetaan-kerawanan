@@ -36,17 +36,14 @@
     </style>
 
     @php
+    $appName = 'Pemetaan Kerawanan';
+    $appDesc = 'Sistem Informasi Pemetaan Kerawanan Indonesia';
+
     $faviconSetting = \App\Models\AppSetting::where('key', 'app_favicon')->first();
     $faviconPath = $faviconSetting ? $faviconSetting->value : '/favicon.ico';
 
     $logoSetting = \App\Models\AppSetting::where('key', 'app_logo')->first();
     $logoPath = $logoSetting ? $logoSetting->value : '/Logo.webp';
-
-    $appNameSetting = \App\Models\AppSetting::where('key', 'app_name')->first();
-    $appName = $appNameSetting ? $appNameSetting->value : config('app.name', 'Pemetaan Kerawanan');
-
-    $appDescSetting = \App\Models\AppSetting::where('key', 'app_description')->first();
-    $appDesc = $appDescSetting ? $appDescSetting->value : 'Platform pemetaan data untuk analisis dan monitoring keamanan wilayah';
 
     // Use setting's updated_at timestamp for cache busting
     $timestamp = $faviconSetting ? $faviconSetting->updated_at->timestamp : time();
