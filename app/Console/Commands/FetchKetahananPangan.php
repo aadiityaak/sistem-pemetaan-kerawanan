@@ -21,6 +21,9 @@ class FetchKetahananPangan extends Command
 
     private function fetchHargaPetaProvinsi(): void
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $apiKey = $settingsService->getSetting('license_key', config('app.license_key') ?: env('KEY_API'));
+
         $params = [
             'level_harga_id' => 3,
             'komoditas_id' => 35,
@@ -36,6 +39,8 @@ class FetchKetahananPangan extends Command
             'Referer' => 'https://panelharga.badanpangan.go.id/beranda',
             'User-Agent' => 'Mozilla/5.0',
             'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $apiKey,
+            'x-api-key' => $apiKey,
         ])->timeout(60)->get($url);
 
         if ($response->successful()) {
@@ -51,6 +56,9 @@ class FetchKetahananPangan extends Command
 
     private function fetchHargaInformasi(): void
     {
+        $settingsService = app(\App\Services\SettingsService::class);
+        $apiKey = $settingsService->getSetting('license_key', config('app.license_key') ?: env('KEY_API'));
+
         $params = [
             'province_id' => '',
             'city_id' => '',
@@ -64,6 +72,8 @@ class FetchKetahananPangan extends Command
             'Referer' => 'https://panelharga.badanpangan.go.id/beranda',
             'User-Agent' => 'Mozilla/5.0',
             'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $apiKey,
+            'x-api-key' => $apiKey,
         ])->timeout(60)->get($url);
 
         if ($response->successful()) {

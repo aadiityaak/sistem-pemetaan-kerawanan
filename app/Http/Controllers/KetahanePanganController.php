@@ -27,6 +27,9 @@ class KetahanePanganController extends Controller
     {
         // Simply proxy the request to external API
         try {
+            $settingsService = app(\App\Services\SettingsService::class);
+            $apiKey = $settingsService->getSetting('license_key', config('app.license_key') ?: env('KEY_API'));
+
             // Build query parameters manually to avoid encoding issues
             $params = [
                 'level_harga_id' => $request->get('level_harga_id', 3),
@@ -43,6 +46,8 @@ class KetahanePanganController extends Controller
                 'Referer' => 'https://panelharga.badanpangan.go.id/beranda',
                 'User-Agent' => 'Mozilla/5.0',
                 'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $apiKey,
+                'x-api-key' => $apiKey, // Menambahkan kedua kemungkinan header
             ])->timeout(30)->get($url);
 
             $endpoint = 'harga_peta_provinsi';
@@ -88,6 +93,9 @@ class KetahanePanganController extends Controller
     public function getHargaInformasi(Request $request)
     {
         try {
+            $settingsService = app(\App\Services\SettingsService::class);
+            $apiKey = $settingsService->getSetting('license_key', config('app.license_key') ?: env('KEY_API'));
+
             $params = [
                 'province_id' => $request->get('province_id', ''),
                 'city_id' => $request->get('city_id', ''),
@@ -101,6 +109,8 @@ class KetahanePanganController extends Controller
                 'Referer' => 'https://panelharga.badanpangan.go.id/beranda',
                 'User-Agent' => 'Mozilla/5.0',
                 'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $apiKey,
+                'x-api-key' => $apiKey,
             ])->timeout(30)->get($url);
 
             $endpoint = 'harga_pangan_informasi';

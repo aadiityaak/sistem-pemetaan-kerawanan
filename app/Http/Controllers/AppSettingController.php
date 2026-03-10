@@ -46,11 +46,18 @@ class AppSettingController extends Controller
             ],
             'license' => [
                 [
+                    'key' => 'license_key',
+                    'label' => 'API Key / License Key',
+                    'description' => 'Masukkan API Key yang valid untuk akses data eksternal.',
+                    'type' => 'password',
+                    'value' => $this->settingsService->getSetting('license_key', ''),
+                ],
+                [
                     'key' => 'license_expires_at',
-                    'label' => 'License Key / Expiry Date',
-                    'description' => 'Masukkan license key yang valid untuk memperbarui masa aktif lisensi.',
+                    'label' => 'Masa Berlaku Lisensi',
+                    'description' => 'Tanggal kedaluwarsa lisensi (diperbarui otomatis saat API Key valid dimasukkan).',
                     'type' => 'text',
-                    'value' => $this->settingsService->getSetting('license_expires_at', ''),
+                    'value' => $this->settingsService->getSetting('license_expires_at', '2029-02-19'),
                 ],
             ],
             'appearance' => [
@@ -133,6 +140,7 @@ class AppSettingController extends Controller
             'gemini_enabled',
             'gemini_api_endpoint',
             'gemini_api_key',
+            'license_key',
             'license_expires_at',
         ];
 
@@ -162,6 +170,7 @@ class AppSettingController extends Controller
             'gemini_enabled' => 'Aktifkan Gemini AI',
             'gemini_api_endpoint' => 'Gemini API Endpoint',
             'gemini_api_key' => 'Gemini API Key',
+            'license_key' => 'API Key / License Key',
             'license_expires_at' => 'Tanggal Expired Lisensi',
         ];
 
@@ -171,7 +180,7 @@ class AppSettingController extends Controller
             $settingType = 'image';
         } elseif ($key === 'gemini_enabled') {
             $settingType = 'boolean';
-        } elseif ($key === 'gemini_api_key') {
+        } elseif ($key === 'gemini_api_key' || $key === 'license_key') {
             $settingType = 'password';
         }
 
@@ -181,20 +190,28 @@ class AppSettingController extends Controller
             $settingGroup = 'appearance';
         } elseif (in_array($key, ['gemini_enabled', 'gemini_api_endpoint', 'gemini_api_key'])) {
             $settingGroup = 'ai';
-        } elseif ($key === 'license_expires_at') {
+        } elseif ($key === 'license_expires_at' || $key === 'license_key') {
             $settingGroup = 'license';
         }
 
         $value = $request->get('value');
-        if ($key === 'license_expires_at') {
+        if ($key === 'license_key') {
             $token = (string) ($value ?? '');
             $envKey = config('app.license_key') ?: env('KEY_API');
-            $currentValue = $this->settingsService->getSetting('license_expires_at', '');
 
-            // Jika token cocok dengan KEY_API, perbarui tanggal expired (Prioritas Utama)
+            // Simpan license_key asli (sesuai permintaan user)
+            // Namun tetap perbarui license_expires_at jika cocok dengan KEY_API
             if ($envKey && $token === $envKey) {
                 $envExpiry = config('app.license_expired_date') ?: env('EXPIRED_DATE');
-                $value = $envExpiry ?: now()->addYears(3)->toDateString();
+                $expiryValue = $envExpiry ?: now()->addYears(3)->toDateString();
+
+                AppSetting::set(
+                    'license_expires_at',
+                    $expiryValue,
+                    'text',
+                    'license',
+                    'Tanggal Expired Lisensi'
+                );
 
                 AppSetting::set(
                     'license_key_hash',
@@ -204,24 +221,11 @@ class AppSettingController extends Controller
                     'License Key Hash'
                 );
             }
-            // Jika token adalah tanggal yang sudah tersimpan (format YYYY-MM-DD), biarkan
-            elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $token)) {
-                $value = $token;
-            }
-            // Jika token kosong tapi sudah ada data tersimpan, biarkan (jangan dihapus)
-            elseif (empty($token) && ! empty($currentValue)) {
-                $value = $currentValue;
-            }
-            // Selain itu, anggap token tidak valid
-            else {
-                Log::warning('Invalid license token provided', [
-                    'provided_token_length' => strlen($token),
-                    'is_empty' => empty($token),
-                    'env_key_set' => ! empty($envKey),
-                    'env_key_length' => $envKey ? strlen($envKey) : 0,
-                ]);
-
-                return redirect()->route('settings.index')->with('error', 'Token lisensi tidak valid atau lisensi telah expired.');
+        } elseif ($key === 'license_expires_at') {
+            // Biarkan admin mengedit manual jika perlu, tapi biasanya otomatis
+            $token = (string) ($value ?? '');
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $token) && !empty($token)) {
+                return redirect()->route('settings.index')->with('error', 'Format tanggal harus YYYY-MM-DD');
             }
         }
 
