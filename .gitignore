@@ -27,3 +27,4 @@ crime-map-deployment.zip
 temp-check/
 deployment-temp/
 /.claude
+dist_electron/

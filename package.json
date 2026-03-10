@@ -1,6 +1,11 @@
 {
+    "name": "pemetaan-kerawanan",
+    "version": "1.0.1",
+    "description": "Aplikasi Pemetaan Kerawanan Daerah",
+    "author": "Websweet Studio <websweetstudio@gmail.com>",
     "private": true,
     "type": "module",
+    "main": "electron/main.js",
     "scripts": {
         "build": "vite build --logLevel warn",
         "build:ssr": "vite build && vite build --ssr",
@@ -20,7 +25,9 @@
         "test:all": "npm run test && npm run lint:php:check && npm run build",
         "test:all:with-php": "npm run test:all && npm run test:php",
         "ci": "npm run test:all",
-        "fix": "npm run lint && npm run format && npm run lint:php"
+        "fix": "npm run lint && npm run format && npm run lint:php",
+        "electron:dev": "cross-env NODE_ENV=development electron .",
+        "electron:build": "npm run build && electron-builder"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",
@@ -28,6 +35,8 @@
         "@types/node": "^22.13.5",
         "@types/sortablejs": "^1.15.8",
         "@vue/eslint-config-typescript": "^14.3.0",
+        "electron": "^40.8.0",
+        "electron-builder": "^26.8.1",
         "eslint": "^9.17.0",
         "eslint-config-prettier": "^10.0.1",
         "eslint-plugin-vue": "^9.32.0",
@@ -75,5 +84,23 @@
         "@rollup/rollup-linux-x64-gnu": "4.9.5",
         "@tailwindcss/oxide-linux-x64-gnu": "^4.0.1",
         "lightningcss-linux-x64-gnu": "^1.29.1"
+    },
+    "build": {
+        "appId": "com.pemetaankerawanan.app",
+        "productName": "Pemetaan Kerawanan",
+        "directories": {
+            "output": "dist_electron"
+        },
+        "files": [
+            "electron/**/*"
+        ],
+        "win": {
+            "target": "nsis",
+            "icon": "public/android-chrome-512x512.png"
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true
+        }
     }
 }
