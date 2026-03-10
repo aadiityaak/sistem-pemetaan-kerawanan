@@ -9,7 +9,7 @@ function createWindow() {
     const win = new BrowserWindow({
         width: 1200,
         height: 800,
-        icon: path.join(__dirname, '../public/android-chrome-512x512.png'),
+        icon: path.join(__dirname, '../public/windows.png'),
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,

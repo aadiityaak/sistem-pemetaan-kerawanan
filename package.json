@@ -1,6 +1,6 @@
 {
     "name": "pemetaan-kerawanan",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Aplikasi Pemetaan Kerawanan Daerah",
     "author": "Websweet Studio <websweetstudio@gmail.com>",
     "private": true,
@@ -96,7 +96,7 @@
         ],
         "win": {
             "target": "nsis",
-            "icon": "public/android-chrome-512x512.png"
+            "icon": "public/windows.png"
         },
         "nsis": {
             "oneClick": false,
