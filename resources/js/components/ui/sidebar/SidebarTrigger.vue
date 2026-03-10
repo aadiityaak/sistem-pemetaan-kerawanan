@@ -3,14 +3,21 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import type { HTMLAttributes } from 'vue'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Menu, Download, ExternalLink } from 'lucide-vue-next'
+import { Menu, Download, ExternalLink, Moon, Sun } from 'lucide-vue-next'
 import { useSidebar } from './utils'
+import { useAppearance } from '@/composables/useAppearance'
 
 const props = defineProps<{
   class?: HTMLAttributes['class']
 }>()
 
 const { toggleSidebar } = useSidebar()
+const { appearance, updateAppearance } = useAppearance()
+
+const toggleTheme = () => {
+  const nextTheme = appearance.value === 'dark' ? 'light' : 'dark'
+  updateAppearance(nextTheme)
+}
 
 const deferredPrompt = ref<any>(null)
 const showInstallButton = ref(false)
@@ -88,6 +95,17 @@ onUnmounted(() => {
     >
       <ExternalLink class="h-6 w-6 sm:h-4 sm:w-4" />
       <span class="text-sm font-medium whitespace-nowrap sm:sr-only">Buka di App</span>
+    </Button>
+    <!-- theme toggle -->
+    <Button
+      variant="ghost"
+      :class="cn('!flex !items-center !justify-center gap-2 h-9 px-3 min-w-fit sm:h-7 sm:w-7 sm:px-0 sm:gap-0', props.class)"
+      title="Toggle Theme"
+      @click="toggleTheme"
+    >
+      <Sun v-if="appearance === 'dark'" class="h-6 w-6 sm:h-4 sm:w-4" />
+      <Moon v-else class="h-6 w-6 sm:h-4 sm:w-4" />
+      <span class="text-sm font-medium whitespace-nowrap sm:sr-only">Mode {{ appearance === 'dark' ? 'Terang' : 'Gelap' }}</span>
     </Button>
 
     <Button
