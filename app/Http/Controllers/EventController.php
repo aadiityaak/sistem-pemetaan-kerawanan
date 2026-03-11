@@ -19,18 +19,18 @@ class EventController extends Controller
         // Get current month and year or from request
         $currentDate = $request->get('date', now()->format('Y-m'));
         $date = Carbon::createFromFormat('Y-m', $currentDate)->startOfMonth();
-        
+
         // Get event filter parameter
         $eventFilter = $request->get('event'); // kamtibmas, agenda, etc.
         $categoryFilter = $request->get('category'); // direct category filter
         $agendaType = $request->get('agenda_type'); // nasional, internasional (for agenda filter)
-        
+
         // Get events for the current view (month view - get events for 6 weeks around the month)
         $startDate = $date->copy()->startOfMonth()->startOfWeek();
         $endDate = $date->copy()->endOfMonth()->endOfWeek();
-        
+
         $eventsQuery = Event::active()->inDateRange($startDate, $endDate);
-        
+
         // Filter by direct category if specified
         if ($categoryFilter) {
             $eventsQuery->where('category', $categoryFilter);
@@ -64,9 +64,9 @@ class EventController extends Controller
                     break;
             }
         }
-        
+
         $events = $eventsQuery->orderBy('start_date')->get();
-        
+
         // Debug: Log the query details
         \Log::info('Calendar Events Query:', [
             'current_date' => $currentDate,
@@ -75,7 +75,7 @@ class EventController extends Controller
             'events_found' => $events->count(),
             'all_active_events' => Event::active()->count()
         ]);
-        
+
         $events = $events
             ->map(function ($event) {
                 return [
@@ -95,12 +95,11 @@ class EventController extends Controller
         $monthlyEventsQuery = Event::active()
             ->whereMonth('start_date', $date->month)
             ->whereYear('start_date', $date->year);
-            
+
         // Apply same filter for statistics
         if ($categoryFilter) {
             $monthlyEventsQuery->where('category', $categoryFilter);
-        }
-        else if ($eventFilter) {
+        } else if ($eventFilter) {
             switch ($eventFilter) {
                 case 'kamtibmas':
                     $monthlyEventsQuery->where('category', 'Kamtibmas');
@@ -127,20 +126,20 @@ class EventController extends Controller
                     break;
             }
         }
-        
+
         $monthlyEvents = $monthlyEventsQuery->get();
 
         $statistics = [
             'totalEvents' => $monthlyEvents->count(),
             'upcomingEvents' => $monthlyEvents->where('start_date', '>=', now()->format('Y-m-d'))->count(),
             'activeEvents' => $monthlyEvents->where('start_date', '<=', now()->format('Y-m-d'))
-                                          ->where('end_date', '>=', now()->format('Y-m-d'))->count(),
+                ->where('end_date', '>=', now()->format('Y-m-d'))->count(),
         ];
 
-        // Get Indonesian holidays (only for Kamtibmas view)
+        // Get Indonesian holidays (for Kamtibmas and Agenda views)
         $holidays = [];
-        if ($eventFilter === 'kamtibmas' || $categoryFilter === 'Kamtibmas') {
-            $holidays = $this->getIndonesianHolidays($date->year);
+        if (!$eventFilter || in_array($eventFilter, ['kamtibmas', 'agenda']) || $categoryFilter === 'Kamtibmas') {
+            $holidays = $this->getIndonesianHolidays($date->year, $date->month);
         }
 
         return Inertia::render('KamtibmasCalendar/Index', [
@@ -267,35 +266,38 @@ class EventController extends Controller
     /**
      * Get Indonesian holidays from API
      */
-    private function getIndonesianHolidays($year = null)
+    private function getIndonesianHolidays($year = null, $month = null)
     {
         $year = $year ?? now()->year;
-        $cacheKey = "indonesian_holidays_{$year}";
-        
+        $cacheKey = "indonesian_holidays_{$year}" . ($month ? "_{$month}" : "");
+
         // Cache holidays for 1 day to avoid excessive API calls
-        return Cache::remember($cacheKey, now()->addDay(), function () use ($year) {
+        return Cache::remember($cacheKey, now()->addDay(), function () use ($year, $month) {
             try {
-                $response = Http::timeout(10)->get('https://api-harilibur.vercel.app/api');
-                
+                // Build query parameters
+                $params = ['year' => $year];
+                if ($month) {
+                    $params['month'] = $month;
+                }
+
+                // Fetch from the specific API requested by the user with dynamic params
+                $response = Http::timeout(10)->get('https://hari-libur-api.vercel.app/api', $params);
+
                 if ($response->successful()) {
                     $holidays = collect($response->json())
-                        ->filter(function ($holiday) use ($year) {
-                            // Filter holidays for the specified year
-                            return Carbon::parse($holiday['holiday_date'])->year === $year;
-                        })
                         ->map(function ($holiday) {
-                            $date = Carbon::parse($holiday['holiday_date']);
+                            $date = Carbon::parse($holiday['event_date']);
                             return [
-                                'id' => 'holiday_' . $date->format('Y_m_d'),
-                                'title' => $holiday['holiday_name'],
+                                'id' => 'holiday_' . $date->format('Y_m_d') . '_' . uniqid(),
+                                'title' => $holiday['event_name'],
                                 'start' => $date->format('Y-m-d'),
                                 'end' => $date->format('Y-m-d'),
-                                'description' => $holiday['is_national_holiday'] 
-                                    ? 'Hari Libur Nasional' 
-                                    : 'Hari Besar Agama',
-                                'color' => $holiday['is_national_holiday'] 
+                                'description' => $holiday['is_national_holiday']
+                                    ? 'Hari Libur Nasional'
+                                    : 'Hari Besar / Penting',
+                                'color' => $holiday['is_national_holiday']
                                     ? '#DC2626' // Red for national holidays
-                                    : '#F59E0B', // Orange for religious holidays
+                                    : '#6B7280', // Gray for other important days
                                 'isHoliday' => true,
                                 'isNationalHoliday' => $holiday['is_national_holiday'],
                                 'isMultiDay' => false,
@@ -304,13 +306,12 @@ class EventController extends Controller
                         })
                         ->values()
                         ->toArray();
-                    
+
                     return $holidays;
                 }
-                
+
                 // Return empty array if API fails
                 return [];
-                
             } catch (\Exception $e) {
                 // Log the error and return empty array
                 \Log::warning('Failed to fetch Indonesian holidays: ' . $e->getMessage());

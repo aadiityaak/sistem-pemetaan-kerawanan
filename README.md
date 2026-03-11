@@ -62,6 +62,13 @@ _Sistem informasi pemetaan dan monitoring kejahatan berbasis web dengan visualis
 - **Kecamatan**: 7,288+ kecamatan
 - **Data Kerawanan**: CRUD lengkap dengan coordinate mapping
 
+### 📅 **Kalender Kamtibmas & Agenda**
+
+- **Kalender Interaktif**: Monitoring kegiatan Kamtibmas dan Agenda Nasional/Internasional.
+- **Integrasi Hari Libur**: Otomatis menampilkan hari libur nasional Indonesia melalui API real-time.
+- **Kategorisasi Event**: Filter berdasarkan Kamtibmas, Agenda Nasional, Internasional, dan Agenda Internal.
+- **Manajemen Event**: CRUD lengkap untuk pengelolaan jadwal kegiatan operasional.
+
 ### 📊 **INDAS - Intelligence Data Analysis System**
 
 - **Dashboard Analitis**: Sistem analisis data intelijen untuk nilai langsung indikator
