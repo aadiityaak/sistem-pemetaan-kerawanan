@@ -1526,7 +1526,7 @@ watch(searchQuery, () => {
                                     :d="provinceCode.path"
                                     :fill="getProvinceColor(provinceCode.name)"
                                     :stroke="targetZoomProvinces.some(p => p.id === provinceCode.id) ? '#1e3a8a' : '#ffffff'"
-                                    :stroke-width="targetZoomProvinces.some(p => p.id === provinceCode.id) ? '2' : '0.5'"
+                                    :stroke-width="targetZoomProvinces.some(p => p.id === provinceCode.id) ? '0.4' : '0.1'"
                                     stroke-linejoin="round"
                                     class="cursor-pointer transition-all hover:stroke-gray-800"
                                     @click="showProvinceDetail(provinceCode.name)"
