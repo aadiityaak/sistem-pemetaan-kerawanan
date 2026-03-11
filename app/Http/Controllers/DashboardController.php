@@ -212,9 +212,12 @@ class DashboardController extends Controller
 
         // Get user's province information for map centering
         $userProvinsi = null;
-        if ($request->has('province_filter')) {
+        $user = auth()->user();
+        $targetProvinceId = $request->input('province_filter') ?? ($user && $user->role === 'admin' ? $user->provinsi_id : null);
+        
+        if ($targetProvinceId) {
             $userProvinsi = Provinsi::select('id', 'nama', 'latitude', 'longitude')
-                ->find($request->input('province_filter'));
+                ->find($targetProvinceId);
         }
 
         // Get province list for kategori-indas filter

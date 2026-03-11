@@ -124,7 +124,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => {
 let map: any;
 const mapContainer = ref();
 const mapMarkers = ref<any[]>([]);
-const isLeafletMap = ref(false); // Toggle between Leaflet and SVG map
+const isLeafletMap = ref(props.userProvinsi ? true : false); // Toggle between Leaflet and SVG map, default to Leaflet if user has specific province
 const selectedProvince = ref<MonitoringData | null>(null); // For SVG map province selection
 
 // Category color mapping for theming
@@ -194,6 +194,107 @@ const topIssues = computed(() => {
         .filter((data) => data.jumlah_terdampak && data.jumlah_terdampak > 0)
         .sort((a, b) => (b.jumlah_terdampak || 0) - (a.jumlah_terdampak || 0))
         .slice(0, 3);
+});
+
+// Filter SVG provinces based on user region
+// Computed properties for the SVG map
+const filteredProvinces = computed(() => indonesiaProvinces);
+
+// Determine which provinces to zoom into (for regional admin)
+const targetZoomProvinces = computed(() => {
+    // If user is admin and has a provinsi_id, find that province
+    if (currentUser.value.role === 'admin' && currentUser.value.provinsi_id) {
+        const userProvName = props.userProvinsi?.nama?.toUpperCase();
+        if (userProvName) {
+            return indonesiaProvinces.filter((p) => {
+                const svgProvName = p.name.toUpperCase();
+                
+                // 1. Check exact match
+                if (svgProvName === userProvName) return true;
+                
+                // 2. Check using mapping
+                const hasMappingMatch = Object.entries(provinceNameMapping).some(([_, aliases]) => {
+                    const userMatch = aliases.some(a => a.toUpperCase() === userProvName);
+                    const svgMatch = aliases.some(a => a.toUpperCase() === svgProvName);
+                    return userMatch && svgMatch;
+                });
+                if (hasMappingMatch) return true;
+
+                // 3. Check partial match
+                return svgProvName.includes(userProvName) || userProvName.includes(svgProvName);
+            });
+        }
+    }
+
+    // Default to empty (means show full Indonesia)
+    return [];
+});
+
+// Helper function to calculate bounding box of a path
+const getPathBoundingBox = (path: string) => {
+    // Extract all numbers from the path
+    const numbers = path.match(/-?\d+\.?\d*/g);
+    if (!numbers || numbers.length < 2) return null;
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+    for (let i = 0; i < numbers.length; i += 2) {
+        const x = parseFloat(numbers[i]);
+        const y = parseFloat(numbers[i + 1]);
+        if (!isNaN(x) && !isNaN(y)) {
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
+        }
+    }
+
+    return { minX, minY, maxX, maxY };
+};
+
+// Dynamic viewBox for the SVG map
+const mapViewBox = computed(() => {
+    // Default Indonesia viewBox
+    const defaultViewBox = "0 0 792.54596 316.66394";
+    
+    // If no specific zoom target, show full Indonesia
+    if (targetZoomProvinces.value.length === 0) {
+        return defaultViewBox;
+    }
+
+    // Calculate collective bounding box for target zoom provinces
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    let found = false;
+
+    targetZoomProvinces.value.forEach(p => {
+        const bbox = getPathBoundingBox(p.path);
+        if (bbox) {
+            minX = Math.min(minX, bbox.minX);
+            minY = Math.min(minY, bbox.minY);
+            maxX = Math.max(maxX, bbox.maxX);
+            maxY = Math.max(maxY, bbox.maxY);
+            found = true;
+        }
+    });
+
+    if (!found) return defaultViewBox;
+
+    // Add padding (40% of the width/height)
+    const width = maxX - minX;
+    const height = maxY - minY;
+    
+    // Zoom factor: if target is too small (like Jakarta), ensure minimum zoom area
+    // This prevents zooming in too much on tiny provinces
+    const minZoomWidth = 60; 
+    const minZoomHeight = 40;
+    
+    const finalWidth = Math.max(width * 1.6, minZoomWidth);
+    const finalHeight = Math.max(height * 1.6, minZoomHeight);
+
+    const centerX = minX + width / 2;
+    const centerY = minY + height / 2;
+
+    return `${centerX - finalWidth / 2} ${centerY - finalHeight / 2} ${finalWidth} ${finalHeight}`;
 });
 
 // Helper functions
@@ -1414,18 +1515,18 @@ watch(searchQuery, () => {
                         <div v-else class="relative h-96 rounded-lg border border-gray-200 bg-gradient-to-b from-blue-50 to-green-50 dark:border-gray-700 dark:from-gray-800 dark:to-gray-900">
                             <!-- Indonesia SVG Map -->
                             <svg
-                                viewBox="0 0 792.54596 316.66394"
+                                :viewBox="mapViewBox"
                                 class="absolute inset-0 h-full w-full"
                                 xmlns="http://www.w3.org/2000/svg"
-                                preserveAspectRatio="xMinYMin"
+                                preserveAspectRatio="xMidYMid meet"
                             >
                                 <path
-                                    v-for="provinceCode in indonesiaProvinces"
+                                    v-for="provinceCode in filteredProvinces"
                                     :key="provinceCode.id"
                                     :d="provinceCode.path"
                                     :fill="getProvinceColor(provinceCode.name)"
-                                    stroke="#ffffff"
-                                    stroke-width="1"
+                                    :stroke="targetZoomProvinces.some(p => p.id === provinceCode.id) ? '#1e3a8a' : '#ffffff'"
+                                    :stroke-width="targetZoomProvinces.some(p => p.id === provinceCode.id) ? '2' : '0.5'"
                                     stroke-linejoin="round"
                                     class="cursor-pointer transition-all hover:stroke-gray-800"
                                     @click="showProvinceDetail(provinceCode.name)"
