@@ -39,7 +39,7 @@ class AiPredictionController extends Controller
         $request->validate([
             'category_id' => 'required|exists:categories,id',
             'sub_category_id' => 'nullable|exists:sub_categories,id',
-            'time_period' => 'required|integer|in:1,3,6,12',
+            'time_period' => 'required|numeric|in:0.03,0.25,1,3,6,12',
         ]);
 
         if (!$this->geminiService->isEnabled()) {
@@ -56,13 +56,22 @@ class AiPredictionController extends Controller
 
         $categoryId = $request->category_id;
         $subCategoryId = $request->sub_category_id;
-        $timePeriod = $request->time_period;
+        $timePeriod = (float) $request->time_period;
         $category = Category::find($categoryId);
+
+        // Calculate the starting date based on the time period
+        if ($timePeriod < 1) {
+            // If less than a month, use days (0.03 months is ~1 day, 0.25 months is ~7 days)
+            $days = round($timePeriod * 30);
+            $startDate = now()->subDays($days);
+        } else {
+            $startDate = now()->subMonths($timePeriod);
+        }
 
         // Get crime data for the selected category based on time period
         $query = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])
             ->where('category_id', $categoryId)
-            ->where('created_at', '>=', now()->subMonths($timePeriod));
+            ->where('created_at', '>=', $startDate);
 
         // Filter by sub-category if provided
         if ($subCategoryId) {
@@ -177,7 +186,7 @@ class AiPredictionController extends Controller
     /**
      * Create comprehensive prompt for AI analysis
      */
-    private function createAnalysisPrompt(string $categoryName, array $crimeData, array $statistics, int $timePeriod): string
+    private function createAnalysisPrompt(string $categoryName, array $crimeData, array $statistics, $timePeriod): string
     {
         $periodText = $this->getTimePeriodText($timePeriod);
         $prompt = "Sebagai seorang ahli analisis kriminalitas, analisis data kejahatan kategori '{$categoryName}' berikut:\n\n";
@@ -220,7 +229,7 @@ class AiPredictionController extends Controller
         $prompt .= "   - Faktor lokasi yang berkontribusi\n\n";
 
         $prompt .= "3. **PREDIKSI DAN PROYEKSI**\n";
-        $prompt .= "   - Prediksi trend {$timePeriod} bulan ke depan berdasarkan data {$periodText}\n";
+        $prompt .= "   - Prediksi trend " . ($timePeriod >= 1 ? "{$timePeriod} bulan" : round($timePeriod * 30) . " hari") . " ke depan berdasarkan data {$periodText}\n";
         $prompt .= "   - Wilayah yang berpotensi mengalami peningkatan\n";
         $prompt .= "   - Estimasi dampak berdasarkan data historis\n";
         $prompt .= "   - Proyeksi pola musiman dan siklus tahunan\n\n";
@@ -243,9 +252,14 @@ class AiPredictionController extends Controller
     /**
      * Get time period text for display
      */
-    private function getTimePeriodText(int $months): string
+    private function getTimePeriodText($months): string
     {
-        return match($months) {
+        $months = (float) $months;
+
+        if ($months == 0.03) return '1 hari terakhir';
+        if ($months == 0.25) return '1 minggu terakhir';
+
+        return match ((int)$months) {
             1 => '1 bulan terakhir',
             3 => '3 bulan terakhir',
             6 => '6 bulan terakhir',
