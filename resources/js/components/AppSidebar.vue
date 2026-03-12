@@ -48,6 +48,8 @@ interface MenuItem {
     sort_order: number;
     parent_id?: number;
     admin_only: boolean;
+    permissions?: string[];
+    description?: string;
     children?: MenuItem[];
 }
 
@@ -55,6 +57,10 @@ const page = usePage<AppPageProps>();
 const { isInstallable } = usePWA();
 
 const isSuperAdmin = computed(() => page.props.auth?.user?.role === 'super_admin');
+const hasAdminAccess = computed(() => {
+    const role = page.props.auth?.user?.role;
+    return role === 'super_admin' || role === 'admin_vip' || role === 'admin';
+});
 
 // Convert database menu items to NavItem format (recursive for unlimited depth)
 const convertMenuItemsToNavItems = (menuItems: MenuItem[]): NavItem[] => {
@@ -64,10 +70,12 @@ const convertMenuItemsToNavItems = (menuItems: MenuItem[]): NavItem[] => {
             if (item.title === 'Install App') {
                 return isInstallable.value;
             }
-            // Hide admin-only items from non-admins
-            if (item.admin_only && !isSuperAdmin.value) {
+            
+            // Hide admin-only items from users without admin access
+            if (item.admin_only && !hasAdminAccess.value) {
                 return false;
             }
+            
             return true;
         })
         .map((item) => {

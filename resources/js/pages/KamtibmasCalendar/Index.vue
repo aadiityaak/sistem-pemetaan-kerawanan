@@ -211,10 +211,12 @@ const calendarDays = computed(() => {
             return date >= eventStart && date <= eventEnd;
         });
 
-        const dayHolidays = props.holidays.filter((holiday) => {
-            const holidayDate = new Date(holiday.start);
-            return date.toDateString() === holidayDate.toDateString();
-        });
+        const dayHolidays = props.eventFilter === 'kamtibmas' 
+            ? props.holidays.filter((holiday) => {
+                const holidayDate = new Date(holiday.start);
+                return date.toDateString() === holidayDate.toDateString();
+            })
+            : [];
 
         // Combine events and holidays
         const allDayItems = [...dayEvents, ...dayHolidays];
@@ -340,10 +342,12 @@ const openDayModal = (date: Date) => {
     });
 
     // Get holidays for this day
-    const dayHolidays = props.holidays.filter((holiday) => {
-        const holidayDate = new Date(holiday.start);
-        return date.toDateString() === holidayDate.toDateString();
-    });
+    const dayHolidays = props.eventFilter === 'kamtibmas'
+        ? props.holidays.filter((holiday) => {
+            const holidayDate = new Date(holiday.start);
+            return date.toDateString() === holidayDate.toDateString();
+        })
+        : [];
 
     selectedDayEvents.value = dayEvents;
     selectedDayHolidays.value = dayHolidays;
