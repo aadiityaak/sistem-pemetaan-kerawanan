@@ -1,6 +1,6 @@
 <template>
     <AppLayout title="Ketahanan Pangan">
-        <div class="flex h-screen flex-col">
+        <div class="flex flex-col">
             <!-- Controls Panel Card -->
             <div class="border-b border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
                 <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
@@ -81,7 +81,7 @@
             </div>
 
             <!-- Map Container -->
-            <div class="relative flex-1 overflow-hidden min-h-96">
+            <div class="relative overflow-hidden h-[75vh]">
                 <div v-if="loading" class="absolute inset-0 z-10 flex items-center justify-center bg-gray-100 dark:bg-gray-900">
                     <div class="flex flex-col items-center">
                         <RefreshCw class="mb-4 h-8 w-8 animate-spin text-blue-600" />
@@ -128,7 +128,7 @@
                     </svg>
                 
                     <!-- Last Updated Info -->
-                    <div v-if="lastUpdated && !selectedProvince" class="absolute right-4 top-4 z-30 rounded-lg bg-white/90 px-3 py-2 shadow-lg dark:bg-gray-800/90">
+                    <div v-if="lastUpdated && !selectedProvince" class="rounded-lg bg-white/90 px-3 py-2 shadow-lg dark:bg-gray-800/90">
                         <div class="text-xs text-gray-500 dark:text-gray-400">
                             Terakhir diperbarui: {{ formatDateTime(lastUpdated) }}
                         </div>
@@ -261,7 +261,7 @@
 
                 <!-- Detail Table -->
                 <div class="border-t border-gray-200 dark:border-gray-700">
-                    <div class="max-h-96 overflow-y-auto">
+                    <div class="overflow-y-auto">
                         <table class="min-w-full">
                             <thead class="sticky top-0 bg-gray-50 dark:bg-gray-700">
                                 <tr>
