@@ -461,7 +461,8 @@ const resetFilters = () => {
         endDate: null,
         provinsi: null,
         kabupatenKota: null,
-        search: ''
+        search: '',
+        sourceType: null
     };
     searchQuery.value = '';
     
@@ -479,6 +480,7 @@ const selectCategory = (categorySlug: string | null) => {
             end_date: props.endDate || null,
             provinsi_id: props.selectedProvinsi?.id?.toString() || null,
             kabupaten_kota_id: props.selectedKabupatenKota?.id?.toString() || null,
+            source_type: props.sourceType || null,
         }),
     );
 };
@@ -493,6 +495,7 @@ const selectSubCategory = (subCategorySlug: string | null) => {
             end_date: props.endDate || null,
             provinsi_id: props.selectedProvinsi?.id?.toString() || null,
             kabupaten_kota_id: props.selectedKabupatenKota?.id?.toString() || null,
+            source_type: props.sourceType || null,
         }),
     );
 };
@@ -507,6 +510,7 @@ const selectProvinsi = (provinsiId: number | null) => {
             end_date: props.endDate || null,
             provinsi_id: provinsiId?.toString() || null,
             kabupaten_kota_id: null, // Reset kabupaten/kota when province changes
+            source_type: props.sourceType || null,
         }),
     );
 };
@@ -521,6 +525,7 @@ const selectKabupatenKota = (kabupatenKotaId: number | null) => {
             end_date: props.endDate || null,
             provinsi_id: props.selectedProvinsi?.id?.toString() || null,
             kabupaten_kota_id: kabupatenKotaId?.toString() || null,
+            source_type: props.sourceType || null,
         }),
     );
 };
@@ -535,6 +540,7 @@ const selectStartDate = (startDate: string | null) => {
             end_date: props.endDate || null,
             provinsi_id: props.selectedProvinsi?.id?.toString() || null,
             kabupaten_kota_id: props.selectedKabupatenKota?.id?.toString() || null,
+            source_type: props.sourceType || null,
         }),
     );
 };
@@ -549,6 +555,7 @@ const selectEndDate = (endDate: string | null) => {
             end_date: endDate,
             provinsi_id: props.selectedProvinsi?.id?.toString() || null,
             kabupaten_kota_id: props.selectedKabupatenKota?.id?.toString() || null,
+            source_type: props.sourceType || null,
         }),
     );
 };
