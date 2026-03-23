@@ -17,8 +17,15 @@ class EventController extends Controller
     public function index(Request $request)
     {
         // Get current month and year or from request
-        $currentDate = $request->get('date', now()->format('Y-m'));
-        $date = Carbon::createFromFormat('Y-m', $currentDate)->startOfMonth();
+        $currentDate = $request->get('date');
+        
+        try {
+            // Use parse() for more flexibility, fallback to now if invalid or missing
+            $date = $currentDate ? Carbon::parse($currentDate)->startOfMonth() : now()->startOfMonth();
+        } catch (\Exception $e) {
+            // Fallback if parsing fails
+            $date = now()->startOfMonth();
+        }
 
         // Get event filter parameter
         $eventFilter = $request->get('event'); // kamtibmas, agenda, etc.
@@ -26,8 +33,9 @@ class EventController extends Controller
         $agendaType = $request->get('agenda_type'); // nasional, internasional (for agenda filter)
 
         // Get events for the current view (month view - get events for 6 weeks around the month)
-        $startDate = $date->copy()->startOfMonth()->startOfWeek();
-        $endDate = $date->copy()->endOfMonth()->endOfWeek();
+        // Explicitly start from Monday to match frontend calendar grid
+        $startDate = $date->copy()->startOfMonth()->startOfWeek(Carbon::MONDAY);
+        $endDate = $startDate->copy()->addDays(42); // 6 weeks exactly
 
         $eventsQuery = Event::active()->inDateRange($startDate, $endDate);
 

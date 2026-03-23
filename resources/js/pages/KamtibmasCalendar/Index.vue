@@ -258,7 +258,10 @@ const goToToday = () => {
 };
 
 const navigateToMonth = () => {
-    const dateParam = currentDate.value.toISOString().slice(0, 7); // YYYY-MM
+    const year = currentDate.value.getFullYear();
+    const month = (currentDate.value.getMonth() + 1).toString().padStart(2, '0');
+    const dateParam = `${year}-${month}`;
+    
     const params: any = { date: dateParam };
 
     if (props.eventFilter) {
@@ -498,27 +501,38 @@ const saveEvent = async () => {
 
         const data = response.data;
 
-        if (response.status === 200) {
+        if (response.status >= 200 && response.status < 300) {
             // Force close without confirmation since data was saved
             closeModal(true);
 
-            // Show success message
-            const message = editingEvent.value ? 'Event berhasil diperbarui!' : 'Event berhasil ditambahkan!';
+            // Refresh the page with the month and category of the added/edited event
+            // This ensures the user actually SEES the event they just added
+            const eventDate = new Date(eventForm.value.start_date);
+            const year = eventDate.getFullYear();
+            const month = (eventDate.getMonth() + 1).toString().padStart(2, '0');
+            const targetDateParam = `${year}-${month}`;
+            
+            const params: any = { date: targetDateParam };
 
-            // Refresh the page with current date parameters to show updated events
-            const currentDateParam = currentDate.value.toISOString().slice(0, 7); // YYYY-MM
-            const params: any = { date: currentDateParam };
-
-            if (props.eventFilter) {
-                params.event = props.eventFilter;
+            // If the saved event has a specific category, we should probably show that category
+            // to make sure the user sees their new event
+            if (eventForm.value.category) {
+                params.category = eventForm.value.category;
+                
+                // If it's one of the agenda categories, set event=agenda too
+                if (['Agenda Nasional', 'Agenda Internasional', 'Agenda Internal Korp Brimob POLRI'].includes(eventForm.value.category)) {
+                    params.event = 'agenda';
+                } else if (eventForm.value.category === 'Kamtibmas') {
+                    params.event = 'kamtibmas';
+                }
+            } else {
+                // Fallback to current filters if no category in form
+                if (props.eventFilter) params.event = props.eventFilter;
+                if (props.categoryFilter) params.category = props.categoryFilter;
             }
 
-            if (props.categoryFilter) {
-                params.category = props.categoryFilter;
-            }
-
-            // Add agenda type filter if in agenda view
-            if (props.eventFilter === 'agenda' && selectedAgendaType.value && selectedAgendaType.value !== 'all') {
+            // Add agenda type filter if it was present and still relevant
+            if (params.event === 'agenda' && selectedAgendaType.value && selectedAgendaType.value !== 'all') {
                 params.agenda_type = selectedAgendaType.value;
             }
 
@@ -526,10 +540,10 @@ const saveEvent = async () => {
                 preserveState: false,
                 replace: false,
                 onFinish: () => {
-                    // Re-open day modal if it was open
-                    if (selectedDate.value) {
+                    // Re-open day modal if it was open for the same date
+                    if (eventForm.value.start_date) {
                         setTimeout(() => {
-                            openDayModal(selectedDate.value!);
+                            openDayModal(new Date(eventForm.value.start_date));
                         }, 200);
                     }
                 },
@@ -564,9 +578,12 @@ const deleteEvent = async (event: KamtibmasEvent) => {
             if (response.status === 200) {
                 console.log('Event berhasil dihapus!');
 
-                // Refresh the page with current date parameters to show updated events
-                const currentDateParam = currentDate.value.toISOString().slice(0, 7); // YYYY-MM
-                const params: any = { date: currentDateParam };
+                // Refresh the page with the current viewed month
+                const year = currentDate.value.getFullYear();
+                const month = (currentDate.value.getMonth() + 1).toString().padStart(2, '0');
+                const targetDateParam = `${year}-${month}`;
+                
+                const params: any = { date: targetDateParam };
 
                 if (props.eventFilter) {
                     params.event = props.eventFilter;
