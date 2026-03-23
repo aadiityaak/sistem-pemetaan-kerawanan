@@ -4,6 +4,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { computed, nextTick, ref, watch } from 'vue';
+import axios from 'axios';
 
 interface KamtibmasEvent {
     id: number;
@@ -362,22 +363,14 @@ const openEventModal = (date?: Date) => {
     let targetDate: Date;
 
     if (date) {
-        // Explicitly provided date (from day modal buttons)
+        // Explicitly provided date (e.g. from day modal "Tambah" button)
         targetDate = date;
-    } else if (selectedDate.value) {
-        // Use currently selected date from day modal
+    } else if (selectedDate.value && showDayModal.value) {
+        // Use currently selected date if day modal is open
         targetDate = selectedDate.value;
     } else {
-        // Fallback: use today if viewing current month, otherwise first day of viewed month
-        const today = new Date();
-        const viewingCurrentMonth = currentDate.value.getMonth() === today.getMonth() && currentDate.value.getFullYear() === today.getFullYear();
-
-        if (viewingCurrentMonth) {
-            targetDate = today;
-        } else {
-            // Use first day of currently viewed month
-            targetDate = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1);
-        }
+        // Default to today for fresh event from header button
+        targetDate = new Date();
     }
 
     selectedDate.value = targetDate;
@@ -403,18 +396,8 @@ const editEvent = async (event: KamtibmasEvent) => {
         isLoading.value = true;
         resetForm();
 
-        const response = await fetch(route('event.show', { event: event.id }), {
-            headers: {
-                Accept: 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
+        const response = await axios.get(route('event.show', { event: event.id }));
+        const data = response.data;
 
         eventForm.value = {
             title: data.event.title,
@@ -505,25 +488,17 @@ const saveEvent = async () => {
 
         const url = editingEvent.value ? route('event.update', { event: editingEvent.value.id }) : route('event.store');
 
-        const method = editingEvent.value ? 'PUT' : 'POST';
+        const method = editingEvent.value ? 'put' : 'post';
 
-        // Get CSRF token from meta tag or page props
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || (window as any).Laravel?.csrfToken || '';
-
-        const response = await fetch(url, {
+        const response = await axios({
             method,
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            body: JSON.stringify(eventForm.value),
+            url,
+            data: eventForm.value,
         });
 
-        const data = await response.json();
+        const data = response.data;
 
-        if (response.ok) {
+        if (response.status === 200) {
             // Force close without confirmation since data was saved
             closeModal(true);
 
@@ -582,21 +557,11 @@ const deleteEvent = async (event: KamtibmasEvent) => {
 
     if (confirm(confirmMessage)) {
         try {
-            // Get CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || (window as any).Laravel?.csrfToken || '';
+            const response = await axios.delete(route('event.destroy', { event: event.id }));
 
-            const response = await fetch(route('event.show', { event: event.id }), {
-                method: 'DELETE',
-                headers: {
-                    Accept: 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            });
+            const data = response.data;
 
-            const data = await response.json();
-
-            if (response.ok) {
+            if (response.status === 200) {
                 console.log('Event berhasil dihapus!');
 
                 // Refresh the page with current date parameters to show updated events
