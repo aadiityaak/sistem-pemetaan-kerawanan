@@ -18,7 +18,7 @@ class EventController extends Controller
     {
         // Get current month and year or from request
         $currentDate = $request->get('date');
-        
+
         try {
             // Use parse() for more flexibility, fallback to now if invalid or missing
             $date = $currentDate ? Carbon::parse($currentDate)->startOfMonth() : now()->startOfMonth();
@@ -277,7 +277,7 @@ class EventController extends Controller
     private function getIndonesianHolidays($year = null, $month = null)
     {
         $year = $year ?? now()->year;
-        $cacheKey = "indonesian_holidays_{$year}" . ($month ? "_{$month}" : "");
+        $cacheKey = "indonesian_holidays_deno_{$year}" . ($month ? "_{$month}" : "");
 
         // Cache holidays for 1 day to avoid excessive API calls
         return Cache::remember($cacheKey, now()->addDay(), function () use ($year, $month) {
@@ -289,25 +289,21 @@ class EventController extends Controller
                 }
 
                 // Fetch from the specific API requested by the user with dynamic params
-                $response = Http::timeout(10)->get('https://hari-libur-api.vercel.app/api', $params);
+                $response = Http::timeout(10)->get('https://libur.deno.dev/api', $params);
 
                 if ($response->successful()) {
                     $holidays = collect($response->json())
                         ->map(function ($holiday) {
-                            $date = Carbon::parse($holiday['event_date']);
+                            $date = Carbon::parse($holiday['date']);
                             return [
                                 'id' => 'holiday_' . $date->format('Y_m_d') . '_' . uniqid(),
-                                'title' => $holiday['event_name'],
+                                'title' => $holiday['name'],
                                 'start' => $date->format('Y-m-d'),
                                 'end' => $date->format('Y-m-d'),
-                                'description' => $holiday['is_national_holiday']
-                                    ? 'Hari Libur Nasional'
-                                    : 'Hari Besar / Penting',
-                                'color' => $holiday['is_national_holiday']
-                                    ? '#DC2626' // Red for national holidays
-                                    : '#6B7280', // Gray for other important days
+                                'description' => 'Hari Libur Nasional',
+                                'color' => '#DC2626', // Red for national holidays
                                 'isHoliday' => true,
-                                'isNationalHoliday' => $holiday['is_national_holiday'],
+                                'isNationalHoliday' => true,
                                 'isMultiDay' => false,
                                 'duration' => 1,
                             ];
