@@ -43,6 +43,13 @@ class AppSettingController extends Controller
                     'type' => 'text',
                     'value' => $this->settingsService->getSetting('footer_text', 'Pemetaan Kerawanan © 2024'),
                 ],
+                [
+                    'key' => 'monitoring_video_enabled',
+                    'label' => 'Fitur Video Monitoring',
+                    'description' => 'Aktifkan/nonaktifkan upload dan tampilan video pada data monitoring',
+                    'type' => 'boolean',
+                    'value' => $this->settingsService->getSetting('monitoring_video_enabled', 'false'),
+                ],
             ],
             'license' => [
                 [
@@ -137,6 +144,7 @@ class AppSettingController extends Controller
             'app_favicon',
             'app_logo',
             'login_logo',
+            'monitoring_video_enabled',
             'gemini_enabled',
             'gemini_api_endpoint',
             'gemini_api_key',
@@ -167,6 +175,7 @@ class AppSettingController extends Controller
             'app_favicon' => 'Favicon',
             'app_logo' => 'Logo Aplikasi',
             'login_logo' => 'Logo Login',
+            'monitoring_video_enabled' => 'Fitur Video Monitoring',
             'gemini_enabled' => 'Aktifkan Gemini AI',
             'gemini_api_endpoint' => 'Gemini API Endpoint',
             'gemini_api_key' => 'Gemini API Key',
@@ -178,7 +187,7 @@ class AppSettingController extends Controller
         $settingType = 'text';
         if (in_array($key, ['app_favicon', 'app_logo', 'login_logo'])) {
             $settingType = 'image';
-        } elseif ($key === 'gemini_enabled') {
+        } elseif (in_array($key, ['gemini_enabled', 'monitoring_video_enabled'])) {
             $settingType = 'boolean';
         } elseif ($key === 'gemini_api_key' || $key === 'license_key') {
             $settingType = 'password';

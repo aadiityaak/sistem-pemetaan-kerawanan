@@ -83,6 +83,7 @@ const props = defineProps<{
     categories: Category[];
     isUserRestricted?: boolean;
     userProvinsiId?: number;
+    isVideoEnabled: boolean;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -170,6 +171,10 @@ const initializeExistingGallery = () => {
 
 // Initialize existing video
 const initializeExistingVideo = () => {
+    if (!props.isVideoEnabled) {
+        return;
+    }
+
     if (props.monitoringData.video_path) {
         // Use video_url if available (already processed), otherwise construct URL
         videoPreview.value = props.monitoringData.video_url || `/storage/${props.monitoringData.video_path}`;
@@ -623,7 +628,10 @@ onMounted(() => {
                     <!-- Form Fields -->
                     <div class="space-y-6">
                         <!-- Basic Information -->
-                        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <div
+                            v-if="props.isVideoEnabled"
+                            class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                        >
                             <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Informasi Dasar</h3>
 
                             <div class="space-y-4">
@@ -1025,7 +1033,10 @@ onMounted(() => {
                         </div>
 
                         <!-- Video -->
-                        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <div 
+                            v-if="props.isVideoEnabled"
+                            class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                        >
                             <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Video</h3>
                             <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Upload video yang berkaitan dengan kejadian ini (Opsional)</p>
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -14,6 +15,13 @@ class VideoUploadController extends Controller
      */
     public function uploadChunk(Request $request)
     {
+        if (AppSetting::get('monitoring_video_enabled', 'false') !== 'true') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Fitur video sedang dinonaktifkan.',
+            ], 403);
+        }
+
         $request->validate([
             'chunk' => 'required|file',
             'chunkIndex' => 'required|integer',
@@ -115,6 +123,13 @@ class VideoUploadController extends Controller
      */
     public function deleteVideo(Request $request)
     {
+        if (AppSetting::get('monitoring_video_enabled', 'false') !== 'true') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Fitur video sedang dinonaktifkan.',
+            ], 403);
+        }
+
         $request->validate([
             'videoPath' => 'required|string',
         ]);

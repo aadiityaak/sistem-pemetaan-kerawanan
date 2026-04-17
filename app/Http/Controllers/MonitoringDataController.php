@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSetting;
 use App\Models\Category;
 use App\Models\KabupatenKota;
 use App\Models\Kecamatan;
@@ -17,6 +18,11 @@ use FFMpeg\Format\Video\X264;
 
 class MonitoringDataController extends Controller
 {
+    private function isMonitoringVideoEnabled(): bool
+    {
+        return AppSetting::get('monitoring_video_enabled', 'false') === 'true';
+    }
+
     public function index(Request $request)
     {
         $query = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory']);
@@ -242,6 +248,7 @@ class MonitoringDataController extends Controller
 
     public function create(Request $request)
     {
+        $isVideoEnabled = $this->isMonitoringVideoEnabled();
         $categories = Category::active()->ordered()->with('subCategories')->get();
 
         // Append image URLs to categories and subcategories
@@ -292,11 +299,14 @@ class MonitoringDataController extends Controller
             'kecamatanList' => $kecamatanList,
             'selectedCategory' => $selectedCategory,
             'selectedSubCategory' => $selectedSubCategory,
+            'isVideoEnabled' => $isVideoEnabled,
         ]);
     }
 
     public function store(Request $request)
     {
+        $isVideoEnabled = $this->isMonitoringVideoEnabled();
+
         // Check if user can access this province
         if ($request->has('province_filter')) {
             $request->validate([
@@ -324,8 +334,8 @@ class MonitoringDataController extends Controller
             'additional_data' => 'nullable|array',
             'gallery' => 'nullable|array',
             'gallery.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max per image
-            'video' => 'nullable|file|mimes:mp4,mov,avi,wmv,flv,webm|max:102400', // 100MB max for video
-            'uploaded_video_path' => 'nullable|string', // For chunked uploaded video
+            'video' => [$isVideoEnabled ? 'nullable' : 'prohibited', 'file', 'mimes:mp4,mov,avi,wmv,flv,webm', 'max:102400'],
+            'uploaded_video_path' => $isVideoEnabled ? 'nullable|string' : 'prohibited',
         ]);
 
         // Handle gallery upload
@@ -342,14 +352,14 @@ class MonitoringDataController extends Controller
 
         // Handle video upload
         $videoPath = null;
-        if ($request->hasFile('video')) {
+        if ($isVideoEnabled && $request->hasFile('video')) {
             $videoPath = $request->file('video')->store('monitoring-data/videos', 'public');
             $ffmpeg = FFMpeg::create();
             $video = $ffmpeg->open(storage_path('app/public/' . $videoPath));
             $format = new X264();
             $format->setKiloBitrate(1000);
             $video->save($format, storage_path('app/public/' . $videoPath));
-        } elseif ($request->filled('uploaded_video_path')) {
+        } elseif ($isVideoEnabled && $request->filled('uploaded_video_path')) {
             $videoPath = $request->input('uploaded_video_path');
         }
 
@@ -369,6 +379,7 @@ class MonitoringDataController extends Controller
 
     public function show($id)
     {
+        $isVideoEnabled = $this->isMonitoringVideoEnabled();
         $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory', 'user.provinsi'])
             ->findOrFail($id);
 
@@ -413,17 +424,19 @@ class MonitoringDataController extends Controller
         }
 
         // Process video data
-        if ($monitoringData->video_path) {
+        if ($isVideoEnabled && $monitoringData->video_path) {
             $monitoringData->video_url = asset('storage/' . $monitoringData->video_path);
         }
 
         return Inertia::render('MonitoringData/Show', [
             'monitoringData' => $monitoringData,
+            'isVideoEnabled' => $isVideoEnabled,
         ]);
     }
 
     public function edit(Request $request, $id)
     {
+        $isVideoEnabled = $this->isMonitoringVideoEnabled();
         $monitoringData = MonitoringData::with(['provinsi', 'kabupatenKota', 'kecamatan', 'category', 'subCategory'])->findOrFail($id);
         $categories = Category::active()->ordered()->with('subCategories')->get();
 
@@ -448,7 +461,7 @@ class MonitoringDataController extends Controller
         }
 
         // Process video data
-        if ($monitoringData->video_path) {
+        if ($isVideoEnabled && $monitoringData->video_path) {
             $monitoringData->video_url = asset('storage/' . $monitoringData->video_path);
         }
 
@@ -481,11 +494,13 @@ class MonitoringDataController extends Controller
             'kecamatan' => $kecamatan,
             'isUserRestricted' => $request->has('province_filter'),
             'userProvinsiId' => $request->input('province_filter'),
+            'isVideoEnabled' => $isVideoEnabled,
         ]);
     }
 
     public function update(Request $request, $id)
     {
+        $isVideoEnabled = $this->isMonitoringVideoEnabled();
         $monitoringData = MonitoringData::findOrFail($id);
 
         // Debug: Log request data
@@ -515,8 +530,8 @@ class MonitoringDataController extends Controller
             'additional_data' => 'nullable|array',
             'gallery' => 'nullable|array',
             'gallery.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240', // 10MB max per image
-            'video' => 'nullable|file|mimes:mp4,mov,avi,wmv,flv,webm|max:102400', // 100MB max for video
-            'uploaded_video_path' => 'nullable|string', // For chunked uploaded video
+            'video' => [$isVideoEnabled ? 'nullable' : 'prohibited', 'file', 'mimes:mp4,mov,avi,wmv,flv,webm', 'max:102400'],
+            'uploaded_video_path' => $isVideoEnabled ? 'nullable|string' : 'prohibited',
         ]);
 
         // Handle gallery upload
@@ -533,7 +548,7 @@ class MonitoringDataController extends Controller
         }
 
         // Handle video upload
-        if ($request->hasFile('video')) {
+        if ($isVideoEnabled && $request->hasFile('video')) {
             // Delete existing video if present
             if (!empty($monitoringData->video_path)) {
                 Storage::disk('public')->delete($monitoringData->video_path);
@@ -544,7 +559,7 @@ class MonitoringDataController extends Controller
             $format = new X264();
             $format->setKiloBitrate(1000);
             $video->save($format, storage_path('app/public/' . $validated['video_path']));
-        } elseif ($request->filled('uploaded_video_path')) {
+        } elseif ($isVideoEnabled && $request->filled('uploaded_video_path')) {
             // Handle chunked uploaded video
             // Delete existing video if present and different from uploaded one
             if (!empty($monitoringData->video_path) && $monitoringData->video_path !== $request->input('uploaded_video_path')) {
