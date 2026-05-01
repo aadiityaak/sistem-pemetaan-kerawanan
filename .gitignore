@@ -24,6 +24,7 @@ yarn-error.log
 /.zed
 build-deployment/
 crime-map-deployment.zip
+crime-map-aapanel.zip
 temp-check/
 deployment-temp/
 /.claude

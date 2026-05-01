@@ -25,6 +25,76 @@ Script ini akan:
 
 ---
 
+## Deployment di aaPanel (Recommended)
+
+### 🚀 Build & Package khusus aaPanel
+
+Gunakan script ini untuk menghasilkan paket yang lebih “pas” untuk struktur aaPanel (web root memakai folder `public/`):
+
+```bash
+# Build assets dan buat deployment package untuk aaPanel
+composer run build:production-aa
+```
+
+**Output:**
+
+- `crime-map-aapanel.zip`
+- Berisi folder `laravel-app/` dan `public/`
+- Termasuk helper script `POST-DEPLOY-AAPANEL.sh` untuk set permission (opsional)
+
+### Step-by-Step Deploy di aaPanel
+
+1. **Buat Website**
+    - aaPanel → Website → Add site
+    - Pilih PHP Version yang sesuai (minimal PHP 8.2)
+2. **Set Document Root ke folder `public/`**
+    - Setelah extract ZIP (langkah 3), pastikan Web Root/Document Root mengarah ke:
+        - `/www/wwwroot/nama-domain/public`
+3. **Upload & Extract Paket**
+    - Upload `crime-map-aapanel.zip` ke folder site (misalnya `/www/wwwroot/nama-domain/`)
+    - Extract sehingga menjadi:
+        - `/www/wwwroot/nama-domain/laravel-app/`
+        - `/www/wwwroot/nama-domain/public/`
+    - (Opsional, disarankan) Jalankan helper:
+        ```bash
+        cd /www/wwwroot/nama-domain
+        bash POST-DEPLOY-AAPANEL.sh
+        ```
+4. **Konfigurasi `.env`**
+    - Rename `laravel-app/.env.production` → `laravel-app/.env`
+    - Update minimal:
+        - `APP_URL=https://nama-domain`
+        - `DB_*` sesuai database aaPanel
+5. **Setup Database**
+    - aaPanel → Database → Add database
+    - Jalankan migration via SSH/Terminal aaPanel:
+        ```bash
+        cd /www/wwwroot/nama-domain/laravel-app
+        php artisan key:generate
+        php artisan migrate --force
+        ```
+6. **Storage link (untuk upload file)**
+    - Jika ada fitur upload (favicon/logo/gallery/video), jalankan:
+        ```bash
+        cd /www/wwwroot/nama-domain/laravel-app
+        php artisan storage:link
+        ```
+7. **Permissions & Cache**
+    - Pastikan folder berikut writable:
+        - `laravel-app/storage/`
+        - `laravel-app/bootstrap/cache/`
+    - Lalu:
+        ```bash
+        cd /www/wwwroot/nama-domain/laravel-app
+        php artisan config:clear
+        php artisan route:clear
+        php artisan view:clear
+        php artisan cache:clear
+        ```
+8. **Nginx Rewrite (jika pakai Nginx)**
+    - Biasanya sudah otomatis jika Document Root benar ke `public/`.
+    - Jika URL tanpa `/index.php` belum jalan, aktifkan rules Laravel pada konfigurasi rewrite di aaPanel.
+
 ## Manual Deployment (Advanced)
 
 ### 1. Files yang HARUS di-upload ke shared hosting:

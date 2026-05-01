@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
+import { chmodSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import JSZip from 'jszip';
 import { dirname, join, resolve } from 'path';
 
@@ -48,9 +48,7 @@ const includeFiles = [
 ];
 
 // Files to include in laravel-app directory
-const laravelAppPublicFiles = [
-    'public/build/manifest.json',
-];
+const laravelAppPublicFiles = ['public/build/manifest.json'];
 
 const includePublicFiles = [
     'public/build',
@@ -69,11 +67,7 @@ const includePublicFiles = [
 ];
 
 // PWA specific files that should be at the root of public_html
-const pwaFiles = [
-    'public/build/manifest.webmanifest',
-    'public/build/sw.js',
-    'public/build/registerSW.js',
-];
+const pwaFiles = ['public/build/manifest.webmanifest', 'public/build/sw.js', 'public/build/registerSW.js'];
 
 // Create laravel-app folder (untuk di atas public_html)
 const laravelAppDir = join(buildDir, 'laravel-app');
@@ -106,7 +100,7 @@ process.stdout.write('   ');
 laravelAppPublicFiles.forEach((file) => {
     const srcPath = join(projectRoot, file);
     const destPath = join(laravelAppDir, file);
-    
+
     if (existsSync(srcPath)) {
         try {
             // Create directory if needed
@@ -114,7 +108,7 @@ laravelAppPublicFiles.forEach((file) => {
             if (!existsSync(destDir)) {
                 mkdirSync(destDir, { recursive: true });
             }
-            
+
             cpSync(srcPath, destPath, { recursive: true });
             process.stdout.write('.');
         } catch (error) {
@@ -485,6 +479,28 @@ if (publicDirName !== 'public_html') {
         const updated = readFileSync(instructionsPath, 'utf8').replaceAll('public_html', publicDirName);
         writeFileSync(instructionsPath, updated);
     }
+}
+
+if (target === 'aapanel') {
+    const postDeployPath = join(buildDir, 'POST-DEPLOY-AAPANEL.sh');
+    const postDeployScript = `#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$ROOT_DIR/laravel-app"
+
+mkdir -p storage bootstrap/cache
+chmod -R 775 storage bootstrap/cache
+chown -R www:www storage bootstrap/cache || true
+
+php artisan storage:link || true
+php artisan optimize:clear || true
+`;
+
+    writeFileSync(postDeployPath, postDeployScript);
+    try {
+        chmodSync(postDeployPath, 0o755);
+    } catch {}
 }
 
 // Create ZIP file
