@@ -46,6 +46,14 @@ class AppSettingSeeder extends Seeder
         'label' => 'App Description',
         'description' => 'Brief description of the website',
       ],
+      [
+        'key' => 'monitoring_video_enabled',
+        'value' => 'false',
+        'type' => 'boolean',
+        'group' => 'general',
+        'label' => 'Fitur Video Monitoring',
+        'description' => 'Aktifkan/nonaktifkan upload dan tampilan video pada data monitoring',
+      ],
 
       // Map Settings
       [

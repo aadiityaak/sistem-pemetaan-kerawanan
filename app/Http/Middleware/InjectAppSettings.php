@@ -25,6 +25,7 @@ class InjectAppSettings
             'app_favicon' => '/favicon.ico',
             'app_logo' => '',
             'login_logo' => '',
+            'monitoring_video_enabled' => false,
         ];
 
         $settings = [];

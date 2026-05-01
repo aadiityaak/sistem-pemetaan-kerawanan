@@ -52,6 +52,7 @@ interface MonitoringData {
 
 const props = defineProps<{
     monitoringData: MonitoringData;
+    isVideoEnabled: boolean;
 }>();
 
 // Get current user and check edit permissions
@@ -470,7 +471,7 @@ onMounted(async () => {
 
                     <!-- Video -->
                     <div
-                        v-if="monitoringData.video_path"
+                        v-if="props.isVideoEnabled && monitoringData.video_path"
                         class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
                     >
                         <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Video</h3>

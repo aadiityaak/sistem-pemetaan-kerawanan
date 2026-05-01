@@ -24,6 +24,7 @@ export interface AppSettings {
     app_favicon?: string;
     app_logo?: string;
     login_logo?: string;
+    monitoring_video_enabled?: string;
     dashboard_title?: string;
     footer_text?: string;
 }

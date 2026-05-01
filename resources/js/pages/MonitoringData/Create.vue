@@ -52,6 +52,7 @@ const props = defineProps<{
     categories: Category[];
     selectedCategory?: Category | null;
     selectedSubCategory?: SubCategory | null;
+    isVideoEnabled: boolean;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -414,7 +415,10 @@ onMounted(async () => {
                     <!-- Form Fields -->
                     <div class="space-y-6">
                         <!-- Basic Information -->
-                        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <div
+                            v-if="props.isVideoEnabled"
+                            class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                        >
                             <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Informasi Dasar</h3>
 
                             <div class="space-y-4">
@@ -745,7 +749,10 @@ onMounted(async () => {
                         </div>
 
                         <!-- Video -->
-                        <div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <div 
+                            v-if="props.isVideoEnabled"
+                            class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                        >
                             <h3 class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Video</h3>
                             <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">Upload video yang berkaitan dengan kejadian ini (Opsional)</p>
 
