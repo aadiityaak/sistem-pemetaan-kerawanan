@@ -28,3 +28,4 @@ temp-check/
 deployment-temp/
 /.claude
 dist_electron/
+build-aapanel/

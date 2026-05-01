@@ -11,6 +11,8 @@
         "build:ssr": "vite build && vite build --ssr",
         "build:production": "bun run build && bun run build:zip",
         "build:zip": "bun run scripts/build-deployment.js",
+        "build:production-aa": "bun run build && bun run build:zip-aa",
+        "build:zip-aa": "bun run scripts/build-deployment.js --target=aapanel",
         "dev": "vite",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",

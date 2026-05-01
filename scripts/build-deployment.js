@@ -7,8 +7,15 @@ import { dirname, join, resolve } from 'path';
 console.log('🚀 Building deployment package for Pemetaan Kerawanan...\n');
 
 const projectRoot = resolve(process.cwd());
-const buildDir = join(projectRoot, 'build-deployment');
-const zipFile = join(projectRoot, 'crime-map-deployment.zip');
+const args = process.argv.slice(2);
+const targetArg = args.find((a) => a.startsWith('--target='));
+const target = (targetArg ? targetArg.split('=')[1] : 'shared').toLowerCase();
+const publicDirName = target === 'aapanel' ? 'public' : 'public_html';
+const buildDirName = target === 'aapanel' ? 'build-aapanel' : 'build-deployment';
+const zipBaseName = target === 'aapanel' ? 'crime-map-aapanel.zip' : 'crime-map-deployment.zip';
+
+const buildDir = join(projectRoot, buildDirName);
+const zipFile = join(projectRoot, zipBaseName);
 
 // Clean previous build
 if (existsSync(buildDir)) {
@@ -119,8 +126,10 @@ laravelAppPublicFiles.forEach((file) => {
 });
 console.log(' ✓\n');
 
-// Create public_html folder
-const publicHtmlDir = join(buildDir, 'public_html');
+// Create public web root folder
+// - shared: uses "public_html"
+// - aapanel: uses "public" (set Site Path to this folder in aaPanel)
+const publicHtmlDir = join(buildDir, publicDirName);
 mkdirSync(publicHtmlDir, { recursive: true });
 
 // Copy public files to public_html
@@ -470,6 +479,14 @@ console.log('   ✓ Deployment instructions created');
 writeFileSync(join(buildDir, 'DEPLOYMENT-INSTRUCTIONS.txt'), instructions);
 console.log('   ✓ Deployment instructions created');
 
+if (publicDirName !== 'public_html') {
+    const instructionsPath = join(buildDir, 'DEPLOYMENT-INSTRUCTIONS.txt');
+    if (existsSync(instructionsPath)) {
+        const updated = readFileSync(instructionsPath, 'utf8').replaceAll('public_html', publicDirName);
+        writeFileSync(instructionsPath, updated);
+    }
+}
+
 // Create ZIP file
 // Check what's in build directory before zipping
 console.log('📋 Build directory contents:');
@@ -515,7 +532,7 @@ writeFileSync(zipFile, zipContent);
 const stats = await Bun.file(zipFile).size;
 const sizeInMB = (stats / (1024 * 1024)).toFixed(2);
 
-console.log(`   ✓ ZIP file created: crime-map-deployment.zip (${sizeInMB} MB)`);
+console.log(`   ✓ ZIP file created: ${zipBaseName} (${sizeInMB} MB)`);
 
 // Clean up build directory
 rmSync(buildDir, { recursive: true, force: true });
@@ -524,8 +541,8 @@ console.log('\n🎉 Deployment package ready!');
 console.log(`📄 File: ${zipFile}`);
 console.log(`📏 Size: ${sizeInMB} MB`);
 console.log('\n📋 Next steps:');
-console.log('1. Extract crime-map-deployment.zip');
+console.log(`1. Extract ${zipBaseName}`);
 console.log('2. Upload laravel-app/ to hosting root directory');
-console.log('3. Upload public_html/ contents to public_html/ directory');
+console.log(`3. Upload ${publicDirName}/ contents to your web root directory`);
 console.log('4. Follow DEPLOYMENT-INSTRUCTIONS.txt');
 console.log('\n✨ Happy deploying!');

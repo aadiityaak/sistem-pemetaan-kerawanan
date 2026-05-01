@@ -72,6 +72,10 @@
         "build:production": [
             "Composer\\Config::disableProcessTimeout",
             "npm run build:production"
+        ],
+        "build:production-aa": [
+            "Composer\\Config::disableProcessTimeout",
+            "npm run build:production-aa"
         ]
     },
     "extra": {
