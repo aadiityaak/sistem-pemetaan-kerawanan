@@ -94,6 +94,13 @@ includeFiles.forEach((file) => {
 });
 console.log(' ✓');
 
+if (target === 'aapanel') {
+    const bootstrapCachePath = join(laravelAppDir, 'bootstrap', 'cache');
+    if (existsSync(bootstrapCachePath)) {
+        rmSync(bootstrapCachePath, { recursive: true, force: true });
+    }
+}
+
 // Copy specific public files to laravel-app directory (for Laravel to find)
 console.log('📦 Copying public files to laravel-app...');
 process.stdout.write('   ');
