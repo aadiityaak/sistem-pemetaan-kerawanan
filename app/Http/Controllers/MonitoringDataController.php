@@ -592,18 +592,6 @@ class MonitoringDataController extends Controller
     {
         $monitoringData = MonitoringData::findOrFail($id);
 
-        // Delete gallery files from storage
-        if (!empty($monitoringData->gallery)) {
-            foreach ($monitoringData->gallery as $filePath) {
-                Storage::disk('public')->delete($filePath);
-            }
-        }
-
-        // Delete video file from storage
-        if (!empty($monitoringData->video_path)) {
-            Storage::disk('public')->delete($monitoringData->video_path);
-        }
-
         $monitoringData->delete();
 
         return redirect()->route('monitoring-data.index')

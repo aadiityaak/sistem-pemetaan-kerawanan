@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class MonitoringData extends Model
 {
@@ -40,6 +41,84 @@ class MonitoringData extends Model
         'gallery' => 'array',
         'incident_date' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::deleting(function (self $monitoringData) {
+            $paths = [];
+
+            $gallery = $monitoringData->gallery;
+            if (is_string($gallery)) {
+                $decoded = json_decode($gallery, true);
+                if (is_array($decoded)) {
+                    $gallery = $decoded;
+                }
+            }
+
+            if (is_array($gallery)) {
+                foreach ($gallery as $item) {
+                    if (is_string($item)) {
+                        $paths[] = $item;
+                        continue;
+                    }
+                    if (is_array($item) && isset($item['path']) && is_string($item['path'])) {
+                        $paths[] = $item['path'];
+                    }
+                }
+            }
+
+            if (is_string($monitoringData->video_path) && $monitoringData->video_path !== '') {
+                $paths[] = $monitoringData->video_path;
+            }
+
+            $normalized = [];
+            foreach ($paths as $path) {
+                $normalizedPath = self::normalizePublicPath($path);
+                if ($normalizedPath === null) {
+                    continue;
+                }
+                if (!str_starts_with($normalizedPath, 'monitoring-data/')) {
+                    continue;
+                }
+                $normalized[$normalizedPath] = true;
+            }
+
+            foreach (array_keys($normalized) as $path) {
+                Storage::disk('public')->delete($path);
+            }
+        });
+    }
+
+    private static function normalizePublicPath(string $path): ?string
+    {
+        $path = trim($path);
+        if ($path === '') {
+            return null;
+        }
+
+        if (preg_match('~^https?://~i', $path) === 1) {
+            $parsed = parse_url($path);
+            if (isset($parsed['path']) && is_string($parsed['path'])) {
+                $path = $parsed['path'];
+            }
+        }
+
+        $path = ltrim($path, '/');
+
+        if (str_starts_with($path, 'storage/')) {
+            $path = substr($path, strlen('storage/'));
+        }
+
+        if (str_starts_with($path, 'public/')) {
+            $path = substr($path, strlen('public/'));
+        }
+
+        if (str_contains($path, '..')) {
+            return null;
+        }
+
+        return $path !== '' ? $path : null;
+    }
 
     /**
      * Get the provinsi
