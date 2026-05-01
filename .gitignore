@@ -25,6 +25,7 @@ yarn-error.log
 build-deployment/
 build-aapanel-novendor/
 crime-map-deployment.zip
+crime-map-aapanel-novendor.zip
 crime-map-aapanel.zip
 temp-check/
 deployment-temp/
