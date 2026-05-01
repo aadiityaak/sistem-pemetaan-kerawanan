@@ -10,9 +10,10 @@ const projectRoot = resolve(process.cwd());
 const args = process.argv.slice(2);
 const targetArg = args.find((a) => a.startsWith('--target='));
 const target = (targetArg ? targetArg.split('=')[1] : 'shared').toLowerCase();
+const noVendor = args.includes('--no-vendor');
 const publicDirName = target === 'aapanel' ? 'public' : 'public_html';
-const buildDirName = target === 'aapanel' ? 'build-aapanel' : 'build-deployment';
-const zipBaseName = target === 'aapanel' ? 'crime-map-aapanel.zip' : 'crime-map-deployment.zip';
+const buildDirName = target === 'aapanel' ? (noVendor ? 'build-aapanel-novendor' : 'build-aapanel') : 'build-deployment';
+const zipBaseName = target === 'aapanel' ? (noVendor ? 'crime-map-aapanel-novendor.zip' : 'crime-map-aapanel.zip') : 'crime-map-deployment.zip';
 
 const buildDir = join(projectRoot, buildDirName);
 const zipFile = join(projectRoot, zipBaseName);
@@ -41,7 +42,7 @@ const includeFiles = [
     'resources',
     'routes',
     // 'storage', // Excluded - should be created fresh on deployment
-    'vendor',
+    ...(noVendor ? [] : ['vendor']),
     'artisan',
     'composer.json',
     'composer.lock',
@@ -97,7 +98,12 @@ console.log(' ✓');
 if (target === 'aapanel') {
     const bootstrapCachePath = join(laravelAppDir, 'bootstrap', 'cache');
     if (existsSync(bootstrapCachePath)) {
-        rmSync(bootstrapCachePath, { recursive: true, force: true });
+        try {
+            const items = readdirSync(bootstrapCachePath);
+            for (const item of items) {
+                rmSync(join(bootstrapCachePath, item), { recursive: true, force: true });
+            }
+        } catch {}
     }
 }
 
@@ -494,13 +500,23 @@ if (target === 'aapanel') {
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$ROOT_DIR/laravel-app"
+APP_DIR="$ROOT_DIR/laravel-app"
+PUBLIC_DIR="$ROOT_DIR/public"
 
-mkdir -p storage bootstrap/cache
-chmod -R 775 storage bootstrap/cache
-chown -R www:www storage bootstrap/cache || true
+mkdir -p "$APP_DIR/storage" "$APP_DIR/bootstrap/cache" "$APP_DIR/storage/app/public"
+chmod -R 775 "$APP_DIR/storage" "$APP_DIR/bootstrap/cache"
+chown -R www:www "$APP_DIR/storage" "$APP_DIR/bootstrap/cache" || true
 
-php artisan storage:link || true
+mkdir -p "$PUBLIC_DIR"
+rm -rf "$PUBLIC_DIR/storage" || true
+ln -s "../laravel-app/storage/app/public" "$PUBLIC_DIR/storage" || true
+
+if [ ! -L "$PUBLIC_DIR/storage" ]; then
+  mkdir -p "$PUBLIC_DIR/storage"
+  cp -R "$APP_DIR/storage/app/public/." "$PUBLIC_DIR/storage/" || true
+fi
+
+cd "$APP_DIR"
 php artisan optimize:clear || true
 `;
 

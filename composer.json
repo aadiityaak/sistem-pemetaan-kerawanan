@@ -76,6 +76,10 @@
         "build:production-aa": [
             "Composer\\Config::disableProcessTimeout",
             "npm run build:production-aa"
+        ],
+        "build:production-aa-novendor": [
+            "Composer\\Config::disableProcessTimeout",
+            "npm run build:production-aa-novendor"
         ]
     },
     "extra": {

@@ -23,6 +23,7 @@ yarn-error.log
 /.vscode
 /.zed
 build-deployment/
+build-aapanel-novendor/
 crime-map-deployment.zip
 crime-map-aapanel.zip
 temp-check/

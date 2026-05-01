@@ -13,6 +13,8 @@
         "build:zip": "bun run scripts/build-deployment.js",
         "build:production-aa": "bun run build && bun run build:zip-aa",
         "build:zip-aa": "bun run scripts/build-deployment.js --target=aapanel",
+        "build:production-aa-novendor": "bun run build && bun run build:zip-aa-novendor",
+        "build:zip-aa-novendor": "bun run scripts/build-deployment.js --target=aapanel --no-vendor",
         "dev": "vite",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",

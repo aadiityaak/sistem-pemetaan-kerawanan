@@ -42,6 +42,27 @@ composer run build:production-aa
 - Berisi folder `laravel-app/` dan `public/`
 - Termasuk helper script `POST-DEPLOY-AAPANEL.sh` untuk set permission (opsional)
 
+### 🚀 Build aaPanel tanpa vendor (lebih kecil)
+
+Jika di server aaPanel Anda bisa menjalankan `composer install`, Anda bisa buat paket **tanpa folder `vendor/`** supaya ZIP lebih kecil:
+
+```bash
+composer run build:production-aa-novendor
+```
+
+**Output:**
+
+- `crime-map-aapanel-novendor.zip`
+- Berisi folder `laravel-app/` (tanpa `vendor/`) dan `public/`
+
+Setelah upload & extract di server, jalankan:
+
+```bash
+cd /www/wwwroot/nama-domain/laravel-app
+composer install --no-dev --optimize-autoloader
+php artisan optimize:clear
+```
+
 ### Step-by-Step Deploy di aaPanel
 
 1. **Buat Website**
