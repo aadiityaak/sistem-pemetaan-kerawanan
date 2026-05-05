@@ -503,13 +503,6 @@ class MonitoringDataController extends Controller
         $isVideoEnabled = $this->isMonitoringVideoEnabled();
         $monitoringData = MonitoringData::findOrFail($id);
 
-        // Debug: Log request data
-        \Log::info('Update request received', [
-            'all_data' => $request->all(),
-            'files' => $request->files->keys(),
-            'method' => $request->method(),
-        ]);
-
         $validated = $request->validate([
             'provinsi_id' => 'required|exists:provinsi,id',
             'kabupaten_kota_id' => 'required|exists:kabupaten_kota,id',

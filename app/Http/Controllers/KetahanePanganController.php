@@ -80,12 +80,11 @@ class KetahanePanganController extends Controller
             return response()->json([
                 'error' => 'External API error',
                 'status' => $response->status(),
-                'message' => $response->body()
             ], $response->status());
         } catch (\Exception $e) {
+            report($e);
             return response()->json([
-                'error' => 'API request failed',
-                'message' => $e->getMessage()
+                'error' => 'API request failed'
             ], 500);
         }
     }
@@ -143,12 +142,11 @@ class KetahanePanganController extends Controller
             return response()->json([
                 'error' => 'External API error',
                 'status' => $response->status(),
-                'message' => $response->body()
             ], $response->status());
         } catch (\Exception $e) {
+            report($e);
             return response()->json([
-                'error' => 'API request failed',
-                'message' => $e->getMessage()
+                'error' => 'API request failed'
             ], 500);
         }
     }

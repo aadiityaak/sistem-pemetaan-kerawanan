@@ -37,9 +37,10 @@ if (initialCsrfToken) {
 
 // Update CSRF token dynamically on every Inertia navigation
 router.on('finish', (event) => {
-    const props = event.detail.page.props;
-    if (props.csrf_token) {
-        updateCsrfToken(props.csrf_token as string);
+    const page = event.detail.page;
+    const csrfToken = page?.props?.csrf_token;
+    if (typeof csrfToken === 'string' && csrfToken.length > 0) {
+        updateCsrfToken(csrfToken);
     }
 });
 

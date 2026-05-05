@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\AppSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class VideoUploadController extends Controller
@@ -23,12 +22,12 @@ class VideoUploadController extends Controller
         }
 
         $request->validate([
-            'chunk' => 'required|file',
-            'chunkIndex' => 'required|integer',
-            'totalChunks' => 'required|integer',
-            'uploadId' => 'required|string',
-            'fileName' => 'required|string',
-            'fileSize' => 'required|integer',
+            'chunk' => 'required|file|max:10240',
+            'chunkIndex' => 'required|integer|min:0',
+            'totalChunks' => 'required|integer|min:1|max:5000',
+            'uploadId' => ['required', 'string', 'max:100', 'regex:/^[A-Za-z0-9_-]{8,100}$/'],
+            'fileName' => 'required|string|max:255',
+            'fileSize' => 'required|integer|min:1|max:104857600',
         ]);
 
         $chunkIndex = (int) $request->input('chunkIndex');
@@ -38,6 +37,22 @@ class VideoUploadController extends Controller
         $fileSize = $request->input('fileSize');
 
         try {
+            if ($chunkIndex >= $totalChunks) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Chunk index tidak valid.',
+                ], 422);
+            }
+
+            $fileExtension = strtolower((string) pathinfo($originalFileName, PATHINFO_EXTENSION));
+            $allowedExtensions = ['mp4', 'mov', 'avi', 'wmv', 'flv', 'webm'];
+            if ($fileExtension === '' || !in_array($fileExtension, $allowedExtensions, true)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Format video tidak didukung.',
+                ], 422);
+            }
+
             // Create temporary directory for chunks
             $tempDir = storage_path('app/temp-chunks/' . $uploadId);
             if (!is_dir($tempDir)) {
@@ -59,7 +74,6 @@ class VideoUploadController extends Controller
 
             // If all chunks are uploaded, combine them
             if ($uploadedChunks === $totalChunks) {
-                $fileExtension = pathinfo($originalFileName, PATHINFO_EXTENSION);
                 $safeFileName = Str::slug(pathinfo($originalFileName, PATHINFO_FILENAME)) . '_' . time() . '.' . $fileExtension;
                 $finalPath = 'monitoring-data/videos/' . $safeFileName;
                 $fullPath = storage_path('app/public/' . $finalPath);
@@ -109,11 +123,11 @@ class VideoUploadController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Video chunk upload error: ' . $e->getMessage());
+            report($e);
             
             return response()->json([
                 'success' => false,
-                'message' => 'Upload failed: ' . $e->getMessage(),
+                'message' => 'Upload gagal.',
             ], 500);
         }
     }
@@ -131,7 +145,7 @@ class VideoUploadController extends Controller
         }
 
         $request->validate([
-            'videoPath' => 'required|string',
+            'videoPath' => ['required', 'string', 'regex:/^monitoring-data\/videos\/[A-Za-z0-9_-]+_\d+\.(mp4|mov|avi|wmv|flv|webm)$/i'],
         ]);
 
         $videoPath = $request->input('videoPath');
@@ -152,11 +166,11 @@ class VideoUploadController extends Controller
             ], 404);
 
         } catch (\Exception $e) {
-            Log::error('Video delete error: ' . $e->getMessage());
+            report($e);
             
             return response()->json([
                 'success' => false,
-                'message' => 'Delete failed: ' . $e->getMessage(),
+                'message' => 'Hapus video gagal.',
             ], 500);
         }
     }
