@@ -21,8 +21,8 @@ export default defineConfig({
             },
         }),
         VitePWA({
-            registerType: 'autoUpdate',
-            injectRegister: 'auto',
+            registerType: 'prompt',
+            injectRegister: null,
             strategies: 'generateSW',
             devOptions: {
                 enabled: true,
@@ -32,7 +32,7 @@ export default defineConfig({
                 globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
                 cleanupOutdatedCaches: true,
                 clientsClaim: true,
-                skipWaiting: true,
+                skipWaiting: false,
                 navigateFallback: null, // Matikan fallback ke / jika tidak di-precache
                 runtimeCaching: [
                     {

@@ -9,6 +9,7 @@ import { initializeTheme } from './composables/useAppearance';
 import { usePWA } from './composables/usePWA';
 import axios from 'axios';
 import { router } from '@inertiajs/vue3';
+import { registerSW } from 'virtual:pwa-register';
 
 // Function to update CSRF token in meta tag and axios headers
 const updateCsrfToken = (token: string) => {
@@ -76,16 +77,17 @@ axios.interceptors.response.use(
     }
 );
 
-// Register Service Worker for PWA
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-                console.log('SW Registered:', registration.scope);
-            })
-            .catch(error => {
-                console.error('SW Registration Error:', error);
-            });
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+    const updateSW = registerSW({
+        onNeedRefresh() {
+            const shouldUpdate = window.confirm('Update tersedia. Muat ulang aplikasi sekarang?');
+            if (shouldUpdate) {
+                updateSW(true);
+            }
+        },
+        onOfflineReady() {
+            console.log('Aplikasi siap digunakan secara offline.');
+        },
     });
 }
 
