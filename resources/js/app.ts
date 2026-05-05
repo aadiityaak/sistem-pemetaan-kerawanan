@@ -22,6 +22,12 @@ const ensureFreshBuild = async () => {
         const key = 'buildVersion';
         const localVersion = window.localStorage.getItem(key);
 
+        try {
+            window.localStorage.setItem('buildMeta', JSON.stringify(meta));
+        } catch {}
+        (window as any).__APP_BUILD_META__ = meta;
+        window.dispatchEvent(new CustomEvent('build-meta', { detail: meta }));
+
         if (localVersion && localVersion !== remoteVersion) {
             window.localStorage.setItem(key, remoteVersion);
 
@@ -114,7 +120,16 @@ axios.interceptors.response.use(
 void ensureFreshBuild();
 
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+    let swRegistration: ServiceWorkerRegistration | undefined;
     const updateSW = registerSW({
+        onRegisteredSW(_swUrl, r) {
+            swRegistration = r;
+            (window as any).__CHECK_PWA_UPDATE__ = async () => {
+                try {
+                    await swRegistration?.update();
+                } catch {}
+            };
+        },
         onNeedRefresh() {
             const shouldUpdate = window.confirm('Update tersedia. Muat ulang aplikasi sekarang?');
             if (shouldUpdate) {
@@ -125,6 +140,7 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
             console.log('Aplikasi siap digunakan secara offline.');
         },
     });
+    (window as any).__PWA_UPDATE_SW__ = updateSW;
 }
 
 const appName = 'Pemetaan Kerawanan';
