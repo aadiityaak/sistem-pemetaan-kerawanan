@@ -212,6 +212,20 @@ if (existsSync(join(projectRoot, 'public/build'))) {
 }
 console.log(' ✓\n');
 
+// Write build meta for cache-busting / PWA update detection
+try {
+    const buildMeta = {
+        version: `${Date.now()}`,
+        built_at: new Date().toISOString(),
+        target,
+        no_vendor: noVendor,
+    };
+    writeFileSync(join(publicHtmlDir, 'build-meta.json'), JSON.stringify(buildMeta, null, 2) + '\n');
+    console.log('🧾 build-meta.json created');
+} catch (error) {
+    console.log(`⚠ Failed to write build-meta.json: ${error.message}`);
+}
+
 // Modify index.php for shared hosting
 console.log('🔧 Modifying index.php for shared hosting...');
 const indexPhpPath = join(publicHtmlDir, 'index.php');

@@ -11,6 +11,40 @@ import axios from 'axios';
 import { router } from '@inertiajs/vue3';
 import { registerSW } from 'virtual:pwa-register';
 
+const ensureFreshBuild = async () => {
+    try {
+        const response = await fetch(`/build-meta.json?ts=${Date.now()}`, { cache: 'no-store' });
+        if (!response.ok) return;
+        const meta = await response.json().catch(() => null);
+        const remoteVersion = meta?.version;
+        if (typeof remoteVersion !== 'string' || remoteVersion.length === 0) return;
+
+        const key = 'buildVersion';
+        const localVersion = window.localStorage.getItem(key);
+
+        if (localVersion && localVersion !== remoteVersion) {
+            window.localStorage.setItem(key, remoteVersion);
+
+            if ('serviceWorker' in navigator) {
+                const regs = await navigator.serviceWorker.getRegistrations();
+                await Promise.all(regs.map((r) => r.unregister().catch(() => false)));
+            }
+
+            if ('caches' in window) {
+                const keys = await caches.keys();
+                await Promise.all(keys.map((k) => caches.delete(k).catch(() => false)));
+            }
+
+            window.location.reload();
+            return;
+        }
+
+        if (!localVersion) {
+            window.localStorage.setItem(key, remoteVersion);
+        }
+    } catch {}
+};
+
 // Function to update CSRF token in meta tag and axios headers
 const updateCsrfToken = (token: string) => {
     if (!token) return;
@@ -76,6 +110,8 @@ axios.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+void ensureFreshBuild();
 
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     const updateSW = registerSW({

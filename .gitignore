@@ -24,6 +24,7 @@ yarn-error.log
 /.zed
 build-deployment/
 build-aapanel-novendor/
+*.zip
 crime-map-deployment.zip
 crime-map-aapanel-novendor.zip
 crime-map-aapanel.zip
