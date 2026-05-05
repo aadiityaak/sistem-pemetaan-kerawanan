@@ -37,7 +37,9 @@ class SettingsService
     public function createOrUpdateSetting(array $data, ?UploadedFile $file = null, ?AppSetting $setting = null): AppSetting
     {
         Log::info('SettingsService createOrUpdateSetting called', [
-            'data' => $data,
+            'key' => $data['key'] ?? null,
+            'type' => $data['type'] ?? null,
+            'group' => $data['group'] ?? null,
             'has_file' => $file !== null,
             'setting_exists' => $setting !== null,
             'setting_id' => $setting?->id,
@@ -77,8 +79,7 @@ class SettingsService
         if ($setting) {
             Log::info('Updating existing setting', [
                 'setting_id' => $setting->id,
-                'old_value' => $setting->value,
-                'new_data' => $data,
+                'key' => $setting->key,
             ]);
 
             $setting->update($data);
@@ -91,12 +92,12 @@ class SettingsService
 
             Log::info('Setting updated successfully', [
                 'setting_id' => $setting->id,
-                'final_value' => $setting->fresh()->value,
+                'key' => $setting->key,
             ]);
 
             return $setting;
         } else {
-            Log::info('Creating new setting', ['data' => $data]);
+            Log::info('Creating new setting', ['key' => $data['key'] ?? null]);
 
             $createdSetting = AppSetting::create($data);
 
@@ -108,7 +109,7 @@ class SettingsService
 
             Log::info('Setting created successfully', [
                 'setting_id' => $createdSetting->id,
-                'final_value' => $createdSetting->value,
+                'key' => $createdSetting->key,
             ]);
 
             return $createdSetting;

@@ -90,9 +90,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/delete-video', [VideoUploadController::class, 'deleteVideo'])->name('api.delete-video');
 });
 
-// Public API routes
-Route::get('/api/ketahanan-pangan/harga-peta', [KetahanePanganController::class, 'getHargaPeta'])->name('api.ketahanan-pangan.harga-peta');
-Route::get('/api/ketahanan-pangan/harga-informasi', [KetahanePanganController::class, 'getHargaInformasi'])->name('api.ketahanan-pangan.harga-informasi');
+Route::middleware(['auth', 'verified', 'throttle:30,1'])->group(function () {
+    Route::get('/api/ketahanan-pangan/harga-peta', [KetahanePanganController::class, 'getHargaPeta'])->name('api.ketahanan-pangan.harga-peta');
+    Route::get('/api/ketahanan-pangan/harga-informasi', [KetahanePanganController::class, 'getHargaInformasi'])->name('api.ketahanan-pangan.harga-informasi');
+});
 
 Route::get('dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified', 'province.filter'])->name('dashboard');
 
@@ -174,15 +175,12 @@ Route::get('peta-kriminalitas', [PetaKriminalitasController::class, 'index'])->m
 
 // Proxy route untuk Pusiknas (dengan rate limiting untuk mencegah abuse)
 Route::get('proxy/pusiknas', [ProxyController::class, 'pusiknas'])
-    ->middleware('throttle:10,1') // 10 requests per minute
+    ->middleware(['auth', 'verified', 'throttle:10,1']) // 10 requests per minute
     ->name('proxy.pusiknas');
 
 Route::get('proxy/war-monitor', [ProxyController::class, 'warMonitor'])
-    ->middleware('throttle:10,1')
+    ->middleware(['auth', 'verified', 'throttle:10,1'])
     ->name('proxy.war-monitor');
-
-Route::match(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], 'proxy/api', [ProxyController::class, 'genericProxy'])
-    ->name('proxy.api');
 
 // User Performance Dashboard - untuk statistik performa user
 Route::get('user-performance', [\App\Http\Controllers\UserPerformanceController::class, 'index'])->middleware(['auth', 'verified'])->name('user-performance.index');

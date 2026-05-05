@@ -57,7 +57,7 @@ class AppSettingController extends Controller
                     'label' => 'API Key / License Key',
                     'description' => 'Masukkan API Key yang valid untuk akses data eksternal.',
                     'type' => 'password',
-                    'value' => $this->settingsService->getSetting('license_key', ''),
+                    'value' => $this->settingsService->getSetting('license_key', '') !== '' ? '********' : '',
                 ],
                 [
                     'key' => 'license_expires_at',
@@ -110,7 +110,7 @@ class AppSettingController extends Controller
                     'label' => 'Gemini API Key',
                     'description' => 'API Key untuk autentikasi Google Gemini',
                     'type' => 'password',
-                    'value' => $this->settingsService->getSetting('gemini_api_key', ''),
+                    'value' => $this->settingsService->getSetting('gemini_api_key', '') !== '' ? '********' : '',
                 ],
             ],
         ];
@@ -127,7 +127,6 @@ class AppSettingController extends Controller
     {
         Log::info('AppSettingController update called', [
             'key' => $key,
-            'request_data' => $request->all(),
             'has_file' => $request->hasFile('file'),
             'file_info' => $request->hasFile('file') ? [
                 'name' => $request->file('file')->getClientOriginalName(),
@@ -203,14 +202,26 @@ class AppSettingController extends Controller
             $settingGroup = 'license';
         }
 
+        $setting = AppSetting::where('key', $key)->first();
+
         $value = $request->get('value');
+        if (is_string($value)) {
+            $value = trim($value);
+        }
+
+        if (in_array($key, ['gemini_api_key', 'license_key'], true)) {
+            if ($value === null || $value === '' || $value === '********') {
+                $value = $setting?->value;
+            }
+        }
+
         if ($key === 'license_key') {
             $token = (string) ($value ?? '');
             $envKey = config('app.license_key') ?: env('KEY_API');
 
             // Simpan license_key asli (sesuai permintaan user)
             // Namun tetap perbarui license_expires_at jika cocok dengan KEY_API
-            if ($envKey && $token === $envKey) {
+            if ($token !== '' && $envKey && $token === $envKey) {
                 $envExpiry = config('app.license_expired_date') ?: env('EXPIRED_DATE');
                 $expiryValue = $envExpiry ?: now()->addYears(3)->toDateString();
 
@@ -249,21 +260,10 @@ class AppSettingController extends Controller
 
         $file = $request->hasFile('file') ? $request->file('file') : null;
 
-        Log::info('Prepared data for update', [
-            'data' => $data,
-            'file_present' => $file !== null,
-        ]);
-
         // Find existing setting or create new
-        $setting = AppSetting::where('key', $key)->first();
-
         $updatedSetting = $this->settingsService->createOrUpdateSetting($data, $file, $setting);
 
-        Log::info('Setting updated', [
-            'key' => $key,
-            'old_value' => $setting ? $setting->value : null,
-            'new_value' => $updatedSetting->value,
-        ]);
+        Log::info('Setting updated', ['key' => $key]);
 
         return redirect()->route('settings.index')->with('success', 'Setting berhasil diperbarui');
     }

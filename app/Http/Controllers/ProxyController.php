@@ -100,7 +100,8 @@ class ProxyController extends Controller
 
             return response('Gagal mengambil data dari Pusiknas', 500);
         } catch (\Exception $e) {
-            return response('Error: ' . $e->getMessage(), 500);
+            report($e);
+            return response('Terjadi kesalahan saat mengambil data dari Pusiknas', 500);
         }
     }
 
@@ -193,7 +194,8 @@ class ProxyController extends Controller
 
             return response('Gagal mengambil data dari War Monitor', 500);
         } catch (\Exception $e) {
-            return response('Error: ' . $e->getMessage(), 500);
+            report($e);
+            return response('Terjadi kesalahan saat mengambil data dari War Monitor', 500);
         }
     }
 }
