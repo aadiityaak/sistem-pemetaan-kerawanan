@@ -5,7 +5,7 @@ import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
 import type { BreadcrumbItemType } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 interface Props {
     breadcrumbs?: BreadcrumbItemType[];
@@ -16,6 +16,20 @@ withDefaults(defineProps<Props>(), {
 });
 
 const buildVersion = ref('');
+const isLocal = computed(() => {
+    const host = window.location.hostname;
+    return import.meta.env.DEV || host === 'localhost' || host === '127.0.0.1';
+});
+
+const displayVersion = computed(() => {
+    if (buildVersion.value) return buildVersion.value;
+    if (!isLocal.value) return '-';
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}${m}${day}`;
+});
 
 const applyMeta = (meta: any) => {
     const version = meta?.version;
@@ -78,11 +92,11 @@ onUnmounted(() => {
             <div class="flex-1">
                 <slot />
             </div>
-            <div class="py-4 text-center text-xs text-muted-foreground">
-                <div>Version {{ buildVersion || '-' }}</div>
+            <div class="py-4 flex items-center justify-center text-center text-xs text-muted-foreground">
+                <div>Version {{ displayVersion }}</div>
                 <button
                     type="button"
-                    class="mt-1 text-[10px] underline underline-offset-2 opacity-80 hover:opacity-100"
+                    class="ml-2 px-2 py-1 rounded-md bg-primary text-primary-foreground"
                     @click="checkUpdate"
                 >
                     Cek update

@@ -363,6 +363,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Settings Routes (Super Admin and Admin VIP can view, only Super Admin can edit)
     Route::middleware(['role:super_admin,admin_vip'])->group(function () {
         Route::get('/settings', [AppSettingController::class, 'index'])->name('settings.index');
+        Route::get('/settings/ai', [AppSettingController::class, 'ai'])->name('settings.ai');
         Route::get('admin/menu-items', [\App\Http\Controllers\Admin\MenuItemController::class, 'index'])->name('admin.menu-items.index');
 
         // Only Super Admin can manage settings and menus

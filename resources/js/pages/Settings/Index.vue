@@ -37,58 +37,58 @@
                                 <h3 class="mb-4 text-lg font-semibold text-gray-800 capitalize dark:text-gray-200">{{ group }}</h3>
 
                                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <div
-                                        v-for="setting in groupSettings"
-                                        :key="setting.key"
-                                        class="rounded-lg border border-gray-200 bg-gray-50/50 p-4 dark:border-gray-600 dark:bg-gray-700/50"
-                                    >
-                                        <div class="mb-3 flex items-start justify-between">
-                                            <div class="flex-1">
-                                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    {{ setting.label }}
-                                                </label>
-                                                <p v-if="setting.description" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                                    {{ setting.description }}
-                                                </p>
+                                    <template v-for="setting in groupSettings" :key="setting.key">
+                                        <div
+                                            v-if="shouldShowSetting(setting, group)"
+                                            class="rounded-lg border border-gray-200 bg-gray-50/50 p-4 dark:border-gray-600 dark:bg-gray-700/50"
+                                        >
+                                            <div class="mb-3 flex items-start justify-between">
+                                                <div class="flex-1">
+                                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                        {{ setting.label }}
+                                                    </label>
+                                                    <p v-if="setting.description" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                        {{ setting.description }}
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <!-- Read-only display of setting values -->
-                                        <div class="mt-2">
-                                            <div
-                                                v-if="setting.type === 'text' || setting.type === 'email' || setting.type === 'url'"
-                                                class="block w-full rounded-md border-gray-300 bg-gray-100 p-2 text-sm text-gray-600 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-300"
-                                            >
-                                                {{ setting.value || '-' }}
-                                            </div>
-                                            <div
-                                                v-else-if="setting.type === 'select'"
-                                                class="block w-full rounded-md border-gray-300 bg-gray-100 p-2 text-sm text-gray-600 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-300"
-                                            >
-                                                {{ getSelectLabel(setting) || setting.value || '-' }}
-                                            </div>
-                                            <div
-                                                v-else-if="setting.type === 'textarea'"
-                                                class="block w-full rounded-md border-gray-300 bg-gray-100 p-2 text-sm text-gray-600 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-300"
-                                            >
-                                                {{ setting.value || '-' }}
-                                            </div>
-                                            <div v-else-if="setting.type === 'boolean'" class="flex items-center">
-                                                <span
-                                                    v-if="setting.value === 'true' || setting.value === '1'"
-                                                    class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-300"
+                                            <div class="mt-2">
+                                                <div
+                                                    v-if="setting.type === 'text' || setting.type === 'email' || setting.type === 'url'"
+                                                    class="block w-full rounded-md border-gray-300 bg-gray-100 p-2 text-sm text-gray-600 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-300"
                                                 >
-                                                    Aktif
-                                                </span>
-                                                <span
-                                                    v-else
-                                                    class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-300"
+                                                    {{ setting.value || '-' }}
+                                                </div>
+                                                <div
+                                                    v-else-if="setting.type === 'select'"
+                                                    class="block w-full rounded-md border-gray-300 bg-gray-100 p-2 text-sm text-gray-600 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-300"
                                                 >
-                                                    Tidak Aktif
-                                                </span>
+                                                    {{ getSelectLabel(setting) || setting.value || '-' }}
+                                                </div>
+                                                <div
+                                                    v-else-if="setting.type === 'textarea'"
+                                                    class="block w-full rounded-md border-gray-300 bg-gray-100 p-2 text-sm text-gray-600 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-300"
+                                                >
+                                                    {{ setting.value || '-' }}
+                                                </div>
+                                                <div v-else-if="setting.type === 'boolean'" class="flex items-center">
+                                                    <span
+                                                        v-if="setting.value === 'true' || setting.value === '1'"
+                                                        class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-300"
+                                                    >
+                                                        Aktif
+                                                    </span>
+                                                    <span
+                                                        v-else
+                                                        class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-300"
+                                                    >
+                                                        Tidak Aktif
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </template>
                                 </div>
                             </div>
                         </div>
@@ -98,110 +98,111 @@
                                 <h3 class="mb-4 text-lg font-semibold text-gray-800 capitalize dark:text-gray-200">{{ group }}</h3>
 
                                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <div
-                                        v-for="setting in groupSettings"
-                                        :key="setting.key"
-                                        class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700"
-                                    >
-                                        <div class="mb-3 flex items-start justify-between">
-                                            <div class="flex-1">
-                                                <label :for="setting.key" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    {{ setting.label }}
-                                                </label>
-                                                <p v-if="setting.description" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                                    {{ setting.description }}
-                                                </p>
+                                    <template v-for="setting in groupSettings" :key="setting.key">
+                                        <div
+                                            v-if="shouldShowSetting(setting, group)"
+                                            class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700"
+                                        >
+                                            <div class="mb-3 flex items-start justify-between">
+                                                <div class="flex-1">
+                                                    <label :for="setting.key" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                        {{ setting.label }}
+                                                    </label>
+                                                    <p v-if="setting.description" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                        {{ setting.description }}
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <div v-if="setting.type === 'text'" class="mt-2">
-                                            <input
-                                                :id="setting.key"
-                                                v-model="forms[setting.key].value"
-                                                type="text"
-                                                class="mt-1 block w-full rounded-md border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                                                :placeholder="setting.value || ''"
-                                            />
-                                        </div>
-
-                                        <div v-else-if="setting.type === 'select'" class="mt-2">
-                                            <select
-                                                :id="setting.key"
-                                                v-model="forms[setting.key].value"
-                                                class="mt-1 block w-full rounded-md border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                                            >
-                                                <option v-for="opt in setting.options || []" :key="opt.value" :value="opt.value">
-                                                    {{ opt.label }}
-                                                </option>
-                                            </select>
-                                        </div>
-
-                                        <div v-else-if="setting.type === 'password'" class="mt-2">
-                                            <input
-                                                :id="setting.key"
-                                                v-model="forms[setting.key].value"
-                                                type="password"
-                                                class="mt-1 block w-full rounded-md border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                                                :placeholder="setting.value ? '••••••••' : 'Enter API key'"
-                                            />
-                                        </div>
-
-                                        <div v-else-if="setting.type === 'number'" class="mt-2">
-                                            <input
-                                                :id="setting.key"
-                                                v-model="forms[setting.key].value"
-                                                type="number"
-                                                class="mt-1 block w-full rounded-md border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                                                :placeholder="setting.value || ''"
-                                            />
-                                        </div>
-
-                                        <div v-else-if="setting.type === 'boolean'" class="mt-2">
-                                            <label class="inline-flex items-center">
+                                            <div v-if="setting.type === 'text'" class="mt-2">
                                                 <input
                                                     :id="setting.key"
                                                     v-model="forms[setting.key].value"
-                                                    type="checkbox"
-                                                    :checked="forms[setting.key].value === 'true'"
-                                                    @change="forms[setting.key].value = $event.target.checked ? 'true' : 'false'"
-                                                    class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800"
-                                                />
-                                                <span class="ml-2 text-sm text-gray-900 dark:text-gray-100">Aktif</span>
-                                            </label>
-                                        </div>
-
-                                        <div v-else-if="setting.type === 'image'" class="mt-2">
-                                            <div v-if="imagePreviews[setting.key] || setting.value" class="mb-2">
-                                                <img
-                                                    :src="imagePreviews[setting.key] || setting.value || ''"
-                                                    alt="Current image"
-                                                    class="h-16 w-16 rounded border border-gray-200 object-cover dark:border-gray-600"
+                                                    type="text"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                                    :placeholder="setting.value || ''"
                                                 />
                                             </div>
-                                            <input
-                                                :id="setting.key"
-                                                @change="handleFileChange(setting.key, $event)"
-                                                type="file"
-                                                accept="image/*,image/x-icon"
-                                                class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-3 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-400 dark:file:bg-blue-900 dark:file:text-blue-300 dark:hover:file:bg-blue-800"
-                                            />
-                                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Format: JPG, PNG, GIF, ICO, SVG. Max: 2MB</p>
-                                        </div>
 
-                                        <div v-else class="mt-2">
-                                            <textarea
-                                                :id="setting.key"
-                                                v-model="forms[setting.key].value"
-                                                rows="3"
-                                                class="mt-1 block w-full rounded-md border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                                                :placeholder="setting.value || ''"
-                                            ></textarea>
-                                        </div>
+                                            <div v-else-if="setting.type === 'select'" class="mt-2">
+                                                <select
+                                                    :id="setting.key"
+                                                    v-model="forms[setting.key].value"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                                >
+                                                    <option v-for="opt in setting.options || []" :key="opt.value" :value="opt.value">
+                                                        {{ opt.label }}
+                                                    </option>
+                                                </select>
+                                            </div>
 
-                                        <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                            <span class="font-medium">Key:</span> {{ setting.key }}
+                                            <div v-else-if="setting.type === 'password'" class="mt-2">
+                                                <input
+                                                    :id="setting.key"
+                                                    v-model="forms[setting.key].value"
+                                                    type="password"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                                    :placeholder="setting.value ? '••••••••' : 'Enter API key'"
+                                                />
+                                            </div>
+
+                                            <div v-else-if="setting.type === 'number'" class="mt-2">
+                                                <input
+                                                    :id="setting.key"
+                                                    v-model="forms[setting.key].value"
+                                                    type="number"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                                    :placeholder="setting.value || ''"
+                                                />
+                                            </div>
+
+                                            <div v-else-if="setting.type === 'boolean'" class="mt-2">
+                                                <label class="inline-flex items-center">
+                                                    <input
+                                                        :id="setting.key"
+                                                        v-model="forms[setting.key].value"
+                                                        type="checkbox"
+                                                        :checked="forms[setting.key].value === 'true'"
+                                                        @change="forms[setting.key].value = $event.target.checked ? 'true' : 'false'"
+                                                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800"
+                                                    />
+                                                    <span class="ml-2 text-sm text-gray-900 dark:text-gray-100">Aktif</span>
+                                                </label>
+                                            </div>
+
+                                            <div v-else-if="setting.type === 'image'" class="mt-2">
+                                                <div v-if="imagePreviews[setting.key] || setting.value" class="mb-2">
+                                                    <img
+                                                        :src="imagePreviews[setting.key] || setting.value || ''"
+                                                        alt="Current image"
+                                                        class="h-16 w-16 rounded border border-gray-200 object-cover dark:border-gray-600"
+                                                    />
+                                                </div>
+                                                <input
+                                                    :id="setting.key"
+                                                    @change="handleFileChange(setting.key, $event)"
+                                                    type="file"
+                                                    accept="image/*,image/x-icon"
+                                                    class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-3 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-400 dark:file:bg-blue-900 dark:file:text-blue-300 dark:hover:file:bg-blue-800"
+                                                />
+                                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Format: JPG, PNG, GIF, ICO, SVG. Max: 2MB</p>
+                                            </div>
+
+                                            <div v-else class="mt-2">
+                                                <textarea
+                                                    :id="setting.key"
+                                                    v-model="forms[setting.key].value"
+                                                    rows="3"
+                                                    class="mt-1 block w-full rounded-md border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                                    :placeholder="setting.value || ''"
+                                                ></textarea>
+                                            </div>
+
+                                            <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                                <span class="font-medium">Key:</span> {{ setting.key }}
+                                            </div>
                                         </div>
-                                    </div>
+                                    </template>
                                 </div>
                             </div>
 
@@ -395,5 +396,26 @@ const getSelectLabel = (setting: Setting): string | null => {
 
     const found = setting.options.find((opt) => opt.value === value);
     return found?.label || null;
+};
+
+const getProviderFromProps = (): string => {
+    const allSettings = Object.values(props.settings).flat();
+    const providerSetting = allSettings.find((s) => s.key === 'ai_provider');
+    const value = providerSetting?.value || 'gemini';
+    return value === 'openai' ? 'openai' : 'gemini';
+};
+
+const currentAiProvider = computed(() => {
+    const providerValue = formsReady.value && forms.value?.ai_provider ? forms.value.ai_provider.value : getProviderFromProps();
+    return providerValue === 'openai' ? 'openai' : 'gemini';
+});
+
+const shouldShowSetting = (setting: Setting, group: string): boolean => {
+    if (group !== 'ai') return true;
+    if (setting.key === 'ai_provider') return true;
+    if (currentAiProvider.value === 'openai') {
+        return setting.key.startsWith('openai_');
+    }
+    return setting.key.startsWith('gemini_');
 };
 </script>

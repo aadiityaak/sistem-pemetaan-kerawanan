@@ -14,6 +14,75 @@ class AppSettingController extends Controller
         private SettingsService $settingsService
     ) {}
 
+    private function getAiSettings(): array
+    {
+        return [
+            [
+                'key' => 'ai_provider',
+                'label' => 'AI Provider',
+                'description' => 'Pilih provider AI untuk analisis data',
+                'type' => 'select',
+                'options' => [
+                    ['value' => 'gemini', 'label' => 'Gemini (Google)'],
+                    ['value' => 'openai', 'label' => 'ChatGPT (OpenAI)'],
+                ],
+                'value' => $this->settingsService->getSetting('ai_provider', 'gemini'),
+            ],
+            [
+                'key' => 'gemini_enabled',
+                'label' => 'Aktifkan Gemini AI',
+                'description' => 'Enable/disable fitur Gemini AI untuk analisis data',
+                'type' => 'boolean',
+                'value' => $this->settingsService->getSetting('gemini_enabled', 'false'),
+            ],
+            [
+                'key' => 'gemini_api_endpoint',
+                'label' => 'Gemini API Endpoint',
+                'description' => 'URL endpoint Google Gemini API',
+                'type' => 'text',
+                'value' => $this->settingsService->getSetting(
+                    'gemini_api_endpoint',
+                    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
+                ),
+            ],
+            [
+                'key' => 'gemini_api_key',
+                'label' => 'Gemini API Key',
+                'description' => 'API Key untuk autentikasi Google Gemini',
+                'type' => 'password',
+                'value' => $this->settingsService->getSetting('gemini_api_key', '') !== '' ? '********' : '',
+            ],
+            [
+                'key' => 'openai_enabled',
+                'label' => 'Aktifkan OpenAI (ChatGPT)',
+                'description' => 'Enable/disable fitur OpenAI untuk analisis data',
+                'type' => 'boolean',
+                'value' => $this->settingsService->getSetting('openai_enabled', 'false'),
+            ],
+            [
+                'key' => 'openai_api_base_url',
+                'label' => 'OpenAI Base URL',
+                'description' => 'Base URL untuk OpenAI API (default: https://api.openai.com)',
+                'type' => 'text',
+                'value' => $this->settingsService->getSetting('openai_api_base_url', 'https://api.openai.com'),
+            ],
+            [
+                'key' => 'openai_model',
+                'label' => 'OpenAI Model',
+                'description' => 'Model OpenAI untuk analisis (mis. gpt-4o-mini)',
+                'type' => 'text',
+                'value' => $this->settingsService->getSetting('openai_model', 'gpt-4o-mini'),
+            ],
+            [
+                'key' => 'openai_api_key',
+                'label' => 'OpenAI API Key',
+                'description' => 'API Key untuk autentikasi OpenAI',
+                'type' => 'password',
+                'value' => $this->settingsService->getSetting('openai_api_key', '') !== '' ? '********' : '',
+            ],
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -90,72 +159,19 @@ class AppSettingController extends Controller
                     'value' => $this->settingsService->getSetting('login_logo', ''),
                 ],
             ],
-            'ai' => [
-                [
-                    'key' => 'ai_provider',
-                    'label' => 'AI Provider',
-                    'description' => 'Pilih provider AI untuk analisis data',
-                    'type' => 'select',
-                    'options' => [
-                        ['value' => 'gemini', 'label' => 'Gemini (Google)'],
-                        ['value' => 'openai', 'label' => 'ChatGPT (OpenAI)'],
-                    ],
-                    'value' => $this->settingsService->getSetting('ai_provider', 'gemini'),
-                ],
-                [
-                    'key' => 'gemini_enabled',
-                    'label' => 'Aktifkan Gemini AI',
-                    'description' => 'Enable/disable fitur Gemini AI untuk analisis data',
-                    'type' => 'boolean',
-                    'value' => $this->settingsService->getSetting('gemini_enabled', 'false'),
-                ],
-                [
-                    'key' => 'gemini_api_endpoint',
-                    'label' => 'Gemini API Endpoint',
-                    'description' => 'URL endpoint Google Gemini API',
-                    'type' => 'text',
-                    'value' => $this->settingsService->getSetting('gemini_api_endpoint', 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'),
-                ],
-                [
-                    'key' => 'gemini_api_key',
-                    'label' => 'Gemini API Key',
-                    'description' => 'API Key untuk autentikasi Google Gemini',
-                    'type' => 'password',
-                    'value' => $this->settingsService->getSetting('gemini_api_key', '') !== '' ? '********' : '',
-                ],
-                [
-                    'key' => 'openai_enabled',
-                    'label' => 'Aktifkan OpenAI (ChatGPT)',
-                    'description' => 'Enable/disable fitur OpenAI untuk analisis data',
-                    'type' => 'boolean',
-                    'value' => $this->settingsService->getSetting('openai_enabled', 'false'),
-                ],
-                [
-                    'key' => 'openai_api_base_url',
-                    'label' => 'OpenAI Base URL',
-                    'description' => 'Base URL untuk OpenAI API (default: https://api.openai.com)',
-                    'type' => 'text',
-                    'value' => $this->settingsService->getSetting('openai_api_base_url', 'https://api.openai.com'),
-                ],
-                [
-                    'key' => 'openai_model',
-                    'label' => 'OpenAI Model',
-                    'description' => 'Model OpenAI untuk analisis (mis. gpt-4o-mini)',
-                    'type' => 'text',
-                    'value' => $this->settingsService->getSetting('openai_model', 'gpt-4o-mini'),
-                ],
-                [
-                    'key' => 'openai_api_key',
-                    'label' => 'OpenAI API Key',
-                    'description' => 'API Key untuk autentikasi OpenAI',
-                    'type' => 'password',
-                    'value' => $this->settingsService->getSetting('openai_api_key', '') !== '' ? '********' : '',
-                ],
-            ],
         ];
 
         return Inertia::render('Settings/Index', [
             'settings' => $fixedSettings,
+        ]);
+    }
+
+    public function ai()
+    {
+        return Inertia::render('Settings/Ai', [
+            'settings' => [
+                'ai' => $this->getAiSettings(),
+            ],
         ]);
     }
 
@@ -205,7 +221,7 @@ class AppSettingController extends Controller
         if (! in_array($key, $allowedKeys)) {
             Log::warning('Invalid setting key attempted', ['key' => $key]);
 
-            return redirect()->route('settings.index')->with('error', 'Setting tidak valid');
+            return redirect()->back()->with('error', 'Setting tidak valid');
         }
 
         $rules = ['value' => 'nullable|string'];
@@ -327,7 +343,7 @@ class AppSettingController extends Controller
 
         Log::info('Setting updated', ['key' => $key]);
 
-        return redirect()->route('settings.index')->with('success', 'Setting berhasil diperbarui');
+        return redirect()->back()->with('success', 'Setting berhasil diperbarui');
     }
 
     public function getManifest()
