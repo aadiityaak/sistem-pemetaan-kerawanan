@@ -15,14 +15,9 @@ class GeminiService
         $this->settingsService = $settingsService;
     }
 
-    /**
-     * Check if Gemini AI is enabled and configured
-     */
     public function isEnabled(): bool
     {
-        return $this->settingsService->getSetting('gemini_enabled', 'false') === 'true' &&
-            !empty($this->getApiKey()) &&
-            !empty($this->getEndpoint());
+        return !empty($this->getApiKey()) && !empty($this->getEndpoint());
     }
 
     /**
@@ -47,7 +42,7 @@ class GeminiService
     public function generateContent(string $prompt, array $context = []): ?string
     {
         if (!$this->isEnabled()) {
-            Log::warning('Gemini AI is not enabled or not properly configured');
+            Log::warning('Gemini AI is not properly configured');
             return null;
         }
 

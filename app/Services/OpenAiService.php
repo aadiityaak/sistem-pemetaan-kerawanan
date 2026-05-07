@@ -13,8 +13,7 @@ class OpenAiService
 
     public function isEnabled(): bool
     {
-        return $this->settingsService->getSetting('openai_enabled', 'false') === 'true' &&
-            !empty($this->getApiKey());
+        return !empty($this->getApiKey());
     }
 
     public function getProviderName(): string
@@ -40,7 +39,7 @@ class OpenAiService
     public function generateContent(string $prompt, array $context = []): ?string
     {
         if (!$this->isEnabled()) {
-            Log::warning('OpenAI is not enabled or not properly configured');
+            Log::warning('OpenAI is not properly configured');
             return null;
         }
 
@@ -81,4 +80,3 @@ class OpenAiService
         }
     }
 }
-

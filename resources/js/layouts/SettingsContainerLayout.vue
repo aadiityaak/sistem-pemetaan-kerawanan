@@ -39,8 +39,11 @@ const tabs = computed(() => {
 
 const activeHref = computed(() => {
     const currentUrl = page.url.split('?')[0];
-    const match = tabs.value.find((t) => t.href !== '#' && currentUrl.startsWith(t.href));
-    return match?.href ?? '/settings';
+    const matches = tabs.value
+        .filter((t) => t.href !== '#' && currentUrl.startsWith(t.href))
+        .sort((a, b) => b.href.length - a.href.length);
+
+    return matches[0]?.href ?? '/settings';
 });
 </script>
 

@@ -125,22 +125,6 @@ class AppSettingSeeder extends Seeder
         'description' => 'Google Gemini API key for authentication',
       ],
       [
-        'key' => 'gemini_enabled',
-        'value' => 'false',
-        'type' => 'boolean',
-        'group' => 'ai',
-        'label' => 'Enable Gemini AI',
-        'description' => 'Enable/disable Gemini AI features',
-      ],
-      [
-        'key' => 'openai_enabled',
-        'value' => 'false',
-        'type' => 'boolean',
-        'group' => 'ai',
-        'label' => 'Enable OpenAI (ChatGPT)',
-        'description' => 'Enable/disable OpenAI ChatGPT features',
-      ],
-      [
         'key' => 'openai_api_base_url',
         'value' => 'https://api.openai.com',
         'type' => 'text',
