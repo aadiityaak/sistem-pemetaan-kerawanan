@@ -101,6 +101,14 @@ class AppSettingSeeder extends Seeder
 
       // AI Settings
       [
+        'key' => 'ai_provider',
+        'value' => 'gemini',
+        'type' => 'text',
+        'group' => 'ai',
+        'label' => 'AI Provider',
+        'description' => 'Provider AI yang digunakan untuk analisa (gemini/openai)',
+      ],
+      [
         'key' => 'gemini_api_endpoint',
         'value' => 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
         'type' => 'text',
@@ -123,6 +131,38 @@ class AppSettingSeeder extends Seeder
         'group' => 'ai',
         'label' => 'Enable Gemini AI',
         'description' => 'Enable/disable Gemini AI features',
+      ],
+      [
+        'key' => 'openai_enabled',
+        'value' => 'false',
+        'type' => 'boolean',
+        'group' => 'ai',
+        'label' => 'Enable OpenAI (ChatGPT)',
+        'description' => 'Enable/disable OpenAI ChatGPT features',
+      ],
+      [
+        'key' => 'openai_api_base_url',
+        'value' => 'https://api.openai.com',
+        'type' => 'text',
+        'group' => 'ai',
+        'label' => 'OpenAI Base URL',
+        'description' => 'Base URL untuk OpenAI API',
+      ],
+      [
+        'key' => 'openai_api_key',
+        'value' => '',
+        'type' => 'password',
+        'group' => 'ai',
+        'label' => 'OpenAI API Key',
+        'description' => 'API Key untuk autentikasi OpenAI',
+      ],
+      [
+        'key' => 'openai_model',
+        'value' => 'gpt-4o-mini',
+        'type' => 'text',
+        'group' => 'ai',
+        'label' => 'OpenAI Model',
+        'description' => 'Model OpenAI untuk analisa (mis. gpt-4o-mini)',
       ],
     ];
 

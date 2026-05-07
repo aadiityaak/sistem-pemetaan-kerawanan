@@ -4,18 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\MonitoringData;
-use App\Services\GeminiService;
+use App\Services\AiService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 
 class AiPredictionController extends Controller
 {
-    protected $geminiService;
+    protected $aiService;
 
-    public function __construct(GeminiService $geminiService)
+    public function __construct(AiService $aiService)
     {
-        $this->geminiService = $geminiService;
+        $this->aiService = $aiService;
     }
 
     /**
@@ -27,7 +27,11 @@ class AiPredictionController extends Controller
 
         return Inertia::render('AiPrediction/Index', [
             'categories' => $categories,
-            'geminiEnabled' => $this->geminiService->isEnabled(),
+            'aiEnabled' => $this->aiService->isEnabled(),
+            'aiProvider' => [
+                'key' => $this->aiService->getProviderKey(),
+                'name' => $this->aiService->getProviderName(),
+            ],
         ]);
     }
 
@@ -42,15 +46,16 @@ class AiPredictionController extends Controller
             'time_period' => 'required|numeric|in:0.03,0.25,1,3,6,12',
         ]);
 
-        if (!$this->geminiService->isEnabled()) {
+        if (!$this->aiService->isEnabled()) {
+            $providerName = $this->aiService->getProviderName();
             if ($request->wantsJson()) {
                 return response()->json([
-                    'error' => 'Gemini AI tidak aktif. Silakan aktifkan di pengaturan.',
+                    'error' => "{$providerName} tidak aktif. Silakan aktifkan dan konfigurasi di pengaturan.",
                 ], 400);
             }
 
             return back()->withErrors([
-                'error' => 'Gemini AI tidak aktif. Silakan aktifkan di pengaturan.'
+                'error' => "{$providerName} tidak aktif. Silakan aktifkan dan konfigurasi di pengaturan."
             ]);
         }
 
@@ -137,7 +142,7 @@ class AiPredictionController extends Controller
         $prompt = $this->createAnalysisPrompt($category->name, $dataForAi, $statistics, $timePeriod);
 
         try {
-            $aiAnalysis = $this->geminiService->generateContent($prompt);
+            $aiAnalysis = $this->aiService->generateContent($prompt);
 
             if (!$aiAnalysis) {
                 if ($request->wantsJson()) {
@@ -161,6 +166,10 @@ class AiPredictionController extends Controller
                 'total_analyzed' => $crimeData->count(),
                 'category' => $category->name,
                 'sub_category' => $subCategory ? $subCategory->name : null,
+                'ai_provider' => [
+                    'key' => $this->aiService->getProviderKey(),
+                    'name' => $this->aiService->getProviderName(),
+                ],
             ];
 
             // Return JSON for AJAX requests

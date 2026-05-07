@@ -14,7 +14,7 @@
             </div>
 
             <!-- AI Status Alert -->
-            <div v-if="!geminiEnabled" class="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
+            <div v-if="!aiEnabled" class="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
                 <div class="flex">
                     <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
                         <path
@@ -49,7 +49,7 @@
                             v-model="selectedCategory"
                             @change="resetSubCategory"
                             required
-                            :disabled="isAnalyzing || !geminiEnabled"
+                            :disabled="isAnalyzing || !aiEnabled"
                             class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         >
                             <option value="">-- Pilih Kategori --</option>
@@ -66,7 +66,7 @@
                         </label>
                         <select
                             v-model="selectedSubCategory"
-                            :disabled="isAnalyzing || !geminiEnabled"
+                            :disabled="isAnalyzing || !aiEnabled"
                             class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         >
                             <option value="">-- Semua Sub Kategori --</option>
@@ -84,7 +84,7 @@
                         <select
                             v-model="selectedTimePeriod"
                             required
-                            :disabled="isAnalyzing || !geminiEnabled"
+                            :disabled="isAnalyzing || !aiEnabled"
                             class="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                         >
                             <option value="">-- Pilih Periode --</option>
@@ -99,7 +99,7 @@
 
                     <!-- Analysis Button -->
                     <div>
-                        <Button type="submit" :disabled="!selectedCategory || !selectedTimePeriod || isAnalyzing || !geminiEnabled" class="w-full sm:w-auto">
+                        <Button type="submit" :disabled="!selectedCategory || !selectedTimePeriod || isAnalyzing || !aiEnabled" class="w-full sm:w-auto">
                             <svg v-if="isAnalyzing" class="mr-3 -ml-1 h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path
@@ -208,8 +208,11 @@
                                         {{ analysisResult.sub_category ? 'Sub Kategori' : 'Powered by' }}
                                     </dt>
                                     <dd class="text-lg font-semibold text-gray-900 dark:text-white">
-                                        {{ analysisResult.sub_category || 'Gemini AI' }}
+                                        {{ analysisResult.sub_category || analysisResult.ai_provider?.name || aiProvider.name }}
                                     </dd>
+                                    <p v-if="analysisResult.sub_category" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        {{ analysisResult.ai_provider?.name || aiProvider.name }}
+                                    </p>
                                 </dl>
                             </div>
                         </div>
@@ -320,11 +323,13 @@ interface AnalysisResult {
     total_analyzed: number;
     category: string;
     sub_category?: string;
+    ai_provider?: { key: string; name: string };
 }
 
 const props = defineProps<{
     categories: Category[];
-    geminiEnabled: boolean;
+    aiEnabled: boolean;
+    aiProvider: { key: string; name: string };
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -405,7 +410,7 @@ const resetSubCategory = () => {
 };
 
 const analyzeCategory = async () => {
-    if (!selectedCategory.value || !selectedTimePeriod.value || !props.geminiEnabled) return;
+    if (!selectedCategory.value || !selectedTimePeriod.value || !props.aiEnabled) return;
 
     isAnalyzing.value = true;
     errorMessage.value = '';

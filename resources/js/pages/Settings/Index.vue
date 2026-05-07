@@ -62,6 +62,12 @@
                                                 {{ setting.value || '-' }}
                                             </div>
                                             <div
+                                                v-else-if="setting.type === 'select'"
+                                                class="block w-full rounded-md border-gray-300 bg-gray-100 p-2 text-sm text-gray-600 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-300"
+                                            >
+                                                {{ getSelectLabel(setting) || setting.value || '-' }}
+                                            </div>
+                                            <div
                                                 v-else-if="setting.type === 'textarea'"
                                                 class="block w-full rounded-md border-gray-300 bg-gray-100 p-2 text-sm text-gray-600 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-300"
                                             >
@@ -116,6 +122,18 @@
                                                 class="mt-1 block w-full rounded-md border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
                                                 :placeholder="setting.value || ''"
                                             />
+                                        </div>
+
+                                        <div v-else-if="setting.type === 'select'" class="mt-2">
+                                            <select
+                                                :id="setting.key"
+                                                v-model="forms[setting.key].value"
+                                                class="mt-1 block w-full rounded-md border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                                            >
+                                                <option v-for="opt in setting.options || []" :key="opt.value" :value="opt.value">
+                                                    {{ opt.label }}
+                                                </option>
+                                            </select>
                                         </div>
 
                                         <div v-else-if="setting.type === 'password'" class="mt-2">
@@ -238,6 +256,7 @@ interface Setting {
     group: string;
     label: string;
     description: string | null;
+    options?: Array<{ value: string; label: string }>;
 }
 
 interface Props {
@@ -368,5 +387,13 @@ const saveAllSettings = async () => {
     } finally {
         isProcessing.value = false;
     }
+};
+
+const getSelectLabel = (setting: Setting): string | null => {
+    const value = setting.value;
+    if (!value || !setting.options) return null;
+
+    const found = setting.options.find((opt) => opt.value === value);
+    return found?.label || null;
 };
 </script>

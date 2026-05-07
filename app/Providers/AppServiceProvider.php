@@ -15,6 +15,18 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\GeminiService::class, function ($app) {
             return new \App\Services\GeminiService($app->make(\App\Services\SettingsService::class));
         });
+
+        $this->app->singleton(\App\Services\OpenAiService::class, function ($app) {
+            return new \App\Services\OpenAiService($app->make(\App\Services\SettingsService::class));
+        });
+
+        $this->app->singleton(\App\Services\AiService::class, function ($app) {
+            return new \App\Services\AiService(
+                $app->make(\App\Services\SettingsService::class),
+                $app->make(\App\Services\GeminiService::class),
+                $app->make(\App\Services\OpenAiService::class)
+            );
+        });
     }
 
     /**

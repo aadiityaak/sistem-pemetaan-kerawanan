@@ -92,6 +92,17 @@ class AppSettingController extends Controller
             ],
             'ai' => [
                 [
+                    'key' => 'ai_provider',
+                    'label' => 'AI Provider',
+                    'description' => 'Pilih provider AI untuk analisis data',
+                    'type' => 'select',
+                    'options' => [
+                        ['value' => 'gemini', 'label' => 'Gemini (Google)'],
+                        ['value' => 'openai', 'label' => 'ChatGPT (OpenAI)'],
+                    ],
+                    'value' => $this->settingsService->getSetting('ai_provider', 'gemini'),
+                ],
+                [
                     'key' => 'gemini_enabled',
                     'label' => 'Aktifkan Gemini AI',
                     'description' => 'Enable/disable fitur Gemini AI untuk analisis data',
@@ -112,6 +123,34 @@ class AppSettingController extends Controller
                     'type' => 'password',
                     'value' => $this->settingsService->getSetting('gemini_api_key', '') !== '' ? '********' : '',
                 ],
+                [
+                    'key' => 'openai_enabled',
+                    'label' => 'Aktifkan OpenAI (ChatGPT)',
+                    'description' => 'Enable/disable fitur OpenAI untuk analisis data',
+                    'type' => 'boolean',
+                    'value' => $this->settingsService->getSetting('openai_enabled', 'false'),
+                ],
+                [
+                    'key' => 'openai_api_base_url',
+                    'label' => 'OpenAI Base URL',
+                    'description' => 'Base URL untuk OpenAI API (default: https://api.openai.com)',
+                    'type' => 'text',
+                    'value' => $this->settingsService->getSetting('openai_api_base_url', 'https://api.openai.com'),
+                ],
+                [
+                    'key' => 'openai_model',
+                    'label' => 'OpenAI Model',
+                    'description' => 'Model OpenAI untuk analisis (mis. gpt-4o-mini)',
+                    'type' => 'text',
+                    'value' => $this->settingsService->getSetting('openai_model', 'gpt-4o-mini'),
+                ],
+                [
+                    'key' => 'openai_api_key',
+                    'label' => 'OpenAI API Key',
+                    'description' => 'API Key untuk autentikasi OpenAI',
+                    'type' => 'password',
+                    'value' => $this->settingsService->getSetting('openai_api_key', '') !== '' ? '********' : '',
+                ],
             ],
         ];
 
@@ -125,8 +164,15 @@ class AppSettingController extends Controller
      */
     public function update(Request $request, string $key)
     {
+        $maskedKeys = ['gemini_api_key', 'openai_api_key', 'license_key'];
+        $safeRequestData = $request->all();
+        if (in_array($key, $maskedKeys, true) && array_key_exists('value', $safeRequestData)) {
+            $safeRequestData['value'] = $safeRequestData['value'] ? '***' : '';
+        }
+
         Log::info('AppSettingController update called', [
             'key' => $key,
+            'request_data' => $safeRequestData,
             'has_file' => $request->hasFile('file'),
             'file_info' => $request->hasFile('file') ? [
                 'name' => $request->file('file')->getClientOriginalName(),
@@ -144,9 +190,14 @@ class AppSettingController extends Controller
             'app_logo',
             'login_logo',
             'monitoring_video_enabled',
+            'ai_provider',
             'gemini_enabled',
             'gemini_api_endpoint',
             'gemini_api_key',
+            'openai_enabled',
+            'openai_api_base_url',
+            'openai_model',
+            'openai_api_key',
             'license_key',
             'license_expires_at',
         ];
@@ -158,6 +209,12 @@ class AppSettingController extends Controller
         }
 
         $rules = ['value' => 'nullable|string'];
+        if ($key === 'ai_provider') {
+            $rules['value'] = 'required|string|in:gemini,openai';
+        }
+        if ($key === 'openai_api_base_url') {
+            $rules['value'] = 'required|string';
+        }
 
         // Add file validation for image types
         if (in_array($key, ['app_favicon', 'app_logo', 'login_logo'])) {
@@ -175,9 +232,14 @@ class AppSettingController extends Controller
             'app_logo' => 'Logo Aplikasi',
             'login_logo' => 'Logo Login',
             'monitoring_video_enabled' => 'Fitur Video Monitoring',
+            'ai_provider' => 'AI Provider',
             'gemini_enabled' => 'Aktifkan Gemini AI',
             'gemini_api_endpoint' => 'Gemini API Endpoint',
             'gemini_api_key' => 'Gemini API Key',
+            'openai_enabled' => 'Aktifkan OpenAI (ChatGPT)',
+            'openai_api_base_url' => 'OpenAI Base URL',
+            'openai_model' => 'OpenAI Model',
+            'openai_api_key' => 'OpenAI API Key',
             'license_key' => 'API Key / License Key',
             'license_expires_at' => 'Tanggal Expired Lisensi',
         ];
@@ -186,9 +248,9 @@ class AppSettingController extends Controller
         $settingType = 'text';
         if (in_array($key, ['app_favicon', 'app_logo', 'login_logo'])) {
             $settingType = 'image';
-        } elseif (in_array($key, ['gemini_enabled', 'monitoring_video_enabled'])) {
+        } elseif (in_array($key, ['gemini_enabled', 'monitoring_video_enabled', 'openai_enabled'])) {
             $settingType = 'boolean';
-        } elseif ($key === 'gemini_api_key' || $key === 'license_key') {
+        } elseif (in_array($key, ['gemini_api_key', 'openai_api_key', 'license_key'])) {
             $settingType = 'password';
         }
 
@@ -196,7 +258,7 @@ class AppSettingController extends Controller
         $settingGroup = 'general';
         if (in_array($key, ['app_favicon', 'app_logo', 'login_logo'])) {
             $settingGroup = 'appearance';
-        } elseif (in_array($key, ['gemini_enabled', 'gemini_api_endpoint', 'gemini_api_key'])) {
+        } elseif (in_array($key, ['ai_provider', 'gemini_enabled', 'gemini_api_endpoint', 'gemini_api_key', 'openai_enabled', 'openai_api_base_url', 'openai_model', 'openai_api_key'])) {
             $settingGroup = 'ai';
         } elseif ($key === 'license_expires_at' || $key === 'license_key') {
             $settingGroup = 'license';
@@ -209,7 +271,7 @@ class AppSettingController extends Controller
             $value = trim($value);
         }
 
-        if (in_array($key, ['gemini_api_key', 'license_key'], true)) {
+        if (in_array($key, ['gemini_api_key', 'openai_api_key', 'license_key'], true)) {
             if ($value === null || $value === '' || $value === '********') {
                 $value = $setting?->value;
             }
