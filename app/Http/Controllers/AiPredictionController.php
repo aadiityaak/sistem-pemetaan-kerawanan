@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\AiPredictionHistory;
 use App\Models\MonitoringData;
 use App\Services\AiService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class AiPredictionController extends Controller
 {
@@ -25,6 +27,31 @@ class AiPredictionController extends Controller
     public function index()
     {
         $categories = Category::active()->ordered()->with('subCategories')->get();
+        $history = collect();
+        if (Schema::hasTable('ai_prediction_histories')) {
+            try {
+                $userId = auth()->id();
+                $history = AiPredictionHistory::query()
+                    ->where('user_id', $userId)
+                    ->orderByDesc('id')
+                    ->limit(20)
+                    ->get([
+                        'id',
+                        'ai_provider_key',
+                        'ai_provider_name',
+                        'category_id',
+                        'category_name',
+                        'sub_category_id',
+                        'sub_category_name',
+                        'time_period',
+                        'data_period',
+                        'total_analyzed',
+                        'created_at',
+                    ]);
+            } catch (\Exception $e) {
+                Log::warning('Failed to load AI prediction history', ['message' => $e->getMessage()]);
+            }
+        }
 
         return Inertia::render('AiPrediction/Index', [
             'categories' => $categories,
@@ -33,6 +60,7 @@ class AiPredictionController extends Controller
                 'key' => $this->aiService->getProviderKey(),
                 'name' => $this->aiService->getProviderName(),
             ],
+            'analysisHistory' => $history,
         ]);
     }
 
@@ -148,6 +176,52 @@ class AiPredictionController extends Controller
         // Create comprehensive prompt for AI analysis
         $prompt = $this->createAnalysisPrompt($category->name, $dataForAi, $statistics, $timePeriod);
 
+        $providerKey = $this->aiService->getProviderKey();
+        $providerName = $this->aiService->getProviderName();
+        $timePeriodKey = (string) $request->time_period;
+        $ids = $crimeData->pluck('id')->implode(',');
+        $maxUpdatedAt = $crimeData->max('updated_at');
+        $dataFingerprint = sha1($ids . '|' . ($maxUpdatedAt ? $maxUpdatedAt->timestamp : '') . '|' . $crimeData->count());
+
+        if (Schema::hasTable('ai_prediction_histories')) {
+            try {
+                $existing = AiPredictionHistory::query()
+                    ->where('user_id', auth()->id())
+                    ->where('ai_provider_key', $providerKey)
+                    ->where('category_id', $categoryId)
+                    ->where('sub_category_id', $subCategoryId)
+                    ->where('time_period', $timePeriodKey)
+                    ->where('data_fingerprint', $dataFingerprint)
+                    ->first();
+
+                if ($existing) {
+                    $result = [
+                        'success' => true,
+                        'analysis' => $existing->analysis,
+                        'statistics' => $existing->statistics ?? $statistics,
+                        'data_period' => $existing->data_period,
+                        'total_analyzed' => $existing->total_analyzed,
+                        'category' => $existing->category_name,
+                        'sub_category' => $existing->sub_category_name,
+                        'ai_provider' => [
+                            'key' => $existing->ai_provider_key,
+                            'name' => $existing->ai_provider_name,
+                        ],
+                        'history_id' => $existing->id,
+                        'cached' => true,
+                    ];
+
+                    if ($request->wantsJson()) {
+                        return response()->json($result);
+                    }
+
+                    return back()->with('analysisResult', $result);
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to query AI prediction history cache', ['message' => $e->getMessage()]);
+            }
+        }
+
         try {
             $aiAnalysis = $this->aiService->generateContent($prompt);
 
@@ -178,6 +252,32 @@ class AiPredictionController extends Controller
 
             $subCategory = $subCategoryId ? \App\Models\SubCategory::find($subCategoryId) : null;
 
+            $historyId = null;
+            if (Schema::hasTable('ai_prediction_histories')) {
+                try {
+                    $history = AiPredictionHistory::create([
+                        'user_id' => auth()->id(),
+                        'ai_provider_key' => $providerKey,
+                        'ai_provider_name' => $providerName,
+                        'category_id' => $categoryId,
+                        'category_name' => $category->name,
+                        'sub_category_id' => $subCategoryId,
+                        'sub_category_name' => $subCategory?->name,
+                        'time_period' => $timePeriodKey,
+                        'data_period' => $this->getTimePeriodText($timePeriod),
+                        'start_date' => $startDate->toDateString(),
+                        'end_date' => now()->toDateString(),
+                        'total_analyzed' => $crimeData->count(),
+                        'data_fingerprint' => $dataFingerprint,
+                        'analysis' => $aiAnalysis,
+                        'statistics' => $statistics,
+                    ]);
+                    $historyId = $history->id;
+                } catch (\Exception $e) {
+                    Log::warning('Failed to store AI prediction history', ['message' => $e->getMessage()]);
+                }
+            }
+
             $result = [
                 'success' => true,
                 'analysis' => $aiAnalysis,
@@ -190,6 +290,8 @@ class AiPredictionController extends Controller
                     'key' => $this->aiService->getProviderKey(),
                     'name' => $this->aiService->getProviderName(),
                 ],
+                'history_id' => $historyId,
+                'cached' => false,
             ];
 
             // Return JSON for AJAX requests
@@ -221,6 +323,36 @@ class AiPredictionController extends Controller
                 'error' => 'Terjadi kesalahan saat menganalisis data: ' . $e->getMessage()
             ]);
         }
+    }
+
+    public function historyShow(Request $request, int $id)
+    {
+        if (!Schema::hasTable('ai_prediction_histories')) {
+            return response()->json([
+                'error' => 'Riwayat analisa belum tersedia. Jalankan migrasi database terlebih dahulu.',
+            ], 400);
+        }
+
+        $history = AiPredictionHistory::query()
+            ->where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        return response()->json([
+            'success' => true,
+            'analysis' => $history->analysis,
+            'statistics' => $history->statistics,
+            'data_period' => $history->data_period,
+            'total_analyzed' => $history->total_analyzed,
+            'category' => $history->category_name,
+            'sub_category' => $history->sub_category_name,
+            'ai_provider' => [
+                'key' => $history->ai_provider_key,
+                'name' => $history->ai_provider_name,
+            ],
+            'history_id' => $history->id,
+            'cached' => true,
+        ]);
     }
 
     /**

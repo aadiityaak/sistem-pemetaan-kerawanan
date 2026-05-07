@@ -122,6 +122,65 @@
                 </form>
             </div>
 
+            <!-- History -->
+            <div v-if="analysisHistory.length > 0" class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <div class="mb-4 flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Riwayat Analisa</h2>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Klik untuk memuat tanpa analisa ulang</div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                    Waktu
+                                </th>
+                                <th class="px-4 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                    Kategori
+                                </th>
+                                <th class="px-4 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                    Sub
+                                </th>
+                                <th class="px-4 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                    Periode
+                                </th>
+                                <th class="px-4 py-2 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                    Provider
+                                </th>
+                                <th class="px-4 py-2 text-right text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                                    Aksi
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+                            <tr v-for="item in analysisHistory" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-4 py-2 whitespace-nowrap text-gray-700 dark:text-gray-200">
+                                    {{ formatDateTime(item.created_at) }}
+                                </td>
+                                <td class="px-4 py-2 text-gray-700 dark:text-gray-200">
+                                    {{ item.category_name }}
+                                </td>
+                                <td class="px-4 py-2 text-gray-700 dark:text-gray-200">
+                                    {{ item.sub_category_name || '-' }}
+                                </td>
+                                <td class="px-4 py-2 text-gray-700 dark:text-gray-200">
+                                    {{ item.data_period }}
+                                </td>
+                                <td class="px-4 py-2 text-gray-700 dark:text-gray-200">
+                                    {{ item.ai_provider_name }}
+                                </td>
+                                <td class="px-4 py-2 text-right">
+                                    <Button size="sm" variant="outline" :disabled="historyLoadingId === item.id" @click="loadHistory(item.id)">
+                                        {{ historyLoadingId === item.id ? 'Memuat...' : 'Muat' }}
+                                    </Button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- Analysis Results -->
             <div v-if="analysisResult" class="space-y-6">
                 <!-- Statistics Summary -->
@@ -324,12 +383,29 @@ interface AnalysisResult {
     category: string;
     sub_category?: string;
     ai_provider?: { key: string; name: string };
+    history_id?: number;
+    cached?: boolean;
+}
+
+interface HistoryItem {
+    id: number;
+    ai_provider_key: string;
+    ai_provider_name: string;
+    category_id: number;
+    category_name: string;
+    sub_category_id?: number | null;
+    sub_category_name?: string | null;
+    time_period: string;
+    data_period: string;
+    total_analyzed: number;
+    created_at: string;
 }
 
 const props = defineProps<{
     categories: Category[];
     aiEnabled: boolean;
     aiProvider: { key: string; name: string };
+    analysisHistory: HistoryItem[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -349,6 +425,50 @@ const selectedTimePeriod = ref<string>('');
 const isAnalyzing = ref(false);
 const analysisResult = ref<AnalysisResult | null>(null);
 const errorMessage = ref<string>('');
+const historyLoadingId = ref<number | null>(null);
+
+const formatDateTime = (iso: string): string => {
+    try {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return iso;
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mi = String(d.getMinutes()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+    } catch {
+        return iso;
+    }
+};
+
+const loadHistory = async (id: number) => {
+    historyLoadingId.value = id;
+    errorMessage.value = '';
+
+    try {
+        const response = await fetch(`/ai-prediction/history/${id}`, {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+            analysisResult.value = data;
+            await nextTick();
+            initializeCharts();
+            return;
+        }
+        errorMessage.value = data.error || 'Gagal memuat riwayat analisa';
+    } catch {
+        errorMessage.value = 'Gagal memuat riwayat analisa';
+    } finally {
+        historyLoadingId.value = null;
+    }
+};
 
 // Chart refs
 const severityChartRef = ref<HTMLCanvasElement>();

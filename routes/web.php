@@ -239,6 +239,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:super_admin,admin_vip,admin'])->group(function () {
         Route::get('/ai-prediction', [\App\Http\Controllers\AiPredictionController::class, 'index'])->name('ai-prediction.index');
         Route::post('/ai-prediction/analyze', [\App\Http\Controllers\AiPredictionController::class, 'analyze'])->name('ai-prediction.analyze');
+        Route::get('/ai-prediction/history/{id}', [\App\Http\Controllers\AiPredictionController::class, 'historyShow'])->name('ai-prediction.history.show');
     });
 
     // INDAS Routes - Economic, Tourism & Social Analysis System
