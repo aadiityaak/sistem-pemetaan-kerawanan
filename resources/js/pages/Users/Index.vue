@@ -166,7 +166,7 @@ const toggleUserStatus = (user: User) => {
             </div>
 
             <!-- Statistics Cards -->
-            <div class="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
+            <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <div class="rounded-lg border border-gray-200 bg-white p-6 shadow dark:border-gray-700 dark:bg-gray-800">
                     <div class="flex items-center">
                         <div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-900">
