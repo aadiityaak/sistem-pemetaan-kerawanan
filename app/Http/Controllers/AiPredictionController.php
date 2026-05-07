@@ -8,6 +8,7 @@ use App\Services\AiService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AiPredictionController extends Controller
 {
@@ -51,6 +52,12 @@ class AiPredictionController extends Controller
             if ($request->wantsJson()) {
                 return response()->json([
                     'error' => "{$providerName} tidak aktif. Silakan aktifkan dan konfigurasi di pengaturan.",
+                    'ai' => config('app.debug') ? $this->aiService->getDebugInfo() : [
+                        'provider' => [
+                            'key' => $this->aiService->getProviderKey(),
+                            'name' => $providerName,
+                        ],
+                    ],
                 ], 400);
             }
 
@@ -145,9 +152,22 @@ class AiPredictionController extends Controller
             $aiAnalysis = $this->aiService->generateContent($prompt);
 
             if (!$aiAnalysis) {
+                Log::warning('AI analysis returned empty result', [
+                    'provider' => $this->aiService->getProviderKey(),
+                    'category_id' => $categoryId,
+                    'sub_category_id' => $subCategoryId,
+                    'time_period' => $timePeriod,
+                ]);
+
                 if ($request->wantsJson()) {
                     return response()->json([
                         'error' => 'Gagal mendapatkan analisis dari AI. Silakan coba lagi.',
+                        'ai' => config('app.debug') ? $this->aiService->getDebugInfo() : [
+                            'provider' => [
+                                'key' => $this->aiService->getProviderKey(),
+                                'name' => $this->aiService->getProviderName(),
+                            ],
+                        ],
                     ], 500);
                 }
 
@@ -180,9 +200,20 @@ class AiPredictionController extends Controller
             // Return Inertia response for form submissions
             return back()->with('analysisResult', $result);
         } catch (\Exception $e) {
+            Log::error('AI analysis exception', [
+                'provider' => $this->aiService->getProviderKey(),
+                'message' => $e->getMessage(),
+            ]);
+
             if ($request->wantsJson()) {
                 return response()->json([
                     'error' => 'Terjadi kesalahan saat menganalisis data: ' . $e->getMessage(),
+                    'ai' => config('app.debug') ? $this->aiService->getDebugInfo() : [
+                        'provider' => [
+                            'key' => $this->aiService->getProviderKey(),
+                            'name' => $this->aiService->getProviderName(),
+                        ],
+                    ],
                 ], 500);
             }
 

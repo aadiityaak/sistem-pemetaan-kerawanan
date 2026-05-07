@@ -37,6 +37,38 @@ class AiService
             : $this->geminiService->isEnabled();
     }
 
+    public function getDebugInfo(): array
+    {
+        $provider = $this->getProviderKey();
+
+        if ($provider === 'openai') {
+            return [
+                'provider' => [
+                    'key' => 'openai',
+                    'name' => $this->openAiService->getProviderName(),
+                ],
+                'enabled' => $this->openAiService->isEnabled(),
+                'config' => [
+                    'base_url' => $this->openAiService->getBaseUrl(),
+                    'model' => $this->openAiService->getModel(),
+                    'has_api_key' => $this->openAiService->getApiKey() !== '',
+                ],
+            ];
+        }
+
+        return [
+            'provider' => [
+                'key' => 'gemini',
+                'name' => 'Gemini (Google)',
+            ],
+            'enabled' => $this->geminiService->isEnabled(),
+            'config' => [
+                'endpoint' => $this->geminiService->getEndpoint(),
+                'has_api_key' => $this->geminiService->getApiKey() !== '',
+            ],
+        ];
+    }
+
     public function generateContent(string $prompt, array $context = []): ?string
     {
         $provider = $this->getProviderKey();
@@ -52,4 +84,3 @@ class AiService
         return $result;
     }
 }
-
