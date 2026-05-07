@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
+import SettingsContainerLayout from '@/layouts/SettingsContainerLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 interface Provinsi {
@@ -46,7 +46,7 @@ const submit = () => {
 <template>
     <Head :title="`Edit User: ${user.name}`" />
 
-    <AppLayout :title="`Edit User: ${user.name}`">
+    <SettingsContainerLayout :title="`Edit User: ${user.name}`">
         <div class="p-6">
             <!-- Header -->
             <div class="mb-6">
@@ -313,5 +313,5 @@ const submit = () => {
                 </form>
             </div>
         </div>
-    </AppLayout>
+    </SettingsContainerLayout>
 </template>

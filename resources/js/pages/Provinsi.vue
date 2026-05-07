@@ -1,6 +1,6 @@
 <template>
     <Head title="Provinsi" />
-    <AppLayout :breadcrumbs="breadcrumbs">
+    <SettingsContainerLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-1 flex-col gap-6 rounded-xl p-4">
             <div class="flex items-center justify-between">
                 <h1 class="text-2xl font-bold">Daftar Provinsi</h1>
@@ -299,11 +299,11 @@
                 </div>
             </div>
         </div>
-    </AppLayout>
+    </SettingsContainerLayout>
 </template>
 
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
+import SettingsContainerLayout from '@/layouts/SettingsContainerLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
+import SettingsContainerLayout from '@/layouts/SettingsContainerLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 
@@ -77,7 +77,7 @@ watch(
 
 <template>
     <Head title="Kabupaten/Kota" />
-    <AppLayout :breadcrumbs="breadcrumbs">
+    <SettingsContainerLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-1 flex-col gap-6 rounded-xl p-4">
             <div class="flex items-center justify-between">
                 <h1 class="text-2xl font-bold">Daftar Kabupaten/Kota</h1>
@@ -309,5 +309,5 @@ watch(
                 </div>
             </div>
         </div>
-    </AppLayout>
+    </SettingsContainerLayout>
 </template>

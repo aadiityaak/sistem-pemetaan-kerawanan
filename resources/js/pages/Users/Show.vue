@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
+import SettingsContainerLayout from '@/layouts/SettingsContainerLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
 interface User {
@@ -48,7 +48,7 @@ const getStatusBadgeClass = (isActive: boolean): string => {
 <template>
     <Head :title="`User: ${user.name}`" />
 
-    <AppLayout :title="`User: ${user.name}`">
+    <SettingsContainerLayout :title="`User: ${user.name}`">
         <div class="p-6">
             <!-- Header -->
             <div class="mb-6">
@@ -298,5 +298,5 @@ const getStatusBadgeClass = (isActive: boolean): string => {
                 </div>
             </div>
         </div>
-    </AppLayout>
+    </SettingsContainerLayout>
 </template>

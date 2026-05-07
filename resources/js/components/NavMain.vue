@@ -8,6 +8,7 @@ import { onMounted, ref, watch } from 'vue';
 const props = defineProps<{
     items: NavItem[];
     collapseOnInactive?: boolean;
+    hideSubItems?: boolean;
 }>();
 
 const page = usePage();
@@ -137,6 +138,7 @@ watch(
                 :level="0"
                 :open-items="openItems"
                 :siblings="items"
+                :hide-sub-items="props.hideSubItems"
                 @toggle="(title, siblings, level) => toggleItem(title, siblings, level)"
             />
         </SidebarMenu>

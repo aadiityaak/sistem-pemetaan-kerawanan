@@ -1,5 +1,5 @@
 <template>
-    <AppLayout title="Edit Provinsi">
+    <SettingsContainerLayout title="Edit Provinsi">
         <div class="p-6">
             <!-- Header -->
             <div class="mb-6">
@@ -126,11 +126,11 @@
                 </div>
             </div>
         </div>
-    </AppLayout>
+    </SettingsContainerLayout>
 </template>
 
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
+import SettingsContainerLayout from '@/layouts/SettingsContainerLayout.vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 

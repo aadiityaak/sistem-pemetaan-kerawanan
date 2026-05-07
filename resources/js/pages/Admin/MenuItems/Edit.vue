@@ -1,5 +1,5 @@
 <template>
-    <AppSidebarLayout :breadcrumbs="breadcrumbs">
+    <SettingsContainerLayout :breadcrumbs="breadcrumbs">
         <div class="space-y-6 p-6">
             <!-- Header -->
             <div>
@@ -153,7 +153,7 @@
                 </CardContent>
             </Card>
         </div>
-    </AppSidebarLayout>
+    </SettingsContainerLayout>
 </template>
 
 <script setup lang="ts">
@@ -161,7 +161,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import IconSelector from '@/components/ui/IconSelector.vue';
 import { Input } from '@/components/ui/input';
-import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue';
+import SettingsContainerLayout from '@/layouts/SettingsContainerLayout.vue';
 // Removed Textarea import - using native textarea instead
 // Removed Checkbox import - using native checkbox instead
 // Removed Select components - using native select instead

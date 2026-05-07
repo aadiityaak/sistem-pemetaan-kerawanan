@@ -173,7 +173,7 @@ const canManageSettings = computed(() => {
         </SidebarContent>
 
         <SidebarFooter>
-            <NavMain v-if="canManageSettings" :items="settingsNavItems" :collapse-on-inactive="true" />
+            <NavMain v-if="canManageSettings" :items="settingsNavItems" :collapse-on-inactive="true" :hide-sub-items="true" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

@@ -1,5 +1,5 @@
 <template>
-    <AppSidebarLayout :breadcrumbs="breadcrumbs">
+    <SettingsContainerLayout :breadcrumbs="breadcrumbs">
         <div class="space-y-6 p-6">
             <!-- Header -->
             <div class="flex items-center justify-between">
@@ -214,13 +214,13 @@
                 </CardContent>
             </Card>
         </div>
-    </AppSidebarLayout>
+    </SettingsContainerLayout>
 </template>
 
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import AppSidebarLayout from '@/layouts/app/AppSidebarLayout.vue';
+import SettingsContainerLayout from '@/layouts/SettingsContainerLayout.vue';
 import { Link, router } from '@inertiajs/vue3';
 import { ChevronLeft, ChevronRight, Edit, GripVertical, Info, Plus, RotateCcw, Trash } from 'lucide-vue-next';
 import Sortable from 'sortablejs';

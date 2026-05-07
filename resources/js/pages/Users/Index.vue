@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
+import SettingsContainerLayout from '@/layouts/SettingsContainerLayout.vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
@@ -157,7 +157,7 @@ const toggleUserStatus = (user: User) => {
 </script>
 
 <template>
-    <AppLayout title="User Management">
+    <SettingsContainerLayout title="User Management">
         <div class="p-6">
             <!-- Header -->
             <div class="mb-6">
@@ -636,5 +636,5 @@ const toggleUserStatus = (user: User) => {
                 </div>
             </div>
         </div>
-    </AppLayout>
+    </SettingsContainerLayout>
 </template>

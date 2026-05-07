@@ -10,6 +10,7 @@ interface Props {
     level: number;
     openItems: Set<string>;
     siblings?: NavItem[];
+    hideSubItems?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -39,7 +40,7 @@ const isOpen = (title: string) => {
 
 <template>
     <!-- Item with sub-items (recursive) -->
-    <SidebarMenuItem v-if="item.items && item.items.length > 0">
+    <SidebarMenuItem v-if="item.items && item.items.length > 0 && !props.hideSubItems">
         <!-- Top level uses SidebarMenuButton, nested levels use SidebarMenuSubButton -->
         <SidebarMenuButton v-if="level === 0" @click="handleToggle(item.title)" :tooltip="item.title" class="cursor-pointer sidebar-item-button">
             <component :is="item.icon" class="shrink-0" />
